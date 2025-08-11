@@ -6,20 +6,30 @@ interface ProjectItem {
     id: number;
     name: string;
     href: string;
+    svg: string;
 }
 
 // Placeholder project items
-const projects: ProjectItem[] = Array.from({ length: 4 }, (_, i) => {
-    const id = i + 1;
-    return {
-        id,
-        name: `Project ${id}`,
-        href: '#', // Replace with real routes when available
-    };
-});
-
-// Number of times to repeat the hero illustration row (Do not remove)
-// const heroRepeat = 8;
+const projects: ProjectItem[] = [
+    {
+        id: 1,
+        name: 'Grants-In-Aid (GIA)',
+        href: '#', // Replace with real route when available
+        svg: '/svg/gia.jpg',
+    },
+    {
+        id: 2,
+        name: 'Small Enterprises Technology Upgrading (SETUP)',
+        href: '#', // Replace with real route when available
+        svg: '/svg/setup2.svg',
+    },
+    {
+        id: 2,
+        name: 'Community Enhancement through Science and Technology (CEST)',
+        href: '#', // Replace with real route when available
+        svg: '/svg/cest.jpg',
+    },
+];
 
 const projectsSectionRef = ref<HTMLElement | null>(null);
 const scrollToProjects = (): void => {
@@ -34,6 +44,13 @@ const scrollToProjects = (): void => {
 
 <template>
     <Head title="GAD Corner" />
+
+    <!-- Parallax Star Background -->
+    <div class="star-bg">
+        <div class="star-bg__layer star-bg__layer--1" aria-hidden="true"></div>
+        <div class="star-bg__layer star-bg__layer--2" aria-hidden="true"></div>
+        <div class="star-bg__layer star-bg__layer--3" aria-hidden="true"></div>
+    </div>
 
     <div class="inter-font bg-purple-950 text-white">
         <!-- Hero Section with full illustration visible (reserved bottom space) -->
@@ -124,23 +141,6 @@ const scrollToProjects = (): void => {
                     decoding="async"
                 />
             </div>
-
-            <!-- Full-bleed hero illustration row (positioned higher for better visibility) -->
-            <!-- <figure class="pointer-events-none absolute inset-x-0 bottom-16 select-none sm:bottom-20 md:bottom-24 lg:bottom-32">
-                <div class="relative w-screen overflow-hidden">
-                    <div class="flex w-max -space-x-1">
-                        <template v-for="n in heroRepeat" :key="n"
-                            ><img
-                                src="/svg/huddletogether_flat.svg"
-                                alt=""
-                                aria-hidden="true"
-                                class="h-40 w-auto max-w-none flex-none object-contain sm:h-48 md:h-56 lg:h-64"
-                                loading="lazy"
-                                decoding="async"
-                        /></template>
-                    </div>
-                </div>
-            </figure> -->
         </section>
 
         <!-- Projects Section -->
@@ -175,21 +175,33 @@ const scrollToProjects = (): void => {
                     </p>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     <button
                         v-for="project in projects"
                         :key="project.id"
                         type="button"
                         @click="() => {}"
-                        class="group relative flex h-28 flex-col items-start justify-between overflow-hidden rounded-xl border border-purple-600/50 bg-purple-800/60 p-4 text-left shadow-sm backdrop-blur transition hover:border-purple-400 hover:bg-purple-700/70 hover:shadow-md focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:outline-none"
+                        class="project-card group relative flex h-48 flex-col items-center justify-center overflow-hidden rounded-xl border border-purple-600/50 bg-purple-800/60 p-6 text-center shadow-lg backdrop-blur focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
-                        <span class="text-sm font-medium text-white">{{ project.name }}</span>
-                        <span class="text-[11px] font-medium tracking-wide text-purple-200 uppercase">Coming Soon</span>
+                        <!-- Large SVG Icon -->
+                        <div class="mb-3 flex items-center justify-center">
+                            <img :src="project.svg" :alt="`${project.name} icon`" class="h-24 w-24 opacity-90" loading="lazy" decoding="async" />
+                        </div>
+
+                        <!-- Project Title -->
+                        <h3 class="mb-2 text-sm leading-tight font-semibold text-white">{{ project.name }}</h3>
+
+                        <!-- Call to Action -->
+                        <span class="text-xs font-medium tracking-wide text-purple-200 uppercase transition-colors group-hover:text-purple-100">
+                            Click Here
+                        </span>
+
+                        <!-- Hover Effect Background -->
                         <span
                             class="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                             aria-hidden="true"
                         >
-                            <span class="absolute inset-0 bg-purple-400/20" />
+                            <span class="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-400/10" />
                         </span>
                     </button>
                 </div>
@@ -206,4 +218,5 @@ const scrollToProjects = (): void => {
     font-optical-sizing: auto;
     font-style: normal;
 }
+/* All dynamic backgrounds/styles must be in app.css. */
 </style>
