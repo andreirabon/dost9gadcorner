@@ -634,7 +634,6 @@ onMounted(() => {
                     <div class="flex items-center justify-between">
                         <div>
                             <h2 class="text-heading-responsive font-semibold text-gray-900 select-text">{{ project.name }}</h2>
-                            <p class="text-responsive text-gray-600">Project Analytics Dashboard</p>
                         </div>
                         <button
                             type="button"
