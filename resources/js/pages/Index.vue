@@ -190,7 +190,7 @@ const getProjectColors = (theme: string = 'purple') => {
                         @click="scrollToProjects"
                         class="group touch-target tap-highlight-none inline-flex items-center gap-2 rounded-md bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
-                        View Featured Projects
+                        View Projects
                         <span aria-hidden="true">↓</span>
                     </button>
                 </div>
@@ -232,7 +232,7 @@ const getProjectColors = (theme: string = 'purple') => {
                         tabindex="-1"
                         class="bg-gradient-to-r from-purple-200 via-fuchsia-300 to-pink-200 bg-clip-text text-3xl font-semibold tracking-tight text-transparent md:text-4xl"
                     >
-                        Featured Projects
+                        Projects
                     </h2>
                     <p class="text-responsive px-safe max-w-2xl text-pretty text-purple-100">
                         Our flagship projects advance gender equality and inclusive development by applying science and technology to real community
