@@ -11,24 +11,34 @@ const projects: ProjectItem[] = [
         name: 'Grants-In-Aid (GIA)',
         href: '#', // Replace with real route when available
         colorTheme: 'emerald',
+        description:
+            'Financial assistance program for science and technology projects that promote gender equality and women empowerment in various sectors.',
+        backgroundImage: '/svg/gia.jpg',
     },
     {
         id: 2,
         name: 'Small Enterprises Technology Upgrading (SETUP)',
         href: '#', // Replace with real route when available
         colorTheme: 'blue',
+        description: 'Technology upgrading program for small enterprises, with special focus on women-led businesses and gender-inclusive practices.',
+        backgroundImage: '/svg/setup1.svg',
     },
     {
         id: 3,
         name: 'Community Enhancement through Science and Technology (CEST)',
         href: '#', // Replace with real route when available
         colorTheme: 'orange',
+        description:
+            'Community-based science and technology initiatives that address gender gaps and promote inclusive development at the grassroots level.',
+        backgroundImage: '/svg/cest.jpg',
     },
     {
         id: 4,
         name: 'Smart and Sustainable Communities Program (SSCP)',
         href: '#', // Replace with real route when available
         colorTheme: 'rose',
+        description: 'Sustainable development program integrating smart technologies with gender-responsive approaches for community resilience.',
+        backgroundImage: '/svg/development2.svg',
     },
 ];
 
@@ -38,7 +48,12 @@ const isModalOpen = ref(false);
 
 const scrollToProjects = (): void => {
     if (!projectsSectionRef.value) return;
-    projectsSectionRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    projectsSectionRef.value.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+    });
+
     setTimeout(() => {
         const focusable = projectsSectionRef.value?.querySelector<HTMLHeadingElement>('[data-focus-anchor="true"]');
         focusable?.focus({ preventScroll: true });
@@ -107,15 +122,15 @@ const getProjectColors = (theme: string = 'purple') => {
         <div class="star-bg__layer star-bg__layer--3" aria-hidden="true"></div>
     </div>
 
-    <div class="inter-font bg-purple-950 text-white">
+    <div class="inter-font mobile-optimized bg-purple-950 text-white">
         <!-- Hero Section with full illustration visible (reserved bottom space) -->
         <section
-            class="relative isolate flex min-h-screen flex-col justify-center overflow-hidden px-0 pt-20 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
+            class="min-h-screen-safe pt-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
         >
             <!-- Left side decorative illustrations -->
             <div
                 aria-hidden="true"
-                class="pointer-events-none absolute top-[20%] left-[1%] hidden w-1/4 max-w-xs items-center justify-center pl-2 sm:flex sm:pl-4 md:pl-6 lg:pl-8"
+                class="pointer-events-none absolute top-[10%] left-[1%] hidden w-1/4 max-w-xs items-center justify-center pl-2 sm:flex sm:pl-4 md:pl-6 lg:pl-8"
             >
                 <img
                     src="/svg/gendericon.svg"
@@ -125,10 +140,11 @@ const getProjectColors = (theme: string = 'purple') => {
                     decoding="async"
                 />
             </div>
+            1
             <!-- Right side decorative illustration -->
             <div
                 aria-hidden="true"
-                class="pointer-events-none absolute top-[42%] right-[1%] hidden w-1/4 max-w-xs items-center justify-center pr-2 sm:flex sm:pr-4 md:pr-6 lg:pr-8"
+                class="pointer-events-none absolute top-[36%] right-[1%] hidden w-1/4 max-w-xs items-center justify-center pr-2 sm:flex sm:pr-4 md:pr-6 lg:pr-8"
             >
                 <img
                     src="/svg/development1.svg"
@@ -144,7 +160,7 @@ const getProjectColors = (theme: string = 'purple') => {
             </div>
 
             <!-- Hero textual content -->
-            <div class="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-6">
+            <div class="px-safe relative z-10 mx-auto w-full max-w-6xl space-y-6">
                 <!-- DOST Logo -->
                 <div class="flex justify-center">
                     <img
@@ -165,21 +181,20 @@ const getProjectColors = (theme: string = 'purple') => {
                 >
                     Gender and Development
                 </h1>
-                <p class="mx-auto max-w-2xl text-base leading-relaxed text-pretty text-purple-100 md:text-lg">
-                    Discover how our projects drive gender equality, women’s empowerment, and inclusive development through science and technology.
+                <p class="text-responsive px-safe mx-auto max-w-2xl leading-relaxed text-pretty text-purple-100">
+                    Discover how our projects drive gender equality, women's empowerment, and inclusive development through science and technology.
                 </p>
-                <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+                <div class="px-safe flex flex-wrap items-center justify-center gap-4 pt-2">
                     <button
                         type="button"
                         @click="scrollToProjects"
-                        class="group inline-flex items-center gap-2 rounded-md bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:outline-none"
+                        class="group touch-target tap-highlight-none inline-flex items-center gap-2 rounded-md bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         View Featured Projects
                         <span aria-hidden="true">↓</span>
                     </button>
                 </div>
             </div>
-
             <!-- Center bottom layered illustration -->
             <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex w-full justify-center select-none">
                 <img
@@ -196,7 +211,7 @@ const getProjectColors = (theme: string = 'purple') => {
         <section
             ref="projectsSectionRef"
             id="projects"
-            class="relative flex min-h-screen flex-col justify-center border-t border-purple-700/60 bg-purple-900/60 px-6 py-20 md:py-28"
+            class="min-h-screen-safe px-safe relative flex flex-col justify-center scroll-smooth border-t border-purple-700/60 bg-purple-900/60 py-8 md:py-12"
             aria-labelledby="projects-heading"
         >
             <div class="mx-auto w-full max-w-6xl">
@@ -219,32 +234,66 @@ const getProjectColors = (theme: string = 'purple') => {
                     >
                         Featured Projects
                     </h2>
-                    <p class="max-w-2xl text-sm text-balance text-purple-100 md:text-base">
+                    <p class="text-responsive px-safe max-w-2xl text-pretty text-purple-100">
                         Our flagship projects advance gender equality and inclusive development by applying science and technology to real community
                         needs. Explore each initiative to see how we promote equal opportunities, empower women, and drive sustainable progress.
                     </p>
                 </div>
 
-                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div class="px-safe grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     <button
                         v-for="project in projects"
                         :key="project.id"
                         type="button"
                         @click="openProjectModal(project)"
                         :class="[
-                            'project-card group relative flex h-48 flex-col items-center justify-center overflow-hidden rounded-xl p-6 text-center shadow-lg backdrop-blur focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                            'project-card group touch-target tap-highlight-none mobile-perf relative flex h-48 flex-col items-center justify-center overflow-hidden rounded-xl p-6 text-center shadow-lg backdrop-blur transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
                             getProjectColors(project.colorTheme).border,
                             getProjectColors(project.colorTheme).bg,
                             getProjectColors(project.colorTheme).focus,
                         ]"
                     >
-                        <!-- Project Title -->
-                        <h3 :class="['mb-2 text-sm leading-tight font-semibold', getProjectColors(project.colorTheme).text]">
-                            {{ project.name }}
-                        </h3>
+                        <!-- Background Image (visible on hover) -->
+                        <div
+                            v-if="project.backgroundImage"
+                            class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-0 transition-opacity duration-300 group-hover:opacity-20"
+                            :style="{ backgroundImage: `url(${project.backgroundImage})` }"
+                            aria-hidden="true"
+                        ></div>
+
+                        <!-- Default View (visible when not hovering) -->
+                        <div class="relative z-10 transition-opacity duration-300 group-hover:opacity-0">
+                            <!-- Project Title -->
+                            <h3 :class="['mb-2 text-sm leading-tight font-semibold select-none', getProjectColors(project.colorTheme).text]">
+                                {{ project.name }}
+                            </h3>
+                        </div>
+
+                        <!-- Hover View (visible on hover) -->
+                        <div
+                            class="absolute inset-0 z-10 flex flex-col justify-center p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        >
+                            <!-- Semi-transparent overlay for better text readability -->
+                            <div class="absolute inset-0 rounded-xl bg-black/40"></div>
+
+                            <div class="relative z-10 text-center">
+                                <!-- Project Title on hover -->
+                                <h3 class="mb-3 text-sm leading-tight font-semibold text-white">
+                                    {{ project.name }}
+                                </h3>
+
+                                <!-- Project Description -->
+                                <p v-if="project.description" class="line-clamp-4 text-xs leading-relaxed text-white/90">
+                                    {{ project.description }}
+                                </p>
+                            </div>
+                        </div>
 
                         <!-- Hover Effect Background -->
-                        <span class="pointer-events-none absolute inset-0 -z-10 opacity-0 group-hover:opacity-100" aria-hidden="true">
+                        <span
+                            class="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                            aria-hidden="true"
+                        >
                             <span :class="['absolute inset-0 bg-gradient-to-br', getProjectColors(project.colorTheme).hover]" />
                         </span>
                     </button>

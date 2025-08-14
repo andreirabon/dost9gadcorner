@@ -516,18 +516,58 @@ const handleEscapeKey = (event: KeyboardEvent) => {
     }
 };
 
+// Mobile-friendly touch handling for modal dismissal
+const handleTouchStart = ref<{ x: number; y: number; time: number } | null>(null);
+
+const onTouchStart = (event: TouchEvent) => {
+    if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        handleTouchStart.value = {
+            x: touch.clientX,
+            y: touch.clientY,
+            time: Date.now(),
+        };
+    }
+};
+
+const onTouchEnd = (event: TouchEvent) => {
+    if (!handleTouchStart.value || event.changedTouches.length !== 1) return;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - handleTouchStart.value.x;
+    const deltaY = touch.clientY - handleTouchStart.value.y;
+    const deltaTime = Date.now() - handleTouchStart.value.time;
+
+    // Detect swipe down gesture to close modal on mobile
+    if (deltaY > 100 && Math.abs(deltaX) < 100 && deltaTime < 500) {
+        closeModal();
+    }
+
+    handleTouchStart.value = null;
+};
+
 watch(
     () => props.isOpen,
     (isOpen) => {
         if (isOpen) {
             document.addEventListener('keydown', handleEscapeKey);
             document.body.style.overflow = 'hidden';
+            // Add touch event listeners for mobile
+            if ('ontouchstart' in window) {
+                document.addEventListener('touchstart', onTouchStart, { passive: true });
+                document.addEventListener('touchend', onTouchEnd, { passive: true });
+            }
             nextTick(() => {
                 createChart();
             });
         } else {
             document.removeEventListener('keydown', handleEscapeKey);
             document.body.style.overflow = '';
+            // Remove touch event listeners
+            if ('ontouchstart' in window) {
+                document.removeEventListener('touchstart', onTouchStart);
+                document.removeEventListener('touchend', onTouchEnd);
+            }
             if (chartInstance.value) {
                 chartInstance.value.destroy();
                 chartInstance.value = null;
@@ -550,6 +590,7 @@ watch(
                 animationFrameId = null;
             }
             isChartLoading.value = false;
+            handleTouchStart.value = null;
         }
     },
 );
@@ -574,19 +615,31 @@ onMounted(() => {
 
 <template>
     <Teleport to="body">
-        <div v-if="isOpen && project" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4" @click="handleOverlayClick">
-            <div class="modal-content relative max-h-[95vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+        <div
+            v-if="isOpen && project"
+            class="modal-overlay inset-safe mobile-perf fixed z-50 flex items-center justify-center p-4"
+            @click="handleOverlayClick"
+        >
+            <div
+                :class="[
+                    'modal-content mobile-perf relative max-h-[95vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white shadow-2xl',
+                    'md:max-h-[95vh] md:max-w-6xl',
+                    'modal-mobile modal-content-mobile',
+                ]"
+                @touchstart="onTouchStart"
+                @touchend="onTouchEnd"
+            >
                 <!-- Header -->
-                <div class="sticky top-0 z-10 border-b border-gray-200 bg-white px-6 py-4">
+                <div class="sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-4 md:px-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-xl font-semibold text-gray-900">{{ project.name }}</h2>
-                            <p class="text-sm text-gray-600">Project Analytics Dashboard</p>
+                            <h2 class="text-heading-responsive font-semibold text-gray-900 select-text">{{ project.name }}</h2>
+                            <p class="text-responsive text-gray-600">Project Analytics Dashboard</p>
                         </div>
                         <button
                             type="button"
                             @click="closeModal"
-                            class="modal-close-btn rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                            class="modal-close-btn touch-target tap-highlight-none rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                             aria-label="Close modal"
                         >
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -597,7 +650,7 @@ onMounted(() => {
                 </div>
 
                 <!-- Content -->
-                <div class="modal-body space-y-6 p-6">
+                <div class="modal-body pb-safe space-y-6 p-4 md:p-6">
                     <!-- Charts Grid -->
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                         <!-- Bar Chart Container -->
@@ -606,21 +659,21 @@ onMounted(() => {
                             <div v-if="isChartLoading" class="chart-loading absolute inset-0 flex items-center justify-center bg-gray-50/80">
                                 <div class="flex items-center gap-3">
                                     <div class="h-6 w-6 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"></div>
-                                    <span class="text-sm text-gray-600">Loading charts...</span>
+                                    <span class="text-responsive text-gray-600">Loading charts...</span>
                                 </div>
                             </div>
-                            <canvas ref="chartRef" class="h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
+                            <canvas ref="chartRef" class="mobile-perf h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
                         </div>
 
                         <!-- Line Chart Container -->
                         <div class="chart-container relative h-80 w-full rounded-lg border border-gray-200 bg-gray-50 p-4">
-                            <canvas ref="lineChartRef" class="h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
+                            <canvas ref="lineChartRef" class="mobile-perf h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
                         </div>
                     </div>
 
                     <!-- Pie Chart Container (Full Width) -->
                     <div class="chart-container relative h-80 w-full rounded-lg border border-gray-200 bg-gray-50 p-4">
-                        <canvas ref="pieChartRef" class="h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
+                        <canvas ref="pieChartRef" class="mobile-perf h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
                     </div>
                 </div>
             </div>

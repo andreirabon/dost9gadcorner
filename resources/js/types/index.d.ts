@@ -22,6 +22,8 @@ export interface ProjectItem {
     name: string;
     href: string;
     colorTheme?: 'emerald' | 'blue' | 'orange' | 'rose' | 'purple' | 'cyan' | 'amber' | 'teal';
+    description?: string;
+    backgroundImage?: string;
 }
 
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
