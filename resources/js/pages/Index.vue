@@ -140,7 +140,7 @@ const getProjectColors = (theme: string = 'purple') => {
                     decoding="async"
                 />
             </div>
-            1
+
             <!-- Right side decorative illustration -->
             <div
                 aria-hidden="true"
