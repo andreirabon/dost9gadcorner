@@ -994,6 +994,16 @@ _Project-specific development instructions_
 - Leverage Tailwind utilities first, custom CSS only when necessary
 - Document complex CSS patterns with explanatory comments
 
+### Animation and Interaction Standards
+
+- **ALWAYS use smooth scrolling** for navigation: `behavior: 'smooth'` in `scrollIntoView()` and scroll-related functions
+- **NEVER use animations** for UI elements, modals, transitions, or any visual effects
+- **Disable all Chart.js animations** with `animation: false`, `hover: { animationDuration: 0 }`, `tooltip: { animation: false }`
+- **Remove Vue transitions** and CSS animations for instant responsiveness
+- **Eliminate CSS keyframes, transitions, and animation properties** from all components
+- **Prioritize instant UI feedback** over visual effects for optimal user experience
+- **Maintain accessibility** through immediate state changes without animation delays
+
 ### Workflow Integration
 
 - Perform impact analysis after implementing changes

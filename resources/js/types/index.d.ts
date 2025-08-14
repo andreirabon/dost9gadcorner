@@ -17,6 +17,13 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface ProjectItem {
+    id: number;
+    name: string;
+    href: string;
+    colorTheme?: 'emerald' | 'blue' | 'orange' | 'rose' | 'purple' | 'cyan' | 'amber' | 'teal';
+}
+
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     name: string;
     quote: { message: string; author: string };
