@@ -27,7 +27,6 @@ const quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'] as
 
 const selectTab = (tab: string) => {
     activeTab.value = tab as typeof activeTab.value;
-    activeQuarter.value = '1st Quarter'; // Reset quarter on tab change
 };
 
 const selectQuarter = (quarter: string) => {
