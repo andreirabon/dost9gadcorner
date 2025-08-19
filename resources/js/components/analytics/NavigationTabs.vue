@@ -42,7 +42,7 @@ const getTabValue = (tab: string | TabItem): string => {
         <!-- Header Section -->
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-md">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
                     <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path
                             stroke-linecap="round"
@@ -89,24 +89,14 @@ const getTabValue = (tab: string | TabItem): string => {
                         type="button"
                         @click="selectTab(getTabValue(tab))"
                         :class="[
-                            'group relative flex items-center justify-center rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:outline-none',
+                            'flex items-center justify-center rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none',
                             activeTab === getTabValue(tab)
-                                ? 'bg-white text-violet-700 shadow-md ring-1 ring-violet-200/50'
+                                ? 'bg-blue-500 text-white shadow-md'
                                 : 'text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-sm',
                         ]"
                         :aria-pressed="activeTab === getTabValue(tab)"
                     >
-                        <span class="relative z-10 font-semibold">{{ getTabLabel(tab) }}</span>
-                        <!-- Active Indicator -->
-                        <div
-                            v-if="activeTab === getTabValue(tab)"
-                            class="absolute inset-0 rounded-md bg-gradient-to-r from-violet-50 to-purple-50 opacity-60"
-                        ></div>
-                        <!-- Selection Ring -->
-                        <div
-                            v-if="activeTab === getTabValue(tab)"
-                            class="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 opacity-20 blur-sm"
-                        ></div>
+                        <span class="font-semibold">{{ getTabLabel(tab) }}</span>
                     </button>
                 </div>
             </div>
@@ -134,9 +124,7 @@ const getTabValue = (tab: string | TabItem): string => {
                         @click="selectQuarter(quarter)"
                         :class="[
                             'flex-1 rounded-md px-3 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:outline-none',
-                            activeQuarter === quarter
-                                ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-200/60'
-                                : 'text-gray-600 hover:bg-white/70 hover:text-gray-900',
+                            activeQuarter === quarter ? 'bg-blue-500 text-white shadow-sm' : 'text-gray-600 hover:bg-white/70 hover:text-gray-900',
                         ]"
                         :aria-pressed="activeQuarter === quarter"
                     >
@@ -161,7 +149,7 @@ const getTabValue = (tab: string | TabItem): string => {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-800">
+                    <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">
                         {{ activeTab }}
                     </span>
                     <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

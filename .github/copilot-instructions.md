@@ -1011,3 +1011,6 @@ _Project-specific development instructions_
 - Provide necessary fixes across all affected files
 - Consider robustness and error handling in all implementations
 - Maintain consistency with established patterns
+- **NEVER run npm commands** (build, dev, type-check) or TypeScript compiler commands
+- Focus on code implementation and validation through static analysis only
+- Use built-in IDE tools and linting for code verification

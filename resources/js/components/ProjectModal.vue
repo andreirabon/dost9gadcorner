@@ -10,40 +10,31 @@ interface Props {
     isOpen: boolean;
 }
 
-interface Emits {
-    (e: 'close'): void;
-}
-
 const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+    close: [];
+}>();
 
 const isChartLoading = ref(false);
+const activeTab = ref<'Zamboanga City & Isabela City' | 'Zamboanga Sibugay Province' | 'Zamboanga Del Sur' | 'Zamboanga Del Norte'>(
+    'Zamboanga City & Isabela City',
+);
+const activeQuarter = ref<'1st Quarter' | '2nd Quarter' | '3rd Quarter' | '4th Quarter'>('1st Quarter');
 
-// Tabs (regions)
-const tabs = ['ZCIC', 'ZDN', 'ZDS', 'ZSP'] as const;
-const activeTab = ref<(typeof tabs)[number]>('ZCIC');
-
-// Quarter tabs
-const quarters = ['1st QTR', '2nd QTR', '3rd QTR', '4th QTR'] as const;
-const activeQuarter = ref<(typeof quarters)[number]>('1st QTR');
+// Simplified tabs arrays
+const tabs = ['Zamboanga City & Isabela City', 'Zamboanga Sibugay Province', 'Zamboanga Del Sur', 'Zamboanga Del Norte'] as const;
+const quarters = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'] as const;
 
 const selectTab = (tab: string) => {
-    const validTab = tab as 'ZCIC' | 'ZDN' | 'ZDS' | 'ZSP';
-    if (activeTab.value !== validTab) {
-        activeTab.value = validTab;
-        // Reset to first quarter when changing regions
-        activeQuarter.value = '1st QTR';
-    }
+    activeTab.value = tab as typeof activeTab.value;
+    activeQuarter.value = '1st Quarter'; // Reset quarter on tab change
 };
 
 const selectQuarter = (quarter: string) => {
-    const validQuarter = quarter as '1st QTR' | '2nd QTR' | '3rd QTR' | '4th QTR';
-    if (activeQuarter.value !== validQuarter) {
-        activeQuarter.value = validQuarter;
-    }
+    activeQuarter.value = quarter as typeof activeQuarter.value;
 };
 
-// Mock data for male and female owned businesses
+// Simplified mock data
 const mockData = {
     gia: {
         bar: {
@@ -215,38 +206,27 @@ const mockData = {
 const currentData = computed(() => {
     if (!props.project) return mockData.gia;
 
-    const projectKey = props.project.name.toLowerCase().includes('gia')
-        ? 'gia'
-        : props.project.name.toLowerCase().includes('setup')
-          ? 'setup'
-          : 'cest';
-
-    return mockData[projectKey];
+    const name = props.project.name.toLowerCase();
+    return name.includes('gia') ? mockData.gia : name.includes('setup') ? mockData.setup : mockData.cest;
 });
 
-const closeModal = () => {
-    emit('close');
-};
+const closeModal = () => emit('close');
 
 const handleOverlayClick = (event: MouseEvent) => {
-    if (event.target === event.currentTarget) {
-        closeModal();
-    }
+    if (event.target === event.currentTarget) closeModal();
 };
 
 const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-        closeModal();
-    }
+    if (event.key === 'Escape') closeModal();
 };
 
-// Mobile-friendly touch handling for modal dismissal
-const handleTouchStart = ref<{ x: number; y: number; time: number } | null>(null);
+// Touch handling for mobile
+const touchStart = ref<{ x: number; y: number; time: number } | null>(null);
 
 const onTouchStart = (event: TouchEvent) => {
-    if (event.touches.length === 1) {
-        const touch = event.touches[0];
-        handleTouchStart.value = {
+    const touch = event.touches[0];
+    if (touch) {
+        touchStart.value = {
             x: touch.clientX,
             y: touch.clientY,
             time: Date.now(),
@@ -255,28 +235,29 @@ const onTouchStart = (event: TouchEvent) => {
 };
 
 const onTouchEnd = (event: TouchEvent) => {
-    if (!handleTouchStart.value || event.changedTouches.length !== 1) return;
+    if (!touchStart.value) return;
 
     const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - handleTouchStart.value.x;
-    const deltaY = touch.clientY - handleTouchStart.value.y;
-    const deltaTime = Date.now() - handleTouchStart.value.time;
+    if (!touch) return;
 
-    // Detect swipe down gesture to close modal on mobile
+    const deltaY = touch.clientY - touchStart.value.y;
+    const deltaX = touch.clientX - touchStart.value.x;
+    const deltaTime = Date.now() - touchStart.value.time;
+
+    // Swipe down to close
     if (deltaY > 100 && Math.abs(deltaX) < 100 && deltaTime < 500) {
         closeModal();
     }
-
-    handleTouchStart.value = null;
+    touchStart.value = null;
 };
 
+// Event listeners management
 watch(
     () => props.isOpen,
     (isOpen) => {
         if (isOpen) {
             document.addEventListener('keydown', handleEscapeKey);
             document.body.style.overflow = 'hidden';
-            // Add touch event listeners for mobile
             if ('ontouchstart' in window) {
                 document.addEventListener('touchstart', onTouchStart, { passive: true });
                 document.addEventListener('touchend', onTouchEnd, { passive: true });
@@ -284,27 +265,23 @@ watch(
         } else {
             document.removeEventListener('keydown', handleEscapeKey);
             document.body.style.overflow = '';
-            // Remove touch event listeners
             if ('ontouchstart' in window) {
                 document.removeEventListener('touchstart', onTouchStart);
                 document.removeEventListener('touchend', onTouchEnd);
             }
             isChartLoading.value = false;
-            handleTouchStart.value = null;
+            touchStart.value = null;
         }
     },
 );
 
-// Simulate chart loading when tab changes
-watch(
-    () => [activeTab.value, activeQuarter.value],
-    () => {
-        isChartLoading.value = true;
-        setTimeout(() => {
-            isChartLoading.value = false;
-        }, 300);
-    },
-);
+// Chart loading simulation
+watch([activeTab, activeQuarter], () => {
+    isChartLoading.value = true;
+    setTimeout(() => {
+        isChartLoading.value = false;
+    }, 300);
+});
 </script>
 
 <template>

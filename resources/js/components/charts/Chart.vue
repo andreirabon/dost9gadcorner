@@ -6,22 +6,19 @@ import {
     CategoryScale,
     Chart,
     ChartConfiguration,
-    DoughnutController,
+    Filler,
     Legend,
     LinearScale,
     LineController,
     LineElement,
     PieController,
     PointElement,
-    PolarAreaController,
-    RadarController,
-    RadialLinearScale,
     Title,
     Tooltip,
 } from 'chart.js';
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
-// Register only the components we need
+// Register only needed components
 Chart.register(
     CategoryScale,
     LinearScale,
@@ -29,16 +26,13 @@ Chart.register(
     LineElement,
     PointElement,
     ArcElement,
-    RadialLinearScale,
     Title,
     Tooltip,
     Legend,
     BarController,
     LineController,
     PieController,
-    DoughnutController,
-    PolarAreaController,
-    RadarController,
+    Filler,
 );
 
 interface ChartData {
@@ -48,30 +42,22 @@ interface ChartData {
 
 interface Props {
     chartData: ChartData;
-    chartType: 'bar' | 'line' | 'pie' | 'doughnut';
+    chartType: 'bar' | 'line' | 'pie';
     title: string;
-    isLoading?: boolean;
-}
-
-interface Emits {
-    (e: 'chart-ready', chart: Chart): void;
-    (e: 'chart-destroyed'): void;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
 
 const chartRef = ref<HTMLCanvasElement | null>(null);
 const chartInstance = ref<Chart | null>(null);
 
 const createChart = async () => {
-    if (!chartRef.value || props.isLoading) return;
+    if (!chartRef.value) return;
 
     // Destroy existing chart
     if (chartInstance.value) {
         chartInstance.value.destroy();
         chartInstance.value = null;
-        emit('chart-destroyed');
     }
 
     await nextTick();
@@ -90,17 +76,11 @@ const createChart = async () => {
                 intersect: false,
                 mode: 'index',
             },
-            hover: {
-                animationDuration: 0,
-            } as any,
             plugins: {
                 title: {
                     display: true,
                     text: props.title,
-                    font: {
-                        size: 14,
-                        weight: 'bold',
-                    },
+                    font: { size: 14, weight: 'bold' },
                     color: '#374151',
                 },
                 legend: {
@@ -109,9 +89,7 @@ const createChart = async () => {
                         color: '#374151',
                         usePointStyle: true,
                         padding: props.chartType === 'pie' ? 8 : 10,
-                        font: {
-                            size: props.chartType === 'pie' ? 11 : 12,
-                        },
+                        font: { size: props.chartType === 'pie' ? 11 : 12 },
                     },
                 },
                 tooltip: {
@@ -139,32 +117,16 @@ const createChart = async () => {
                 props.chartType !== 'pie'
                     ? {
                           x: {
-                              grid: {
-                                  color: '#e5e7eb',
-                                  drawOnChartArea: true,
-                                  drawTicks: true,
-                              },
-                              ticks: {
-                                  color: '#6b7280',
-                                  maxTicksLimit: 10,
-                              },
+                              grid: { color: '#e5e7eb' },
+                              ticks: { color: '#6b7280', maxTicksLimit: 10 },
                           },
                           y: {
-                              grid: {
-                                  color: '#e5e7eb',
-                                  drawOnChartArea: true,
-                                  drawTicks: true,
-                              },
+                              grid: { color: '#e5e7eb' },
                               ticks: {
                                   color: '#6b7280',
                                   maxTicksLimit: 8,
                                   callback: function (value: any): string {
-                                      if (props.chartType === 'bar') {
-                                          return value + ' businesses';
-                                      } else if (props.chartType === 'line') {
-                                          return value + '%';
-                                      }
-                                      return value;
+                                      return props.chartType === 'bar' ? value + ' businesses' : props.chartType === 'line' ? value + '%' : value;
                                   },
                               } as any,
                               beginAtZero: true,
@@ -175,11 +137,10 @@ const createChart = async () => {
     };
 
     chartInstance.value = new Chart(ctx, config);
-    emit('chart-ready', chartInstance.value);
 };
 
 const updateChart = () => {
-    if (chartInstance.value && !props.isLoading) {
+    if (chartInstance.value) {
         chartInstance.value.data = props.chartData;
         chartInstance.value.update('active');
     }
@@ -188,30 +149,15 @@ const updateChart = () => {
 // Watch for data changes
 watch(() => props.chartData, updateChart, { deep: true });
 
-// Watch for loading state changes
-watch(
-    () => props.isLoading,
-    (isLoading) => {
-        if (!isLoading) {
-            nextTick(() => createChart());
-        }
-    },
-);
-
-onMounted(() => {
-    if (!props.isLoading) {
-        createChart();
-    }
-});
+onMounted(createChart);
 
 onUnmounted(() => {
     if (chartInstance.value) {
         chartInstance.value.destroy();
-        emit('chart-destroyed');
     }
 });
 </script>
 
 <template>
-    <canvas ref="chartRef" class="mobile-perf h-full w-full" :class="{ 'opacity-0': isLoading }" />
+    <canvas ref="chartRef" class="mobile-perf h-full w-full" />
 </template>

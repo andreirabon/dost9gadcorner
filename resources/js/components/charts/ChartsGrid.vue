@@ -22,35 +22,20 @@ defineProps<Props>();
     <div class="space-y-6">
         <!-- Charts Grid -->
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <!-- Bar Chart Container -->
+            <!-- Bar Chart -->
             <ChartContainer :is-loading="isLoading">
-                <Chart
-                    :chart-data="barData"
-                    chart-type="bar"
-                    :title="`${projectName} - Business Ownership by Gender (Bar Chart)`"
-                    :is-loading="isLoading"
-                />
+                <Chart :chart-data="barData" chart-type="bar" :title="`${projectName} - Business Ownership by Gender`" />
             </ChartContainer>
 
-            <!-- Line Chart Container -->
+            <!-- Line Chart -->
             <ChartContainer :is-loading="isLoading">
-                <Chart
-                    :chart-data="lineData"
-                    chart-type="line"
-                    :title="`${projectName} - Development Progress by Gender (Line Chart)`"
-                    :is-loading="isLoading"
-                />
+                <Chart :chart-data="lineData" chart-type="line" :title="`${projectName} - Development Progress by Gender`" />
             </ChartContainer>
         </div>
 
-        <!-- Pie Chart Container (Full Width) -->
+        <!-- Pie Chart (Full Width) -->
         <ChartContainer :is-loading="isLoading">
-            <Chart
-                :chart-data="pieData"
-                chart-type="pie"
-                :title="`${projectName} - Business Distribution by Type & Gender (Pie Chart)`"
-                :is-loading="isLoading"
-            />
+            <Chart :chart-data="pieData" chart-type="pie" :title="`${projectName} - Business Distribution by Type & Gender`" />
         </ChartContainer>
     </div>
 </template>
