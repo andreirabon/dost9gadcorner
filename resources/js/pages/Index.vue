@@ -40,6 +40,22 @@ const projects: ProjectItem[] = [
         description: 'Sustainable development program integrating smart technologies with gender-responsive approaches for community resilience.',
         backgroundImage: '/svg/development2.svg',
     },
+    {
+        id: 5,
+        name: 'Science Education Institute Scholarship',
+        href: '#', // Replace with real route when available
+        colorTheme: 'purple',
+        description: 'Sustainable development program integrating smart technologies with gender-responsive approaches for community resilience.',
+        backgroundImage: '/svg/development2.svg',
+    },
+    {
+        id: 6,
+        name: 'Regional Standards and Testing Laboratory (RSTL)',
+        href: '#', // Replace with real route when available
+        colorTheme: 'teal',
+        description: 'Sustainable development program integrating smart technologies with gender-responsive approaches for community resilience.',
+        backgroundImage: '/svg/development2.svg',
+    },
 ];
 
 const projectsSectionRef = ref<HTMLElement | null>(null);
@@ -99,6 +115,13 @@ const getProjectColors = (theme: string = 'purple') => {
             hover: 'from-rose-400/40 to-rose-500/30',
             text: 'text-white',
             focus: 'focus-visible:ring-rose-400',
+        },
+        teal: {
+            border: 'border-teal-400/60',
+            bg: 'bg-teal-500/80',
+            hover: 'from-teal-400/40 to-teal-600/30',
+            text: 'text-white',
+            focus: 'focus-visible:ring-teal-400',
         },
         purple: {
             border: 'border-purple-400/60',

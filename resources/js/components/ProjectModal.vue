@@ -1,47 +1,9 @@
 <script setup lang="ts">
-// Import only necessary Chart.js components for better performance
-import {
-    ArcElement,
-    BarController,
-    BarElement,
-    CategoryScale,
-    Chart,
-    ChartConfiguration,
-    DoughnutController,
-    Legend,
-    LinearScale,
-    LineController,
-    LineElement,
-    PieController,
-    PointElement,
-    PolarAreaController,
-    RadarController,
-    RadialLinearScale,
-    Title,
-    Tooltip,
-} from 'chart.js';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { ProjectItem } from '../types';
-
-// Register only the components we need
-Chart.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    ArcElement,
-    RadialLinearScale,
-    Title,
-    Tooltip,
-    Legend,
-    BarController,
-    LineController,
-    PieController,
-    DoughnutController,
-    PolarAreaController,
-    RadarController,
-);
+import NavigationTabs from './analytics/NavigationTabs.vue';
+import ChartsGrid from './charts/ChartsGrid.vue';
+import ModalHeader from './modal/ModalHeader.vue';
 
 interface Props {
     project: ProjectItem | null;
@@ -55,13 +17,31 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const chartRef = ref<HTMLCanvasElement | null>(null);
-const lineChartRef = ref<HTMLCanvasElement | null>(null);
-const pieChartRef = ref<HTMLCanvasElement | null>(null);
-const chartInstance = ref<Chart | null>(null);
-const lineChartInstance = ref<Chart | null>(null);
-const pieChartInstance = ref<Chart | null>(null);
 const isChartLoading = ref(false);
+
+// Tabs (regions)
+const tabs = ['ZCIC', 'ZDN', 'ZDS', 'ZSP'] as const;
+const activeTab = ref<(typeof tabs)[number]>('ZCIC');
+
+// Quarter tabs
+const quarters = ['1st QTR', '2nd QTR', '3rd QTR', '4th QTR'] as const;
+const activeQuarter = ref<(typeof quarters)[number]>('1st QTR');
+
+const selectTab = (tab: string) => {
+    const validTab = tab as 'ZCIC' | 'ZDN' | 'ZDS' | 'ZSP';
+    if (activeTab.value !== validTab) {
+        activeTab.value = validTab;
+        // Reset to first quarter when changing regions
+        activeQuarter.value = '1st QTR';
+    }
+};
+
+const selectQuarter = (quarter: string) => {
+    const validQuarter = quarter as '1st QTR' | '2nd QTR' | '3rd QTR' | '4th QTR';
+    if (activeQuarter.value !== validQuarter) {
+        activeQuarter.value = validQuarter;
+    }
+};
 
 // Mock data for male and female owned businesses
 const mockData = {
@@ -232,8 +212,6 @@ const mockData = {
     },
 };
 
-// Remove chart type selector since we only use bar charts
-
 const currentData = computed(() => {
     if (!props.project) return mockData.gia;
 
@@ -245,260 +223,6 @@ const currentData = computed(() => {
 
     return mockData[projectKey];
 });
-
-const createChart = async () => {
-    if (!chartRef.value || !props.project) return;
-
-    isChartLoading.value = true;
-
-    // Destroy existing charts efficiently
-    if (chartInstance.value) {
-        chartInstance.value.destroy();
-        chartInstance.value = null;
-    }
-    if (lineChartInstance.value) {
-        lineChartInstance.value.destroy();
-        lineChartInstance.value = null;
-    }
-    if (pieChartInstance.value) {
-        pieChartInstance.value.destroy();
-        pieChartInstance.value = null;
-    }
-
-    await nextTick();
-
-    // Create Bar Chart
-    const ctx = chartRef.value.getContext('2d');
-    if (ctx) {
-        const barConfig: ChartConfiguration = {
-            type: 'bar',
-            data: currentData.value.bar,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false,
-                interaction: {
-                    intersect: false,
-                    mode: 'index',
-                },
-                hover: {
-                    animationDuration: 0,
-                } as any,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `${props.project.name} - Business Ownership by Gender (Bar Chart)`,
-                        font: {
-                            size: 14,
-                            weight: 'bold',
-                        },
-                        color: '#374151',
-                    },
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: '#374151',
-                            usePointStyle: true,
-                            padding: 10,
-                        },
-                    },
-                    tooltip: {
-                        enabled: true,
-                        mode: 'index',
-                        intersect: false,
-                        animation: false,
-                        callbacks: {
-                            afterLabel: function (): string {
-                                return 'businesses';
-                            },
-                        } as any,
-                    },
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            color: '#e5e7eb',
-                            drawOnChartArea: true,
-                            drawTicks: true,
-                        },
-                        ticks: {
-                            color: '#6b7280',
-                            maxTicksLimit: 10,
-                        },
-                    },
-                    y: {
-                        grid: {
-                            color: '#e5e7eb',
-                            drawOnChartArea: true,
-                            drawTicks: true,
-                        },
-                        ticks: {
-                            color: '#6b7280',
-                            maxTicksLimit: 8,
-                            callback: function (value: any): string {
-                                return value + ' businesses';
-                            },
-                        } as any,
-                        beginAtZero: true,
-                    },
-                },
-            },
-        };
-        chartInstance.value = new Chart(ctx, barConfig);
-    }
-
-    // Create Line Chart
-    const lineCtx = lineChartRef.value?.getContext('2d');
-    if (lineCtx && lineChartRef.value) {
-        const lineConfig: ChartConfiguration = {
-            type: 'line',
-            data: currentData.value.line,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false,
-                interaction: {
-                    intersect: false,
-                    mode: 'index',
-                },
-                hover: {
-                    animationDuration: 0,
-                } as any,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `${props.project.name} - Development Progress by Gender (Line Chart)`,
-                        font: {
-                            size: 14,
-                            weight: 'bold',
-                        },
-                        color: '#374151',
-                    },
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: '#374151',
-                            usePointStyle: true,
-                            padding: 10,
-                        },
-                    },
-                    tooltip: {
-                        enabled: true,
-                        mode: 'index',
-                        intersect: false,
-                        animation: false,
-                    },
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            color: '#e5e7eb',
-                            drawOnChartArea: true,
-                            drawTicks: true,
-                        },
-                        ticks: {
-                            color: '#6b7280',
-                        },
-                    },
-                    y: {
-                        grid: {
-                            color: '#e5e7eb',
-                            drawOnChartArea: true,
-                            drawTicks: true,
-                        },
-                        ticks: {
-                            color: '#6b7280',
-                            callback: function (value: any): string {
-                                return value + '%';
-                            },
-                        } as any,
-                        beginAtZero: true,
-                    },
-                },
-            },
-        };
-        lineChartInstance.value = new Chart(lineCtx, lineConfig);
-    }
-
-    // Create Pie Chart
-    const pieCtx = pieChartRef.value?.getContext('2d');
-    if (pieCtx && pieChartRef.value) {
-        const pieConfig: ChartConfiguration = {
-            type: 'pie',
-            data: currentData.value.pie,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `${props.project.name} - Business Distribution by Type & Gender (Pie Chart)`,
-                        font: {
-                            size: 14,
-                            weight: 'bold',
-                        },
-                        color: '#374151',
-                    },
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: '#374151',
-                            usePointStyle: true,
-                            padding: 8,
-                            font: {
-                                size: 11,
-                            },
-                        },
-                    },
-                    tooltip: {
-                        enabled: true,
-                        animation: false,
-                        callbacks: {
-                            label: function (context: any): string {
-                                const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
-                                const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                return `${context.label}: ${context.parsed} (${percentage}%)`;
-                            },
-                        } as any,
-                    },
-                },
-            },
-        };
-        pieChartInstance.value = new Chart(pieCtx, pieConfig);
-    }
-
-    isChartLoading.value = false;
-};
-
-// Debounced chart update function for better performance
-let updateTimeout: number | null = null;
-let animationFrameId: number | null = null;
-
-const updateChart = () => {
-    if (updateTimeout) clearTimeout(updateTimeout);
-    if (animationFrameId) cancelAnimationFrame(animationFrameId);
-
-    updateTimeout = setTimeout(() => {
-        animationFrameId = requestAnimationFrame(() => {
-            if (props.isOpen) {
-                // Update existing charts data
-                if (chartInstance.value) {
-                    chartInstance.value.data = currentData.value.bar;
-                    chartInstance.value.update('active');
-                }
-                if (lineChartInstance.value) {
-                    lineChartInstance.value.data = currentData.value.line;
-                    lineChartInstance.value.update('active');
-                }
-                if (pieChartInstance.value) {
-                    pieChartInstance.value.data = currentData.value.pie;
-                    pieChartInstance.value.update('active');
-                }
-            }
-        });
-    }, 100) as any;
-};
 
 const closeModal = () => {
     emit('close');
@@ -557,9 +281,6 @@ watch(
                 document.addEventListener('touchstart', onTouchStart, { passive: true });
                 document.addEventListener('touchend', onTouchEnd, { passive: true });
             }
-            nextTick(() => {
-                createChart();
-            });
         } else {
             document.removeEventListener('keydown', handleEscapeKey);
             document.body.style.overflow = '';
@@ -568,49 +289,22 @@ watch(
                 document.removeEventListener('touchstart', onTouchStart);
                 document.removeEventListener('touchend', onTouchEnd);
             }
-            if (chartInstance.value) {
-                chartInstance.value.destroy();
-                chartInstance.value = null;
-            }
-            if (lineChartInstance.value) {
-                lineChartInstance.value.destroy();
-                lineChartInstance.value = null;
-            }
-            if (pieChartInstance.value) {
-                pieChartInstance.value.destroy();
-                pieChartInstance.value = null;
-            }
-            // Clear any pending updates and animations
-            if (updateTimeout) {
-                clearTimeout(updateTimeout);
-                updateTimeout = null;
-            }
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
             isChartLoading.value = false;
             handleTouchStart.value = null;
         }
     },
 );
 
-// Watch for project data changes and update efficiently
+// Simulate chart loading when tab changes
 watch(
-    currentData,
+    () => [activeTab.value, activeQuarter.value],
     () => {
-        if (props.isOpen && (chartInstance.value || lineChartInstance.value || pieChartInstance.value)) {
-            updateChart();
-        }
+        isChartLoading.value = true;
+        setTimeout(() => {
+            isChartLoading.value = false;
+        }, 300);
     },
-    { deep: true },
 );
-
-onMounted(() => {
-    if (props.isOpen) {
-        createChart();
-    }
-});
 </script>
 
 <template>
@@ -629,51 +323,29 @@ onMounted(() => {
                 @touchstart="onTouchStart"
                 @touchend="onTouchEnd"
             >
-                <!-- Header -->
-                <div class="sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-4 md:px-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-heading-responsive font-semibold text-gray-900 select-text">{{ project.name }}</h2>
-                        </div>
-                        <button
-                            type="button"
-                            @click="closeModal"
-                            class="modal-close-btn touch-target tap-highlight-none rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                            aria-label="Close modal"
-                        >
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+                <!-- Header Component -->
+                <ModalHeader :title="project.name" @close="closeModal" />
 
                 <!-- Content -->
                 <div class="modal-body pb-safe space-y-6 p-4 md:p-6">
-                    <!-- Charts Grid -->
-                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        <!-- Bar Chart Container -->
-                        <div class="chart-container relative h-80 w-full rounded-lg border border-gray-200 bg-gray-50 p-4">
-                            <!-- Loading spinner -->
-                            <div v-if="isChartLoading" class="chart-loading absolute inset-0 flex items-center justify-center bg-gray-50/80">
-                                <div class="flex items-center gap-3">
-                                    <div class="h-6 w-6 animate-spin rounded-full border-2 border-purple-600 border-t-transparent"></div>
-                                    <span class="text-responsive text-gray-600">Loading charts...</span>
-                                </div>
-                            </div>
-                            <canvas ref="chartRef" class="mobile-perf h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
-                        </div>
+                    <!-- Navigation Controls -->
+                    <NavigationTabs
+                        :active-tab="activeTab"
+                        :active-quarter="activeQuarter"
+                        :tabs="tabs"
+                        :quarters="quarters"
+                        @select-tab="selectTab"
+                        @select-quarter="selectQuarter"
+                    />
 
-                        <!-- Line Chart Container -->
-                        <div class="chart-container relative h-80 w-full rounded-lg border border-gray-200 bg-gray-50 p-4">
-                            <canvas ref="lineChartRef" class="mobile-perf h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Pie Chart Container (Full Width) -->
-                    <div class="chart-container relative h-80 w-full rounded-lg border border-gray-200 bg-gray-50 p-4">
-                        <canvas ref="pieChartRef" class="mobile-perf h-full w-full" :class="{ 'opacity-0': isChartLoading }"></canvas>
-                    </div>
+                    <!-- Charts Grid Component -->
+                    <ChartsGrid
+                        :bar-data="currentData.bar"
+                        :line-data="currentData.line"
+                        :pie-data="currentData.pie"
+                        :project-name="project.name"
+                        :is-loading="isChartLoading"
+                    />
                 </div>
             </div>
         </div>
