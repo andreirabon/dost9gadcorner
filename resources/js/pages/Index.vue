@@ -42,10 +42,10 @@ const projects: ProjectItem[] = [
     },
     {
         id: 5,
-        name: 'Science Education Institute Scholarship',
+        name: 'S&T Undergraduate Scholarships',
         href: '#', // Replace with real route when available
         colorTheme: 'purple',
-        description: 'Sustainable development program integrating smart technologies with gender-responsive approaches for community resilience.',
+        description: 'Scholarships encouraging Filipino youth to pursue careers in science and technology and build a qualified S&T workforce.',
         backgroundImage: '/svg/development2.svg',
     },
     {
@@ -53,7 +53,8 @@ const projects: ProjectItem[] = [
         name: 'Regional Standards and Testing Laboratory (RSTL)',
         href: '#', // Replace with real route when available
         colorTheme: 'teal',
-        description: 'Sustainable development program integrating smart technologies with gender-responsive approaches for community resilience.',
+        description:
+            'Provides accredited testing, calibration, and conformity assessment services to ensure product safety, quality, and regulatory compliance.',
         backgroundImage: '/svg/development2.svg',
     },
 ];
@@ -65,9 +66,13 @@ const isModalOpen = ref(false);
 const scrollToProjects = (): void => {
     if (!projectsSectionRef.value) return;
 
-    projectsSectionRef.value.scrollIntoView({
+    // Position projects section to fill the entire viewport
+    const sectionTop = projectsSectionRef.value.offsetTop;
+
+    // Scroll so the projects section starts exactly at the top of the viewport
+    window.scrollTo({
+        top: sectionTop,
         behavior: 'smooth',
-        block: 'start',
     });
 
     setTimeout(() => {
@@ -137,13 +142,6 @@ const getProjectColors = (theme: string = 'purple') => {
 
 <template>
     <Head title="GAD Corner" />
-
-    <!-- Parallax Star Background -->
-    <div class="star-bg">
-        <div class="star-bg__layer star-bg__layer--1" aria-hidden="true"></div>
-        <div class="star-bg__layer star-bg__layer--2" aria-hidden="true"></div>
-        <div class="star-bg__layer star-bg__layer--3" aria-hidden="true"></div>
-    </div>
 
     <div class="inter-font mobile-optimized bg-purple-950 text-white">
         <!-- Hero Section with full illustration visible (reserved bottom space) -->
@@ -234,17 +232,17 @@ const getProjectColors = (theme: string = 'purple') => {
         <section
             ref="projectsSectionRef"
             id="projects"
-            class="min-h-screen-safe px-safe relative flex flex-col justify-center scroll-smooth border-t border-purple-700/60 bg-purple-900/60 py-8 md:py-12"
+            class="px-safe relative scroll-smooth border-t border-purple-700/60 bg-purple-900/60 pt-28 pb-8 md:pt-32 md:pb-10"
             aria-labelledby="projects-heading"
         >
             <div class="mx-auto w-full max-w-6xl">
-                <div class="mb-10 flex flex-col items-center gap-4 text-center md:mb-14">
+                <div class="mb-6 flex flex-col items-center gap-2 text-center md:mb-8">
                     <!-- Reports SVG Icon -->
-                    <div class="mb-4 flex justify-center">
+                    <div class="mb-3 flex justify-center">
                         <img
                             src="/svg/reports.svg"
                             alt="Reports"
-                            class="h-32 w-auto opacity-90 sm:h-40 md:h-44 lg:h-48 xl:h-52"
+                            class="h-28 w-auto opacity-90 sm:h-32 md:h-36 lg:h-40"
                             loading="lazy"
                             decoding="async"
                         />
@@ -263,14 +261,14 @@ const getProjectColors = (theme: string = 'purple') => {
                     </p>
                 </div>
 
-                <div class="px-safe grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div class="px-safe grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <button
                         v-for="project in projects"
                         :key="project.id"
                         type="button"
                         @click="openProjectModal(project)"
                         :class="[
-                            'project-card group touch-target tap-highlight-none mobile-perf relative flex h-48 flex-col items-center justify-center overflow-hidden rounded-xl p-6 text-center shadow-lg backdrop-blur transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                            'project-card group touch-target tap-highlight-none mobile-perf relative flex h-32 flex-col items-center justify-center overflow-hidden rounded-xl p-3 text-center shadow-lg backdrop-blur transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
                             getProjectColors(project.colorTheme).border,
                             getProjectColors(project.colorTheme).bg,
                             getProjectColors(project.colorTheme).focus,
