@@ -42,7 +42,7 @@ const getTabValue = (tab: string | TabItem): string => {
         <!-- Header Section -->
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md">
                     <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path
                             stroke-linecap="round"
@@ -70,7 +70,7 @@ const getTabValue = (tab: string | TabItem): string => {
             <div class="space-y-3">
                 <label class="block text-sm font-medium text-gray-700">
                     <span class="flex items-center gap-2">
-                        <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -82,17 +82,17 @@ const getTabValue = (tab: string | TabItem): string => {
                         Region Selection
                     </span>
                 </label>
-                <div class="grid grid-cols-2 gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2 md:grid-cols-4">
+                <div class="grid grid-cols-2 gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-2 md:grid-cols-4">
                     <button
                         v-for="tab in tabs"
                         :key="getTabValue(tab)"
                         type="button"
                         @click="selectTab(getTabValue(tab))"
                         :class="[
-                            'flex items-center justify-center rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none',
+                            'flex items-center justify-center rounded-md border-2 px-4 py-3 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:outline-none',
                             activeTab === getTabValue(tab)
-                                ? 'bg-blue-500 text-white shadow-md'
-                                : 'text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-sm',
+                                ? 'border-indigo-700 bg-indigo-600 text-white shadow-md'
+                                : 'border-indigo-300 text-indigo-700 hover:border-indigo-400 hover:bg-white hover:text-indigo-900 hover:shadow-sm',
                         ]"
                         :aria-pressed="activeTab === getTabValue(tab)"
                     >
@@ -105,7 +105,7 @@ const getTabValue = (tab: string | TabItem): string => {
             <div class="space-y-3">
                 <label class="block text-sm font-medium text-gray-700">
                     <span class="flex items-center gap-2">
-                        <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -116,15 +116,17 @@ const getTabValue = (tab: string | TabItem): string => {
                         Reporting Period
                     </span>
                 </label>
-                <div class="flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1">
+                <div class="flex gap-1 rounded-lg border border-orange-200 bg-orange-50 p-1">
                     <button
                         v-for="quarter in quarters"
                         :key="quarter"
                         type="button"
                         @click="selectQuarter(quarter)"
                         :class="[
-                            'flex-1 rounded-md px-3 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 focus-visible:outline-none',
-                            activeQuarter === quarter ? 'bg-blue-500 text-white shadow-sm' : 'text-gray-600 hover:bg-white/70 hover:text-gray-900',
+                            'flex-1 rounded-md border-2 px-3 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 focus-visible:outline-none',
+                            activeQuarter === quarter
+                                ? 'border-orange-600 bg-orange-500 text-white shadow-sm'
+                                : 'border-orange-300 text-orange-700 hover:border-orange-400 hover:bg-white/70 hover:text-orange-900',
                         ]"
                         :aria-pressed="activeQuarter === quarter"
                     >
@@ -138,7 +140,7 @@ const getTabValue = (tab: string | TabItem): string => {
         <div class="mt-6 rounded-lg border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600">
                         <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -149,13 +151,13 @@ const getTabValue = (tab: string | TabItem): string => {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">
+                    <span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-800">
                         {{ activeTab }}
                     </span>
                     <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
-                    <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">
+                    <span class="inline-flex items-center rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-800">
                         {{ activeQuarter }}
                     </span>
                 </div>
