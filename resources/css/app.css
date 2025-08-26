@@ -195,7 +195,6 @@
 .project-card {
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transform-origin: center center;
-    will-change: transform;
     backface-visibility: hidden;
     -webkit-tap-highlight-color: transparent;
 }
@@ -215,7 +214,6 @@
     min-width: 96px;
     min-height: 96px;
     object-fit: contain;
-    will-change: transform;
 }
 
 .project-card:hover img {
@@ -228,14 +226,12 @@
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
     /* Performance optimizations */
-    will-change: opacity;
     transform: translateZ(0);
     -webkit-overflow-scrolling: touch;
 }
 
 .modal-content {
     /* Performance optimizations */
-    will-change: transform, opacity;
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-overflow-scrolling: touch;
@@ -250,7 +246,6 @@
     background: white;
     border-radius: 0.5rem;
     transition: opacity 0.3s ease;
-    will-change: opacity;
     transform: translateZ(0);
 }
 
@@ -461,7 +456,6 @@
     /* Mobile performance optimizations */
     .mobile-perf {
         transform: translateZ(0);
-        will-change: auto;
         backface-visibility: hidden;
     }
 

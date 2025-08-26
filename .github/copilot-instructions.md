@@ -529,11 +529,14 @@ _Comprehensive frontend performance optimization strategies for production appli
 #### Rendering Optimization
 
 - Minimize layout thrashing with CSS transforms
-- Use `will-change` property judiciously
-- Implement composite layers for animations
+- Avoid `will-change` property - use `transform: translateZ(0)` for GPU acceleration only when needed
+- Implement composite layers for animations using transform and opacity
 - Avoid forced synchronous layouts
 - Use CSS Grid and Flexbox efficiently
 - Implement proper z-index management
+- **Modal Performance**: Use separate scroll containers with `overscroll-contain` for smooth scrolling
+- **Remove Performance CSS Classes**: Avoid classes like `mobile-perf` that create unnecessary composite layers
+- **Optimize Touch Handling**: Remove touch event listeners that interfere with native scrolling performance
 
 ### Bundle Optimization
 
@@ -1003,6 +1006,10 @@ _Project-specific development instructions_
 - **Eliminate CSS keyframes, transitions, and animation properties** from all components
 - **Prioritize instant UI feedback** over visual effects for optimal user experience
 - **Maintain accessibility** through immediate state changes without animation delays
+- **Avoid performance-impacting CSS classes** like `mobile-perf`, `will-change`, and unnecessary composite layer promotion
+- **Use `overscroll-contain`** for modal content to prevent scroll chaining and improve mobile performance
+- **Separate scroll containers** from fixed elements (e.g., modal headers) for optimal scrolling performance
+- **Remove touch event handlers** that interfere with native scrolling unless absolutely necessary
 
 ### Workflow Integration
 
@@ -1301,7 +1308,7 @@ Route::get('/users', function () {
   it('returns all', function () {
   $response = $this->postJson('/api/docs', []);
 
-                      $response->assertSuccessful();
+                                    $response->assertSuccessful();
 
     });
     </code-snippet>
@@ -1388,13 +1395,13 @@ it('has emails', function (string $email) {
 
 - When listing items, use gap utilities for spacing, don't use margins.
 
-                    <code-snippet name="Valid Flex Gap Spacing Example" lang="html">
-                        <div class="flex gap-8">
-                            <div>Superior</div>
-                            <div>Michigan</div>
-                            <div>Erie</div>
-                        </div>
-                    </code-snippet>
+                                  <code-snippet name="Valid Flex Gap Spacing Example" lang="html">
+                                      <div class="flex gap-8">
+                                          <div>Superior</div>
+                                          <div>Michigan</div>
+                                          <div>Erie</div>
+                                      </div>
+                                  </code-snippet>
 
 ### Dark Mode
 

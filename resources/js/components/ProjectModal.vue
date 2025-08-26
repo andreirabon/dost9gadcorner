@@ -219,37 +219,6 @@ const handleEscapeKey = (event: KeyboardEvent) => {
     if (event.key === 'Escape') closeModal();
 };
 
-// Touch handling for mobile
-const touchStart = ref<{ x: number; y: number; time: number } | null>(null);
-
-const onTouchStart = (event: TouchEvent) => {
-    const touch = event.touches[0];
-    if (touch) {
-        touchStart.value = {
-            x: touch.clientX,
-            y: touch.clientY,
-            time: Date.now(),
-        };
-    }
-};
-
-const onTouchEnd = (event: TouchEvent) => {
-    if (!touchStart.value) return;
-
-    const touch = event.changedTouches[0];
-    if (!touch) return;
-
-    const deltaY = touch.clientY - touchStart.value.y;
-    const deltaX = touch.clientX - touchStart.value.x;
-    const deltaTime = Date.now() - touchStart.value.time;
-
-    // Swipe down to close
-    if (deltaY > 100 && Math.abs(deltaX) < 100 && deltaTime < 500) {
-        closeModal();
-    }
-    touchStart.value = null;
-};
-
 // Event listeners management
 watch(
     () => props.isOpen,
@@ -257,71 +226,54 @@ watch(
         if (isOpen) {
             document.addEventListener('keydown', handleEscapeKey);
             document.body.style.overflow = 'hidden';
-            if ('ontouchstart' in window) {
-                document.addEventListener('touchstart', onTouchStart, { passive: true });
-                document.addEventListener('touchend', onTouchEnd, { passive: true });
-            }
         } else {
             document.removeEventListener('keydown', handleEscapeKey);
             document.body.style.overflow = '';
-            if ('ontouchstart' in window) {
-                document.removeEventListener('touchstart', onTouchStart);
-                document.removeEventListener('touchend', onTouchEnd);
-            }
             isChartLoading.value = false;
-            touchStart.value = null;
         }
     },
 );
 
-// Chart loading simulation
+// Chart loading simulation - use requestAnimationFrame for better performance
 watch([activeTab, activeQuarter], () => {
     isChartLoading.value = true;
-    setTimeout(() => {
-        isChartLoading.value = false;
-    }, 300);
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            isChartLoading.value = false;
+        }, 100);
+    });
 });
 </script>
 
 <template>
     <Teleport to="body">
-        <div
-            v-if="isOpen && project"
-            class="modal-overlay inset-safe mobile-perf fixed z-50 flex items-center justify-center p-4"
-            @click="handleOverlayClick"
-        >
-            <div
-                :class="[
-                    'modal-content mobile-perf relative max-h-[95vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white shadow-2xl',
-                    'md:max-h-[95vh] md:max-w-6xl',
-                    'modal-mobile modal-content-mobile',
-                ]"
-                @touchstart="onTouchStart"
-                @touchend="onTouchEnd"
-            >
+        <div v-if="isOpen && project" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click="handleOverlayClick">
+            <div class="relative max-h-[95vh] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl">
                 <!-- Header Component -->
                 <ModalHeader :title="project.name" @close="closeModal" />
 
-                <!-- Content -->
-                <div class="modal-body pb-safe space-y-6 p-4 md:p-6">
-                    <!-- Navigation Controls -->
-                    <NavigationTabs
-                        :active-tab="activeTab"
-                        :active-quarter="activeQuarter"
-                        :tabs="tabs"
-                        :quarters="quarters"
-                        @select-tab="selectTab"
-                        @select-quarter="selectQuarter"
-                    />
+                <!-- Scrollable Content -->
+                <div class="max-h-[calc(95vh-80px)] overflow-y-auto overscroll-contain">
+                    <div class="space-y-6 p-4 md:p-6">
+                        <!-- Navigation Controls -->
+                        <NavigationTabs
+                            :active-tab="activeTab"
+                            :active-quarter="activeQuarter"
+                            :tabs="tabs"
+                            :quarters="quarters"
+                            @select-tab="selectTab"
+                            @select-quarter="selectQuarter"
+                        />
 
-                    <!-- Charts Grid Component -->
-                    <ChartsGrid
-                        :bar-data="currentData.bar"
-                        :line-data="currentData.line"
-                        :pie-data="currentData.pie"
-                        :project-name="project.name"
-                        :is-loading="isChartLoading"
-                    />
+                        <!-- Charts Grid Component -->
+                        <ChartsGrid
+                            :bar-data="currentData.bar"
+                            :line-data="currentData.line"
+                            :pie-data="currentData.pie"
+                            :project-name="project.name"
+                            :is-loading="isChartLoading"
+                        />
+                    </div>
                 </div>
             </div>
         </div>
