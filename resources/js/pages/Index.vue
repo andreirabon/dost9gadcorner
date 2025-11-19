@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, readonly, ref } from 'vue';
 import ProjectModal from '../components/ProjectModal.vue';
 import type { ProjectItem } from '../types';
 
-// Placeholder project items
-const projects: ProjectItem[] = [
+// Placeholder project items (shallow reactivity for static data)
+const projects = readonly([
     {
         id: 1,
         name: 'Grants-In-Aid (GIA)',
         href: '#', // Replace with real route when available
-        colorTheme: 'emerald',
+        colorTheme: 'emerald' as const,
         description:
             'Financial assistance program for science and technology projects that promote gender equality and women empowerment in various sectors.',
         backgroundImage: '/svg/gia.jpg',
@@ -19,7 +19,7 @@ const projects: ProjectItem[] = [
         id: 2,
         name: 'Small Enterprises Technology Upgrading (SETUP)',
         href: '#', // Replace with real route when available
-        colorTheme: 'blue',
+        colorTheme: 'blue' as const,
         description: 'Technology upgrading program for small enterprises, with special focus on women-led businesses and gender-inclusive practices.',
         backgroundImage: '/svg/setup1.svg',
     },
@@ -27,7 +27,7 @@ const projects: ProjectItem[] = [
         id: 3,
         name: 'Community Enhancement through Science and Technology (CEST)',
         href: '#', // Replace with real route when available
-        colorTheme: 'orange',
+        colorTheme: 'orange' as const,
         description:
             'Community-based science and technology initiatives that address gender gaps and promote inclusive development at the grassroots level.',
         backgroundImage: '/svg/cest.jpg',
@@ -36,7 +36,7 @@ const projects: ProjectItem[] = [
         id: 4,
         name: 'Smart and Sustainable Communities Program (SSCP)',
         href: '#', // Replace with real route when available
-        colorTheme: 'rose',
+        colorTheme: 'rose' as const,
         description: 'Sustainable development program integrating smart technologies with gender-responsive approaches for community resilience.',
         backgroundImage: '/svg/development2.svg',
     },
@@ -44,7 +44,7 @@ const projects: ProjectItem[] = [
         id: 5,
         name: 'S&T Undergraduate Scholarships',
         href: '#', // Replace with real route when available
-        colorTheme: 'purple',
+        colorTheme: 'purple' as const,
         description: 'Scholarships encouraging Filipino youth to pursue careers in science and technology and build a qualified S&T workforce.',
         backgroundImage: '/svg/development2.svg',
     },
@@ -52,12 +52,12 @@ const projects: ProjectItem[] = [
         id: 6,
         name: 'Regional Standards and Testing Laboratory (RSTL)',
         href: '#', // Replace with real route when available
-        colorTheme: 'teal',
+        colorTheme: 'teal' as const,
         description:
             'Provides accredited testing, calibration, and conformity assessment services to ensure product safety, quality, and regulatory compliance.',
         backgroundImage: '/svg/development2.svg',
     },
-];
+]);
 
 const projectsSectionRef = ref<HTMLElement | null>(null);
 const selectedProject = ref<ProjectItem | null>(null);
@@ -91,7 +91,8 @@ const closeProjectModal = (): void => {
     selectedProject.value = null;
 };
 
-const getProjectColors = (theme: string = 'purple') => {
+// Computed property to memoize project colors for better performance
+const projectColorsMap = computed(() => {
     const colorMap = {
         emerald: {
             border: 'border-emerald-400/60',
@@ -136,8 +137,16 @@ const getProjectColors = (theme: string = 'purple') => {
             focus: 'focus-visible:ring-purple-400',
         },
     };
-    return colorMap[theme as keyof typeof colorMap] || colorMap.purple;
-};
+
+    // Create a map of project ID to color classes for O(1) lookup
+    const projectMap = new Map<number, typeof colorMap.purple>();
+    projects.forEach((project) => {
+        const theme = project.colorTheme || 'purple';
+        projectMap.set(project.id, colorMap[theme as keyof typeof colorMap] || colorMap.purple);
+    });
+
+    return projectMap;
+});
 </script>
 
 <template>
@@ -146,6 +155,7 @@ const getProjectColors = (theme: string = 'purple') => {
     <div class="inter-font mobile-optimized bg-purple-950 text-white">
         <!-- Hero Section with full illustration visible (reserved bottom space) -->
         <section
+            v-once
             class="min-h-screen-safe pt-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
         >
             <!-- Left side decorative illustrations -->
@@ -265,13 +275,14 @@ const getProjectColors = (theme: string = 'purple') => {
                     <button
                         v-for="project in projects"
                         :key="project.id"
+                        v-memo="[project.id, isModalOpen]"
                         type="button"
                         @click="openProjectModal(project)"
                         :class="[
-                            'project-card group touch-target tap-highlight-none mobile-perf relative flex h-32 flex-col items-center justify-center overflow-hidden rounded-xl p-3 text-center shadow-lg backdrop-blur transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                            getProjectColors(project.colorTheme).border,
-                            getProjectColors(project.colorTheme).bg,
-                            getProjectColors(project.colorTheme).focus,
+                            'project-card group touch-target tap-highlight-none relative flex h-32 flex-col items-center justify-center overflow-hidden rounded-xl p-3 text-center shadow-lg backdrop-blur transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                            projectColorsMap.get(project.id)?.border,
+                            projectColorsMap.get(project.id)?.bg,
+                            projectColorsMap.get(project.id)?.focus,
                         ]"
                     >
                         <!-- Background Image (visible on hover) -->
@@ -285,7 +296,7 @@ const getProjectColors = (theme: string = 'purple') => {
                         <!-- Default View (visible when not hovering) -->
                         <div class="relative z-10 transition-opacity duration-300 group-hover:opacity-0">
                             <!-- Project Title -->
-                            <h3 :class="['mb-2 text-sm leading-tight font-semibold select-none', getProjectColors(project.colorTheme).text]">
+                            <h3 :class="['mb-2 text-sm leading-tight font-semibold select-none', projectColorsMap.get(project.id)?.text]">
                                 {{ project.name }}
                             </h3>
                         </div>
@@ -315,7 +326,7 @@ const getProjectColors = (theme: string = 'purple') => {
                             class="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                             aria-hidden="true"
                         >
-                            <span :class="['absolute inset-0 bg-gradient-to-br', getProjectColors(project.colorTheme).hover]" />
+                            <span :class="['absolute inset-0 bg-gradient-to-br', projectColorsMap.get(project.id)?.hover]" />
                         </span>
                     </button>
                 </div>
