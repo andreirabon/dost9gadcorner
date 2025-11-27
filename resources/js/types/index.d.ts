@@ -21,7 +21,7 @@ export interface ProjectItem {
     id: number;
     name: string;
     href: string;
-    colorTheme?: 'emerald' | 'blue' | 'orange' | 'rose' | 'purple' | 'cyan' | 'amber' | 'teal';
+    colorTheme?: 'emerald' | 'blue' | 'orange' | 'rose' | 'purple' | 'teal';
     description?: string;
     backgroundImage?: string;
 }
