@@ -1,0 +1,1169 @@
+---
+description: 'Apply when building or reviewing Vue 3 Options API components, UI patterns, state, props, events, or frontend structure (excluding Inertia-specific flows).'
+alwaysApply: false
+---
+
+# Frontend Development Patterns
+
+Vue 3 Options API patterns for building performant, maintainable user interfaces.
+
+**Note**: For Inertia.js integration patterns, see `inertia-patterns.mdc`.
+
+## Component Patterns (Vue 3 Options API)
+
+### Composition Over Inheritance
+
+```vue
+<!-- Card.vue -->
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+
+export default defineComponent({
+    name: 'Card',
+
+    props: {
+        variant: {
+            type: String as PropType<'default' | 'outlined'>,
+            default: 'default',
+        },
+    },
+});
+</script>
+
+<template>
+    <div :class="`card card-${variant}`">
+        <slot />
+    </div>
+</template>
+
+<!-- CardHeader.vue -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    name: 'CardHeader',
+});
+</script>
+
+<template>
+    <div class="card-header">
+        <slot />
+    </div>
+</template>
+
+<!-- CardBody.vue -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    name: 'CardBody',
+});
+</script>
+
+<template>
+    <div class="card-body">
+        <slot />
+    </div>
+</template>
+
+<!-- Usage -->
+<template>
+    <Card>
+        <CardHeader>Title</CardHeader>
+        <CardBody>Content</CardBody>
+    </Card>
+</template>
+```
+
+### Compound Components (Provide/Inject)
+
+```vue
+<!-- Tabs.vue -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    name: 'Tabs',
+
+    props: {
+        defaultTab: {
+            type: String,
+            required: true,
+        },
+    },
+
+    data() {
+        return {
+            activeTab: this.defaultTab,
+        };
+    },
+
+    provide() {
+        return {
+            activeTab: () => this.activeTab,
+            setActiveTab: (tab: string) => {
+                this.activeTab = tab;
+            },
+        };
+    },
+});
+</script>
+
+<template>
+    <div class="tabs">
+        <slot />
+    </div>
+</template>
+
+<!-- TabList.vue -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    name: 'TabList',
+});
+</script>
+
+<template>
+    <div class="tab-list">
+        <slot />
+    </div>
+</template>
+
+<!-- Tab.vue -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    name: 'Tab',
+
+    inject: ['activeTab', 'setActiveTab'],
+
+    props: {
+        id: {
+            type: String,
+            required: true,
+        },
+    },
+
+    computed: {
+        isActive(): boolean {
+            return this.activeTab() === this.id;
+        },
+    },
+});
+</script>
+
+<template>
+    <button :class="{ active: isActive }" @click="setActiveTab(id)">
+        <slot />
+    </button>
+</template>
+
+<!-- Usage -->
+<template>
+    <Tabs default-tab="overview">
+        <TabList>
+            <Tab id="overview">Overview</Tab>
+            <Tab id="details">Details</Tab>
+        </TabList>
+    </Tabs>
+</template>
+```
+
+### Scoped Slots Pattern
+
+```vue
+<!-- DataLoader.vue -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    name: 'DataLoader',
+
+    props: {
+        url: {
+            type: String,
+            required: true,
+        },
+    },
+
+    data() {
+        return {
+            data: null as any,
+            loading: true,
+            error: null as Error | null,
+        };
+    },
+
+    mounted() {
+        this.fetchData();
+    },
+
+    methods: {
+        async fetchData() {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await fetch(this.url);
+                this.data = await response.json();
+            } catch (err) {
+                this.error = err as Error;
+            } finally {
+                this.loading = false;
+            }
+        },
+    },
+});
+</script>
+
+<template>
+    <div>
+        <slot
+            :data="data"
+            :loading="loading"
+            :error="error"
+            :refetch="fetchData"
+        />
+    </div>
+</template>
+
+<!-- Usage -->
+<template>
+    <DataLoader url="/markets">
+        <template #default="{ data, loading, error }">
+            <Spinner v-if="loading" />
+            <ErrorMessage v-else-if="error" :error="error" />
+            <MarketList v-else :markets="data" />
+        </template>
+    </DataLoader>
+</template>
+```
+
+## Reusable Logic Patterns (Options API)
+
+### Toggle Pattern
+
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    data() {
+        return {
+            isOpen: false,
+        };
+    },
+
+    methods: {
+        toggle() {
+            this.isOpen = !this.isOpen;
+        },
+
+        open() {
+            this.isOpen = true;
+        },
+
+        close() {
+            this.isOpen = false;
+        },
+    },
+});
+</script>
+
+<!-- Usage -->
+<template>
+    <div>
+        <button @click="toggle">Toggle</button>
+        <Modal v-if="isOpen" @close="close"> Content </Modal>
+    </div>
+</template>
+```
+
+### Async Data Fetching Pattern
+
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+interface Market {
+    id: number;
+    name: string;
+}
+
+export default defineComponent({
+    data() {
+        return {
+            markets: [] as Market[],
+            loading: false,
+            error: null as Error | null,
+        };
+    },
+
+    mounted() {
+        this.fetchMarkets();
+    },
+
+    methods: {
+        async fetchMarkets() {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await fetch('/markets');
+                this.markets = await response.json();
+
+                // Success callback
+                console.log('Fetched', this.markets.length, 'markets');
+            } catch (err) {
+                this.error = err as Error;
+
+                // Error callback
+                console.error('Failed:', err);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async refetch() {
+            await this.fetchMarkets();
+        },
+    },
+});
+</script>
+
+<template>
+    <div>
+        <Spinner v-if="loading" />
+        <ErrorMessage v-else-if="error" :error="error" />
+        <MarketList v-else :markets="markets" />
+
+        <button @click="refetch">Refresh</button>
+    </div>
+</template>
+```
+
+### Debounce Pattern
+
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    data() {
+        return {
+            searchQuery: '',
+            debouncedQuery: '',
+            debounceTimeout: null as ReturnType<typeof setTimeout> | null,
+        };
+    },
+
+    watch: {
+        searchQuery(newValue) {
+            // Clear existing timeout
+            if (this.debounceTimeout) {
+                clearTimeout(this.debounceTimeout);
+            }
+
+            // Set new timeout
+            this.debounceTimeout = setTimeout(() => {
+                this.debouncedQuery = newValue;
+            }, 500);
+        },
+
+        debouncedQuery(newValue) {
+            if (newValue) {
+                this.performSearch(newValue);
+            }
+        },
+    },
+
+    beforeUnmount() {
+        if (this.debounceTimeout) {
+            clearTimeout(this.debounceTimeout);
+        }
+    },
+
+    methods: {
+        async performSearch(query: string) {
+            console.log('Searching for:', query);
+            // Perform search
+        },
+    },
+});
+</script>
+
+<template>
+    <input v-model="searchQuery" placeholder="Search..." type="text" />
+</template>
+```
+
+## State Management Patterns (Vue 3 Options API)
+
+### Simple Store Pattern
+
+```typescript
+// stores/marketStore.ts
+import { reactive } from 'vue';
+
+interface Market {
+    id: number;
+    name: string;
+}
+
+interface MarketState {
+    markets: Market[];
+    selectedMarket: Market | null;
+    loading: boolean;
+}
+
+export const marketStore = reactive<MarketState>({
+    markets: [],
+    selectedMarket: null,
+    loading: false,
+});
+
+export const marketActions = {
+    setMarkets(markets: Market[]) {
+        marketStore.markets = markets;
+    },
+
+    selectMarket(market: Market) {
+        marketStore.selectedMarket = market;
+    },
+
+    setLoading(loading: boolean) {
+        marketStore.loading = loading;
+    },
+
+    async fetchMarkets() {
+        this.setLoading(true);
+        try {
+            const response = await fetch('/markets');
+            const data = await response.json();
+            this.setMarkets(data);
+        } catch (error) {
+            console.error('Failed to fetch markets:', error);
+        } finally {
+            this.setLoading(false);
+        }
+    },
+};
+```
+
+```vue
+<!-- Usage in component -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { marketStore, marketActions } from '@/stores/marketStore';
+
+export default defineComponent({
+    data() {
+        return {
+            store: marketStore,
+        };
+    },
+
+    computed: {
+        markets() {
+            return this.store.markets;
+        },
+
+        selectedMarket() {
+            return this.store.selectedMarket;
+        },
+
+        loading() {
+            return this.store.loading;
+        },
+    },
+
+    mounted() {
+        marketActions.fetchMarkets();
+    },
+
+    methods: {
+        selectMarket(market: any) {
+            marketActions.selectMarket(market);
+        },
+    },
+});
+</script>
+
+<template>
+    <div>
+        <Spinner v-if="loading" />
+        <MarketList
+            v-else
+            :markets="markets"
+            :selected="selectedMarket"
+            @select="selectMarket"
+        />
+    </div>
+</template>
+```
+
+## Performance Optimization (Vue 3)
+
+### Computed Properties (Automatic Memoization)
+
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+interface Market {
+    id: number;
+    name: string;
+    volume: number;
+}
+
+export default defineComponent({
+    props: {
+        markets: {
+            type: Array as PropType<Market[]>,
+            required: true,
+        },
+    },
+
+    data() {
+        return {
+            searchQuery: '',
+        };
+    },
+
+    computed: {
+        // ✅ Computed properties are automatically cached
+        sortedMarkets(): Market[] {
+            return [...this.markets].sort((a, b) => b.volume - a.volume);
+        },
+
+        filteredMarkets(): Market[] {
+            return this.sortedMarkets.filter((m) =>
+                m.name.toLowerCase().includes(this.searchQuery.toLowerCase()),
+            );
+        },
+
+        totalVolume(): number {
+            return this.markets.reduce((sum, m) => sum + m.volume, 0);
+        },
+    },
+
+    methods: {
+        // ✅ Methods are automatically bound to component instance
+        handleSearch(query: string) {
+            this.searchQuery = query;
+        },
+    },
+});
+</script>
+
+<template>
+    <div>
+        <input
+            :value="searchQuery"
+            @input="handleSearch($event.target.value)"
+            placeholder="Search..."
+        />
+
+        <p>Total Volume: {{ totalVolume }}</p>
+
+        <MarketCard
+            v-for="market in filteredMarkets"
+            :key="market.id"
+            :market="market"
+        />
+    </div>
+</template>
+```
+
+### Code Splitting & Lazy Loading (Vue 3)
+
+```vue
+<script lang="ts">
+import { defineComponent, defineAsyncComponent } from 'vue';
+
+export default defineComponent({
+    components: {
+        // ✅ Lazy load heavy components
+        HeavyChart: defineAsyncComponent(() => import('./HeavyChart.vue')),
+
+        ThreeJsBackground: defineAsyncComponent({
+            loader: () => import('./ThreeJsBackground.vue'),
+            loadingComponent: () => import('./Spinner.vue'),
+            delay: 200,
+            timeout: 3000,
+        }),
+    },
+
+    props: {
+        data: {
+            type: Array,
+            required: true,
+        },
+    },
+});
+</script>
+
+<template>
+    <div>
+        <Suspense>
+            <template #default>
+                <HeavyChart :data="data" />
+            </template>
+            <template #fallback>
+                <ChartSkeleton />
+            </template>
+        </Suspense>
+
+        <Suspense>
+            <ThreeJsBackground />
+        </Suspense>
+    </div>
+</template>
+```
+
+### Virtual Scrolling for Long Lists (Vue 3)
+
+```vue
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+
+interface Market {
+    id: number;
+    name: string;
+}
+
+export default defineComponent({
+    props: {
+        markets: {
+            type: Array as PropType<Market[]>,
+            required: true,
+        },
+    },
+
+    data() {
+        return {
+            itemHeight: 100,
+            visibleCount: 10,
+            scrollTop: 0,
+        };
+    },
+
+    computed: {
+        totalHeight(): number {
+            return this.markets.length * this.itemHeight;
+        },
+
+        startIndex(): number {
+            return Math.floor(this.scrollTop / this.itemHeight);
+        },
+
+        endIndex(): number {
+            return Math.min(
+                this.startIndex + this.visibleCount + 5, // Overscan
+                this.markets.length,
+            );
+        },
+
+        visibleMarkets(): Market[] {
+            return this.markets.slice(this.startIndex, this.endIndex);
+        },
+
+        offsetY(): number {
+            return this.startIndex * this.itemHeight;
+        },
+    },
+
+    methods: {
+        handleScroll(event: Event) {
+            const target = event.target as HTMLElement;
+            this.scrollTop = target.scrollTop;
+        },
+    },
+});
+</script>
+
+<template>
+    <div
+        class="virtual-list"
+        style="height: 600px; overflow: auto"
+        @scroll="handleScroll"
+    >
+        <div :style="{ height: `${totalHeight}px`, position: 'relative' }">
+            <div :style="{ transform: `translateY(${offsetY}px)` }">
+                <MarketCard
+                    v-for="(market, index) in visibleMarkets"
+                    :key="market.id"
+                    :market="market"
+                    :style="{ height: `${itemHeight}px` }"
+                />
+            </div>
+        </div>
+    </div>
+</template>
+```
+
+## Form Handling Patterns (Vue 3)
+
+### Form with Validation
+
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+interface FormData {
+    name: string;
+    description: string;
+    endDate: string;
+}
+
+interface FormErrors {
+    name?: string;
+    description?: string;
+    endDate?: string;
+}
+
+export default defineComponent({
+    data() {
+        return {
+            form: {
+                name: '',
+                description: '',
+                endDate: '',
+            } as FormData,
+
+            errors: {} as FormErrors,
+
+            submitting: false,
+        };
+    },
+
+    methods: {
+        validate(): boolean {
+            const newErrors: FormErrors = {};
+
+            if (!this.form.name.trim()) {
+                newErrors.name = 'Name is required';
+            } else if (this.form.name.length > 200) {
+                newErrors.name = 'Name must be under 200 characters';
+            }
+
+            if (!this.form.description.trim()) {
+                newErrors.description = 'Description is required';
+            }
+
+            if (!this.form.endDate) {
+                newErrors.endDate = 'End date is required';
+            }
+
+            this.errors = newErrors;
+            return Object.keys(newErrors).length === 0;
+        },
+
+        async handleSubmit() {
+            if (!this.validate()) return;
+
+            this.submitting = true;
+
+            try {
+                await this.createMarket(this.form);
+                // Success handling
+                this.$emit('success');
+            } catch (error) {
+                // Error handling
+                console.error('Failed to create market:', error);
+            } finally {
+                this.submitting = false;
+            }
+        },
+
+        async createMarket(data: FormData) {
+            const response = await fetch('/markets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create market');
+            }
+
+            return response.json();
+        },
+    },
+});
+</script>
+
+<template>
+    <form @submit.prevent="handleSubmit">
+        <div class="form-group">
+            <input
+                v-model="form.name"
+                type="text"
+                placeholder="Market name"
+                :class="{ error: errors.name }"
+            />
+            <span v-if="errors.name" class="error-message">
+                {{ errors.name }}
+            </span>
+        </div>
+
+        <div class="form-group">
+            <textarea
+                v-model="form.description"
+                placeholder="Description"
+                :class="{ error: errors.description }"
+            />
+            <span v-if="errors.description" class="error-message">
+                {{ errors.description }}
+            </span>
+        </div>
+
+        <div class="form-group">
+            <input
+                v-model="form.endDate"
+                type="date"
+                :class="{ error: errors.endDate }"
+            />
+            <span v-if="errors.endDate" class="error-message">
+                {{ errors.endDate }}
+            </span>
+        </div>
+
+        <button type="submit" :disabled="submitting">
+            {{ submitting ? 'Creating...' : 'Create Market' }}
+        </button>
+    </form>
+</template>
+```
+
+## Error Handling Pattern (Vue 3)
+
+### Error Boundary Component
+
+```vue
+<!-- ErrorBoundary.vue -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    name: 'ErrorBoundary',
+
+    data() {
+        return {
+            hasError: false,
+            error: null as Error | null,
+        };
+    },
+
+    errorCaptured(err: Error, instance, info: string) {
+        console.error('Error boundary caught:', err, info);
+
+        this.hasError = true;
+        this.error = err;
+
+        // Prevent error from propagating
+        return false;
+    },
+
+    methods: {
+        retry() {
+            this.hasError = false;
+            this.error = null;
+        },
+    },
+});
+</script>
+
+<template>
+    <div v-if="hasError" class="error-fallback">
+        <h2>Something went wrong</h2>
+        <p>{{ error?.message }}</p>
+        <button @click="retry">Try again</button>
+    </div>
+
+    <slot v-else />
+</template>
+
+<!-- Usage -->
+<template>
+    <ErrorBoundary>
+        <App />
+    </ErrorBoundary>
+</template>
+```
+
+## Animation Patterns (Vue 3)
+
+### Transition & TransitionGroup
+
+```vue
+<!-- List Animations -->
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+
+interface Market {
+    id: number;
+    name: string;
+}
+
+export default defineComponent({
+    props: {
+        markets: {
+            type: Array as PropType<Market[]>,
+            required: true,
+        },
+    },
+});
+</script>
+
+<template>
+    <TransitionGroup name="list" tag="div" class="market-list">
+        <MarketCard
+            v-for="market in markets"
+            :key="market.id"
+            :market="market"
+        />
+    </TransitionGroup>
+</template>
+
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+    transition: all 0.3s ease;
+}
+
+.list-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.list-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+</style>
+
+<!-- Modal Animations -->
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    props: {
+        isOpen: {
+            type: Boolean,
+            required: true,
+        },
+    },
+
+    emits: ['close'],
+});
+</script>
+
+<template>
+    <Teleport to="body">
+        <Transition name="modal">
+            <div v-if="isOpen" class="modal-wrapper">
+                <div class="modal-overlay" @click="$emit('close')" />
+                <div class="modal-content">
+                    <slot />
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+</template>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
+.modal-content {
+    transition: all 0.3s ease;
+}
+
+.modal-enter-from .modal-content,
+.modal-leave-to .modal-content {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+}
+
+.modal-enter-to .modal-content {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+</style>
+```
+
+## Accessibility Patterns (Vue 3)
+
+### Keyboard Navigation
+
+```vue
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+
+interface Option {
+    value: string;
+    label: string;
+}
+
+export default defineComponent({
+    props: {
+        options: {
+            type: Array as PropType<Option[]>,
+            required: true,
+        },
+    },
+
+    emits: ['select'],
+
+    data() {
+        return {
+            isOpen: false,
+            activeIndex: 0,
+        };
+    },
+
+    methods: {
+        handleKeyDown(e: KeyboardEvent) {
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.activeIndex = Math.min(
+                        this.activeIndex + 1,
+                        this.options.length - 1,
+                    );
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    this.activeIndex = Math.max(this.activeIndex - 1, 0);
+                    break;
+
+                case 'Enter':
+                    e.preventDefault();
+                    this.$emit('select', this.options[this.activeIndex]);
+                    this.isOpen = false;
+                    break;
+
+                case 'Escape':
+                    this.isOpen = false;
+                    break;
+            }
+        },
+
+        toggleOpen() {
+            this.isOpen = !this.isOpen;
+        },
+    },
+});
+</script>
+
+<template>
+    <div
+        role="combobox"
+        :aria-expanded="isOpen"
+        aria-haspopup="listbox"
+        @keydown="handleKeyDown"
+        tabindex="0"
+    >
+        <button @click="toggleOpen" aria-label="Toggle dropdown">
+            Select an option
+        </button>
+
+        <ul v-if="isOpen" role="listbox">
+            <li
+                v-for="(option, index) in options"
+                :key="option.value"
+                role="option"
+                :aria-selected="index === activeIndex"
+                :class="{ active: index === activeIndex }"
+                @click="$emit('select', option)"
+            >
+                {{ option.label }}
+            </li>
+        </ul>
+    </div>
+</template>
+```
+
+### Focus Management
+
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    props: {
+        isOpen: {
+            type: Boolean,
+            required: true,
+        },
+    },
+
+    emits: ['close'],
+
+    data() {
+        return {
+            previousFocus: null as HTMLElement | null,
+        };
+    },
+
+    watch: {
+        isOpen(newValue) {
+            if (newValue) {
+                // Save currently focused element
+                this.previousFocus = document.activeElement as HTMLElement;
+
+                // Focus modal in next tick
+                this.$nextTick(() => {
+                    const modal = this.$refs.modal as HTMLElement;
+                    modal?.focus();
+                });
+            } else {
+                // Restore focus when closing
+                this.previousFocus?.focus();
+            }
+        },
+    },
+
+    methods: {
+        handleKeyDown(e: KeyboardEvent) {
+            if (e.key === 'Escape') {
+                this.$emit('close');
+            }
+        },
+    },
+});
+</script>
+
+<template>
+    <Teleport to="body">
+        <div
+            v-if="isOpen"
+            ref="modal"
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
+            class="modal"
+            @keydown="handleKeyDown"
+        >
+            <slot />
+        </div>
+    </Teleport>
+</template>
+```
+
+---
+
+**Remember**: Vue 3 Options API patterns enable maintainable, performant user interfaces. Use computed properties for caching, provide/inject for state, and proper accessibility attributes.
+
+**Stack**: Vue 3.5+ Options API + TypeScript + Inertia.js + TailwindCSS + PrimeVue

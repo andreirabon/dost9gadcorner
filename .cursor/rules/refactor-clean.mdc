@@ -1,0 +1,454 @@
+---
+description: 'Apply when identifying or removing dead code with test verification; running composer unused, PHPStan, knip, or similar analysis for Laravel + Vue.'
+alwaysApply: false
+---
+
+# Refactor Clean
+
+Safely identify and remove dead code with comprehensive test verification for Laravel + Vue 3 + Inertia.js applications.
+
+## Analysis Process
+
+### Phase 1: Backend Analysis (Laravel/PHP)
+
+#### 1.1 Unused Composer Dependencies
+
+```bash
+composer unused
+# OR
+composer global require icanhazstring/composer-unused
+composer unused
+```
+
+#### 1.2 Static Analysis (PHPStan)
+
+```bash
+./vendor/bin/phpstan analyse app --level=max
+# Identify unused methods, properties, and classes
+```
+
+#### 1.3 Manual Laravel-Specific Checks
+
+**Unused Routes:**
+
+```bash
+php artisan route:list
+# Compare with actual usage in Vue components
+# Look for routes with no corresponding frontend usage
+```
+
+**Unused Controllers:**
+
+- Check for controller methods not referenced in routes
+- Search codebase for controller usage
+- Verify no dynamic route generation using them
+
+**Unused Models:**
+
+- Search for model usage across codebase
+- Check for models with no relationships or queries
+- Verify no dynamic model resolution
+
+**Unused Migrations:**
+
+- Check if migration has been rolled back
+- Verify tables/columns are actually used
+- Be VERY careful - data loss risk
+
+**Unused Policies:**
+
+- Check policy registration in AuthServiceProvider
+- Search for `authorize()` calls referencing policy
+- Verify no automatic policy discovery usage
+
+**Unused Services/Repositories:**
+
+- Check for service container bindings
+- Search for dependency injection usage
+- Verify no dynamic resolution
+
+**Unused Events/Listeners:**
+
+- Check EventServiceProvider registration
+- Search for `event()` calls
+- Verify listener is actually triggered
+
+**Unused Jobs:**
+
+- Search for dispatch calls
+- Check queue configuration
+- Verify job is actually queued
+
+**Unused Helpers:**
+
+- Search for helper function calls
+- Check if autoloaded in composer.json
+
+**Unused Blade Views:**
+
+- Search for view() calls (if any non-Inertia views exist)
+- Check email templates
+- Verify not used in notifications
+
+### Phase 2: Frontend Analysis (Vue 3/TypeScript)
+
+#### 2.1 Unused NPM Dependencies
+
+```bash
+npx depcheck
+```
+
+#### 2.2 Unused TypeScript Exports
+
+```bash
+npx ts-prune --project tsconfig.json
+```
+
+#### 2.3 Unused Files and Exports
+
+```bash
+npx knip
+```
+
+#### 2.4 Manual Vue-Specific Checks
+
+**Unused Components:**
+
+- Search for component imports across Vue files
+- Check for components never used in templates
+- Verify not dynamically loaded
+
+**Unused Composables:**
+
+- Search for composable imports (if any, since you use Options API)
+- Check TypeScript utilities
+
+**Unused Pages:**
+
+- Cross-reference with Inertia::render() calls in controllers
+- Search for route references
+- Verify no dynamic page resolution
+
+**Unused Assets:**
+
+- Check images, fonts, icons in public/
+- Verify CSS classes are actually used
+- Check for unused SVG files
+
+**Unused Types:**
+
+- Run ts-prune on types/index.d.ts
+- Check for unused interfaces
+
+### Phase 3: Generate Comprehensive Report
+
+Create `.reports/dead-code-analysis.md` with:
+
+```markdown
+# Dead Code Analysis Report
+
+Generated: [DATE]
+
+## Summary
+
+- Total Issues: X
+- Safe to Remove: Y
+- Requires Review: Z
+
+## Backend (Laravel/PHP)
+
+### 🟢 SAFE - Can be removed immediately
+
+- [ ] Unused composer package: [package-name]
+- [ ] Unused helper function: app/Helpers/[name].php
+- [ ] Unused test factory: database/factories/[Name]Factory.php
+
+### 🟡 CAUTION - Review before removal
+
+- [ ] Unused controller method: App\Http\Controllers\[Name]Controller@method
+- [ ] Unused route: GET /[route]
+- [ ] Unused Vue component: resources/js/components/[Name].vue
+- [ ] Unused service: App\Services\[Name]Service
+- [ ] Unused repository: App\Repositories\[Name]Repository
+
+### 🔴 DANGER - Do NOT remove without careful review
+
+- [ ] Unused migration: database/migrations/xxxx\_[name].php
+- [ ] Unused model: App\Models\[Name]
+- [ ] Unused policy: App\Policies\[Name]Policy
+- [ ] Unused event: App\Events\[Name]Event
+- [ ] Unused config file: config/[name].php
+
+## Frontend (Vue 3/TypeScript)
+
+### 🟢 SAFE
+
+- [ ] Unused npm package: [package-name]
+- [ ] Unused TypeScript utility: resources/js/lib/[name].ts
+- [ ] Unused icon: public/svg/[name].svg
+
+### 🟡 CAUTION
+
+- [ ] Unused Vue component: resources/js/components/[Name].vue
+- [ ] Unused page: resources/js/pages/[Name].vue
+- [ ] Unused type: resources/js/types/[name].d.ts
+
+### 🔴 DANGER
+
+- [ ] Unused layout: resources/js/layouts/[Name].vue
+- [ ] Unused CSS file: resources/css/[name].css
+- [ ] Unused Vite config: vite.config.ts
+```
+
+## Categorization Rules
+
+### 🟢 SAFE (Low Risk)
+
+- Unused NPM packages (unless in production dependencies)
+- Unused Composer dev dependencies
+- Clearly unused utility functions
+- Unused test files (be careful with this)
+- Unused helper functions with no references
+- Unused TypeScript types/interfaces
+- Unused CSS classes (after thorough search)
+- Unused images/icons (verify not dynamically loaded)
+
+### 🟡 CAUTION (Medium Risk)
+
+- Unused Vue components (check dynamic imports)
+- Unused routes (verify no external links)
+- Unused controller methods (check for API consumers)
+- Unused services/repositories (verify no dynamic resolution)
+- Unused Inertia pages (verify no dynamic rendering)
+- Unused form requests (check controller usage)
+- Unused policies (check AuthServiceProvider)
+- Unused middleware (check route definitions)
+
+### 🔴 DANGER (High Risk - Manual Review Required)
+
+- Unused migrations (potential data loss)
+- Unused models (may break relationships)
+- Unused events (may break event listeners)
+- Unused jobs (may break queued tasks)
+- Unused config files (may break app behavior)
+- Unused .env variables (may break in production)
+- Unused database indexes (performance impact)
+- Unused Laravel service providers
+
+## Safe Deletion Workflow
+
+For each item to be removed:
+
+### Backend (PHP) Deletion Process
+
+```bash
+# 1. Run full test suite BEFORE changes
+php artisan test
+./vendor/bin/phpstan analyse
+
+# 2. Make note of passing test count
+# Example: Tests: 145 passed
+
+# 3. Remove the dead code
+# [Make your deletion here]
+
+# 4. Run tests again IMMEDIATELY
+php artisan test
+
+# 5. Verify same test count and all pass
+# If any test fails, ROLLBACK immediately with git
+
+# 6. Run static analysis
+./vendor/bin/phpstan analyse
+
+# 7. Run linter
+./vendor/bin/pint
+
+# 8. Commit changes
+git add .
+git commit -m "refactor: remove unused [description]"
+```
+
+### Frontend (Vue/TypeScript) Deletion Process
+
+```bash
+# 1. Run full test suite BEFORE changes
+npm run test
+npm run type-check
+
+# 2. Make note of passing test count
+
+# 3. Remove the dead code
+# [Make your deletion here]
+
+# 4. Run tests again IMMEDIATELY
+npm run test
+
+# 5. Check TypeScript compilation
+npm run type-check
+
+# 6. Build to verify no runtime errors
+npm run build
+
+# 7. Run linter
+npm run lint
+
+# 8. Commit changes
+git add .
+git commit -m "refactor: remove unused [description]"
+```
+
+### Full Stack Deletion Process
+
+If removing code that touches both backend and frontend:
+
+```bash
+# 1. Run ALL tests
+php artisan test
+npm run test
+
+# 2. Remove code (backend first, then frontend)
+
+# 3. Run ALL tests again
+php artisan test
+npm run test
+npm run build
+
+# 4. Verify app still works locally
+php artisan serve
+# Test in browser
+
+# 5. Commit
+git add .
+git commit -m "refactor: remove unused [description]"
+```
+
+## Red Flags - DO NOT DELETE
+
+**NEVER** delete without extreme caution:
+
+### Backend Red Flags
+
+- ❌ Anything in `app/Providers/` (Service Providers)
+- ❌ Anything in `bootstrap/` (App initialization)
+- ❌ Anything in `config/` (unless 100% sure)
+- ❌ Database migrations (unless just created and not deployed)
+- ❌ Models with relationships (may break cascade deletes)
+- ❌ Routes used by external APIs or webhooks
+- ❌ Controllers used by mobile apps or external services
+- ❌ Jobs that run on schedule (check `app/Console/Kernel.php`)
+- ❌ Events that may be fired dynamically
+- ❌ Middleware registered in `app/Http/Kernel.php`
+
+### Frontend Red Flags
+
+- ❌ Anything in `resources/js/app.ts` (entry point)
+- ❌ Anything in `resources/js/ssr.ts` (SSR entry)
+- ❌ Layout components (unless replacing)
+- ❌ Base components used globally
+- ❌ TypeScript types used in multiple files
+- ❌ CSS imported in multiple places
+
+## Rollback Procedure
+
+If tests fail after deletion:
+
+```bash
+# Immediate rollback
+git reset --hard HEAD
+
+# Or if committed
+git revert HEAD
+
+# Verify tests pass again
+php artisan test
+npm run test
+```
+
+## Best Practices
+
+1. **Start Small**: Remove one item at a time, not bulk deletions
+2. **Test After Each**: Run full test suite after every removal
+3. **Commit Frequently**: Each removal should be its own commit
+4. **Check Git History**: See when/why code was added before removing
+5. **Search Thoroughly**: Use IDE's "Find in Files" to check usage
+6. **Check Production**: Verify code isn't used in production environment
+7. **Ask Team**: If unsure, ask other developers before removing
+8. **Document**: Update related documentation when removing features
+9. **Monitor**: After deployment, monitor for errors related to removals
+10. **Keep Backups**: Ensure git commits are pushed before major cleanups
+
+## Analysis Commands Quick Reference
+
+```bash
+# Backend Analysis
+composer unused                           # Unused Composer packages
+./vendor/bin/phpstan analyse             # Static analysis
+php artisan route:list                   # List all routes
+
+# Frontend Analysis
+npx depcheck                             # Unused npm packages
+npx ts-prune                             # Unused TypeScript exports
+npx knip                                 # Unused files/exports
+
+# Testing
+php artisan test                         # Run PHP tests
+php artisan test --coverage              # With coverage
+npm run test                             # Run Vue tests
+npm run type-check                       # TypeScript check
+npm run build                            # Production build
+
+# Code Quality
+./vendor/bin/pint                        # Format PHP
+./vendor/bin/phpstan analyse             # Analyze PHP
+npm run lint                             # Lint Vue/TS
+```
+
+## Summary Report Template
+
+After cleanup, generate a summary:
+
+```markdown
+# Cleanup Summary
+
+Date: [DATE]
+
+## Items Removed
+
+- 5 unused Composer packages
+- 3 unused NPM packages
+- 2 unused controller methods
+- 4 unused Vue components
+- 1 unused service class
+
+## Test Results
+
+- ✅ All 145 backend tests passing
+- ✅ All 67 frontend tests passing
+- ✅ TypeScript compilation successful
+- ✅ Production build successful
+
+## Lines of Code Removed
+
+- PHP: -450 lines
+- Vue/TypeScript: -320 lines
+- Total: -770 lines
+
+## Commits
+
+- refactor: remove unused UserSubscriptionService
+- refactor: remove unused AdminDashboard component
+- refactor: remove unused composer packages (guzzle/oauth-subscriber)
+
+## Next Steps
+
+- Monitor production for 24 hours
+- Review performance metrics
+- Update documentation if needed
+```
+
+---
+
+**CRITICAL RULE**: Never delete code without running tests before AND after. When in doubt, DON'T delete.
+
+**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3

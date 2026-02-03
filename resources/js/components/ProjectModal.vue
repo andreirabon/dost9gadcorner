@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import NavigationTabs from '@/components/analytics/NavigationTabs.vue';
+import ChartsGrid from '@/components/charts/ChartsGrid.vue';
+import ModalHeader from '@/components/modal/ModalHeader.vue';
+import { mockChartData } from '@/data/chartData';
+import type { ProjectItem } from '@/types';
 import { computed, ref, watch } from 'vue';
-import { mockChartData } from '../data/chartData';
-import type { ProjectItem } from '../types';
-import NavigationTabs from './analytics/NavigationTabs.vue';
-import ChartsGrid from './charts/ChartsGrid.vue';
-import ModalHeader from './modal/ModalHeader.vue';
 
 interface Props {
     project: ProjectItem | null;
@@ -89,19 +89,22 @@ watch([activeTab, activeQuarter], () => {
         >
             <div
                 v-if="isOpen && project"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+                class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-0 sm:p-4"
                 @click="handleOverlayClick"
                 role="dialog"
                 aria-modal="true"
                 :aria-labelledby="`modal-title-${project.id}`"
             >
-                <div class="relative max-h-[95vh] w-full max-w-6xl overflow-hidden rounded-2xl bg-white shadow-2xl transition-all" @click.stop>
+                <div
+                    class="modal-content relative h-full max-h-full w-full overflow-hidden rounded-none bg-white shadow-2xl transition-all sm:max-h-[95vh] sm:max-w-6xl sm:rounded-2xl"
+                    @click.stop
+                >
                     <!-- Header Component -->
                     <ModalHeader :id="`modal-title-${project.id}`" :title="project.name" @close="closeModal" />
 
                     <!-- Scrollable Content -->
-                    <div class="max-h-[calc(95vh-80px)] overflow-y-auto overscroll-contain">
-                        <div class="space-y-6 p-4 md:p-6">
+                    <div class="modal-content-mobile h-[calc(100%-80px)] overflow-y-auto overscroll-contain sm:max-h-[calc(95vh-80px)]">
+                        <div class="space-y-4 p-3 sm:space-y-6 sm:p-4 md:p-6">
                             <!-- Navigation Controls -->
                             <NavigationTabs
                                 :active-tab="activeTab"

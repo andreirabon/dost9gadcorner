@@ -1,0 +1,854 @@
+---
+description: 'Apply when implementing or checking security: secrets, validation, CSRF, auth, authorization, rate limiting, mass assignment, or secure defaults for Laravel + Vue.'
+alwaysApply: false
+---
+
+# Security Guidelines
+
+**Focus**: Comprehensive security practices for Laravel + Vue 3 + Inertia.js applications
+**Goal**: Prevent vulnerabilities before they reach production
+**Approach**: Defense in depth with multiple layers of security
+
+## Mandatory Security Checks
+
+Before ANY commit:
+
+- [ ] No hardcoded secrets (API keys, passwords, tokens)
+- [ ] All user inputs validated (Form Requests on backend, Vue validation for UX)
+- [ ] SQL injection prevention (Eloquent ORM, parameterized queries)
+- [ ] XSS prevention (Vue auto-escaping, sanitized v-html)
+- [ ] CSRF protection enabled (Laravel default, Inertia automatic)
+- [ ] Authentication required (auth middleware)
+- [ ] Authorization verified (policies, gates)
+- [ ] Rate limiting on all endpoints (throttle middleware)
+- [ ] Error messages don't leak sensitive data
+- [ ] Mass assignment protection ($fillable/$guarded on models)
+- [ ] File upload validation and sanitization (mimes, max size)
+- [ ] No exposed .env file in version control
+- [ ] APP_DEBUG=false in production
+
+## Secret Management
+
+### PHP/Laravel
+
+```php
+<?php
+
+// ❌ NEVER: Hardcoded secrets
+$apiKey = "sk-proj-xxxxx";
+
+// ✅ ALWAYS: Environment variables
+$apiKey = config('services.openai.key');
+// or
+$apiKey = env('OPENAI_API_KEY');
+
+if (!$apiKey) {
+    throw new \RuntimeException('OPENAI_API_KEY not configured');
+}
+```
+
+### TypeScript/JavaScript
+
+```typescript
+// ❌ NEVER: Hardcoded secrets
+const apiKey = 'sk-proj-xxxxx';
+
+// ✅ ALWAYS: Environment variables
+const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+if (!apiKey) {
+    throw new Error('VITE_OPENAI_API_KEY not configured');
+}
+```
+
+### Environment File Security
+
+```bash
+# .env - NEVER commit this file!
+APP_KEY=base64:xxxxx
+DB_PASSWORD=secret123
+OPENAI_API_KEY=sk-xxxxx
+
+# .env.example - Safe to commit (no real values)
+APP_KEY=
+DB_PASSWORD=
+OPENAI_API_KEY=
+```
+
+## Laravel Security Best Practices
+
+### SQL Injection Prevention
+
+```php
+<?php
+
+// ✅ GOOD: Eloquent (automatic parameter binding)
+$markets = Market::where('status', $status)->get();
+
+// ✅ GOOD: Query Builder with bindings
+$markets = DB::table('markets')
+    ->where('status', '=', $status)
+    ->get();
+
+// ✅ GOOD: Raw queries with parameter binding
+$markets = DB::select(
+    'SELECT * FROM markets WHERE status = ?',
+    [$status]
+);
+
+// ✅ GOOD: Named parameter binding
+$markets = DB::select(
+    'SELECT * FROM markets WHERE status = :status',
+    ['status' => $status]
+);
+
+// ❌ NEVER: String concatenation
+$markets = DB::select("SELECT * FROM markets WHERE status = '$status'");
+```
+
+### XSS Prevention
+
+```php
+<?php
+
+// In Blade templates:
+
+// ✅ GOOD: Automatic escaping with {{ }}
+<h1>{{ $market->name }}</h1>
+<p>{{ $user->comment }}</p>
+
+// ⚠️  CAUTION: Raw HTML with {!! !!} - only use for trusted content
+<div>{!! $trustedHtmlContent !!}</div>
+
+// ✅ GOOD: Use Laravel's e() helper in PHP
+echo e($userInput);
+
+// ✅ GOOD: Use htmlspecialchars() in pure PHP
+echo htmlspecialchars($userInput, ENT_QUOTES, 'UTF-8');
+```
+
+### CSRF Protection
+
+```php
+<?php
+
+// Laravel automatically includes CSRF protection for:
+// - All POST, PUT, PATCH, DELETE routes
+// - Forms rendered with @csrf Blade directive
+// - Inertia.js requests (automatic)
+
+// In Blade:
+<form method="POST" action="/markets">
+    @csrf
+    <!-- Form fields -->
+</form>
+
+// In Inertia.js (automatic):
+form.post('/markets', data); // CSRF token automatically included
+```
+
+### Mass Assignment Protection
+
+```php
+<?php
+
+namespace App\Models;
+
+class Market extends Model
+{
+    // ✅ OPTION 1: Whitelist fillable attributes
+    protected $fillable = [
+        'name',
+        'description',
+        'category',
+        'end_date',
+        'creator_id',
+    ];
+
+    // ✅ OPTION 2: Blacklist guarded attributes
+    protected $guarded = [
+        'id',
+        'is_admin',
+        'resolved_at',
+    ];
+
+    // ❌ NEVER: Empty guarded (allows all)
+    // protected $guarded = [];
+}
+
+// Safe usage:
+Market::create($request->validated()); // Only validated fields
+Market::create($request->only(['name', 'description'])); // Specific fields
+
+// ❌ UNSAFE: Using all request data
+// Market::create($request->all());
+```
+
+### Authorization with Policies
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Market;
+use App\Models\User;
+
+class MarketPolicy
+{
+    /**
+     * Determine if the user can update the market.
+     */
+    public function update(User $user, Market $market): bool
+    {
+        return $user->id === $market->creator_id;
+    }
+
+    /**
+     * Determine if the user can delete the market.
+     */
+    public function delete(User $user, Market $market): bool
+    {
+        return $user->id === $market->creator_id
+            || $user->is_admin;
+    }
+}
+
+// In Controller:
+public function update(UpdateMarketRequest $request, Market $market)
+{
+    // ✅ Authorize before action
+    $this->authorize('update', $market);
+
+    $market->update($request->validated());
+
+    return back();
+}
+```
+
+### File Upload Security
+
+```php
+<?php
+
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+
+public function uploadAvatar(Request $request)
+{
+    // ✅ GOOD: Validate file uploads
+    $request->validate([
+        'avatar' => [
+            'required',
+            'file',
+            'image',                    // Only images
+            'mimes:jpeg,png,jpg,gif',   // Specific types
+            'max:2048',                 // Max 2MB
+            'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000',
+        ],
+    ]);
+
+    $file = $request->file('avatar');
+
+    // ✅ GOOD: Generate safe filename
+    $filename = $file->hashName(); // Generates unique, safe name
+
+    // ✅ GOOD: Store securely
+    $path = $file->store('avatars', 'public');
+
+    // ❌ NEVER: Use original filename
+    // $file->storeAs('avatars', $file->getClientOriginalName());
+
+    return $path;
+}
+```
+
+### Rate Limiting
+
+```php
+<?php
+
+// In routes/web.php or routes/api.php
+use Illuminate\Support\Facades\RateLimiter;
+
+// ✅ Route-level rate limiting
+Route::middleware(['auth', 'throttle:60,1'])->group(function () {
+    Route::post('/markets', [MarketController::class, 'store']);
+});
+
+// ✅ Custom rate limiter (in App\Providers\RouteServiceProvider)
+RateLimiter::for('api', function (Request $request) {
+    return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+});
+
+// ✅ Conditional rate limiting
+RateLimiter::for('markets', function (Request $request) {
+    return $request->user()?->is_admin
+        ? Limit::none()
+        : Limit::perMinute(10)->by($request->user()->id);
+});
+```
+
+### Password Security
+
+```php
+<?php
+
+use Illuminate\Support\Facades\Hash;
+
+// ✅ GOOD: Hash passwords
+$user->password = Hash::make($request->password);
+
+// ✅ GOOD: Verify passwords
+if (Hash::check($plainTextPassword, $user->password)) {
+    // Password matches
+}
+
+// ❌ NEVER: Store plain text passwords
+// $user->password = $request->password;
+
+// ✅ GOOD: Password validation rules
+$request->validate([
+    'password' => [
+        'required',
+        'string',
+        'min:8',
+        'confirmed',        // Requires password_confirmation field
+        Password::min(8)
+            ->letters()
+            ->mixedCase()
+            ->numbers()
+            ->symbols()
+            ->uncompromised(), // Check against data breaches
+    ],
+]);
+```
+
+### Secure Session Configuration
+
+```php
+<?php
+
+// config/session.php
+return [
+    'driver' => env('SESSION_DRIVER', 'database'),
+    'lifetime' => 120,              // 2 hours
+    'expire_on_close' => false,
+    'encrypt' => true,              // ✅ Encrypt session data
+    'http_only' => true,            // ✅ Prevent JavaScript access
+    'same_site' => 'lax',          // ✅ CSRF protection
+    'secure' => env('SESSION_SECURE_COOKIE', true), // ✅ HTTPS only
+];
+```
+
+## Vue/Frontend Security
+
+### XSS Prevention in Vue
+
+```vue
+<template>
+    <!-- ✅ GOOD: Vue automatically escapes -->
+    <div>{{ userInput }}</div>
+    <div>{{ market.name }}</div>
+
+    <!-- ⚠️  DANGEROUS: v-html - only use with trusted content -->
+    <div v-html="trustedHtmlContent"></div>
+
+    <!-- ✅ GOOD: Sanitize before rendering -->
+    <div v-html="sanitize(userHtml)"></div>
+</template>
+
+<script>
+import DOMPurify from 'dompurify';
+
+export default {
+    methods: {
+        sanitize(html) {
+            return DOMPurify.sanitize(html);
+        },
+    },
+};
+</script>
+```
+
+### Preventing CSRF in Inertia.js
+
+```typescript
+// Inertia automatically includes CSRF token in all requests
+// from the meta tag in app.blade.php
+
+// No additional configuration needed!
+form.post('/markets', data); // CSRF token included automatically
+```
+
+### Secure API Calls
+
+```typescript
+// ✅ GOOD: Use Inertia for authenticated requests
+import { router } from '@inertiajs/vue3';
+
+router.post('/api/markets', data); // Includes auth cookies
+
+// ✅ GOOD: For external APIs, secure the token
+const response = await fetch('/api/markets', {
+    headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+    },
+});
+```
+
+## Common Vulnerabilities (OWASP Top 10)
+
+### 1. Broken Access Control
+
+```php
+<?php
+
+// ❌ BAD: No authorization check
+public function delete(Market $market)
+{
+    $market->delete();
+    return back();
+}
+
+// ✅ GOOD: Authorize action
+public function delete(Market $market)
+{
+    $this->authorize('delete', $market);
+    $market->delete();
+    return back();
+}
+```
+
+### 2. Cryptographic Failures
+
+```php
+<?php
+
+// ✅ GOOD: Use Laravel's encryption
+use Illuminate\Support\Facades\Crypt;
+
+$encrypted = Crypt::encryptString('sensitive data');
+$decrypted = Crypt::decryptString($encrypted);
+
+// ❌ NEVER: Roll your own crypto
+// $encrypted = base64_encode('sensitive data');
+```
+
+### 3. Injection Attacks
+
+```php
+<?php
+
+// ✅ GOOD: Always use parameter binding
+$users = DB::table('users')
+    ->where('email', $email)
+    ->get();
+
+// ❌ NEVER: String concatenation
+// $users = DB::select("SELECT * FROM users WHERE email = '$email'");
+```
+
+### 4. Insecure Design
+
+```php
+<?php
+
+// ✅ GOOD: Implement proper authentication
+Route::middleware(['auth'])->group(function () {
+    Route::post('/markets', [MarketController::class, 'store']);
+});
+
+// ✅ GOOD: Implement authorization
+$this->authorize('create', Market::class);
+```
+
+### 5. Security Misconfiguration
+
+```php
+<?php
+
+// config/app.php
+'debug' => env('APP_DEBUG', false), // ✅ False in production
+
+// .env
+APP_ENV=production
+APP_DEBUG=false
+```
+
+## Error Handling Security
+
+```php
+<?php
+
+// ✅ GOOD: Generic error messages to users
+try {
+    $market = Market::create($data);
+} catch (\Exception $e) {
+    Log::error('Market creation failed', [
+        'user_id' => auth()->id(),
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+    ]);
+
+    // Don't expose internal details
+    return back()->withErrors([
+        'message' => 'Failed to create market. Please try again.'
+    ]);
+}
+
+// ❌ BAD: Exposing internal details
+catch (\Exception $e) {
+    return back()->withErrors([
+        'message' => $e->getMessage() // Might expose sensitive info
+    ]);
+}
+```
+
+## Logging Security Events
+
+```php
+<?php
+
+use Illuminate\Support\Facades\Log;
+
+// ✅ Log security-relevant events
+public function login(Request $request)
+{
+    if (Auth::attempt($request->only('email', 'password'))) {
+        Log::info('User logged in', [
+            'user_id' => auth()->id(),
+            'ip' => $request->ip(),
+        ]);
+
+        return redirect()->intended();
+    }
+
+    Log::warning('Failed login attempt', [
+        'email' => $request->email,
+        'ip' => $request->ip(),
+    ]);
+
+    return back()->withErrors(['email' => 'Invalid credentials']);
+}
+```
+
+## Security Testing
+
+### Backend Security Tests (PestPHP)
+
+```php
+<?php
+
+use App\Models\User;
+use App\Models\Market;
+
+// ✅ Test authentication required
+test('guest cannot create market', function () {
+    post('/markets', [
+        'name' => 'Test Market',
+    ])->assertRedirect('/login');
+});
+
+// ✅ Test authorization
+test('user cannot update another users market', function () {
+    $owner = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $market = Market::factory()->create(['creator_id' => $owner->id]);
+
+    actingAs($otherUser)
+        ->put("/markets/{$market->id}", [
+            'name' => 'Hacked',
+        ])
+        ->assertForbidden();
+});
+
+// ✅ Test mass assignment protection
+test('user cannot set is_admin via mass assignment', function () {
+    $user = User::factory()->create();
+
+    actingAs($user)
+        ->put("/profile", [
+            'name' => 'New Name',
+            'is_admin' => true, // Should be ignored
+        ]);
+
+    expect($user->fresh()->is_admin)->toBeFalse();
+});
+
+// ✅ Test rate limiting
+test('rate limiting prevents abuse', function () {
+    $user = User::factory()->create();
+
+    // Make 61 requests (assuming 60/min limit)
+    for ($i = 0; $i < 61; $i++) {
+        $response = actingAs($user)->post('/markets', [
+            'name' => "Market {$i}",
+        ]);
+    }
+
+    expect($response->status())->toBe(429); // Too Many Requests
+});
+```
+
+### Frontend Security Tests (Vitest)
+
+```typescript
+import { mount } from '@vue/test-utils';
+import { describe, it, expect } from 'vitest';
+import MarketForm from './MarketForm.vue';
+
+describe('MarketForm Security', () => {
+    it('escapes user input by default', () => {
+        const wrapper = mount(MarketForm, {
+            props: {
+                market: {
+                    name: '<script>alert("XSS")</script>',
+                },
+            },
+        });
+
+        // Vue should escape the script tag
+        expect(wrapper.html()).not.toContain('<script>');
+        expect(wrapper.html()).toContain('&lt;script&gt;');
+    });
+
+    it('disables submit button during processing', () => {
+        const wrapper = mount(MarketForm);
+
+        // Simulate form processing
+        wrapper.vm.form.processing = true;
+
+        const button = wrapper.find('button[type="submit"]');
+        expect(button.attributes('disabled')).toBeDefined();
+    });
+});
+```
+
+## Security Audit Commands
+
+### Quick Security Check
+
+```bash
+# Run all security checks
+composer audit && npm audit && php artisan test
+
+# Check for secrets
+rg "password|api_key|secret|token" app/ resources/js/ --ignore-case
+
+# Check for SQL injection risks
+rg "DB::raw|DB::statement|DB::select" app/
+
+# Check for mass assignment risks
+rg "create\(\$request->all\(\)|update\(\$request->all\(\)" app/
+
+# Check for XSS risks
+rg "v-html|innerHTML" resources/js/
+
+# Check .env is ignored
+git ls-files | grep "^\.env$"
+```
+
+### Comprehensive Security Audit
+
+```bash
+# Backend
+composer audit
+./vendor/bin/phpstan analyse app --level=max
+./vendor/bin/pint --test
+
+# Frontend
+npm audit --audit-level=high
+npm run type-check
+npm run lint
+
+# Routes
+php artisan route:list
+
+# Check for debug mode
+grep "APP_DEBUG" .env
+```
+
+## Security Checklist for Pull Requests
+
+### Before Submitting PR
+
+- [ ] Run `composer audit` (backend dependencies)
+- [ ] Run `npm audit` (frontend dependencies)
+- [ ] Run `php artisan test` (all tests pass)
+- [ ] Check for hardcoded secrets with grep/rg
+- [ ] Verify .env changes are in .env.example only
+- [ ] Review code for security vulnerabilities
+- [ ] Test authentication/authorization manually
+- [ ] Test rate limiting on new endpoints
+- [ ] Verify input validation on all forms
+
+### During Code Review
+
+- [ ] Check for SQL injection vulnerabilities
+- [ ] Check for XSS vulnerabilities (v-html, innerHTML)
+- [ ] Verify authorization checks (policies, gates)
+- [ ] Verify input validation (Form Requests)
+- [ ] Check file upload security (if applicable)
+- [ ] Verify error messages don't leak data
+- [ ] Check mass assignment protection
+- [ ] Verify rate limiting on new routes
+- [ ] Check session configuration (if changed)
+- [ ] Verify HTTPS enforcement (if changed)
+
+## Security Configuration Checklist
+
+### Laravel Configuration
+
+```php
+// config/app.php
+'debug' => env('APP_DEBUG', false), // ✅ Must be false in production
+'key' => env('APP_KEY'),           // ✅ Must be set and unique
+'url' => env('APP_URL', 'https://example.com'), // ✅ Use HTTPS
+
+// config/session.php
+'secure' => env('SESSION_SECURE_COOKIE', true), // ✅ HTTPS only
+'http_only' => true,                            // ✅ No JS access
+'same_site' => 'lax',                          // ✅ CSRF protection
+'encrypt' => true,                              // ✅ Encrypt session
+
+// config/cors.php
+'allowed_origins' => [env('FRONTEND_URL')],     // ✅ Specific origins
+'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE'], // ✅ Explicit
+'allowed_headers' => ['*'],
+'credentials' => true,                          // ✅ Allow cookies
+
+// config/auth.php
+'passwords' => [
+    'users' => [
+        'expire' => 60,        // ✅ Tokens expire in 60 minutes
+        'throttle' => 60,      // ✅ Rate limit password resets
+    ],
+],
+```
+
+### Environment Variables (.env)
+
+```bash
+# Application
+APP_ENV=production          # ✅ Set to production
+APP_DEBUG=false            # ✅ Disable debug mode
+APP_KEY=base64:...         # ✅ Generated key
+APP_URL=https://yourdomain.com # ✅ Use HTTPS
+
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database
+DB_USERNAME=your_user
+DB_PASSWORD=strong_password # ✅ Strong password
+
+# Session
+SESSION_DRIVER=database    # ✅ Use database for persistence
+SESSION_SECURE_COOKIE=true # ✅ HTTPS only
+
+# Mail
+MAIL_FROM_ADDRESS=noreply@yourdomain.com
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+## Security Monitoring
+
+### What to Log
+
+```php
+<?php
+
+use Illuminate\Support\Facades\Log;
+
+// ✅ Log security events
+Log::info('User logged in', ['user_id' => auth()->id(), 'ip' => request()->ip()]);
+Log::warning('Failed login', ['email' => $email, 'ip' => request()->ip()]);
+Log::error('Unauthorized access attempt', ['user_id' => auth()->id(), 'resource' => $resource]);
+
+// ❌ Don't log sensitive data
+// Log::info('User login', ['password' => $password]); // NEVER!
+// Log::info('Payment', ['credit_card' => $cc]);      // NEVER!
+```
+
+### Events to Monitor
+
+- Failed login attempts (potential brute force)
+- Multiple password reset requests (potential account takeover)
+- Unauthorized access attempts (403 Forbidden responses)
+- Rate limit exceeded (429 Too Many Requests)
+- SQL errors (potential injection attempts)
+- File upload failures (potential malicious uploads)
+- Large payload sizes (potential DoS attack)
+- Unusual API usage patterns
+
+## Security Resources
+
+### Laravel Security
+
+- [Laravel Security Documentation](https://laravel.com/docs/security)
+- [Laravel Authentication](https://laravel.com/docs/authentication)
+- [Laravel Authorization](https://laravel.com/docs/authorization)
+- [Laravel Encryption](https://laravel.com/docs/encryption)
+
+### OWASP Resources
+
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)
+- [OWASP Laravel Security](https://cheatsheetseries.owasp.org/cheatsheets/Laravel_Cheat_Sheet.html)
+
+### Tools
+
+- [Composer Audit](https://getcomposer.org/doc/03-cli.md#audit)
+- [NPM Audit](https://docs.npmjs.com/cli/v8/commands/npm-audit)
+- [PHPStan](https://phpstan.org/)
+- [Laravel Enlightn](https://www.laravel-enlightn.com/)
+
+## Security Response Protocol
+
+If security issue found:
+
+### Immediate Actions (Within 1 hour)
+
+1. **STOP immediately** - Don't commit vulnerable code
+2. **Assess severity** - Is it CRITICAL, HIGH, MEDIUM, or LOW?
+3. **Use security-reviewer agent** - Get expert analysis
+4. **Fix CRITICAL/HIGH issues** - Before continuing development
+5. **Rotate exposed secrets** - If any credentials were exposed
+
+    ```bash
+    # Generate new APP_KEY
+    php artisan key:generate
+
+    # Update .env with new secrets
+    # Restart application to use new keys
+    ```
+
+### Short-term Actions (Within 24 hours)
+
+6. **Review entire codebase** - Look for similar vulnerabilities
+7. **Add security tests** - Prevent regression
+8. **Update .env.example** - Remove any real values
+9. **Verify .gitignore** - Ensure `.env` is excluded
+10. **Run security audits**:
+    ```bash
+    composer audit
+    npm audit
+    php artisan test
+    ```
+
+### Long-term Actions (Within 1 week)
+
+11. **Document the issue** - Add to security knowledge base
+12. **Team training** - Educate team on the vulnerability type
+13. **Update CI/CD** - Add automated security checks
+14. **Enable monitoring** - Set up alerts for similar issues
+15. **Schedule security review** - Regular audits
+
+---
+
+**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3
+
+**Remember**: Security is not optional. Every line of code that handles user input, authentication, or sensitive data must be secured. Defense in depth: multiple layers of security controls. When in doubt, ask the security-reviewer agent.

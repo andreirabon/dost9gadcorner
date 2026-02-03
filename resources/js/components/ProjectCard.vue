@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { getProjectThemeClasses } from '@/lib/projectThemes';
+import type { ProjectItem } from '@/types';
 import { computed } from 'vue';
-import type { ProjectItem } from '../types';
 
 const props = defineProps<{
     project: ProjectItem;
@@ -10,56 +11,7 @@ defineEmits<{
     click: [project: ProjectItem];
 }>();
 
-const colors = computed(() => {
-    const colorMap = {
-        emerald: {
-            border: 'border-emerald-400/60',
-            bg: 'bg-emerald-500/80',
-            hover: 'from-emerald-400/40 to-emerald-600/30',
-            text: 'text-white',
-            focus: 'focus-visible:ring-emerald-400',
-        },
-        blue: {
-            border: 'border-blue-400/60',
-            bg: 'bg-blue-500/80',
-            hover: 'from-blue-400/40 to-blue-600/30',
-            text: 'text-white',
-            focus: 'focus-visible:ring-blue-400',
-        },
-        orange: {
-            border: 'border-orange-400/60',
-            bg: 'bg-orange-400/80',
-            hover: 'from-orange-400/40 to-orange-500/30',
-            text: 'text-white',
-            focus: 'focus-visible:ring-orange-400',
-        },
-        rose: {
-            border: 'border-rose-400/60',
-            bg: 'bg-rose-400/80',
-            hover: 'from-rose-400/40 to-rose-500/30',
-            text: 'text-white',
-            focus: 'focus-visible:ring-rose-400',
-        },
-        teal: {
-            border: 'border-teal-400/60',
-            bg: 'bg-teal-500/80',
-            hover: 'from-teal-400/40 to-teal-600/30',
-            text: 'text-white',
-            focus: 'focus-visible:ring-teal-400',
-        },
-        purple: {
-            border: 'border-purple-400/60',
-            bg: 'bg-purple-500/80',
-            hover: 'from-purple-400/40 to-purple-600/30',
-            text: 'text-white',
-            focus: 'focus-visible:ring-purple-400',
-        },
-    };
-
-    const theme = props.project.colorTheme || 'purple';
-    // Fallback to purple if theme is not in map (e.g. cyan/amber)
-    return colorMap[theme as keyof typeof colorMap] || colorMap.purple;
-});
+const colors = computed(() => getProjectThemeClasses(props.project));
 </script>
 
 <template>
@@ -67,11 +19,12 @@ const colors = computed(() => {
         type="button"
         @click="$emit('click', project)"
         :class="[
-            'project-card group touch-target tap-highlight-none relative flex h-32 flex-col items-center justify-center overflow-hidden rounded-xl p-3 text-center shadow-lg backdrop-blur transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+            'project-card group touch-target tap-highlight-none relative flex h-28 flex-col items-center justify-center overflow-hidden rounded-lg p-3 text-center shadow-md [contain:paint] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none sm:h-32 sm:rounded-xl sm:p-4',
             colors.border,
             colors.bg,
             colors.focus,
         ]"
+        :aria-label="`View ${project.name} project details`"
     >
         <!-- Background Image (visible on hover) -->
         <div
@@ -79,12 +32,12 @@ const colors = computed(() => {
             class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-0 transition-opacity duration-300 group-hover:opacity-20"
             :style="{ backgroundImage: `url(${project.backgroundImage})` }"
             aria-hidden="true"
-        ></div>
+        />
 
         <!-- Default View (visible when not hovering) -->
         <div class="relative z-10 transition-opacity duration-300 group-hover:opacity-0">
             <!-- Project Title -->
-            <h3 :class="['mb-2 text-sm leading-tight font-semibold select-none', colors.text]">
+            <h3 :class="['mb-1 text-xs leading-snug font-semibold select-none sm:mb-2 sm:text-sm sm:leading-tight', colors.text]">
                 {{ project.name }}
             </h3>
         </div>

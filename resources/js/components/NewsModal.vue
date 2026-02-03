@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import type { NewsItem } from '@/data/news';
 import { watch } from 'vue';
-import type { NewsItem } from '../data/news';
 import ModalHeader from './modal/ModalHeader.vue';
 
 interface Props {
@@ -50,14 +50,14 @@ watch(
         >
             <div
                 v-if="isOpen && news"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+                class="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-0 sm:p-4"
                 @click="handleOverlayClick"
                 role="dialog"
                 aria-modal="true"
                 :aria-labelledby="`modal-title-${news.id}`"
             >
                 <div
-                    class="relative max-h-[95vh] w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-all"
+                    class="modal-content relative h-full max-h-full w-full overflow-hidden rounded-none bg-white shadow-2xl ring-1 ring-black/5 transition-all sm:max-h-[95vh] sm:max-w-5xl sm:rounded-2xl"
                     @click.stop
                 >
                     <!-- Decorative Top Bar -->
@@ -67,8 +67,8 @@ watch(
                     <ModalHeader :id="`modal-title-${news.id}`" :title="news.title" @close="closeModal" />
 
                     <!-- Scrollable Content -->
-                    <div class="max-h-[calc(95vh-90px)] overflow-y-auto overscroll-contain bg-gray-50/30">
-                        <div class="p-6 md:p-10">
+                    <div class="modal-content-mobile h-[calc(100%-90px)] overflow-y-auto overscroll-contain bg-gray-50/30 sm:max-h-[calc(95vh-90px)]">
+                        <div class="p-4 sm:p-6 md:p-10">
                             <!-- Image (if available) -->
                             <div v-if="news.image" class="group relative mb-8 overflow-hidden rounded-2xl shadow-md ring-1 ring-black/5">
                                 <div
@@ -100,7 +100,7 @@ watch(
 
                             <!-- Content -->
                             <div
-                                class="prose prose-lg prose-purple prose-headings:font-bold prose-headings:text-gray-900 prose-p:leading-relaxed prose-a:text-purple-600 prose-a:no-underline hover:prose-a:text-purple-500 prose-img:rounded-xl max-w-none text-gray-600"
+                                class="prose prose-sm prose-purple prose-headings:font-bold prose-headings:text-gray-900 prose-p:leading-relaxed prose-a:text-purple-600 prose-a:no-underline hover:prose-a:text-purple-500 prose-img:rounded-lg sm:prose-base sm:prose-img:rounded-xl md:prose-lg max-w-none text-gray-600"
                                 v-html="news.content"
                             ></div>
                         </div>

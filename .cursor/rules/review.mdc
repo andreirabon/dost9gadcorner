@@ -1,0 +1,773 @@
+---
+description: 'Apply when reviewing PRs or code: quality, security, maintainability, performance, tests, and actionable feedback for Laravel + Vue + Inertia.'
+alwaysApply: false
+---
+
+# Code Review Context
+
+**Mode**: Pull Request review, code analysis for Laravel + Vue 3 + Inertia.js applications
+**Focus**: Quality, security, maintainability, performance
+**Goal**: Provide constructive feedback with actionable improvements
+
+## Core Review Principles
+
+1. **Read Thoroughly** - Understand the full context before commenting
+2. **Be Constructive** - Suggest fixes, don't just point out problems
+3. **Prioritize by Severity** - Critical > High > Medium > Low
+4. **Be Specific** - Reference exact lines, provide code examples
+5. **Check Security** - ALWAYS look for vulnerabilities first
+6. **Verify Tests** - Ensure adequate test coverage
+7. **Consider Performance** - Flag potential performance issues
+8. **Maintain Standards** - Enforce PSR-12 (PHP) and project conventions (Vue)
+
+## Review Process
+
+### Phase 1: Overview (2 minutes)
+
+- What is the PR trying to accomplish?
+- What files are changed? (Backend, Frontend, Both?)
+- Are there tests included?
+- Is there a migration/database change?
+- Are dependencies added/removed?
+
+### Phase 2: Security Review (5 minutes) - CRITICAL
+
+- SQL injection risks
+- XSS vulnerabilities
+- CSRF protection
+- Authentication/Authorization
+- Mass assignment protection
+- Input validation
+- Secret exposure
+- File upload security
+
+### Phase 3: Code Quality Review (10 minutes)
+
+- Logic errors and edge cases
+- Error handling
+- Code duplication
+- Naming conventions
+- Method/function size
+- Complexity
+- Comments and documentation
+
+### Phase 4: Performance Review (5 minutes)
+
+- N+1 query problems
+- Missing eager loading
+- Unnecessary database calls
+- Large payload sizes
+- Missing pagination
+- Inefficient algorithms
+
+### Phase 5: Testing Review (5 minutes)
+
+- Test coverage for new code
+- Edge cases tested
+- Error scenarios tested
+- Integration tests for new features
+- E2E tests for critical flows
+
+### Phase 6: Final Check (3 minutes)
+
+- PSR-12 compliance (PHP)
+- ESLint compliance (Vue/TS)
+- TypeScript compilation
+- No console.log() left in code
+- Documentation updated
+
+## Backend (Laravel/PHP) Review Checklist
+
+### 🔴 CRITICAL (Security)
+
+#### SQL Injection
+
+```php
+// ❌ CRITICAL: SQL injection risk
+$markets = DB::select("SELECT * FROM markets WHERE id = $id");
+
+// ✅ CORRECT: Use parameter binding
+$markets = DB::select("SELECT * FROM markets WHERE id = ?", [$id]);
+
+// ✅ BETTER: Use Eloquent
+$markets = Market::find($id);
+```
+
+#### Mass Assignment
+
+```php
+// ❌ CRITICAL: Mass assignment vulnerability
+class Market extends Model
+{
+    // No $fillable or $guarded defined
+}
+
+// ✅ CORRECT: Define fillable fields
+class Market extends Model
+{
+    protected $fillable = ['name', 'description', 'category'];
+}
+```
+
+#### Authorization
+
+```php
+// ❌ HIGH: Missing authorization check
+public function update(Request $request, Market $market)
+{
+    $market->update($request->validated());
+}
+
+// ✅ CORRECT: Use policy
+public function update(UpdateMarketRequest $request, Market $market)
+{
+    $this->authorize('update', $market);
+    $market->update($request->validated());
+}
+```
+
+#### Input Validation
+
+```php
+// ❌ HIGH: No validation
+public function store(Request $request)
+{
+    Market::create($request->all());
+}
+
+// ✅ CORRECT: Use Form Request
+public function store(StoreMarketRequest $request)
+{
+    Market::create($request->validated());
+}
+```
+
+#### Secret Exposure
+
+```php
+// ❌ CRITICAL: Hardcoded secrets
+$apiKey = 'sk-1234567890abcdef';
+
+// ✅ CORRECT: Use environment variables
+$apiKey = config('services.api.key');
+```
+
+### 🟡 HIGH (Code Quality)
+
+#### N+1 Query Problem
+
+```php
+// ❌ HIGH: N+1 query problem
+$markets = Market::all();
+foreach ($markets as $market) {
+    echo $market->creator->name; // N queries
+}
+
+// ✅ CORRECT: Eager load relationships
+$markets = Market::with('creator')->get();
+foreach ($markets as $market) {
+    echo $market->creator->name; // 2 queries
+}
+```
+
+#### Business Logic in Controllers
+
+```php
+// ❌ HIGH: Business logic in controller
+public function store(Request $request)
+{
+    DB::transaction(function () use ($request) {
+        $market = Market::create($request->all());
+        foreach ($request->options as $option) {
+            $market->options()->create($option);
+        }
+        // ... 50 more lines of logic
+    });
+}
+
+// ✅ CORRECT: Use service layer
+public function store(StoreMarketRequest $request)
+{
+    $market = $this->marketService->create($request->validated());
+    return redirect()->route('markets.show', $market);
+}
+```
+
+#### Missing Database Transactions
+
+```php
+// ❌ HIGH: No transaction for multi-step operation
+public function resolve(Market $market, $winningOptionId)
+{
+    $market->update(['status' => 'resolved']);
+    $market->positions()->where('option_id', $winningOptionId)
+        ->update(['is_winning' => true]);
+}
+
+// ✅ CORRECT: Use transaction
+public function resolve(Market $market, $winningOptionId)
+{
+    DB::transaction(function () use ($market, $winningOptionId) {
+        $market->update(['status' => 'resolved']);
+        $market->positions()->where('option_id', $winningOptionId)
+            ->update(['is_winning' => true]);
+    });
+}
+```
+
+#### Missing Type Declarations
+
+```php
+// ❌ MEDIUM: Missing type declarations
+public function calculateTotal($items)
+{
+    return array_sum($items);
+}
+
+// ✅ CORRECT: Full type declarations (PHP 8.2+)
+public function calculateTotal(array $items): float
+{
+    return array_sum(array_column($items, 'price'));
+}
+```
+
+#### Large Methods
+
+```php
+// ❌ MEDIUM: Method too large (>50 lines)
+public function process()
+{
+    // ... 100 lines of code
+}
+
+// ✅ CORRECT: Break into smaller methods
+public function process()
+{
+    $this->validateData();
+    $this->prepareData();
+    $this->saveData();
+    $this->notifyUsers();
+}
+```
+
+### 🟢 MEDIUM (Best Practices)
+
+#### Missing Indexes
+
+```php
+// ❌ MEDIUM: Missing index on frequently queried column
+Schema::create('markets', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('creator_id'); // No index
+    $table->string('status'); // No index
+});
+
+// ✅ CORRECT: Add indexes
+Schema::create('markets', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('creator_id')->constrained()->cascadeOnDelete();
+    $table->string('status')->index();
+});
+```
+
+#### Magic Numbers
+
+```php
+// ❌ LOW: Magic numbers
+if ($market->volume > 10000) {
+    // ...
+}
+
+// ✅ CORRECT: Named constants
+class Market extends Model
+{
+    const VOLUME_THRESHOLD = 10000;
+}
+
+if ($market->volume > Market::VOLUME_THRESHOLD) {
+    // ...
+}
+```
+
+## Frontend (Vue 3/TypeScript) Review Checklist
+
+### 🔴 CRITICAL (Security)
+
+#### XSS Vulnerability
+
+```vue
+<!-- ❌ CRITICAL: XSS risk with v-html -->
+<template>
+    <div v-html="userInput"></div>
+</template>
+
+<!-- ✅ CORRECT: Use text interpolation (auto-escaped) -->
+<template>
+    <div>{{ userInput }}</div>
+</template>
+
+<!-- ✅ OK: If HTML is needed, sanitize first -->
+<template>
+    <div v-html="sanitizedHtml"></div>
+</template>
+
+<script lang="ts">
+export default defineComponent({
+    computed: {
+        sanitizedHtml(): string {
+            return DOMPurify.sanitize(this.userInput);
+        },
+    },
+});
+</script>
+```
+
+#### Exposed Secrets
+
+```typescript
+// ❌ CRITICAL: API key in frontend
+const API_KEY = 'sk-1234567890abcdef';
+
+// ✅ CORRECT: Use backend proxy
+// Never put secrets in frontend code
+```
+
+### 🟡 HIGH (Code Quality)
+
+#### Missing Prop Validation
+
+```vue
+<!-- ❌ HIGH: No prop validation -->
+<script lang="ts">
+export default defineComponent({
+    props: ['market', 'user'],
+});
+</script>
+
+<!-- ✅ CORRECT: Full prop validation -->
+<script lang="ts">
+import { PropType } from 'vue';
+
+interface Market {
+    id: number;
+    name: string;
+}
+
+export default defineComponent({
+    props: {
+        market: {
+            type: Object as PropType<Market>,
+            required: true,
+        },
+        user: {
+            type: Object as PropType<User>,
+            default: null,
+        },
+    },
+});
+</script>
+```
+
+#### Unhandled Form Errors
+
+```vue
+<!-- ❌ HIGH: No error handling -->
+<template>
+    <form @submit.prevent="submit">
+        <input v-model="form.name" />
+        <button :disabled="form.processing">Submit</button>
+    </form>
+</template>
+
+<!-- ✅ CORRECT: Display validation errors -->
+<template>
+    <form @submit.prevent="submit">
+        <input v-model="form.name" />
+        <span v-if="form.errors.name" class="error">
+            {{ form.errors.name }}
+        </span>
+        <button :disabled="form.processing">Submit</button>
+    </form>
+</template>
+```
+
+#### Missing Loading States
+
+```vue
+<!-- ❌ MEDIUM: No loading indicator -->
+<template>
+    <button @click="submit">Submit</button>
+</template>
+
+<!-- ✅ CORRECT: Show loading state -->
+<template>
+    <button @click="submit" :disabled="form.processing">
+        {{ form.processing ? 'Submitting...' : 'Submit' }}
+    </button>
+</template>
+```
+
+#### Computed Property with Side Effects
+
+```vue
+<!-- ❌ HIGH: Computed property with side effects -->
+<script lang="ts">
+export default defineComponent({
+    computed: {
+        total(): number {
+            this.saveToLocalStorage(); // ❌ Side effect in computed
+            return this.items.reduce((sum, item) => sum + item.price, 0);
+        },
+    },
+});
+</script>
+
+<!-- ✅ CORRECT: Use watcher for side effects -->
+<script lang="ts">
+export default defineComponent({
+    computed: {
+        total(): number {
+            return this.items.reduce((sum, item) => sum + item.price, 0);
+        },
+    },
+    watch: {
+        total(newTotal) {
+            this.saveToLocalStorage(newTotal);
+        },
+    },
+});
+</script>
+```
+
+### 🟢 MEDIUM (Best Practices)
+
+#### Large Component Files
+
+```vue
+<!-- ❌ MEDIUM: Component too large (>300 lines) -->
+<script lang="ts">
+export default defineComponent({
+    // ... 400 lines of code
+});
+</script>
+
+<!-- ✅ CORRECT: Split into smaller components -->
+<!-- MarketList.vue (parent) -->
+<!-- MarketCard.vue (child) -->
+<!-- MarketFilters.vue (child) -->
+```
+
+#### Missing TypeScript Types
+
+```typescript
+// ❌ MEDIUM: Using 'any'
+function processData(data: any) {
+    // ...
+}
+
+// ✅ CORRECT: Define proper types
+interface MarketData {
+    id: number;
+    name: string;
+    status: 'active' | 'closed';
+}
+
+function processData(data: MarketData) {
+    // ...
+}
+```
+
+## Inertia.js Specific Review
+
+### Proper Inertia Responses
+
+```php
+// ❌ Wrong: JSON response in Inertia route
+public function index()
+{
+    return response()->json(Market::all());
+}
+
+// ✅ CORRECT: Inertia response
+public function index()
+{
+    return Inertia::render('Markets/Index', [
+        'markets' => Market::paginate(10)
+    ]);
+}
+```
+
+### Shared Data Usage
+
+```php
+// ❌ Passing auth data manually every time
+public function index()
+{
+    return Inertia::render('Markets/Index', [
+        'auth' => ['user' => auth()->user()],
+        'markets' => Market::all()
+    ]);
+}
+
+// ✅ CORRECT: Use HandleInertiaRequests middleware
+class HandleInertiaRequests extends Middleware
+{
+    public function share(Request $request): array
+    {
+        return array_merge(parent::share($request), [
+            'auth' => [
+                'user' => $request->user()
+            ]
+        ]);
+    }
+}
+```
+
+## Testing Review Checklist
+
+### Backend Testing (PestPHP)
+
+```php
+// ❌ Missing tests for authorization
+test('user can create market', function () {
+    $user = User::factory()->create();
+
+    actingAs($user)->post('/markets', [
+        'name' => 'Test Market'
+    ])->assertRedirect();
+});
+
+// ✅ CORRECT: Test both authorized and unauthorized
+test('authenticated user can create market', function () {
+    $user = User::factory()->create();
+
+    actingAs($user)->post('/markets', [
+        'name' => 'Test Market'
+    ])->assertRedirect();
+});
+
+test('guest cannot create market', function () {
+    post('/markets', [
+        'name' => 'Test Market'
+    ])->assertRedirect('/login');
+});
+```
+
+### Frontend Testing (Vitest)
+
+```typescript
+// ✅ Test component with props and events
+import { mount } from '@vue/test-utils';
+import MarketCard from './MarketCard.vue';
+
+test('emits update event when clicked', () => {
+    const wrapper = mount(MarketCard, {
+        props: {
+            market: { id: 1, name: 'Test' },
+        },
+    });
+
+    wrapper.find('button').trigger('click');
+    expect(wrapper.emitted('update')).toBeTruthy();
+});
+```
+
+## Database/Migration Review
+
+```php
+// ❌ Migration not reversible
+public function up()
+{
+    Schema::table('markets', function (Blueprint $table) {
+        $table->string('new_column');
+    });
+}
+
+public function down()
+{
+    // Empty - not reversible!
+}
+
+// ✅ CORRECT: Implement down() method
+public function up()
+{
+    Schema::table('markets', function (Blueprint $table) {
+        $table->string('new_column')->after('name');
+    });
+}
+
+public function down()
+{
+    Schema::table('markets', function (Blueprint $table) {
+        $table->dropColumn('new_column');
+    });
+}
+```
+
+## Review Output Format
+
+### Standard Review Template
+
+````markdown
+## Code Review: [PR Title]
+
+### Summary
+
+[1-2 sentences about what this PR does]
+
+### Overall Assessment
+
+- **Approval Status**: ✅ Approved / ⚠️ Approved with Comments / ❌ Needs Changes
+- **Security**: [Pass/Fail]
+- **Tests**: [Pass/Fail - X% coverage]
+- **Performance**: [No concerns / Minor concerns / Major concerns]
+
+---
+
+## 🔴 CRITICAL Issues (Must Fix)
+
+### [File: app/Http/Controllers/MarketController.php]
+
+**Line 45: SQL Injection Risk**
+
+```php
+// Current code
+$markets = DB::select("SELECT * FROM markets WHERE id = $id");
+
+// Suggested fix
+$markets = DB::select("SELECT * FROM markets WHERE id = ?", [$id]);
+```
+````
+
+**Severity:** CRITICAL
+**Impact:** Security vulnerability - SQL injection
+**Recommendation:** Use parameter binding or Eloquent
+
+---
+
+## 🟡 HIGH Issues (Should Fix)
+
+### [File: app/Services/MarketService.php]
+
+**Line 67: N+1 Query Problem**
+
+```php
+// Current code
+$markets = Market::all();
+foreach ($markets as $market) {
+    echo $market->creator->name;
+}
+
+// Suggested fix
+$markets = Market::with('creator')->get();
+```
+
+**Severity:** HIGH
+**Impact:** Performance - N queries instead of 2
+**Recommendation:** Use eager loading
+
+---
+
+## 🟢 MEDIUM Issues (Nice to Have)
+
+### [File: resources/js/components/MarketCard.vue]
+
+**Line 23: Missing Prop Validation**
+
+```typescript
+// Add prop types
+props: {
+  market: {
+    type: Object as PropType<Market>,
+    required: true
+  }
+}
+```
+
+**Severity:** MEDIUM
+**Impact:** Type safety and maintainability
+**Recommendation:** Add TypeScript prop types
+
+---
+
+## ✅ Positive Feedback
+
+- Good use of Form Request for validation
+- Comprehensive test coverage (87%)
+- Well-structured service layer
+- Clean component organization
+- Proper use of Inertia.js patterns
+
+---
+
+## 📋 Checklist
+
+- [x] Security review completed
+- [x] Tests included and passing
+- [x] No N+1 queries
+- [x] Authorization checks present
+- [x] Input validation implemented
+- [ ] Documentation updated (if needed)
+- [x] Migration is reversible
+- [x] No console.log() in production code
+
+---
+
+## Next Steps
+
+1. Fix CRITICAL issues (SQL injection)
+2. Address HIGH priority items (N+1 queries)
+3. Consider MEDIUM suggestions
+4. Re-request review after changes
+
+````
+
+## Review Best Practices
+
+1. **Start with Security** - Always review security issues first
+2. **Be Specific** - Reference exact lines and files
+3. **Provide Examples** - Show both bad and good code
+4. **Explain Impact** - Why does this issue matter?
+5. **Offer Solutions** - Don't just point out problems
+6. **Acknowledge Good Work** - Point out what's done well
+7. **Use Severity Levels** - Critical > High > Medium > Low
+8. **Check Tests** - Ensure adequate coverage
+9. **Verify Standards** - PSR-12 (PHP), ESLint (Vue/TS)
+10. **Be Professional** - Constructive, not condescending
+
+## Common Review Mistakes to Avoid
+
+- ❌ Nitpicking style issues (let linters handle it)
+- ❌ Reviewing without understanding context
+- ❌ Focusing only on what's wrong (acknowledge good code too)
+- ❌ Being vague ("This could be better")
+- ❌ Not explaining why something is a problem
+- ❌ Ignoring test coverage
+- ❌ Missing security vulnerabilities
+- ❌ Not checking for N+1 queries
+
+## Quick Review Commands
+
+```bash
+# Run before reviewing
+php artisan test                      # Run backend tests
+./vendor/bin/phpstan analyse         # Static analysis
+./vendor/bin/pint --test            # Check code style
+npm run test                          # Run frontend tests
+npm run type-check                    # TypeScript check
+npm run lint                          # ESLint check
+
+# Performance check
+php artisan debugbar:clear            # Clear debugbar
+# Enable query logging and check for N+1
+
+# Security check
+rg "DB::raw|DB::select\(" app/       # Find raw queries
+rg "all\(\)|get\(\)" app/Http/Controllers/  # Check for missing pagination
+````
+
+---
+
+**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3
+
+**Remember**: The goal of code review is to improve code quality and share knowledge, not to criticize. Be constructive, specific, and helpful.

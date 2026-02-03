@@ -1,0 +1,566 @@
+---
+description: 'Apply when exploring, investigating, or learning before implementing; documenting findings, understanding patterns, or answering how/why questions.'
+alwaysApply: false
+---
+
+# Research Context
+
+**Mode**: Exploration, investigation, learning for Laravel + Vue 3 + Inertia.js applications
+**Focus**: Deep understanding before acting
+**Goal**: Gather evidence, understand patterns, document findings
+
+## Core Research Principles
+
+1. **Read Widely First** - Explore thoroughly before concluding
+2. **Ask Questions** - Clarify requirements and constraints
+3. **Document As You Go** - Track findings, patterns, and insights
+4. **Evidence-Based** - Back conclusions with code examples and data
+5. **No Code Yet** - Don't write code until understanding is complete
+6. **Stack-Aware** - Consider Laravel, Vue, Inertia, MySQL, PestPHP contexts
+
+## Research Process (6 Phases)
+
+### Phase 1: Understand the Question
+
+- What is being asked?
+- What is the context (backend, frontend, full-stack)?
+- What are the success criteria?
+- What constraints exist (performance, security, compatibility)?
+- What is the scope (single feature, architecture, performance, etc.)?
+
+### Phase 2: Explore Relevant Code
+
+- Search for existing implementations
+- Review related components/services
+- Check for similar patterns in codebase
+- Read tests to understand expected behavior
+- Examine database schema and relationships
+
+### Phase 3: Research External Resources
+
+- Check Laravel documentation (laravel.com)
+- Check Vue 3 documentation (vuejs.org)
+- Check Inertia.js documentation (inertiajs.com)
+- Search for best practices and patterns
+- Review relevant packages and tools
+
+### Phase 4: Form Hypothesis
+
+- Based on findings, propose solution approaches
+- List pros and cons of each approach
+- Consider edge cases and limitations
+- Identify risks and dependencies
+
+### Phase 5: Verify with Evidence
+
+- Find code examples supporting hypothesis
+- Check if pattern is used elsewhere in codebase
+- Verify with tests (if applicable)
+- Cross-reference with documentation
+
+### Phase 6: Summarize Findings
+
+- Present findings in structured format
+- Include code examples and evidence
+- Provide clear recommendations
+- List next steps or questions
+
+## Research Scenarios
+
+### Backend (Laravel) Research
+
+#### 1. Investigating Database Schema
+
+```bash
+# Check existing migrations
+ls -la database/migrations/
+
+# Search for table usage
+rg "markets" database/migrations/
+
+# Check model relationships
+rg "belongsTo|hasMany|belongsToMany" app/Models/
+```
+
+**Questions to Answer:**
+
+- What tables exist?
+- What relationships are defined?
+- Are there indexes for performance?
+- Are foreign keys properly set up?
+- Are there any unused columns?
+
+#### 2. Understanding Service/Repository Pattern
+
+```bash
+# Find all services
+find app/Services -type f -name "*.php"
+
+# Find all repositories
+find app/Repositories -type f -name "*.php"
+
+# Search for service usage
+rg "MarketService" app/Http/Controllers/
+```
+
+**Questions to Answer:**
+
+- Is Repository pattern used?
+- Is Service layer implemented?
+- How is business logic organized?
+- Are services properly injected?
+- Are repositories tested?
+
+#### 3. Researching Routes and Controllers
+
+```bash
+# List all routes
+php artisan route:list
+
+# Find controller methods
+rg "public function" app/Http/Controllers/
+
+# Search for route usage in frontend
+rg "route\(" resources/js/
+```
+
+**Questions to Answer:**
+
+- What routes are defined?
+- Which controllers handle requests?
+- Are routes properly grouped and named?
+- Are middleware applied correctly?
+- Which routes are used by frontend?
+
+#### 4. Investigating Authentication/Authorization
+
+```bash
+# Check policies
+ls -la app/Policies/
+
+# Search for authorization
+rg "authorize|can:|@can" app/
+
+# Check middleware
+ls -la app/Http/Middleware/
+```
+
+**Questions to Answer:**
+
+- How is authentication implemented?
+- What policies exist?
+- How is authorization checked?
+- What middleware protects routes?
+- Are gate definitions used?
+
+#### 5. Researching Jobs and Queues
+
+```bash
+# Find all jobs
+find app/Jobs -type f -name "*.php"
+
+# Search for dispatch calls
+rg "dispatch|dispatchSync" app/
+
+# Check scheduled tasks
+cat app/Console/Kernel.php
+```
+
+**Questions to Answer:**
+
+- What jobs are defined?
+- How are jobs dispatched?
+- Are jobs queued or synchronous?
+- What scheduled tasks exist?
+- Are jobs properly tested?
+
+### Frontend (Vue 3) Research
+
+#### 1. Understanding Component Structure
+
+```bash
+# Find all components
+find resources/js/components -type f -name "*.vue"
+
+# Find all pages
+find resources/js/pages -type f -name "*.vue"
+
+# Search for component usage
+rg "<ComponentName" resources/js/
+```
+
+**Questions to Answer:**
+
+- What components exist?
+- How are components organized?
+- Are components reusable?
+- What props do components accept?
+- Are components properly typed?
+
+#### 2. Investigating Inertia.js Usage
+
+```bash
+# Search for Inertia renders in backend
+rg "Inertia::render" app/Http/Controllers/
+
+# Search for Inertia forms in frontend
+rg "this.\$inertia.form" resources/js/
+
+# Check Inertia middleware
+cat app/Http/Middleware/HandleInertiaRequests.php
+```
+
+**Questions to Answer:**
+
+- How is data passed from backend to frontend?
+- What shared data is available?
+- How are forms handled?
+- Are page props properly typed?
+- How is navigation implemented?
+
+#### 3. Researching State Management
+
+```bash
+# Search for data() in components
+rg "data\(\)" resources/js/
+
+# Search for computed properties
+rg "computed:" resources/js/
+
+# Search for provide/inject
+rg "provide|inject" resources/js/
+```
+
+**Questions to Answer:**
+
+- How is component state managed?
+- Are computed properties used effectively?
+- Is provide/inject used for global state?
+- How is data shared between components?
+- Are watchers used appropriately?
+
+#### 4. Understanding TypeScript Types
+
+```bash
+# Check type definitions
+cat resources/js/types/index.d.ts
+
+# Search for interface usage
+rg "interface|type" resources/js/types/
+
+# Find PropType usage
+rg "PropType" resources/js/
+```
+
+**Questions to Answer:**
+
+- What TypeScript types are defined?
+- Are props properly typed?
+- Are API responses typed?
+- Are there any type errors?
+- Is type safety enforced?
+
+### Full-Stack (Inertia) Research
+
+#### 1. Tracing Request Flow
+
+```bash
+# Start with route
+php artisan route:list | grep markets
+
+# Find controller method
+rg "public function index" app/Http/Controllers/MarketController.php
+
+# Find Inertia render
+rg "Inertia::render\('Markets" app/Http/Controllers/
+
+# Find Vue page
+cat resources/js/pages/Markets/Index.vue
+```
+
+**Questions to Answer:**
+
+- What is the complete request/response flow?
+- What data is passed from backend to frontend?
+- Are validations consistent?
+- How are errors handled?
+- What middleware is applied?
+
+#### 2. Investigating Performance
+
+```bash
+# Check for N+1 queries
+rg "->get\(\)|->all\(\)" app/Http/Controllers/
+
+# Look for eager loading
+rg "->with\(" app/
+
+# Check for pagination
+rg "paginate|simplePaginate" app/
+```
+
+**Questions to Answer:**
+
+- Are there N+1 query problems?
+- Is eager loading used?
+- Are large datasets paginated?
+- Are queries optimized?
+- Are database indexes present?
+
+### Database (MySQL) Research
+
+#### 1. Schema Investigation
+
+```bash
+# Check migrations
+ls -la database/migrations/
+
+# Search for indexes
+rg "index|unique" database/migrations/
+
+# Check for foreign keys
+rg "foreign|references" database/migrations/
+```
+
+**Questions to Answer:**
+
+- What tables and columns exist?
+- Are relationships properly indexed?
+- Are foreign keys defined?
+- Are migrations reversible?
+- Are there any naming inconsistencies?
+
+## Tools and Commands
+
+### Laravel Tools
+
+```bash
+# Routes
+php artisan route:list                    # List all routes
+php artisan route:list --name=markets     # Filter by name
+php artisan route:list --method=POST      # Filter by method
+
+# Database
+php artisan db:show                       # Show database info
+php artisan db:table users                # Show table structure
+php artisan migrate:status                # Migration status
+
+# Models
+php artisan model:show Market             # Show model info
+
+# Cache
+php artisan config:clear                  # Clear config cache
+php artisan route:clear                   # Clear route cache
+
+# Tinker (REPL)
+php artisan tinker                        # Interactive shell
+```
+
+### Search Tools
+
+```bash
+# Ripgrep (rg) - Fast search
+rg "pattern" app/                         # Search in app/
+rg -t php "class.*Service" app/          # Search PHP files
+rg -i "market" app/                       # Case-insensitive
+
+# Find - File search
+find app/ -name "*Service.php"            # Find files
+find app/ -type f -name "*.php"          # All PHP files
+
+# Glob - Pattern matching
+ls app/Services/*.php                     # List services
+ls app/Models/*.php                       # List models
+```
+
+### Database Research
+
+```bash
+# MySQL queries (via Tinker or database client)
+php artisan tinker
+
+# In Tinker:
+DB::table('markets')->count();            # Count records
+DB::table('markets')->first();            # Get first record
+DB::getQueryLog();                        # Show queries (if enabled)
+```
+
+### Frontend Tools
+
+```bash
+# TypeScript
+npm run type-check                        # Check types
+npx tsc --noEmit                         # TypeScript check
+
+# Build
+npm run build                             # Production build
+npm run dev                               # Development build
+
+# Testing
+npm run test                              # Run Vitest tests
+```
+
+## Documentation Research
+
+### Official Documentation
+
+- **Laravel**: https://laravel.com/docs/12.x
+- **Vue 3**: https://vuejs.org/guide/introduction.html
+- **Inertia.js**: https://inertiajs.com/
+- **PestPHP**: https://pestphp.com/
+- **Vite**: https://vitejs.dev/
+
+### Search for Best Practices
+
+Use WebSearch tool to find:
+
+- "Laravel 12 [feature] best practices"
+- "Vue 3 Options API [pattern]"
+- "Inertia.js [use case] example"
+- "MySQL [optimization] technique"
+- "PestPHP [testing scenario]"
+
+## Research Output Format
+
+### Standard Research Report
+
+```markdown
+# Research Report: [Topic]
+
+## Summary
+
+[2-3 sentence overview of findings]
+
+## Current State
+
+[What exists now in the codebase]
+
+**Evidence:**
+
+- File: app/Services/MarketService.php
+- Pattern: Repository pattern is used
+- Tests: tests/Unit/MarketServiceTest.php exists
+
+## Findings
+
+### Finding 1: [Title]
+
+**Description:** [Detailed description]
+
+**Evidence:**
+[Code example or reference]
+
+**Impact:** [High/Medium/Low]
+
+### Finding 2: [Title]
+
+...
+
+## Recommendations
+
+### Option 1: [Approach Name]
+
+**Pros:**
+
+- Advantage 1
+- Advantage 2
+
+**Cons:**
+
+- Disadvantage 1
+- Disadvantage 2
+
+**Complexity:** [High/Medium/Low]
+
+### Option 2: [Approach Name]
+
+...
+
+## Recommended Approach
+
+[Which option and why]
+
+## Next Steps
+
+1. [Action 1]
+2. [Action 2]
+3. [Action 3]
+
+## Questions/Unknowns
+
+- [ ] Question 1
+- [ ] Question 2
+
+## References
+
+- [Link to Laravel docs]
+- [Link to similar implementation]
+- [Link to package documentation]
+```
+
+## Example Research Tasks
+
+### Task 1: "How do we handle file uploads?"
+
+1. Search for upload handling: `rg "store|storeAs" app/`
+2. Check for storage configuration: `cat config/filesystems.php`
+3. Look for upload validation: `rg "file|mimes" app/Http/Requests/`
+4. Find frontend upload components: `rg "type=\"file\"" resources/js/`
+5. Check tests: `rg "UploadedFile" tests/`
+6. Document findings and recommend approach
+
+### Task 2: "What's our authentication flow?"
+
+1. Check routes: `cat routes/auth.php`
+2. Examine controllers: `ls app/Http/Controllers/Auth/`
+3. Check middleware: `cat app/Http/Middleware/Authenticate.php`
+4. Find frontend components: `ls resources/js/pages/auth/`
+5. Review session config: `cat config/session.php`
+6. Document complete auth flow with diagrams
+
+### Task 3: "How can we optimize market listing performance?"
+
+1. Check controller: `cat app/Http/Controllers/MarketController.php`
+2. Look for N+1 queries: Search for `get()` without `with()`
+3. Check pagination: Look for `paginate()` usage
+4. Examine indexes: `rg "index" database/migrations/*markets*`
+5. Profile queries: Enable query log in Tinker
+6. Recommend optimizations with evidence
+
+## Best Practices
+
+1. **Be Thorough**: Explore all related code before concluding
+2. **Be Objective**: Present findings without bias
+3. **Be Specific**: Include file paths, line numbers, code examples
+4. **Be Clear**: Use simple language and structured format
+5. **Be Helpful**: Provide actionable recommendations
+6. **Be Honest**: Acknowledge unknowns and limitations
+7. **Be Fast**: Use appropriate tools (grep vs reading entire files)
+8. **Be Stack-Aware**: Consider Laravel, Vue, Inertia, MySQL contexts
+
+## When to Use Research Mode
+
+✅ **Use research mode when:**
+
+- Exploring unfamiliar parts of codebase
+- Understanding complex business logic
+- Investigating performance issues
+- Learning about architecture decisions
+- Evaluating packages or approaches
+- Documenting existing systems
+- Planning major refactors
+- Resolving ambiguous requirements
+
+❌ **Don't use research mode when:**
+
+- Requirements are crystal clear
+- Simple bug fix with obvious solution
+- Just need to run a command
+- Writing tests for new code
+- Implementing well-defined feature
+
+---
+
+**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3
+
+**Remember**: Good research takes time. Gather evidence, explore thoroughly, and document findings before recommending solutions.

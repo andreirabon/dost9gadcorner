@@ -1,0 +1,927 @@
+---
+description: 'Apply when implementing Laravel 12 patterns: controllers, models, migrations, Form Requests, policies, jobs, events, or Eloquent usage.'
+alwaysApply: false
+---
+
+# Laravel Development Patterns
+
+Comprehensive patterns for Laravel 12 application development with PHP 8.2+.
+
+## Controller Patterns
+
+### Resource Controllers
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Market;
+use App\Http\Requests\StoreMarketRequest;
+use App\Http\Requests\UpdateMarketRequest;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class MarketController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(): Response
+    {
+        return Inertia::render('Markets/Index', [
+            'markets' => Market::query()
+                ->select('id', 'name', 'status', 'created_at')
+                ->latest()
+                ->paginate(20),
+            'filters' => request()->only('search', 'status'),
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Markets/Create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreMarketRequest $request): RedirectResponse
+    {
+        $market = Market::create($request->validated());
+
+        return redirect()
+            ->route('markets.show', $market)
+            ->with('message', 'Market created successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Market $market): Response
+    {
+        return Inertia::render('Markets/Show', [
+            'market' => $market->load('creator', 'positions'),
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateMarketRequest $request, Market $market): RedirectResponse
+    {
+        $market->update($request->validated());
+
+        return back()->with('message', 'Market updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Market $market): RedirectResponse
+    {
+        $market->delete();
+
+        return redirect()
+            ->route('markets.index')
+            ->with('message', 'Market deleted successfully.');
+    }
+}
+```
+
+### Dependency Injection in Controllers
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Repositories\MarketRepository;
+use App\Services\MarketService;
+use Illuminate\Container\Attributes\Cache;
+use Illuminate\Container\Attributes\Config;
+use Illuminate\Container\Attributes\Log;
+use Illuminate\Contracts\Cache\Repository;
+use Psr\Log\LoggerInterface;
+
+class MarketController extends Controller
+{
+    /**
+     * Create a new controller instance.
+     *
+     * Dependencies are automatically injected by Laravel's service container.
+     */
+    public function __construct(
+        protected MarketService $marketService,
+        protected MarketRepository $marketRepository,
+        #[Cache('redis')] protected Repository $cache,
+        #[Log('daily')] protected LoggerInterface $log,
+        #[Config('app.markets.default_limit')] protected int $defaultLimit,
+    ) {}
+
+    /**
+     * Search markets using the injected service.
+     */
+    public function search(Request $request): Response
+    {
+        $this->log->info('Market search initiated', [
+            'query' => $request->input('q'),
+        ]);
+
+        $results = $this->marketService->search(
+            query: $request->input('q'),
+            limit: $request->input('limit', $this->defaultLimit)
+        );
+
+        return Inertia::render('Markets/Search', [
+            'results' => $results,
+        ]);
+    }
+}
+```
+
+## Form Request Validation
+
+### Creating Form Requests
+
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class StoreMarketRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return $this->user()->can('create', Market::class);
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:200'],
+            'description' => ['required', 'string', 'max:2000'],
+            'category' => ['required', Rule::in(['politics', 'sports', 'finance'])],
+            'end_date' => ['required', 'date', 'after:now'],
+            'options' => ['required', 'array', 'min:2'],
+            'options.*.name' => ['required', 'string', 'max:100'],
+            'options.*.initial_probability' => ['required', 'numeric', 'between:0,100'],
+        ];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     */
+    public function attributes(): array
+    {
+        return [
+            'options.*.name' => 'option name',
+            'options.*.initial_probability' => 'initial probability',
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     */
+    public function messages(): array
+    {
+        return [
+            'end_date.after' => 'The market must end in the future.',
+            'options.min' => 'A market must have at least 2 options.',
+        ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'slug' => str($this->name)->slug(),
+        ]);
+    }
+}
+```
+
+### Using Form Requests in Controllers
+
+```php
+public function store(StoreMarketRequest $request): RedirectResponse
+{
+    // Validation happens automatically before this method is called
+
+    // Retrieve all validated input
+    $validated = $request->validated();
+
+    // Retrieve specific validated fields
+    $safe = $request->safe()->only(['name', 'description']);
+
+    // Retrieve all except specific fields
+    $withoutOptions = $request->safe()->except(['options']);
+
+    $market = Market::create($validated);
+
+    return redirect()->route('markets.show', $market);
+}
+```
+
+## Service Layer Pattern
+
+### Service Class
+
+```php
+<?php
+
+namespace App\Services;
+
+use App\Models\Market;
+use App\Repositories\MarketRepository;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+class MarketService
+{
+    public function __construct(
+        protected MarketRepository $repository,
+    ) {}
+
+    /**
+     * Create a new market with options.
+     */
+    public function createMarketWithOptions(array $data): Market
+    {
+        return DB::transaction(function () use ($data) {
+            $market = $this->repository->create([
+                'name' => $data['name'],
+                'description' => $data['description'],
+                'category' => $data['category'],
+                'end_date' => $data['end_date'],
+                'creator_id' => auth()->id(),
+            ]);
+
+            foreach ($data['options'] as $option) {
+                $market->options()->create($option);
+            }
+
+            // Clear cache
+            Cache::tags(['markets'])->flush();
+
+            // Dispatch events
+            event(new MarketCreated($market));
+
+            return $market->load('options');
+        });
+    }
+
+    /**
+     * Search markets with caching.
+     */
+    public function search(string $query, int $limit = 10): array
+    {
+        $cacheKey = "market_search:{$query}:{$limit}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($query, $limit) {
+            return $this->repository->search($query, $limit);
+        });
+    }
+
+    /**
+     * Calculate market statistics.
+     */
+    public function calculateStats(Market $market): array
+    {
+        return [
+            'total_volume' => $market->positions()->sum('amount'),
+            'unique_traders' => $market->positions()->distinct('user_id')->count(),
+            'current_probabilities' => $this->calculateProbabilities($market),
+            'recent_trades' => $market->positions()
+                ->latest()
+                ->take(10)
+                ->get(),
+        ];
+    }
+
+    /**
+     * Calculate current probabilities for market options.
+     */
+    protected function calculateProbabilities(Market $market): array
+    {
+        $positions = $market->positions()
+            ->select('option_id', DB::raw('SUM(amount) as total_volume'))
+            ->groupBy('option_id')
+            ->get();
+
+        $totalVolume = $positions->sum('total_volume');
+
+        return $positions->mapWithKeys(function ($position) use ($totalVolume) {
+            return [
+                $position->option_id => [
+                    'probability' => $totalVolume > 0
+                        ? ($position->total_volume / $totalVolume) * 100
+                        : 0,
+                    'volume' => $position->total_volume,
+                ],
+            ];
+        })->toArray();
+    }
+}
+```
+
+## Repository Pattern
+
+### Repository Interface
+
+```php
+<?php
+
+namespace App\Repositories;
+
+use App\Models\Market;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+
+interface MarketRepositoryInterface
+{
+    public function findAll(): Collection;
+
+    public function findById(int $id): ?Market;
+
+    public function findBySlug(string $slug): ?Market;
+
+    public function paginate(int $perPage = 15): LengthAwarePaginator;
+
+    public function create(array $data): Market;
+
+    public function update(Market $market, array $data): Market;
+
+    public function delete(Market $market): bool;
+
+    public function search(string $query, int $limit = 10): array;
+}
+```
+
+### Repository Implementation
+
+```php
+<?php
+
+namespace App\Repositories;
+
+use App\Models\Market;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+
+class MarketRepository implements MarketRepositoryInterface
+{
+    public function __construct(
+        protected Market $model,
+    ) {}
+
+    public function findAll(): Collection
+    {
+        return $this->model
+            ->select('id', 'name', 'status', 'created_at')
+            ->get();
+    }
+
+    public function findById(int $id): ?Market
+    {
+        return $this->model->find($id);
+    }
+
+    public function findBySlug(string $slug): ?Market
+    {
+        return $this->model
+            ->where('slug', $slug)
+            ->firstOrFail();
+    }
+
+    public function paginate(int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->model
+            ->latest()
+            ->paginate($perPage);
+    }
+
+    public function create(array $data): Market
+    {
+        return $this->model->create($data);
+    }
+
+    public function update(Market $market, array $data): Market
+    {
+        $market->update($data);
+        return $market->fresh();
+    }
+
+    public function delete(Market $market): bool
+    {
+        return $market->delete();
+    }
+
+    public function search(string $query, int $limit = 10): array
+    {
+        return $this->model
+            ->where('name', 'like', "%{$query}%")
+            ->orWhere('description', 'like', "%{$query}%")
+            ->limit($limit)
+            ->get()
+            ->toArray();
+    }
+}
+```
+
+### Binding Repository in Service Provider
+
+```php
+<?php
+
+namespace App\Providers;
+
+use App\Repositories\MarketRepository;
+use App\Repositories\MarketRepositoryInterface;
+use Illuminate\Support\ServiceProvider;
+
+class RepositoryServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->bind(
+            MarketRepositoryInterface::class,
+            MarketRepository::class
+        );
+    }
+}
+```
+
+## Eloquent Model Patterns
+
+### Model with Relationships and Scopes
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
+
+class Market extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    /**
+     * The attributes that are mass assignable.
+     */
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'category',
+        'status',
+        'end_date',
+        'creator_id',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     */
+    protected function casts(): array
+    {
+        return [
+            'end_date' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * Get the creator of the market.
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    /**
+     * Get the options for the market.
+     */
+    public function options(): HasMany
+    {
+        return $this->hasMany(MarketOption::class);
+    }
+
+    /**
+     * Get all positions in this market.
+     */
+    public function positions(): HasMany
+    {
+        return $this->hasMany(Position::class);
+    }
+
+    /**
+     * Scope a query to only include active markets.
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('status', 'active')
+              ->where('end_date', '>', now());
+    }
+
+    /**
+     * Scope a query to filter by category.
+     */
+    public function scopeCategory(Builder $query, string $category): void
+    {
+        $query->where('category', $category);
+    }
+
+    /**
+     * Scope a query to search by name or description.
+     */
+    public function scopeSearch(Builder $query, string $search): void
+    {
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+
+    /**
+     * Check if the market is currently active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active'
+            && $this->end_date > now();
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+}
+```
+
+### Using Query Scopes
+
+```php
+// In controller or service
+$markets = Market::query()
+    ->active()
+    ->category('politics')
+    ->search($request->input('q'))
+    ->with(['creator:id,name', 'options'])
+    ->latest()
+    ->paginate(20);
+```
+
+## API Resource Pattern
+
+### API Resource Class
+
+```php
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class MarketResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description' => $this->description,
+            'category' => $this->category,
+            'status' => $this->status,
+            'end_date' => $this->end_date->toISOString(),
+            'is_active' => $this->isActive(),
+
+            // Conditional attributes
+            'creator' => UserResource::make($this->whenLoaded('creator')),
+            'options' => MarketOptionResource::collection($this->whenLoaded('options')),
+
+            // Conditional fields based on permissions
+            'analytics' => $this->when(
+                $request->user()?->can('viewAnalytics', $this->resource),
+                fn () => $this->getAnalytics()
+            ),
+
+            'timestamps' => [
+                'created_at' => $this->created_at->toISOString(),
+                'updated_at' => $this->updated_at->toISOString(),
+            ],
+        ];
+    }
+
+    /**
+     * Get additional data that should be returned with the resource array.
+     */
+    public function with(Request $request): array
+    {
+        return [
+            'meta' => [
+                'version' => '1.0',
+            ],
+        ];
+    }
+}
+```
+
+### Using Resources in Controllers
+
+```php
+use App\Http\Resources\MarketResource;
+use App\Http\Resources\MarketCollection;
+
+public function index(): JsonResponse
+{
+    $markets = Market::with('creator')->paginate();
+
+    return MarketResource::collection($markets);
+}
+
+public function show(Market $market): JsonResponse
+{
+    $market->load(['creator', 'options', 'positions']);
+
+    return MarketResource::make($market);
+}
+```
+
+## Database Query Optimization
+
+### N+1 Query Prevention
+
+```php
+// ❌ BAD: N+1 query problem
+$markets = Market::all();
+foreach ($markets as $market) {
+    echo $market->creator->name; // N queries
+}
+
+// ✅ GOOD: Eager loading
+$markets = Market::with('creator')->get();
+foreach ($markets as $market) {
+    echo $market->creator->name; // 2 queries total
+}
+
+// ✅ GOOD: Lazy eager loading
+$markets = Market::all();
+$markets->load('creator');
+
+// ✅ GOOD: Specific columns
+$markets = Market::with('creator:id,name,email')->get();
+```
+
+### Efficient Queries
+
+```php
+// ✅ Select only needed columns
+$markets = Market::select('id', 'name', 'status')
+    ->where('status', 'active')
+    ->get();
+
+// ✅ Use chunk for large datasets
+Market::chunk(100, function ($markets) {
+    foreach ($markets as $market) {
+        // Process market
+    }
+});
+
+// ✅ Use exists() for checking existence
+if (Market::where('slug', $slug)->exists()) {
+    // Market exists
+}
+
+// ✅ Use count() for counting
+$activeCount = Market::where('status', 'active')->count();
+```
+
+## Middleware Patterns
+
+### Custom Middleware
+
+```php
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class EnsureMarketIsActive
+{
+    /**
+     * Handle an incoming request.
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $market = $request->route('market');
+
+        if ($market && !$market->isActive()) {
+            return redirect()
+                ->route('markets.index')
+                ->with('error', 'This market is no longer active.');
+        }
+
+        return $next($request);
+    }
+}
+```
+
+### Registering Middleware
+
+```php
+// bootstrap/app.php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'market.active' => \App\Http\Middleware\EnsureMarketIsActive::class,
+    ]);
+})
+
+// routes/web.php
+Route::get('/markets/{market}/trade', [TradeController::class, 'show'])
+    ->middleware(['auth', 'market.active']);
+```
+
+## Job and Queue Patterns
+
+### Creating Jobs
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Market;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+
+class CalculateMarketProbabilities implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * The number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     */
+    public int $backoff = 10;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public Market $market,
+    ) {}
+
+    /**
+     * Execute the job.
+     */
+    public function handle(MarketService $service): void
+    {
+        $probabilities = $service->calculateProbabilities($this->market);
+
+        $this->market->update([
+            'current_probabilities' => $probabilities,
+            'last_calculated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('Failed to calculate market probabilities', [
+            'market_id' => $this->market->id,
+            'error' => $exception->getMessage(),
+        ]);
+    }
+}
+```
+
+### Dispatching Jobs
+
+```php
+// Dispatch immediately
+CalculateMarketProbabilities::dispatch($market);
+
+// Dispatch after delay
+CalculateMarketProbabilities::dispatch($market)
+    ->delay(now()->addMinutes(5));
+
+// Dispatch to specific queue
+CalculateMarketProbabilities::dispatch($market)
+    ->onQueue('calculations');
+
+// Chain jobs
+CalculateMarketProbabilities::dispatch($market)
+    ->chain([
+        new UpdateMarketCache($market),
+        new NotifySubscribers($market),
+    ]);
+```
+
+## Event and Listener Pattern
+
+### Defining Events
+
+```php
+<?php
+
+namespace App\Events;
+
+use App\Models\Market;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class MarketCreated
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public function __construct(
+        public Market $market,
+    ) {}
+}
+```
+
+### Creating Listeners
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\MarketCreated;
+use App\Notifications\NewMarketNotification;
+use App\Models\User;
+
+class NotifyAdminsOfNewMarket
+{
+    public function handle(MarketCreated $event): void
+    {
+        $admins = User::where('is_admin', true)->get();
+
+        foreach ($admins as $admin) {
+            $admin->notify(new NewMarketNotification($event->market));
+        }
+    }
+}
+```
+
+### Registering Events
+
+```php
+// In EventServiceProvider
+protected $listen = [
+    MarketCreated::class => [
+        NotifyAdminsOfNewMarket::class,
+        UpdateMarketCache::class,
+        LogMarketCreation::class,
+    ],
+];
+```
+
+**Remember**: Laravel patterns enable clean, maintainable, and testable backend code. Follow Laravel conventions and leverage its powerful features.

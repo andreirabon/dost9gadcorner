@@ -1,0 +1,231 @@
+---
+description: 'Apply when in active development: implementing features, running commands, testing changes, or following the implementation-first workflow for Laravel + Vue + Inertia.'
+alwaysApply: false
+---
+
+# Development Mode
+
+**Context**: Active development - Laravel + Vue 3 + Inertia.js
+**Focus**: Implementation, coding, building features
+
+## Development Mindset
+
+- **Write code first, explain after** - Ship working code quickly
+- **Working > Perfect** - Iterate and improve, don't over-engineer
+- **Test immediately** - Run tests after each change
+- **Commit atomically** - Small, focused commits
+
+## Priorities
+
+1. **Get it working** - Make it function correctly
+2. **Get it right** - Add proper validation, error handling, authorization
+3. **Get it clean** - Refactor, optimize, document
+
+## Quick Commands
+
+### Backend (Laravel)
+
+```bash
+# Start development server
+php artisan serve
+
+# Run tests
+php artisan test
+php artisan test --filter MarketTest
+
+# Migrations
+php artisan migrate
+php artisan migrate:fresh --seed
+
+# Clear caches
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+
+# Code quality
+./vendor/bin/pint           # Format code
+./vendor/bin/phpstan       # Static analysis
+
+# Tinker (REPL)
+php artisan tinker
+```
+
+### Frontend (Vite + Vue)
+
+```bash
+# Start dev server with HMR
+npm run dev
+
+# Build for production
+npm run build
+
+# Type check
+npx tsc --noEmit
+
+# Lint
+npx eslint . --ext .ts,.vue,.js
+
+# Test
+npm run test                # Vitest
+```
+
+### Database
+
+```bash
+# Create migration
+php artisan make:migration create_markets_table
+
+# Create model with migration
+php artisan make:model Market -m
+
+# Create factory
+php artisan make:factory MarketFactory
+
+# Create seeder
+php artisan make:seeder MarketSeeder
+
+# Seed database
+php artisan db:seed
+```
+
+## Development Workflow
+
+### 1. Feature Development
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/market-creation
+
+# 2. Generate resources
+php artisan make:controller MarketController --resource
+php artisan make:request StoreMarketRequest
+php artisan make:policy MarketPolicy
+
+# 3. Write tests (TDD)
+php artisan make:test MarketTest
+
+# 4. Implement feature
+# - Controller (thin, delegates to service)
+# - Service (business logic)
+# - View (Inertia Vue component)
+
+# 5. Run tests
+php artisan test
+
+# 6. Type check
+npx tsc --noEmit
+
+# 7. Commit
+git add .
+git commit -m "feat: add market creation"
+```
+
+### 2. Bug Fixing
+
+```bash
+# 1. Reproduce bug
+# 2. Write failing test
+# 3. Fix code
+# 4. Verify test passes
+php artisan test --filter testBugName
+# 5. Commit
+git commit -m "fix: resolve market deletion error"
+```
+
+### 3. Debugging
+
+**Backend:**
+
+```php
+// Quick debugging
+dd($variable);              // Dump and die
+dump($variable);            // Dump and continue
+logger()->info('Debug', ['data' => $data]);
+
+// Laravel Telescope (in development)
+// Visit: http://localhost/telescope
+```
+
+**Frontend:**
+
+```typescript
+// Console debugging
+console.log('Debug:', data);
+console.table(markets);
+
+// Vue DevTools in browser
+```
+
+## Tools to Use
+
+### Code Modification
+
+- `StrReplace` - Edit existing code (precise changes)
+- `Write` - Create new files
+- `Read` - Inspect files before editing
+
+### Code Discovery
+
+- `Grep` - Search for code patterns
+- `Glob` - Find files by name
+- `SemanticSearch` - Find code by meaning
+
+### Execution
+
+- `Shell` - Run commands (artisan, npm, git)
+- `ReadLints` - Check for errors after changes
+
+## Best Practices During Development
+
+### PHP/Laravel
+
+- ✅ Use type declarations (PHP 8.2+)
+- ✅ Keep controllers thin (<100 lines)
+- ✅ Use Form Requests for validation
+- ✅ Use Policies for authorization
+- ✅ Eager load to prevent N+1
+- ✅ Use transactions for multi-step operations
+- ✅ Write tests for new features
+
+### Vue 3/TypeScript
+
+- ✅ Use PropType for all props
+- ✅ Use computed properties for derived state
+- ✅ Handle errors in async operations
+- ✅ Add TypeScript types
+- ✅ Test components with Vitest
+
+### General
+
+- ✅ Commit often (atomic commits)
+- ✅ Run tests before committing
+- ✅ Clear caches when config changes
+- ✅ Use `dd()` / `console.log()` for quick debugging (remove before commit)
+
+## Common Tasks
+
+### Add New Feature
+
+1. Route → Controller → Service → Repository → Model
+2. Form Request → Validation rules
+3. Policy → Authorization rules
+4. Inertia page → Vue component
+5. Tests → Feature + Unit tests
+
+### Add New API Endpoint
+
+1. Route → API Controller
+2. API Resource → Transform data
+3. Form Request → Validation
+4. Tests → API tests
+
+### Add New Database Table
+
+1. Migration → Schema
+2. Model → Eloquent model
+3. Factory → Test data
+4. Seeder → Sample data
+
+---
+
+**Remember**: Ship working code quickly, iterate and improve. Don't over-engineer on first pass.

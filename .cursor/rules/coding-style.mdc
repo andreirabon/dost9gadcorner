@@ -1,0 +1,440 @@
+---
+description: 'Apply when enforcing or checking PHP/Laravel and Vue/TypeScript style: types, naming, formatting, file structure, or style consistency.'
+alwaysApply: false
+---
+
+# Coding Style Guide
+
+Quick reference for Laravel + Vue 3 coding style conventions.
+
+## PHP/Laravel Style
+
+### 1. Type Declarations (REQUIRED - PHP 8.2+)
+
+```php
+// ✅ CORRECT: Full type declarations
+public function createMarket(array $data): Market
+{
+    return Market::create($data);
+}
+
+public function getUserById(int $id): ?User
+{
+    return User::find($id);
+}
+
+// ❌ WRONG: No types
+public function createMarket($data)
+{
+    return Market::create($data);
+}
+```
+
+### 2. Method Size (Keep Small)
+
+```php
+// ✅ CORRECT: Small, focused methods
+public function store(StoreMarketRequest $request): RedirectResponse
+{
+    $market = $this->marketService->create($request->validated());
+    return redirect()->route('markets.show', $market);
+}
+
+// ❌ WRONG: Fat controller (>50 lines)
+public function store(Request $request)
+{
+    // 100 lines of validation, business logic, database operations
+    // Extract to service layer!
+}
+```
+
+### 3. Early Returns (Avoid Deep Nesting)
+
+```php
+// ✅ CORRECT: Early returns, flat structure
+public function update(Market $market): void
+{
+    if (!auth()->check()) {
+        abort(401);
+    }
+
+    if (!auth()->user()->can('update', $market)) {
+        abort(403);
+    }
+
+    if (!$market->isActive()) {
+        throw new MarketNotActiveException();
+    }
+
+    $market->update([...]);
+}
+
+// ❌ WRONG: Deep nesting
+public function update($market)
+{
+    if (auth()->check()) {
+        if (auth()->user()->can('update', $market)) {
+            if ($market->isActive()) {
+                $market->update([...]);
+            }
+        }
+    }
+}
+```
+
+### 4. Named Constants (No Magic Numbers)
+
+```php
+// ✅ CORRECT: Named constants
+class MarketService
+{
+    private const MAX_OPTIONS = 10;
+    private const MIN_OPTIONS = 2;
+    private const DEFAULT_DURATION_DAYS = 30;
+
+    public function validate(array $data): void
+    {
+        if (count($data['options']) < self::MIN_OPTIONS) {
+            throw new ValidationException('Too few options');
+        }
+    }
+}
+
+// ❌ WRONG: Magic numbers
+if (count($options) < 2) { } // What's 2?
+if ($duration > 30) { } // What's 30?
+```
+
+### 5. Laravel Conventions
+
+```php
+// ✅ CORRECT: Follow Laravel patterns
+Route::resource('markets', MarketController::class);
+$this->authorize('update', $market);
+DB::transaction(fn() => Market::create($data));
+
+// ✅ CORRECT: Use Eloquent, not raw SQL
+Market::where('status', 'active')->get();
+
+// ❌ WRONG: Raw SQL with user input
+DB::select("SELECT * FROM markets WHERE status = '$status'");
+```
+
+## Vue 3 (Options API) Style
+
+### 1. Component Structure (Consistent Order)
+
+```vue
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+
+// 1. Interfaces/types at top
+interface Market {
+    id: number;
+    name: string;
+}
+
+// 2. Component definition
+export default defineComponent({
+    name: 'MarketCard',
+
+    // 3. Components
+    components: { Button },
+
+    // 4. Props
+    props: {
+        market: {
+            type: Object as PropType<Market>,
+            required: true,
+        },
+    },
+
+    // 5. Emits
+    emits: ['update'],
+
+    // 6. Data
+    data() {
+        return {
+            isLoading: false,
+        };
+    },
+
+    // 7. Computed
+    computed: {
+        statusLabel() {
+            return this.market.status.toUpperCase();
+        },
+    },
+
+    // 8. Watch
+    watch: {
+        'market.status'(newVal) {
+            console.log('Status changed:', newVal);
+        },
+    },
+
+    // 9. Lifecycle hooks
+    mounted() {
+        this.loadData();
+    },
+
+    // 10. Methods
+    methods: {
+        loadData() {
+            // Implementation
+        },
+    },
+});
+</script>
+
+<template>
+    <div class="market-card">
+        {{ market.name }}
+    </div>
+</template>
+
+<style scoped>
+.market-card {
+    padding: 1rem;
+}
+</style>
+```
+
+### 2. Prop Types (ALWAYS Use PropType)
+
+```vue
+<script lang="ts">
+// ✅ CORRECT: Typed props
+import { PropType } from 'vue';
+
+interface User {
+    id: number;
+    name: string;
+}
+
+export default {
+    props: {
+        user: {
+            type: Object as PropType<User>,
+            required: true,
+        },
+        status: {
+            type: String as PropType<'active' | 'closed'>,
+            default: 'active',
+        },
+    },
+};
+
+// ❌ WRONG: Untyped props
+export default {
+    props: {
+        user: Object, // What properties does it have?
+        status: String,
+    },
+};
+</script>
+```
+
+### 3. Computed vs Methods
+
+```vue
+<script>
+export default {
+    data() {
+        return {
+            markets: [],
+        };
+    },
+
+    computed: {
+        // ✅ CORRECT: Use computed for derived state (cached)
+        activeMarkets() {
+            return this.markets.filter((m) => m.status === 'active');
+        },
+
+        totalVolume() {
+            return this.markets.reduce((sum, m) => sum + m.volume, 0);
+        },
+    },
+
+    methods: {
+        // ✅ CORRECT: Use methods for actions
+        async loadMarkets() {
+            this.markets = await fetchMarkets();
+        },
+    },
+};
+</script>
+
+<template>
+    <!-- ✅ CORRECT: Reference computed property (not method call) -->
+    <div>Active: {{ activeMarkets.length }}</div>
+
+    <!-- ❌ WRONG: Calling method in template (not cached) -->
+    <div>Active: {{ getActiveMarkets().length }}</div>
+</template>
+```
+
+## TypeScript/JavaScript Style
+
+### 1. Immutability (CRITICAL)
+
+```typescript
+// ✅ CORRECT: Create new objects
+const updatedUser = {
+    ...user,
+    name: 'New Name',
+};
+
+const updatedArray = [...items, newItem];
+
+// ❌ WRONG: Mutation
+user.name = 'New Name'; // BAD!
+items.push(newItem); // BAD!
+```
+
+### 2. Async/Await (Not Promises)
+
+```typescript
+// ✅ CORRECT: Async/await
+async function fetchMarkets() {
+    try {
+        const response = await fetch('/api/markets');
+        return await response.json();
+    } catch (error) {
+        console.error('Failed to fetch:', error);
+        throw error;
+    }
+}
+
+// ❌ WRONG: Promise chains
+function fetchMarkets() {
+    return fetch('/api/markets')
+        .then((res) => res.json())
+        .catch((err) => console.error(err));
+}
+```
+
+### 3. Error Handling (ALWAYS)
+
+```typescript
+// ✅ CORRECT: Comprehensive error handling
+async function submitForm(data: FormData) {
+    try {
+        const response = await api.post('/markets', data);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Form submission failed:', error);
+        throw new Error('Failed to create market');
+    }
+}
+
+// ❌ WRONG: No error handling
+async function submitForm(data) {
+    const response = await api.post('/markets', data);
+    return response.json();
+}
+```
+
+## File Organization
+
+### Size Limits
+
+- **PHP Classes**: 200-400 lines typical, 800 max
+- **Vue Components**: 200-500 lines typical, 800 max
+- **TypeScript Utilities**: 100-200 lines typical, 400 max
+- **Methods/Functions**: <50 lines (extract if larger)
+
+### Structure
+
+```
+MANY SMALL FILES > FEW LARGE FILES
+
+✅ CORRECT: Feature-based organization
+app/
+├── Services/
+│   ├── MarketService.php       (150 lines)
+│   ├── OptionService.php       (120 lines)
+│   └── ProbabilityService.php  (180 lines)
+
+resources/js/
+├── pages/Markets/
+│   ├── Index.vue               (200 lines)
+│   ├── Show.vue                (250 lines)
+│   └── Create.vue              (300 lines)
+├── components/
+│   ├── MarketCard.vue          (150 lines)
+│   └── OptionList.vue          (120 lines)
+
+❌ WRONG: Monolithic files
+app/Services/
+└── MarketService.php           (2000 lines - too big!)
+```
+
+## Input Validation
+
+### Laravel (Form Requests)
+
+```php
+// ✅ CORRECT: Dedicated Form Request
+class StoreMarketRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:200'],
+            'description' => ['required', 'string', 'max:2000'],
+            'options' => ['required', 'array', 'min:2'],
+        ];
+    }
+}
+
+// ❌ WRONG: Validation in controller
+$request->validate([
+    'name' => 'required|string|max:200',
+    // ... many more rules
+]);
+```
+
+## Code Quality Checklist
+
+Before marking work complete:
+
+### PHP/Laravel
+
+- [ ] All methods have type declarations (PHP 8.2+)
+- [ ] Controllers are thin (<100 lines)
+- [ ] Business logic in services, not controllers
+- [ ] Using Form Requests for validation
+- [ ] Using Policies for authorization
+- [ ] Eager loading to prevent N+1 queries
+- [ ] No raw SQL with user input
+- [ ] No magic numbers (use constants)
+
+### Vue 3/TypeScript
+
+- [ ] Props use PropType with interfaces
+- [ ] Computed properties for derived state
+- [ ] Methods for actions only
+- [ ] No mutation (spread operator used)
+- [ ] Async/await for promises
+- [ ] Error handling on all async operations
+- [ ] No console.log in production code
+
+### General
+
+- [ ] Code is readable and well-named
+- [ ] Files are focused (<800 lines)
+- [ ] No deep nesting (>4 levels)
+- [ ] Early returns instead of nested ifs
+- [ ] No hardcoded credentials or secrets
+- [ ] Tests written for new features
+
+---
+
+**Stack**: Laravel 12 (PHP 8.2+) + Vue 3 Options API + Inertia.js + MySQL + TypeScript

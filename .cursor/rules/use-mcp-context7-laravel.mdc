@@ -1,0 +1,57 @@
+---
+description: 'Use Context7 for up-to-date library docs (Laravel, Vue, Inertia, etc.) and Laravel Boost for Laravel-specific guidance; always applied.'
+alwaysApply: true
+---
+
+# Use Context7 & Laravel Boost MCP
+
+When answering questions or implementing features, **always** use these MCPs when relevant.
+
+## Context7 MCP (user-Context7)
+
+Use Context7 for **up-to-date documentation and code examples** for any library or framework.
+
+### When to use
+
+- Laravel, Vue, Inertia.js, PHP, TypeScript, Vite, or any dependency docs
+- API usage, configuration, or best practices
+- Before guessing: fetch current docs instead of relying on training data
+
+### How to use
+
+1. **Resolve library ID first**: Call `resolve-library-id` with the library name (e.g. "laravel", "vue", "inertia") unless the user already provided an ID like `/org/project`.
+2. **Query docs**: Call `query-docs` with the resolved `libraryId` and a **specific** question (e.g. "How to use Inertia form validation with Vue 3" not just "validation").
+3. **Limit**: Do not call `query-docs` more than 3 times per question; use the best information you have after that.
+
+### Example flow
+
+- User asks about Laravel validation → `resolve-library-id` for "laravel" → `query-docs` with libraryId and query like "Form Request validation rules and custom messages".
+- User asks about Vue 3 composables → `resolve-library-id` for "vue" → `query-docs` with a specific question.
+
+---
+
+## Laravel Boost MCP
+
+Use **Laravel Boost** MCP when working with Laravel code: routes, controllers, models, migrations, Artisan, or Laravel-specific patterns.
+
+### When to use
+
+- Writing or modifying Laravel backend code
+- Checking Laravel conventions, commands, or APIs
+- Debugging or understanding Laravel behavior
+
+### How to use
+
+- Call Laravel Boost tools (per that server’s tool list) whenever the task involves Laravel and the tools are available.
+- Prefer Laravel Boost over generic search when the question is Laravel-specific.
+
+---
+
+## Summary
+
+| MCP               | Use for                           | Priority                |
+| ----------------- | --------------------------------- | ----------------------- |
+| **Context7**      | Library/framework docs & examples | Always                  |
+| **Laravel Boost** | Laravel-specific guidance         | When doing Laravel work |
+
+Do not skip these MCPs in favor of memory or generic answers when they would provide more accurate, up-to-date information.

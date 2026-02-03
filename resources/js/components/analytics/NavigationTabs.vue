@@ -38,12 +38,12 @@ const getTabValue = (tab: string | TabItem): string => {
 
 <template>
     <!-- Navigation Controls -->
-    <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div class="rounded-lg border border-gray-200 bg-white p-3 shadow-sm sm:rounded-xl sm:p-4 md:p-6">
         <!-- Header Section -->
-        <div class="mb-6 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md">
-                    <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md sm:h-10 sm:w-10">
+                    <svg class="h-4 w-4 text-white sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -53,24 +53,24 @@ const getTabValue = (tab: string | TabItem): string => {
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900">Data Analytics</h3>
-                    <p class="text-sm text-gray-500">Select region and reporting period</p>
+                    <h3 class="text-base font-semibold text-gray-900 sm:text-lg">Data Analytics</h3>
+                    <p class="text-xs text-gray-500 sm:text-sm">Select region and reporting period</p>
                 </div>
             </div>
             <!-- Live Status Indicator -->
-            <div class="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5">
+            <div class="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 sm:px-3 sm:py-1.5">
                 <div class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></div>
                 <span class="text-xs font-medium text-emerald-700">Live Data</span>
             </div>
         </div>
 
         <!-- Navigation Tabs Container -->
-        <div class="space-y-5">
+        <div class="space-y-4 sm:space-y-5">
             <!-- Primary Navigation: Regions -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-gray-700">
-                    <span class="flex items-center gap-2">
-                        <svg class="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="space-y-2 sm:space-y-3">
+                <label class="block text-xs font-medium text-gray-700 sm:text-sm">
+                    <span class="flex items-center gap-1.5 sm:gap-2">
+                        <svg class="h-3.5 w-3.5 text-indigo-500 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -82,14 +82,14 @@ const getTabValue = (tab: string | TabItem): string => {
                         Region Selection
                     </span>
                 </label>
-                <div class="grid grid-cols-2 gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-2 md:grid-cols-4">
+                <div class="grid grid-cols-1 gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-1.5 sm:grid-cols-2 sm:p-2 md:grid-cols-4">
                     <button
                         v-for="tab in tabs"
                         :key="getTabValue(tab)"
                         type="button"
                         @click="selectTab(getTabValue(tab))"
                         :class="[
-                            'flex items-center justify-center rounded-md border-2 px-4 py-3 text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:outline-none',
+                            'touch-target flex items-center justify-center rounded-md border-2 px-3 py-2.5 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:outline-none sm:px-4 sm:py-3 sm:text-sm',
                             activeTab === getTabValue(tab)
                                 ? 'border-indigo-700 bg-indigo-600 text-white shadow-md'
                                 : 'border-indigo-300 text-indigo-700 hover:border-indigo-400 hover:bg-white hover:text-indigo-900 hover:shadow-sm',
@@ -102,10 +102,10 @@ const getTabValue = (tab: string | TabItem): string => {
             </div>
 
             <!-- Secondary Navigation: Quarters -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-gray-700">
-                    <span class="flex items-center gap-2">
-                        <svg class="h-4 w-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="space-y-2 sm:space-y-3">
+                <label class="block text-xs font-medium text-gray-700 sm:text-sm">
+                    <span class="flex items-center gap-1.5 sm:gap-2">
+                        <svg class="h-3.5 w-3.5 text-orange-500 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -116,14 +116,14 @@ const getTabValue = (tab: string | TabItem): string => {
                         Reporting Period
                     </span>
                 </label>
-                <div class="flex gap-1 rounded-lg border border-orange-200 bg-orange-50 p-1">
+                <div class="flex flex-wrap gap-1 rounded-lg border border-orange-200 bg-orange-50 p-1 sm:flex-nowrap">
                     <button
                         v-for="quarter in quarters"
                         :key="quarter"
                         type="button"
                         @click="selectQuarter(quarter)"
                         :class="[
-                            'flex-1 rounded-md border-2 px-3 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 focus-visible:outline-none',
+                            'touch-target flex-1 rounded-md border-2 px-2 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 focus-visible:outline-none sm:px-3',
                             activeQuarter === quarter
                                 ? 'border-orange-600 bg-orange-500 text-white shadow-sm'
                                 : 'border-orange-300 text-orange-700 hover:border-orange-400 hover:bg-white/70 hover:text-orange-900',
@@ -137,27 +137,27 @@ const getTabValue = (tab: string | TabItem): string => {
         </div>
 
         <!-- Active Selection Summary -->
-        <div class="mt-6 rounded-lg border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600">
-                        <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="mt-4 rounded-lg border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-3 sm:mt-6 sm:p-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 sm:h-8 sm:w-8">
+                        <svg class="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-gray-900">Current Selection</p>
-                        <p class="text-xs text-gray-500">Displaying filtered data below</p>
+                        <p class="text-xs font-medium text-gray-900 sm:text-sm">Current Selection</p>
+                        <p class="hidden text-xs text-gray-500 sm:block">Displaying filtered data below</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-800">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-800 sm:px-3 sm:py-1">
                         {{ activeTab }}
                     </span>
-                    <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="hidden h-3 w-3 text-gray-400 sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
-                    <span class="inline-flex items-center rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-800">
+                    <span class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-800 sm:px-3 sm:py-1">
                         {{ activeQuarter }}
                     </span>
                 </div>

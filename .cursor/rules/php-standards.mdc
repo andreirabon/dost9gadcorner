@@ -1,0 +1,866 @@
+---
+description: 'Apply when writing or reviewing PHP/Laravel code for PSR compliance, naming, types, docblocks, or PHP 8.2+ best practices.'
+alwaysApply: false
+---
+
+# PHP Coding Standards & Best Practices
+
+Universal PHP coding standards for Laravel 12 applications with PHP 8.2+.
+
+## PSR Standards Compliance
+
+### PSR-1: Basic Coding Standard
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+// ✅ GOOD: Proper namespace and class declaration
+class MarketController extends Controller
+{
+    // Class constants in UPPER_CASE
+    public const MAX_MARKETS_PER_PAGE = 20;
+
+    // Properties in camelCase
+    protected MarketService $marketService;
+
+    // Methods in camelCase
+    public function index(): Response
+    {
+        // Method body
+    }
+}
+```
+
+### PSR-12: Extended Coding Style
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Models\Market;
+use App\Repositories\MarketRepository;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+class MarketService
+{
+    // ✅ Constructor property promotion (PHP 8.0+)
+    public function __construct(
+        protected MarketRepository $repository,
+        protected Cache $cache,
+    ) {}
+
+    // ✅ Method signature formatting
+    public function createMarket(
+        string $name,
+        string $description,
+        string $category,
+        array $options
+    ): Market {
+        // Method body
+    }
+}
+```
+
+## PHP 8.2+ Modern Features
+
+### Constructor Property Promotion
+
+```php
+<?php
+
+// ❌ OLD WAY: Verbose property declaration
+class UserService
+{
+    private UserRepository $repository;
+    private LoggerInterface $logger;
+
+    public function __construct(
+        UserRepository $repository,
+        LoggerInterface $logger
+    ) {
+        $this->repository = $repository;
+        $this->logger = $logger;
+    }
+}
+
+// ✅ NEW WAY: Constructor property promotion (PHP 8.0+)
+class UserService
+{
+    public function __construct(
+        private UserRepository $repository,
+        private LoggerInterface $logger,
+    ) {}
+}
+```
+
+### Named Arguments
+
+```php
+<?php
+
+// ✅ GOOD: Named arguments for clarity
+$market = Market::create(
+    name: 'Presidential Election 2024',
+    description: 'Will Trump win?',
+    category: 'politics',
+    endDate: '2024-11-05',
+);
+
+// ✅ Mix positional and named arguments
+$result = $this->searchMarkets(
+    'election',
+    limit: 10,
+    sortBy: 'volume'
+);
+```
+
+### Match Expression (PHP 8.0+)
+
+```php
+<?php
+
+// ❌ OLD: Switch statement
+function getStatusColor(string $status): string
+{
+    switch ($status) {
+        case 'active':
+            return 'green';
+        case 'resolved':
+            return 'blue';
+        case 'closed':
+            return 'gray';
+        default:
+            return 'red';
+    }
+}
+
+// ✅ NEW: Match expression
+function getStatusColor(string $status): string
+{
+    return match ($status) {
+        'active' => 'green',
+        'resolved' => 'blue',
+        'closed' => 'gray',
+        default => 'red',
+    };
+}
+```
+
+### Null Safe Operator (PHP 8.0+)
+
+```php
+<?php
+
+// ❌ OLD: Multiple null checks
+$country = null;
+if ($user !== null) {
+    if ($user->getAddress() !== null) {
+        $country = $user->getAddress()->getCountry();
+    }
+}
+
+// ✅ NEW: Null safe operator
+$country = $user?->getAddress()?->getCountry();
+```
+
+### Union Types (PHP 8.0+)
+
+```php
+<?php
+
+class MarketService
+{
+    // ✅ Union types
+    public function findMarket(int|string $identifier): ?Market
+    {
+        if (is_int($identifier)) {
+            return Market::find($identifier);
+        }
+
+        return Market::where('slug', $identifier)->first();
+    }
+
+    // ✅ Multiple union types
+    public function processValue(int|float|string $value): int|float
+    {
+        return is_string($value) ? (float) $value : $value;
+    }
+}
+```
+
+### Enums (PHP 8.1+)
+
+```php
+<?php
+
+namespace App\Enums;
+
+enum MarketStatus: string
+{
+    case ACTIVE = 'active';
+    case RESOLVED = 'resolved';
+    case CLOSED = 'closed';
+    case CANCELLED = 'cancelled';
+
+    // ✅ Enum methods
+    public function label(): string
+    {
+        return match ($this) {
+            self::ACTIVE => 'Active',
+            self::RESOLVED => 'Resolved',
+            self::CLOSED => 'Closed',
+            self::CANCELLED => 'Cancelled',
+        };
+    }
+
+    public function color(): string
+    {
+        return match ($this) {
+            self::ACTIVE => 'green',
+            self::RESOLVED => 'blue',
+            self::CLOSED => 'gray',
+            self::CANCELLED => 'red',
+        };
+    }
+
+    public function isActive(): bool
+    {
+        return $this === self::ACTIVE;
+    }
+}
+
+// Usage in Model
+class Market extends Model
+{
+    protected function casts(): array
+    {
+        return [
+            'status' => MarketStatus::class,
+        ];
+    }
+}
+
+// Usage in code
+$market->status = MarketStatus::ACTIVE;
+if ($market->status->isActive()) {
+    // Do something
+}
+```
+
+### Readonly Properties (PHP 8.1+)
+
+```php
+<?php
+
+class Market
+{
+    public function __construct(
+        public readonly int $id,
+        public readonly string $name,
+        public readonly MarketStatus $status,
+    ) {}
+
+    // ❌ This will cause an error - readonly properties cannot be modified
+    // public function updateName(string $name): void
+    // {
+    //     $this->name = $name; // Error!
+    // }
+}
+```
+
+### Readonly Classes (PHP 8.2+)
+
+```php
+<?php
+
+// ✅ All properties are automatically readonly
+readonly class MarketDto
+{
+    public function __construct(
+        public int $id,
+        public string $name,
+        public string $description,
+        public MarketStatus $status,
+    ) {}
+}
+```
+
+## Type Declarations
+
+### Strict Types
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+// ✅ ALWAYS use strict types in new files
+class MarketService
+{
+    // Type declarations for all parameters and return types
+    public function calculateProbability(int $votes, int $totalVotes): float
+    {
+        if ($totalVotes === 0) {
+            return 0.0;
+        }
+
+        return $votes / $totalVotes;
+    }
+}
+```
+
+### Return Type Declarations
+
+```php
+<?php
+
+class MarketRepository
+{
+    // ✅ GOOD: Explicit return types
+    public function findById(int $id): ?Market
+    {
+        return Market::find($id);
+    }
+
+    public function getActive(): Collection
+    {
+        return Market::where('status', MarketStatus::ACTIVE)->get();
+    }
+
+    public function exists(int $id): bool
+    {
+        return Market::where('id', $id)->exists();
+    }
+
+    public function delete(Market $market): void
+    {
+        $market->delete();
+    }
+
+    // ✅ Union return types
+    public function findByIdentifier(int|string $id): Market|null
+    {
+        // Implementation
+    }
+}
+```
+
+### Property Type Declarations
+
+```php
+<?php
+
+class Market extends Model
+{
+    // ✅ Typed properties
+    protected string $table = 'markets';
+    protected array $fillable = ['name', 'description', 'status'];
+    protected array $hidden = ['deleted_at'];
+
+    // ✅ Nullable types
+    protected ?string $resolvedAt = null;
+
+    // ✅ Union types
+    protected int|float $volume = 0;
+}
+```
+
+## Laravel Naming Conventions
+
+### Controllers
+
+```php
+<?php
+
+// ✅ GOOD: Singular noun + Controller
+class MarketController extends Controller {}
+class UserController extends Controller {}
+class PositionController extends Controller {}
+
+// ❌ BAD: Plural or inconsistent naming
+class MarketsController extends Controller {}
+class MarketControllers extends Controller {}
+```
+
+### Models
+
+```php
+<?php
+
+// ✅ GOOD: Singular, PascalCase
+class Market extends Model {}
+class User extends Model {}
+class MarketOption extends Model {}
+
+// ❌ BAD: Plural
+class Markets extends Model {}
+```
+
+### Database Tables
+
+```php
+<?php
+
+// ✅ GOOD: Plural, snake_case
+// markets, users, market_options, user_positions
+
+// Model automatically maps to plural table name
+class Market extends Model
+{
+    // No need to specify $table if following convention
+}
+
+// Override if needed
+class Person extends Model
+{
+    protected $table = 'people';
+}
+```
+
+### Relationships
+
+```php
+<?php
+
+class Market extends Model
+{
+    // ✅ HasMany: plural method name
+    public function positions(): HasMany
+    {
+        return $this->hasMany(Position::class);
+    }
+
+    // ✅ BelongsTo: singular method name
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    // ✅ BelongsToMany: plural method name
+    public function participants(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'market_user');
+    }
+}
+```
+
+### Methods
+
+```php
+<?php
+
+class MarketService
+{
+    // ✅ GOOD: Verb-noun pattern, camelCase
+    public function createMarket(array $data): Market {}
+    public function calculateProbabilities(Market $market): array {}
+    public function isMarketActive(Market $market): bool {}
+    public function getUserMarkets(User $user): Collection {}
+
+    // ❌ BAD: Unclear or noun-only
+    public function market(array $data): Market {}
+    public function probabilities(Market $market): array {}
+}
+```
+
+## Error Handling
+
+### Try-Catch Blocks
+
+```php
+<?php
+
+class MarketService
+{
+    public function createMarket(array $data): Market
+    {
+        try {
+            DB::beginTransaction();
+
+            $market = Market::create($data);
+
+            foreach ($data['options'] as $option) {
+                $market->options()->create($option);
+            }
+
+            DB::commit();
+
+            return $market;
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            Log::warning('Market validation failed', [
+                'data' => $data,
+                'errors' => $e->errors(),
+            ]);
+            throw $e;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create market', [
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new MarketCreationException(
+                'Failed to create market: ' . $e->getMessage(),
+                previous: $e
+            );
+        }
+    }
+}
+```
+
+### Custom Exceptions
+
+```php
+<?php
+
+namespace App\Exceptions;
+
+use Exception;
+
+class MarketCreationException extends Exception
+{
+    public function __construct(
+        string $message = 'Failed to create market',
+        int $code = 0,
+        ?\Throwable $previous = null,
+    ) {
+        parent::__construct($message, $code, $previous);
+    }
+
+    public function report(): void
+    {
+        // Custom error reporting
+        Log::channel('markets')->error($this->getMessage(), [
+            'exception' => get_class($this),
+            'file' => $this->getFile(),
+            'line' => $this->getLine(),
+        ]);
+    }
+
+    public function render($request): Response
+    {
+        return response()->json([
+            'success' => false,
+            'error' => $this->getMessage(),
+        ], 500);
+    }
+}
+```
+
+## Documentation
+
+### PHPDoc Blocks
+
+```php
+<?php
+
+namespace App\Services;
+
+use App\Models\Market;
+use Illuminate\Support\Collection;
+
+class MarketService
+{
+    /**
+     * Search markets by query string.
+     *
+     * This method performs a full-text search on market names and descriptions,
+     * returning results ordered by relevance.
+     *
+     * @param  string  $query  The search query
+     * @param  int  $limit  Maximum number of results (default: 10)
+     * @return Collection<int, Market>  Collection of matching markets
+     *
+     * @throws \InvalidArgumentException If query is empty
+     * @throws \RuntimeException If search service is unavailable
+     */
+    public function search(string $query, int $limit = 10): Collection
+    {
+        if (empty(trim($query))) {
+            throw new \InvalidArgumentException('Search query cannot be empty');
+        }
+
+        // Implementation
+    }
+
+    /**
+     * Calculate market probabilities based on current positions.
+     *
+     * @param  Market  $market  The market to calculate probabilities for
+     * @return array<string, float>  Array mapping option IDs to probabilities
+     */
+    public function calculateProbabilities(Market $market): array
+    {
+        // Implementation
+    }
+}
+```
+
+## Array Handling
+
+### Array Destructuring
+
+```php
+<?php
+
+// ✅ Array destructuring
+[$name, $description, $category] = $this->parseMarketData($data);
+
+// ✅ Associative array destructuring
+['name' => $name, 'status' => $status] = $market;
+
+// ✅ Nested destructuring
+['user' => ['name' => $userName, 'email' => $email]] = $data;
+```
+
+### Spread Operator
+
+```php
+<?php
+
+// ✅ Array spread operator
+$defaults = ['status' => 'active', 'verified' => false];
+$data = ['name' => 'Market 1', 'status' => 'pending'];
+
+$merged = [...$defaults, ...$data];
+// Result: ['status' => 'pending', 'verified' => false, 'name' => 'Market 1']
+
+// ✅ Function argument unpacking
+$numbers = [1, 2, 3, 4, 5];
+$max = max(...$numbers);
+```
+
+### Array Functions
+
+```php
+<?php
+
+// ✅ Modern array methods
+$markets = collect([
+    ['name' => 'Market 1', 'volume' => 1000],
+    ['name' => 'Market 2', 'volume' => 2000],
+    ['name' => 'Market 3', 'volume' => 1500],
+]);
+
+// Filter
+$highVolume = $markets->filter(fn($m) => $m['volume'] > 1200);
+
+// Map
+$names = $markets->map(fn($m) => $m['name']);
+
+// Reduce
+$totalVolume = $markets->reduce(fn($carry, $m) => $carry + $m['volume'], 0);
+
+// Sort
+$sorted = $markets->sortByDesc('volume');
+```
+
+## Arrow Functions
+
+```php
+<?php
+
+// ✅ Arrow functions (PHP 7.4+)
+$markets = Market::all();
+
+// Short syntax for simple callbacks
+$names = $markets->map(fn($market) => $market->name);
+
+$active = $markets->filter(fn($market) => $market->status === MarketStatus::ACTIVE);
+
+$volumes = $markets->map(fn($market) => [
+    'name' => $market->name,
+    'volume' => $market->calculateVolume(),
+]);
+```
+
+## Null Coalescing
+
+```php
+<?php
+
+// ✅ Null coalescing operator
+$limit = $request->input('limit') ?? 20;
+$category = $filters['category'] ?? 'all';
+
+// ✅ Null coalescing assignment (PHP 7.4+)
+$data['status'] ??= MarketStatus::ACTIVE;
+$config['timeout'] ??= 30;
+
+// ❌ OLD: Ternary with isset
+$limit = isset($request->input('limit')) ? $request->input('limit') : 20;
+```
+
+## Code Formatting
+
+### Method Chaining
+
+```php
+<?php
+
+// ✅ GOOD: One method per line for readability
+$markets = Market::query()
+    ->where('status', MarketStatus::ACTIVE)
+    ->where('end_date', '>', now())
+    ->with(['creator', 'options'])
+    ->orderBy('created_at', 'desc')
+    ->paginate(20);
+
+// ✅ Fluent interface formatting
+$market = Market::create($data)
+    ->load('options')
+    ->refresh();
+```
+
+### Array Formatting
+
+```php
+<?php
+
+// ✅ Multi-line arrays with trailing comma
+$data = [
+    'name' => 'Presidential Election',
+    'description' => 'Will Trump win?',
+    'category' => 'politics',
+    'end_date' => '2024-11-05',
+    'options' => [
+        ['name' => 'Yes', 'probability' => 50],
+        ['name' => 'No', 'probability' => 50],
+    ],
+];
+
+// ✅ Short arrays on single line
+$statuses = ['active', 'resolved', 'closed'];
+```
+
+## Security Best Practices
+
+### SQL Injection Prevention
+
+```php
+<?php
+
+// ✅ GOOD: Parameter binding (Eloquent/Query Builder)
+$markets = Market::where('status', $status)->get();
+
+// ✅ GOOD: Named bindings for raw queries
+$markets = DB::select(
+    'SELECT * FROM markets WHERE status = :status',
+    ['status' => $status]
+);
+
+// ❌ BAD: String concatenation
+$markets = DB::select("SELECT * FROM markets WHERE status = '$status'");
+```
+
+### Mass Assignment Protection
+
+```php
+<?php
+
+class Market extends Model
+{
+    // ✅ GOOD: Explicitly define fillable fields
+    protected $fillable = [
+        'name',
+        'description',
+        'category',
+        'end_date',
+        'creator_id',
+    ];
+
+    // OR: Define guarded fields
+    protected $guarded = [
+        'id',
+        'resolved_at',
+        'resolution_value',
+    ];
+}
+```
+
+### XSS Prevention
+
+```php
+<?php
+
+// ✅ In Blade templates, {{ }} automatically escapes
+<h1>{{ $market->name }}</h1>
+
+// ✅ Use {!! !!} only for trusted HTML
+<div>{!! $trustedHtmlContent !!}</div>
+
+// ✅ In PHP, use htmlspecialchars
+echo htmlspecialchars($userInput, ENT_QUOTES, 'UTF-8');
+```
+
+## Testing Standards
+
+### PHPUnit Test Structure
+
+```php
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Market;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class MarketControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    /** @test */
+    public function it_displays_list_of_markets(): void
+    {
+        // Arrange
+        $markets = Market::factory()->count(3)->create();
+
+        // Act
+        $response = $this->get('/markets');
+
+        // Assert
+        $response->assertOk();
+        $response->assertInertia(fn($page) =>
+            $page->component('Markets/Index')
+                ->has('markets.data', 3)
+        );
+    }
+
+    /** @test */
+    public function authenticated_user_can_create_market(): void
+    {
+        $user = User::factory()->create();
+
+        $data = [
+            'name' => 'Test Market',
+            'description' => 'Test Description',
+            'category' => 'politics',
+            'end_date' => now()->addDays(30)->toDateTimeString(),
+        ];
+
+        $response = $this->actingAs($user)
+            ->post('/markets', $data);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('markets', [
+            'name' => 'Test Market',
+            'creator_id' => $user->id,
+        ]);
+    }
+}
+```
+
+**Remember**: Modern PHP 8.2+ features enable cleaner, more type-safe code. Follow PSR standards, use Laravel conventions, and leverage PHP's latest features for maintainable applications.

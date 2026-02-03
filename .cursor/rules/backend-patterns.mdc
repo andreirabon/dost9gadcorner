@@ -1,0 +1,912 @@
+---
+description: 'Apply when implementing or reviewing Laravel backend code: controllers, routes, services, repositories, middleware, Form Requests, Eloquent, or PHP API patterns.'
+alwaysApply: false
+---
+
+# Backend Development Patterns
+
+Laravel backend architecture patterns and best practices for scalable PHP applications.
+
+## Laravel Routing & Controller Patterns
+
+### RESTful Resource Routes
+
+```php
+<?php
+
+// routes/web.php - Inertia routes
+use App\Http\Controllers\MarketController;
+
+Route::resource('markets', MarketController::class);
+
+// Generated routes:
+// GET    /markets                 # index()   - List resources
+// GET    /markets/create          # create()  - Show create form
+// POST   /markets                 # store()   - Create resource
+// GET    /markets/{market}        # show()    - Show single resource
+// GET    /markets/{market}/edit   # edit()    - Show edit form
+// PUT    /markets/{market}        # update()  - Update resource
+// DELETE /markets/{market}        # destroy() - Delete resource
+
+// ✅ Query parameters for filtering, sorting, pagination
+// GET /markets?status=active&sort=volume&page=1
+```
+
+### Repository Pattern (Laravel + Eloquent)
+
+```php
+<?php
+
+namespace App\Repositories;
+
+use App\Models\Market;
+use Illuminate\Support\Collection;
+
+// Repository Interface
+interface MarketRepositoryInterface
+{
+    public function findAll(array $filters = []): Collection;
+    public function findById(int $id): ?Market;
+    public function create(array $data): Market;
+    public function update(Market $market, array $data): Market;
+    public function delete(Market $market): bool;
+}
+
+// Repository Implementation
+class MarketRepository implements MarketRepositoryInterface
+{
+    public function __construct(
+        protected Market $model
+    ) {}
+
+    public function findAll(array $filters = []): Collection
+    {
+        $query = $this->model->newQuery();
+
+        // Apply filters
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['category'])) {
+            $query->where('category', $filters['category']);
+        }
+
+        // Apply sorting
+        if (!empty($filters['sort'])) {
+            $direction = $filters['direction'] ?? 'asc';
+            $query->orderBy($filters['sort'], $direction);
+        }
+
+        return $query->get();
+    }
+
+    public function findById(int $id): ?Market
+    {
+        return $this->model->find($id);
+    }
+
+    public function create(array $data): Market
+    {
+        return $this->model->create($data);
+    }
+
+    public function update(Market $market, array $data): Market
+    {
+        $market->update($data);
+        return $market->fresh();
+    }
+
+    public function delete(Market $market): bool
+    {
+        return $market->delete();
+    }
+}
+```
+
+### Service Layer Pattern (Laravel)
+
+```php
+<?php
+
+namespace App\Services;
+
+use App\Models\Market;
+use App\Repositories\MarketRepositoryInterface;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+
+// Business logic separated from data access
+class MarketService
+{
+    public function __construct(
+        protected MarketRepositoryInterface $repository
+    ) {}
+
+    /**
+     * Search markets with business logic.
+     */
+    public function searchMarkets(string $query, int $limit = 10): Collection
+    {
+        // Business logic - search by name or description
+        $cacheKey = "market_search:{$query}:{$limit}";
+
+        return Cache::remember($cacheKey, 300, function () use ($query, $limit) {
+            return Market::where('name', 'like', "%{$query}%")
+                ->orWhere('description', 'like', "%{$query}%")
+                ->limit($limit)
+                ->get();
+        });
+    }
+
+    /**
+     * Create market with related data in transaction.
+     */
+    public function createMarketWithOptions(array $data): Market
+    {
+        return DB::transaction(function () use ($data) {
+            // Create market
+            $market = $this->repository->create([
+                'name' => $data['name'],
+                'description' => $data['description'],
+                'category' => $data['category'],
+                'end_date' => $data['end_date'],
+                'creator_id' => auth()->id(),
+            ]);
+
+            // Create options
+            foreach ($data['options'] as $option) {
+                $market->options()->create($option);
+            }
+
+            // Clear cache
+            Cache::forget('markets_list');
+
+            // Dispatch event
+            event(new MarketCreated($market));
+
+            return $market->load('options');
+        });
+    }
+
+    /**
+     * Calculate market statistics.
+     */
+    public function calculateStats(Market $market): array
+    {
+        return [
+            'total_volume' => $market->positions()->sum('amount'),
+            'unique_traders' => $market->positions()->distinct('user_id')->count(),
+            'average_position' => $market->positions()->avg('amount'),
+            'recent_trades' => $market->positions()
+                ->latest()
+                ->take(10)
+                ->get(),
+        ];
+  }
+}
+```
+
+### Middleware Pattern (Laravel)
+
+```php
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+// Custom middleware for checking market ownership
+class EnsureMarketOwnership
+{
+    /**
+     * Handle an incoming request.
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $market = $request->route('market');
+
+        if ($market && $market->creator_id !== auth()->id()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+
+            return redirect()
+                ->route('markets.index')
+                ->with('error', 'You do not own this market.');
+        }
+
+        return $next($request);
+    }
+}
+
+// Register in bootstrap/app.php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'market.owner' => \App\Http\Middleware\EnsureMarketOwnership::class,
+    ]);
+})
+
+// Usage in routes
+Route::middleware(['auth', 'market.owner'])
+    ->group(function () {
+        Route::put('/markets/{market}', [MarketController::class, 'update']);
+        Route::delete('/markets/{market}', [MarketController::class, 'destroy']);
+    });
+```
+
+## Database Patterns (MySQL + Eloquent)
+
+### Query Optimization
+
+```php
+<?php
+
+// ✅ GOOD: Select only needed columns
+$markets = Market::select(['id', 'name', 'status', 'volume'])
+    ->where('status', 'active')
+    ->orderBy('volume', 'desc')
+    ->limit(10)
+    ->get();
+
+// ❌ BAD: Select everything (loads all columns)
+$markets = Market::where('status', 'active')->get();
+
+// ✅ GOOD: Use indexes for WHERE clauses
+// In migration:
+$table->index('status');
+$table->index('category');
+$table->index(['status', 'created_at']); // Composite index
+```
+
+### N+1 Query Prevention (Eloquent Eager Loading)
+
+```php
+<?php
+
+// ❌ BAD: N+1 query problem
+$markets = Market::all(); // 1 query
+foreach ($markets as $market) {
+    echo $market->creator->name; // N queries (one per market)
+}
+
+// ✅ GOOD: Eager loading
+$markets = Market::with('creator')->get(); // 2 queries total
+foreach ($markets as $market) {
+    echo $market->creator->name; // No additional queries
+}
+
+// ✅ GOOD: Eager load multiple relationships
+$markets = Market::with(['creator', 'options', 'positions'])
+    ->get();
+
+// ✅ GOOD: Constrain eager loads
+$markets = Market::with([
+    'creator:id,name,email',  // Select specific columns
+    'options' => fn($query) => $query->where('is_active', true),
+    'positions' => fn($query) => $query->latest()->take(10)
+])->get();
+
+// ✅ GOOD: Lazy eager loading (when you forgot to eager load)
+$markets = Market::all();
+$markets->load('creator');  // Load relationship after initial query
+```
+
+### Transaction Pattern (Laravel)
+
+```php
+<?php
+
+use Illuminate\Support\Facades\DB;
+
+// ✅ GOOD: Database transactions
+public function createMarketWithPosition(array $marketData, array $positionData): Market
+{
+    return DB::transaction(function () use ($marketData, $positionData) {
+        // Create market
+        $market = Market::create($marketData);
+
+        // Create position
+        $position = $market->positions()->create($positionData);
+
+        // Both succeed or both rollback
+        return $market->load('positions');
+    });
+}
+
+// ✅ GOOD: Manual transaction control
+public function complexOperation(): void
+{
+    DB::beginTransaction();
+
+    try {
+        $market = Market::create($data);
+        $market->options()->createMany($options);
+
+        // Some complex logic
+        $this->processMarket($market);
+
+        DB::commit();
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        Log::error('Transaction failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        throw $e;
+    }
+}
+
+// ✅ GOOD: Transaction with callback
+DB::transaction(function () {
+    Market::create($data);
+    Option::create($optionData);
+}, attempts: 5); // Retry up to 5 times on deadlock
+```
+
+## Caching Strategies (Laravel Cache)
+
+### File/Database Cache
+
+```php
+<?php
+
+use Illuminate\Support\Facades\Cache;
+
+// ✅ GOOD: Simple cache usage
+public function getMarket(int $id): ?Market
+{
+    $cacheKey = "market:{$id}";
+
+    // Cache for 5 minutes (300 seconds)
+    return Cache::remember($cacheKey, 300, function () use ($id) {
+        return Market::with(['creator', 'options'])->find($id);
+    });
+}
+
+// ✅ GOOD: Cache with tags (requires database/redis driver)
+public function getActiveMarkets(): Collection
+{
+    return Cache::tags(['markets'])->remember('markets.active', 300, function () {
+        return Market::where('status', 'active')->get();
+    });
+}
+
+// ✅ GOOD: Invalidate cache
+public function updateMarket(Market $market, array $data): Market
+{
+    $market->update($data);
+
+    // Clear specific cache
+    Cache::forget("market:{$market->id}");
+
+    // Or clear tagged cache
+    Cache::tags(['markets'])->flush();
+
+    return $market->fresh();
+}
+
+// ✅ GOOD: Cache expensive calculations
+public function getMarketStats(Market $market): array
+{
+    return Cache::remember("market_stats:{$market->id}", 600, function () use ($market) {
+        return [
+            'total_volume' => $market->positions()->sum('amount'),
+            'unique_traders' => $market->positions()->distinct('user_id')->count(),
+            'average_position' => $market->positions()->avg('amount'),
+        ];
+    });
+}
+
+// ✅ GOOD: Conditionally cache
+public function getData(bool $fresh = false): Collection
+{
+    if ($fresh) {
+        Cache::forget('markets_all');
+    }
+
+    return Cache::remember('markets_all', 3600, function () {
+        return Market::all();
+    });
+}
+```
+
+## Error Handling Patterns (Laravel)
+
+### Custom Exception Classes
+
+```php
+<?php
+
+namespace App\Exceptions;
+
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+
+class MarketNotFoundException extends Exception
+{
+    public function render($request): JsonResponse|RedirectResponse
+    {
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Market not found'
+            ], 404);
+        }
+
+        return redirect()
+            ->route('markets.index')
+            ->with('error', 'Market not found');
+    }
+}
+
+class InsufficientBalanceException extends Exception
+{
+    public function __construct(
+        public readonly float $required,
+        public readonly float $available
+    ) {
+        parent::__construct("Insufficient balance. Required: {$required}, Available: {$available}");
+    }
+
+    public function render($request): JsonResponse|RedirectResponse
+    {
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $this->getMessage(),
+                'required' => $this->required,
+                'available' => $this->available
+            ], 400);
+        }
+
+        return back()->withErrors([
+            'balance' => $this->getMessage()
+        ]);
+    }
+}
+
+// Usage in Service
+public function createPosition(Market $market, float $amount): Position
+{
+    $user = auth()->user();
+
+    if ($user->balance < $amount) {
+        throw new InsufficientBalanceException(
+            required: $amount,
+            available: $user->balance
+        );
+    }
+
+    return DB::transaction(function () use ($market, $amount, $user) {
+        $user->decrement('balance', $amount);
+        return $market->positions()->create([
+            'user_id' => $user->id,
+            'amount' => $amount
+        ]);
+    });
+}
+```
+
+### Global Exception Handler
+
+```php
+<?php
+
+// app/Exceptions/Handler.php
+namespace App\Exceptions;
+
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
+use Throwable;
+
+class Handler extends ExceptionHandler
+{
+    /**
+     * Register the exception handling callbacks.
+     */
+    public function register(): void
+    {
+        $this->reportable(function (Throwable $e) {
+            // Custom logging for specific exceptions
+            if ($e instanceof MarketCreationException) {
+                Log::channel('markets')->error($e->getMessage(), [
+                    'user_id' => auth()->id(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
+        });
+
+        $this->renderable(function (ValidationException $e, $request) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+        });
+    }
+}
+```
+
+## Authentication & Authorization (Laravel)
+
+### Session-Based Authentication
+
+```php
+<?php
+
+// Laravel uses session-based authentication by default
+
+// In Controller - check authentication
+public function index(Request $request)
+{
+    // Middleware handles auth check
+    $user = $request->user(); // or auth()->user()
+
+    $markets = Market::where('creator_id', $user->id)->get();
+
+    return Inertia::render('Markets/Index', [
+        'markets' => $markets
+    ]);
+}
+
+// In routes - protect routes
+Route::middleware(['auth'])->group(function () {
+    Route::resource('markets', MarketController::class);
+});
+
+// Check if user is authenticated
+if (auth()->check()) {
+    // User is authenticated
+}
+
+// Check if user is guest
+if (auth()->guest()) {
+    // User is not authenticated
+}
+```
+
+### Authorization with Policies
+
+```php
+<?php
+
+namespace App\Policies;
+
+use App\Models\Market;
+use App\Models\User;
+
+class MarketPolicy
+{
+    /**
+     * Determine if user can view the market.
+     */
+    public function view(User $user, Market $market): bool
+    {
+        return true; // All authenticated users can view
+    }
+
+    /**
+     * Determine if user can update the market.
+     */
+    public function update(User $user, Market $market): bool
+    {
+        return $user->id === $market->creator_id;
+    }
+
+    /**
+     * Determine if user can delete the market.
+     */
+    public function delete(User $user, Market $market): bool
+    {
+        return $user->id === $market->creator_id
+            || $user->is_admin;
+    }
+
+    /**
+     * Determine if user can create markets.
+     */
+    public function create(User $user): bool
+    {
+        return $user->email_verified_at !== null;
+    }
+}
+
+// Usage in Controller
+public function update(UpdateMarketRequest $request, Market $market)
+{
+    // Authorize the action
+    $this->authorize('update', $market);
+
+    $market->update($request->validated());
+
+    return back()->with('message', 'Market updated');
+}
+
+// Or use Gate facade
+use Illuminate\Support\Facades\Gate;
+
+if (Gate::allows('update', $market)) {
+    // User can update
+}
+
+if (Gate::denies('delete', $market)) {
+    abort(403);
+}
+
+// In Blade/Inertia shared data
+return Inertia::render('Markets/Show', [
+    'market' => $market,
+    'can' => [
+        'update' => auth()->user()->can('update', $market),
+        'delete' => auth()->user()->can('delete', $market),
+    ]
+]);
+```
+
+## Rate Limiting (Laravel)
+
+### Built-in Rate Limiting
+
+```php
+<?php
+
+use Illuminate\Support\Facades\RateLimiter;
+
+// In routes/web.php
+Route::middleware(['auth', 'throttle:60,1'])->group(function () {
+    // 60 requests per minute
+    Route::post('/markets', [MarketController::class, 'store']);
+});
+
+// Custom rate limiter (in App\Providers\RouteServiceProvider or bootstrap/app.php)
+RateLimiter::for('api', function (Request $request) {
+    return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+});
+
+// Apply to routes
+Route::middleware(['throttle:api'])->group(function () {
+    // API routes
+});
+
+// Advanced: Different limits for different users
+RateLimiter::for('markets', function (Request $request) {
+    $user = $request->user();
+
+    if ($user?->is_admin) {
+        return Limit::none(); // No limit for admins
+    }
+
+    if ($user?->is_premium) {
+        return Limit::perMinute(100)->by($user->id);
+    }
+
+    return Limit::perMinute(10)->by($request->ip());
+});
+
+// Multiple limits (e.g., per minute AND per hour)
+RateLimiter::for('strict', function (Request $request) {
+    return [
+        Limit::perMinute(10)->by($request->ip()),
+        Limit::perHour(100)->by($request->ip()),
+    ];
+});
+
+// Custom response when limit exceeded
+RateLimiter::for('custom', function (Request $request) {
+    return Limit::perMinute(10)
+        ->by($request->ip())
+        ->response(function () {
+            return response()->json([
+                'message' => 'Too many requests. Please slow down.'
+            ], 429);
+        });
+});
+```
+
+## Background Jobs & Queues (Laravel)
+
+### Laravel Jobs
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Market;
+use App\Mail\MarketCreatedMail;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Mail;
+
+class SendMarketCreatedNotification implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * Number of times the job may be attempted.
+     */
+    public int $tries = 3;
+
+    /**
+     * Number of seconds to wait before retrying.
+     */
+    public int $backoff = 10;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public Market $market
+    ) {}
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        // Send email to all subscribers
+        $subscribers = User::where('notify_new_markets', true)->get();
+
+        foreach ($subscribers as $subscriber) {
+            Mail::to($subscriber)->send(
+                new MarketCreatedMail($this->market)
+            );
+        }
+    }
+
+    /**
+     * Handle a job failure.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Log::error('Failed to send market notification', [
+            'market_id' => $this->market->id,
+            'error' => $exception->getMessage()
+        ]);
+    }
+}
+
+// Dispatch job
+SendMarketCreatedNotification::dispatch($market);
+
+// Dispatch with delay
+SendMarketCreatedNotification::dispatch($market)
+    ->delay(now()->addMinutes(5));
+
+// Dispatch to specific queue
+SendMarketCreatedNotification::dispatch($market)
+    ->onQueue('emails');
+
+// Chain jobs
+SendMarketCreatedNotification::dispatch($market)
+    ->chain([
+        new UpdateMarketCache($market),
+        new NotifyAdmins($market),
+    ]);
+```
+
+## Logging & Monitoring (Laravel)
+
+### Structured Logging
+
+```php
+<?php
+
+use Illuminate\Support\Facades\Log;
+
+// Simple logging
+Log::info('Market created', ['market_id' => $market->id]);
+Log::warning('Low balance', ['user_id' => $user->id, 'balance' => $user->balance]);
+Log::error('Payment failed', ['error' => $e->getMessage()]);
+
+// Context-aware logging in Controller
+public function store(StoreMarketRequest $request)
+{
+    Log::info('Market creation started', [
+        'user_id' => auth()->id(),
+        'data' => $request->validated()
+    ]);
+
+    try {
+        $market = $this->marketService->create($request->validated());
+
+        Log::info('Market created successfully', [
+            'market_id' => $market->id,
+            'user_id' => auth()->id()
+        ]);
+
+        return redirect()->route('markets.show', $market);
+
+    } catch (\Exception $e) {
+        Log::error('Market creation failed', [
+            'user_id' => auth()->id(),
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return back()->withErrors(['error' => 'Failed to create market']);
+    }
+}
+
+// Custom log channels (config/logging.php)
+'channels' => [
+    'markets' => [
+        'driver' => 'daily',
+        'path' => storage_path('logs/markets.log'),
+        'level' => 'info',
+        'days' => 14,
+    ],
+],
+
+// Use custom channel
+Log::channel('markets')->info('Market event', $data);
+
+// Laravel Telescope for development monitoring
+// Automatically tracks queries, jobs, requests, exceptions, etc.
+composer require laravel/telescope --dev
+php artisan telescope:install
+php artisan migrate
+```
+
+## Event-Driven Patterns
+
+```php
+<?php
+
+// Event
+namespace App\Events;
+
+use App\Models\Market;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class MarketCreated
+{
+    use Dispatchable, SerializesModels;
+
+    public function __construct(
+        public Market $market
+    ) {}
+}
+
+// Listener
+namespace App\Listeners;
+
+use App\Events\MarketCreated;
+use App\Jobs\SendMarketCreatedNotification;
+
+class NotifySubscribersOfNewMarket
+{
+    public function handle(MarketCreated $event): void
+    {
+        SendMarketCreatedNotification::dispatch($event->market);
+    }
+}
+
+// Register in EventServiceProvider
+protected $listen = [
+    MarketCreated::class => [
+        NotifySubscribersOfNewMarket::class,
+        UpdateMarketCache::class,
+        LogMarketCreation::class,
+    ],
+];
+
+// Dispatch event
+event(new MarketCreated($market));
+```
+
+**Remember**: Laravel patterns enable scalable, maintainable PHP applications. Leverage Laravel's built-in features and conventions for clean, testable code.

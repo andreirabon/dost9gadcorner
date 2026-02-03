@@ -1,0 +1,193 @@
+---
+description: 'Apply when incrementally fixing build or type errors; running diagnostics (tsc, vite build, eslint, artisan) and applying minimal fixes with safety checks.'
+alwaysApply: false
+---
+
+# Build and Fix
+
+Incrementally fix TypeScript, Vue, Laravel, and build errors with safety checks.
+
+## Workflow
+
+### 1. Initial Diagnostics
+
+Run all relevant checks:
+
+```bash
+# Frontend (Vite + TypeScript)
+npm run build              # Vite production build
+npx tsc --noEmit          # TypeScript type check
+npx eslint . --ext .ts,.vue,.js  # Linting
+
+# Backend (Laravel)
+php artisan about         # Laravel system check
+composer validate         # Composer validation
+php artisan test          # Run PestPHP tests
+```
+
+### 2. Parse Error Output
+
+Organize errors by:
+
+- **File location** - Group errors by file
+- **Severity** - Critical (build breaking) → High (type errors) → Medium (warnings)
+- **Type** - TypeScript, Vue template, Vite, Laravel, PHP, Composer
+
+Error categories:
+
+- 🔴 **Critical**: Build fails, app won't run
+- 🟡 **High**: Type errors, component errors
+- 🟢 **Medium**: Linting warnings, deprecation notices
+
+### 3. Fix Each Error Incrementally
+
+For each error (one at a time):
+
+**a) Show Error Context**
+
+```
+File: resources/js/pages/Markets/Index.vue
+Line: 45
+Error: Property 'market' does not exist on type 'ComponentPublicInstance'
+
+Context (5 lines before/after):
+40| export default defineComponent({
+41|   data() {
+42|     return {
+43|       markets: []
+44|     }
+45|   },
+46|   computed: {
+47|     activeMarkets() {
+48|       return this.markets.filter(m => m.status === 'active')
+49|     }
+50|   }
+```
+
+**b) Explain the Issue**
+
+- What caused the error?
+- Why is TypeScript/Vue/Laravel complaining?
+- What is the expected behavior?
+
+**c) Propose Fix**
+
+- Show exact code change
+- Explain why this fix works
+- Note any potential side effects
+
+**d) Apply Fix**
+
+- Make minimal changes
+- Preserve existing logic
+- Keep code style consistent
+
+**e) Re-run Build**
+
+```bash
+npx tsc --noEmit  # Verify TypeScript
+npm run build     # Verify Vite build
+```
+
+**f) Verify Error Resolved**
+
+- ✅ Error gone from output
+- ✅ No new errors introduced
+- ✅ Related functionality still works
+
+### 4. Safety Checks - Stop If:
+
+- ❌ **New errors introduced** - Revert and try different approach
+- ❌ **Same error persists after 3 attempts** - Ask for user guidance
+- ❌ **Build time increases significantly** - Review changes
+- ❌ **Tests start failing** - Revert changes
+- ❌ **User requests pause** - Stop and summarize progress
+
+### 5. Show Summary After Each Fix
+
+```markdown
+## Fix Summary
+
+**Error Fixed:** #3 of 12
+**File:** resources/js/pages/Markets/Index.vue
+**Type:** TypeScript type error
+**Status:** ✅ RESOLVED
+
+### Changes Made:
+
+- Added type annotation to `markets` data property
+- Lines changed: 1
+
+### Verification:
+
+- ✅ TypeScript check passes
+- ✅ Vite build succeeds
+- ✅ No new errors
+- ✅ Tests still pass
+
+### Remaining Errors: 9
+
+- 🔴 Critical: 2
+- 🟡 High: 5
+- 🟢 Medium: 2
+```
+
+## Error Types & Quick Fixes
+
+### TypeScript Errors
+
+```typescript
+// Missing type annotation
+data() {
+  return {
+    markets: [] as Market[]  // Add type
+  }
+}
+```
+
+### Vue Template Errors
+
+```vue
+<!-- Undefined property -->
+<template>
+    <div>{{ market?.name }}</div>
+    <!-- Add optional chaining -->
+</template>
+```
+
+### Vite Import Errors
+
+```typescript
+// Use correct alias
+import Button from '@/components/ui/Button.vue';
+```
+
+### Laravel Errors
+
+```bash
+# Class not found
+composer dump-autoload
+
+# Config cache
+php artisan config:clear
+```
+
+## Best Practices
+
+1. **One Error at a Time** - Don't fix multiple errors simultaneously
+2. **Verify After Each Fix** - Run build/tests after each change
+3. **Minimal Changes** - Fix only what's necessary
+4. **Preserve Logic** - Don't refactor while fixing
+5. **Document Changes** - Explain each fix clearly
+6. **Test Immediately** - Verify fix doesn't break other code
+
+## Stack-Specific Context
+
+- **Frontend**: Vue 3 Options API + TypeScript + Inertia.js + Vite + PrimeVue
+- **Backend**: Laravel 12 + PHP 8.2+ + MySQL
+- **Testing**: PestPHP (backend) + Vitest (frontend)
+- **Build**: Vite 7 for asset compilation
+
+---
+
+**Remember**: Fix one error at a time for safety. Verify each fix before moving to the next. Keep changes minimal and focused.

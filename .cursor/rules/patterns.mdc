@@ -1,0 +1,425 @@
+---
+description: 'Apply when implementing shared patterns across Laravel and Vue: API responses, validation, error handling, or cross-stack conventions.'
+alwaysApply: false
+---
+
+# Common Patterns
+
+Laravel + Vue 3 Options API + Inertia.js patterns for consistent implementation.
+
+## Laravel API Response Format (for JSON endpoints)
+
+```php
+<?php
+
+// For JSON API endpoints (non-Inertia)
+return response()->json([
+    'success' => true,
+    'data' => $markets,
+    'meta' => [
+        'total' => $markets->total(),
+        'page' => $markets->currentPage(),
+        'per_page' => $markets->perPage(),
+    ]
+]);
+
+// Error response
+return response()->json([
+    'success' => false,
+    'message' => 'Resource not found',
+    'errors' => $validator->errors()
+], 404);
+```
+
+```typescript
+// TypeScript interface for API responses
+interface ApiResponse<T> {
+    success: boolean;
+    data?: T;
+    message?: string;
+    errors?: Record<string, string[]>;
+    meta?: {
+        total: number;
+        page: number;
+        per_page: number;
+    };
+}
+```
+
+## Debounce Pattern (Vue 3 Options API)
+
+```vue
+<script>
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    data() {
+        return {
+            searchValue: '',
+            debouncedValue: '',
+            debounceTimeout: null,
+        };
+    },
+
+    watch: {
+        searchValue(newValue) {
+            clearTimeout(this.debounceTimeout);
+            this.debounceTimeout = setTimeout(() => {
+                this.debouncedValue = newValue;
+            }, 300);
+        },
+    },
+
+    beforeUnmount() {
+        clearTimeout(this.debounceTimeout);
+    },
+});
+</script>
+```
+
+## Repository Pattern (Laravel)
+
+```php
+<?php
+
+namespace App\Repositories;
+
+use App\Models\Market;
+use Illuminate\Support\Collection;
+
+// Repository Interface
+interface MarketRepositoryInterface
+{
+    public function findAll(array $filters = []): Collection;
+    public function findById(int $id): ?Market;
+    public function create(array $data): Market;
+    public function update(Market $market, array $data): Market;
+    public function delete(Market $market): bool;
+}
+
+// Repository Implementation
+class MarketRepository implements MarketRepositoryInterface
+{
+    public function __construct(
+        protected Market $model
+    ) {}
+
+    public function findAll(array $filters = []): Collection
+    {
+        $query = $this->model->newQuery();
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['search'])) {
+            $query->where('name', 'like', "%{$filters['search']}%");
+        }
+
+        return $query->get();
+    }
+
+    public function findById(int $id): ?Market
+    {
+        return $this->model->find($id);
+    }
+
+    public function create(array $data): Market
+    {
+        return $this->model->create($data);
+    }
+
+    public function update(Market $market, array $data): Market
+    {
+        $market->update($data);
+        return $market->fresh();
+    }
+
+    public function delete(Market $market): bool
+    {
+        return $market->delete();
+    }
+}
+```
+
+## Service Layer Pattern (Laravel)
+
+```php
+<?php
+
+namespace App\Services;
+
+use App\Models\Market;
+use App\Repositories\MarketRepositoryInterface;
+use Illuminate\Support\Facades\DB;
+
+class MarketService
+{
+    public function __construct(
+        protected MarketRepositoryInterface $repository
+    ) {}
+
+    /**
+     * Create a market with options in a transaction.
+     */
+    public function create(array $data): Market
+    {
+        return DB::transaction(function () use ($data) {
+            $market = $this->repository->create([
+                'name' => $data['name'],
+                'description' => $data['description'],
+                'category' => $data['category'],
+                'creator_id' => auth()->id(),
+            ]);
+
+            // Create related options
+            foreach ($data['options'] as $option) {
+                $market->options()->create($option);
+            }
+
+            // Dispatch event
+            event(new MarketCreated($market));
+
+            return $market->load('options');
+        });
+    }
+
+    /**
+     * Update market with validation.
+     */
+    public function update(Market $market, array $data): Market
+    {
+        return DB::transaction(function () use ($market, $data) {
+            $updated = $this->repository->update($market, $data);
+
+            // Clear cache
+            Cache::forget("market:{$market->id}");
+
+            return $updated;
+        });
+    }
+}
+```
+
+## Inertia Response Pattern
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Market;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class MarketController extends Controller
+{
+    /**
+     * Display a listing of markets.
+     */
+    public function index(Request $request): Response
+    {
+        $markets = Market::query()
+            ->when($request->input('search'), fn($q, $search) =>
+                $q->where('name', 'like', "%{$search}%")
+            )
+            ->when($request->input('status'), fn($q, $status) =>
+                $q->where('status', $status)
+            )
+            ->with(['creator:id,name'])
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('Markets/Index', [
+            'markets' => $markets,
+            'filters' => $request->only(['search', 'status']),
+        ]);
+    }
+
+    /**
+     * Show single market.
+     */
+    public function show(Market $market): Response
+    {
+        return Inertia::render('Markets/Show', [
+            'market' => $market->load(['creator', 'options']),
+        ]);
+    }
+}
+```
+
+## Inertia Form Pattern (Vue 3)
+
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+interface Market {
+    id?: number;
+    name: string;
+    description: string;
+    category: string;
+}
+
+export default defineComponent({
+    props: {
+        market: {
+            type: Object as PropType<Market>,
+            default: null,
+        },
+    },
+
+    data() {
+        return {
+            form: this.$inertia.form({
+                name: this.market?.name || '',
+                description: this.market?.description || '',
+                category: this.market?.category || 'politics',
+            }),
+        };
+    },
+
+    methods: {
+        submit() {
+            if (this.market) {
+                // Update existing
+                this.form.put(`/markets/${this.market.id}`, {
+                    onSuccess: () => {
+                        // Handle success
+                    },
+                    onError: (errors) => {
+                        console.error('Update failed:', errors);
+                    },
+                });
+            } else {
+                // Create new
+                this.form.post('/markets', {
+                    onSuccess: () => {
+                        // Handle success
+                    },
+                    onError: (errors) => {
+                        console.error('Creation failed:', errors);
+                    },
+                });
+            }
+        },
+    },
+});
+</script>
+
+<template>
+    <form @submit.prevent="submit">
+        <div>
+            <input v-model="form.name" type="text" placeholder="Market name" />
+            <span v-if="form.errors.name" class="error">
+                {{ form.errors.name }}
+            </span>
+        </div>
+
+        <div>
+            <textarea v-model="form.description" placeholder="Description" />
+            <span v-if="form.errors.description" class="error">
+                {{ form.errors.description }}
+            </span>
+        </div>
+
+        <button type="submit" :disabled="form.processing">
+            {{ form.processing ? 'Saving...' : 'Save' }}
+        </button>
+    </form>
+</template>
+```
+
+## Eager Loading Pattern (Laravel)
+
+```php
+<?php
+
+// ❌ BAD: N+1 query problem
+$markets = Market::all();
+foreach ($markets as $market) {
+    echo $market->creator->name; // N queries
+}
+
+// ✅ GOOD: Eager load relationships
+$markets = Market::with('creator')->get();
+foreach ($markets as $market) {
+    echo $market->creator->name; // 2 queries total
+}
+
+// ✅ GOOD: Eager load with constraints
+$markets = Market::with([
+    'creator:id,name,email',
+    'options' => fn($q) => $q->where('is_active', true),
+    'positions' => fn($q) => $q->latest()->take(10)
+])->get();
+```
+
+## Computed Properties Pattern (Vue 3)
+
+```vue
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+
+interface Market {
+    id: number;
+    name: string;
+    status: 'active' | 'closed';
+}
+
+export default defineComponent({
+    props: {
+        markets: {
+            type: Array as PropType<Market[]>,
+            required: true,
+        },
+    },
+
+    data() {
+        return {
+            searchQuery: '',
+        };
+    },
+
+    computed: {
+        // Automatically cached
+        activeMarkets(): Market[] {
+            return this.markets.filter((m) => m.status === 'active');
+        },
+
+        filteredMarkets(): Market[] {
+            if (!this.searchQuery) {
+                return this.markets;
+            }
+
+            return this.markets.filter((m) =>
+                m.name.toLowerCase().includes(this.searchQuery.toLowerCase()),
+            );
+        },
+
+        marketCount(): number {
+            return this.filteredMarkets.length;
+        },
+    },
+});
+</script>
+
+<template>
+    <div>
+        <input v-model="searchQuery" placeholder="Search markets..." />
+
+        <p>Showing {{ marketCount }} markets</p>
+
+        <MarketCard
+            v-for="market in filteredMarkets"
+            :key="market.id"
+            :market="market"
+        />
+    </div>
+</template>
+```
+
+---
+
+**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8
