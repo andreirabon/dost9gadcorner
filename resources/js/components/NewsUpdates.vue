@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import NewsModal from '@/components/NewsModal.vue';
 import { newsUpdates, type NewsItem } from '@/data/news';
 import Carousel from 'primevue/carousel';
 import { ref } from 'vue';
-import NewsModal from './NewsModal.vue';
 
 const selectedNews = ref<NewsItem | null>(null);
 const isModalOpen = ref(false);
@@ -64,7 +64,7 @@ const responsiveOptions = [
                 <template #item="slotProps">
                     <div class="h-full p-2 sm:p-3">
                         <article
-                            class="group relative flex h-full flex-col items-start overflow-hidden rounded-xl border border-purple-500/30 bg-purple-800/40 p-4 text-left shadow-lg transition-colors transition-shadow transition-transform duration-300 hover:-translate-y-1 hover:border-purple-400/50 hover:bg-purple-800/60 hover:shadow-xl sm:rounded-2xl sm:p-5 md:p-6"
+                            class="group relative flex h-full flex-col items-start overflow-hidden rounded-xl border border-purple-500/30 bg-purple-800/40 p-4 text-left shadow-lg duration-300 [transition:transform_0.3s_ease,border-color_0.3s_ease,background-color_0.3s_ease,box-shadow_0.3s_ease] hover:-translate-y-1 hover:border-purple-400/50 hover:bg-purple-800/60 hover:shadow-xl sm:rounded-2xl sm:p-5 md:p-6"
                         >
                             <h3 class="mb-1.5 text-base leading-snug font-semibold text-white group-hover:text-purple-200 sm:mb-2 sm:text-lg">
                                 {{ slotProps.data.title }}
