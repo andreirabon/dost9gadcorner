@@ -3,9 +3,13 @@ import ProjectCard from '@/components/ProjectCard.vue';
 import ProjectModal from '@/components/ProjectModal.vue';
 import { projects } from '@/data/projects';
 import type { ProjectItem } from '@/types';
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
 
-const selectedProject = ref<ProjectItem | null>(null);
+defineOptions({
+    name: 'ProjectsSection',
+});
+
+const selectedProject = shallowRef<ProjectItem | null>(null);
 const isModalOpen = ref(false);
 
 const openProjectModal = (project: ProjectItem): void => {
@@ -15,8 +19,25 @@ const openProjectModal = (project: ProjectItem): void => {
 
 const closeProjectModal = (): void => {
     isModalOpen.value = false;
-    selectedProject.value = null;
+    // Delay clearing data to allow modal exit animation
+    setTimeout(() => {
+        selectedProject.value = null;
+    }, 300);
 };
+
+const handleKeydown = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape' && isModalOpen.value) {
+        closeProjectModal();
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <template>
@@ -34,6 +55,7 @@ const closeProjectModal = (): void => {
                         class="h-24 w-auto opacity-90 sm:h-28 md:h-32 lg:h-36"
                         loading="lazy"
                         decoding="async"
+                        fetchpriority="low"
                     />
                 </div>
                 <h2

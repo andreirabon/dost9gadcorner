@@ -4,10 +4,15 @@ import NewsUpdates from '@/components/NewsUpdates.vue';
 import ProjectsSection from '@/components/ProjectsSection.vue';
 import { Head } from '@inertiajs/vue3';
 
+defineOptions({
+    name: 'IndexPage',
+});
+
 const scrollToProjects = (): void => {
     const section = document.getElementById('projects');
     if (!section) return;
     window.scrollTo({ top: section.offsetTop, behavior: 'smooth' });
+    // 600ms aligns with the CSS scroll-behavior transition duration
     setTimeout(() => {
         const focusable = section.querySelector<HTMLHeadingElement>('[data-focus-anchor="true"]');
         focusable?.focus({ preventScroll: true });
@@ -18,6 +23,11 @@ const scrollToNews = (): void => {
     const section = document.getElementById('news-updates');
     if (!section) return;
     window.scrollTo({ top: section.offsetTop, behavior: 'smooth' });
+    // 600ms aligns with the CSS scroll-behavior transition duration
+    setTimeout(() => {
+        const focusable = section.querySelector<HTMLHeadingElement>('[data-focus-anchor="true"]');
+        focusable?.focus({ preventScroll: true });
+    }, 600);
 };
 </script>
 

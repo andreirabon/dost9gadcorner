@@ -1,4 +1,8 @@
 <script setup lang="ts">
+defineOptions({
+    name: 'HeroSection',
+});
+
 defineEmits<{
     scrollToProjects: [];
     scrollToNews: [];
@@ -8,6 +12,7 @@ defineEmits<{
 <template>
     <section
         v-once
+        aria-labelledby="hero-heading"
         class="min-h-screen-safe pt-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
     >
         <!-- Left side decorative illustrations -->
@@ -40,6 +45,7 @@ defineEmits<{
                     class="h-16 w-auto opacity-95 sm:h-20 md:h-24"
                     loading="eager"
                     decoding="async"
+                    fetchpriority="high"
                 />
             </div>
             <p
@@ -48,6 +54,7 @@ defineEmits<{
                 Department of Science and Technology Region IX
             </p>
             <h1
+                id="hero-heading"
                 class="m-0 bg-gradient-to-r from-purple-100 via-fuchsia-300 to-pink-200 bg-clip-text px-4 text-3xl leading-tight font-semibold tracking-tight text-transparent sm:px-0 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
             >
                 Gender and Development
@@ -59,6 +66,7 @@ defineEmits<{
                 <button
                     type="button"
                     @click="$emit('scrollToProjects')"
+                    aria-label="Scroll to projects section"
                     class="group touch-target tap-highlight-none inline-flex w-full items-center justify-center gap-2 rounded-md bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:outline-none sm:w-auto sm:text-base"
                 >
                     View Projects
@@ -67,6 +75,7 @@ defineEmits<{
                 <button
                     type="button"
                     @click="$emit('scrollToNews')"
+                    aria-label="Scroll to news section"
                     class="group touch-target tap-highlight-none inline-flex w-full items-center justify-center gap-2 rounded-md bg-fuchsia-600 px-6 py-3 text-sm font-medium text-white shadow-lg hover:bg-fuchsia-500 focus-visible:ring-2 focus-visible:ring-fuchsia-300 focus-visible:ring-offset-2 focus-visible:outline-none sm:w-auto sm:text-base"
                 >
                     View News

@@ -2,20 +2,41 @@
 import NewsModal from '@/components/NewsModal.vue';
 import { newsUpdates, type NewsItem } from '@/data/news';
 import Carousel from 'primevue/carousel';
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
 
-const selectedNews = ref<NewsItem | null>(null);
+defineOptions({
+    name: 'NewsUpdates',
+});
+
+const selectedNews = shallowRef<NewsItem | null>(null);
 const isModalOpen = ref(false);
 
-const openNewsModal = (news: NewsItem) => {
+const openNewsModal = (news: NewsItem): void => {
     selectedNews.value = news;
     isModalOpen.value = true;
 };
 
-const closeNewsModal = () => {
+const closeNewsModal = (): void => {
     isModalOpen.value = false;
-    selectedNews.value = null;
+    // Delay clearing data to allow modal exit animation
+    setTimeout(() => {
+        selectedNews.value = null;
+    }, 300);
 };
+
+const handleKeydown = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape' && isModalOpen.value) {
+        closeNewsModal();
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeydown);
+});
 
 const responsiveOptions = [
     {
