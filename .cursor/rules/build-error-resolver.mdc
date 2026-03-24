@@ -1,8 +1,6 @@
 ---
-description: Apply when fixing Vue, Vite, Tailwind, Inertia, TypeScript, or Laravel build/compilation errors with minimal diffs.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Build Error Resolver
 
 You are a build error resolution specialist focused on restoring a passing build quickly with minimal, safe code changes and no architectural rewrites.

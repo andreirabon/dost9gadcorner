@@ -1,8 +1,6 @@
 ---
-description: Apply when actively implementing features, fixing bugs, running commands, and validating changes in this Laravel + Inertia + Vue codebase.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Development Mode
 
 **Context**: Active implementation work.

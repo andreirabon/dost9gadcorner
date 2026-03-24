@@ -7,16 +7,37 @@ alwaysApply: true
 
 Comprehensive patterns for Vue 3 with Options API and Inertia.js integration.
 
+## Version Snapshot (Verified Mar 19, 2026)
+
+- Vue 3.5.x
+- @inertiajs/vue3 2.3.x
+- inertiajs/inertia-laravel 2.0.x
+- Laravel 12.55.1
+- Tailwind CSS 4.2.x
+
+## Documentation-First Workflow (Required)
+
+1. Use Laravel Boost `search-docs` first for Inertia/Laravel behavior questions.
+2. Use Context7 for current Vue framework guidance and examples.
+3. Follow touched-module conventions when docs and local patterns diverge.
+
+## Project Reality Overrides (Highest Priority)
+
+- Vue 3 Options API is the default for new frontend work in this repository.
+- Respect existing `<script setup>` components when touching legacy files; avoid unnecessary rewrites.
+- Frontend uses Inertia + axios coexistence; use the local module convention for data mutations.
+- Security-first templates: avoid `v-html` unless content is trusted and sanitized.
+
 ## Component Patterns (Options API)
 
 ### Basic Component Structure
 
 ```vue
 <script>
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 
 export default defineComponent({
-    name: "MarketCard",
+    name: 'MarketCard',
 
     props: {
         market: {
@@ -29,7 +50,7 @@ export default defineComponent({
         },
     },
 
-    emits: ["update", "delete"],
+    emits: ['update', 'delete'],
 
     data() {
         return {
@@ -40,10 +61,7 @@ export default defineComponent({
 
     computed: {
         isActive() {
-            return (
-                this.localStatus === "active" &&
-                new Date(this.market.end_date) > new Date()
-            );
+            return this.localStatus === 'active' && new Date(this.market.end_date) > new Date();
         },
 
         formattedEndDate() {
@@ -52,7 +70,7 @@ export default defineComponent({
     },
 
     watch: {
-        "market.status"(newStatus) {
+        'market.status'(newStatus) {
             this.localStatus = newStatus;
         },
     },
@@ -63,18 +81,14 @@ export default defineComponent({
         },
 
         handleUpdate() {
-            this.$emit("update", this.market.id);
+            this.$emit('update', this.market.id);
         },
 
         handleDelete() {
-            if (confirm("Are you sure?")) {
-                this.$emit("delete", this.market.id);
+            if (confirm('Are you sure?')) {
+                this.$emit('delete', this.market.id);
             }
         },
-    },
-
-    mounted() {
-        console.log("MarketCard mounted:", this.market.name);
     },
 
     beforeUnmount() {
@@ -94,7 +108,7 @@ export default defineComponent({
         </div>
 
         <button @click="toggleExpand">
-            {{ isExpanded ? "Show Less" : "Show More" }}
+            {{ isExpanded ? 'Show Less' : 'Show More' }}
         </button>
 
         <div v-if="showActions" class="actions">
@@ -121,19 +135,19 @@ export default defineComponent({
 
 ```vue
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType } from 'vue';
 
 interface Market {
     id: number;
     name: string;
     description: string;
-    status: "active" | "resolved" | "closed";
+    status: 'active' | 'resolved' | 'closed';
     end_date: string;
     created_at: string;
 }
 
 export default defineComponent({
-    name: "MarketCard",
+    name: 'MarketCard',
 
     props: {
         market: {
@@ -154,16 +168,13 @@ export default defineComponent({
     data() {
         return {
             isExpanded: false as boolean,
-            localStatus: this.market.status as Market["status"],
+            localStatus: this.market.status as Market['status'],
         };
     },
 
     computed: {
         isActive(): boolean {
-            return (
-                this.localStatus === "active" &&
-                new Date(this.market.end_date) > new Date()
-            );
+            return this.localStatus === 'active' && new Date(this.market.end_date) > new Date();
         },
 
         formattedEndDate(): string {
@@ -177,12 +188,12 @@ export default defineComponent({
         },
 
         handleUpdate(): void {
-            this.$emit("update", this.market.id);
+            this.$emit('update', this.market.id);
         },
 
         handleDelete(): void {
-            if (confirm("Are you sure?")) {
-                this.$emit("delete", this.market.id);
+            if (confirm('Are you sure?')) {
+                this.$emit('delete', this.market.id);
             }
         },
     },
@@ -196,12 +207,13 @@ export default defineComponent({
 
 ```vue
 <script>
-import { defineComponent } from "vue";
-import { Head, Link } from "@inertiajs/vue3";
-import AppLayout from "@/layouts/AppLayout.vue";
+import { defineComponent } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import debounce from 'lodash/debounce';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 export default defineComponent({
-    name: "MarketsIndex",
+    name: 'MarketsIndex',
 
     components: {
         Head,
@@ -222,8 +234,8 @@ export default defineComponent({
 
     data() {
         return {
-            searchQuery: this.filters.search || "",
-            selectedStatus: this.filters.status || "all",
+            searchQuery: this.filters.search || '',
+            selectedStatus: this.filters.status || 'all',
         };
     },
 
@@ -241,8 +253,8 @@ export default defineComponent({
 
     methods: {
         search() {
-            this.$inertia.get(
-                "/markets",
+            router.get(
+                '/markets',
                 {
                     search: this.searchQuery,
                     status: this.selectedStatus,
@@ -254,17 +266,17 @@ export default defineComponent({
             );
         },
 
-        debouncedSearch: _.debounce(function () {
+        debouncedSearch: debounce(function () {
             this.search();
         }, 300),
 
         deleteMarket(id) {
-            if (!confirm("Are you sure?")) return;
+            if (!confirm('Are you sure?')) return;
 
-            this.$inertia.delete(`/markets/${id}`, {
+            router.delete(`/markets/${id}`, {
                 preserveScroll: true,
                 onSuccess: () => {
-                    this.$toast.success("Market deleted successfully");
+                    this.$toast.success('Market deleted successfully');
                 },
             });
         },
@@ -279,17 +291,11 @@ export default defineComponent({
         <div class="markets-index">
             <div class="header">
                 <h1>Markets</h1>
-                <Link href="/markets/create" class="btn btn-primary">
-                    Create Market
-                </Link>
+                <Link href="/markets/create" class="btn btn-primary"> Create Market </Link>
             </div>
 
             <div class="filters">
-                <input
-                    v-model="searchQuery"
-                    type="text"
-                    placeholder="Search markets..."
-                />
+                <input v-model="searchQuery" type="text" placeholder="Search markets..." />
 
                 <select v-model="selectedStatus" @change="search">
                     <option value="all">All Status</option>
@@ -300,13 +306,7 @@ export default defineComponent({
             </div>
 
             <div v-if="hasMarkets" class="markets-grid">
-                <MarketCard
-                    v-for="market in markets.data"
-                    :key="market.id"
-                    :market="market"
-                    show-actions
-                    @delete="deleteMarket"
-                />
+                <MarketCard v-for="market in markets.data" :key="market.id" :market="market" show-actions @delete="deleteMarket" />
             </div>
 
             <div v-else class="empty-state">
@@ -315,13 +315,7 @@ export default defineComponent({
 
             <!-- Pagination -->
             <div v-if="markets.links" class="pagination">
-                <Link
-                    v-for="link in markets.links"
-                    :key="link.label"
-                    :href="link.url"
-                    :class="{ active: link.active }"
-                    v-html="link.label"
-                />
+                <Link v-for="link in markets.links" :key="link.label" :href="link.url" :class="{ active: link.active }" v-text="link.label" />
             </div>
         </div>
     </AppLayout>
@@ -334,8 +328,8 @@ export default defineComponent({
 
 ```vue
 <script>
-import { defineComponent } from "vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { defineComponent } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 export default defineComponent({
     components: {
@@ -352,11 +346,11 @@ export default defineComponent({
 
     data() {
         return {
-            form: this.$inertia.form({
-                name: this.market?.name || "",
-                description: this.market?.description || "",
-                category: this.market?.category || "politics",
-                end_date: this.market?.end_date || "",
+            form: useForm({
+                name: this.market?.name || '',
+                description: this.market?.description || '',
+                category: this.market?.category || 'politics',
+                end_date: this.market?.end_date || '',
             }),
         };
     },
@@ -364,9 +358,12 @@ export default defineComponent({
     methods: {
         submit() {
             if (this.market) {
-                this.form.put(`/markets/${this.market.id}`);
+                this.form.put(`/markets/${this.market.id}`, {
+                    preserveScroll: true,
+                });
             } else {
-                this.form.post("/markets", {
+                this.form.post('/markets', {
+                    preserveScroll: true,
                     onSuccess: () => this.form.reset(),
                 });
             }
@@ -382,8 +379,8 @@ export default defineComponent({
 
 ```vue
 <script>
-import { defineComponent } from "vue";
-import { usePage } from "@inertiajs/vue3";
+import { defineComponent } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 export default defineComponent({
     setup() {
@@ -425,9 +422,7 @@ export default defineComponent({
         </header>
 
         <!-- Conditional rendering based on permissions -->
-        <Link v-if="canCreateMarkets" href="/markets/create">
-            Create Market
-        </Link>
+        <Link v-if="canCreateMarkets" href="/markets/create"> Create Market </Link>
     </div>
 </template>
 ```
@@ -438,7 +433,7 @@ export default defineComponent({
 
 ```javascript
 // stores/marketStore.js
-import { reactive } from "vue";
+import { reactive } from 'vue';
 
 const state = reactive({
     markets: [],
@@ -450,7 +445,7 @@ export const marketStore = {
     state,
 
     getActiveMarkets() {
-        return state.markets.filter((m) => m.status === "active");
+        return state.markets.filter((m) => m.status === 'active');
     },
 
     setMarkets(markets) {
@@ -471,8 +466,8 @@ export const marketStore = {
 
 ```vue
 <script>
-import { defineComponent } from "vue";
-import { marketStore } from "@/stores/marketStore";
+import { defineComponent } from 'vue';
+import { marketStore } from '@/stores/marketStore';
 
 export default defineComponent({
     data() {
@@ -515,7 +510,7 @@ export default defineComponent({
 
 ```vue
 <script>
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     data() {
@@ -525,12 +520,6 @@ export default defineComponent({
         };
     },
 
-    created() {
-        // Component instance is created
-        // No access to DOM yet
-        console.log("Component created");
-    },
-
     mounted() {
         // Component is mounted to DOM
         // Can access $refs
@@ -538,20 +527,10 @@ export default defineComponent({
         this.subscribeToUpdates();
     },
 
-    updated() {
-        // Component re-rendered due to reactive data changes
-        console.log("Component updated");
-    },
-
     beforeUnmount() {
         // Cleanup before component is destroyed
         this.stopPolling();
         this.unsubscribeFromUpdates();
-    },
-
-    unmounted() {
-        // Component is fully unmounted
-        console.log("Component unmounted");
     },
 
     methods: {
@@ -570,18 +549,15 @@ export default defineComponent({
 
         subscribeToUpdates() {
             // Subscribe to real-time updates
-            this.subscription = window.Echo.channel("markets").listen(
-                "MarketUpdated",
-                (e) => {
-                    this.handleMarketUpdate(e.market);
-                },
-            );
+            this.subscription = window.Echo.channel('markets').listen('MarketUpdated', (e) => {
+                this.handleMarketUpdate(e.market);
+            });
         },
 
         unsubscribeFromUpdates() {
             if (this.subscription) {
-                this.subscription.stopListening("MarketUpdated");
-                window.Echo.leave("markets");
+                this.subscription.stopListening('MarketUpdated');
+                window.Echo.leave('markets');
             }
         },
 
@@ -613,16 +589,14 @@ export default {
     computed: {
         // ✅ GOOD: Cached, only recalculates when markets change
         activeMarkets() {
-            console.log("Computing active markets");
-            return this.markets.filter((m) => m.status === "active");
+            return this.markets.filter((m) => m.status === 'active');
         },
     },
 
     methods: {
         // ❌ BAD: Recalculates on every render
         getActiveMarkets() {
-            console.log("Getting active markets");
-            return this.markets.filter((m) => m.status === "active");
+            return this.markets.filter((m) => m.status === 'active');
         },
     },
 };
@@ -665,11 +639,7 @@ export default {
     <MarketCard v-for="market in markets" :key="market.id" :market="market" />
 
     <!-- ❌ BAD: Using index as key -->
-    <MarketCard
-        v-for="(market, index) in markets"
-        :key="index"
-        :market="market"
-    />
+    <MarketCard v-for="(market, index) in markets" :key="index" :market="market" />
 </template>
 ```
 
@@ -703,13 +673,7 @@ export default {
 </script>
 
 <template>
-    <MarketCard
-        v-for="market in markets"
-        :key="market.id"
-        :market="market"
-        @update="handleMarketUpdate"
-        @delete="handleMarketDelete"
-    />
+    <MarketCard v-for="market in markets" :key="market.id" :market="market" @update="handleMarketUpdate" @delete="handleMarketDelete" />
 </template>
 
 <!-- Child Component -->
@@ -722,15 +686,15 @@ export default {
         },
     },
 
-    emits: ["update", "delete"],
+    emits: ['update', 'delete'],
 
     methods: {
         updateMarket(data) {
-            this.$emit("update", this.market.id, data);
+            this.$emit('update', this.market.id, data);
         },
 
         deleteMarket() {
-            this.$emit("delete", this.market.id);
+            this.$emit('delete', this.market.id);
         },
     },
 };
@@ -745,14 +709,14 @@ export default {
 export default {
     provide() {
         return {
-            theme: "dark",
+            theme: 'dark',
             updateTheme: this.updateTheme,
         };
     },
 
     data() {
         return {
-            currentTheme: "dark",
+            currentTheme: 'dark',
         };
     },
 
@@ -767,11 +731,11 @@ export default {
 <!-- Deeply nested component -->
 <script>
 export default {
-    inject: ["theme", "updateTheme"],
+    inject: ['theme', 'updateTheme'],
 
     methods: {
         toggleTheme() {
-            const newTheme = this.theme === "dark" ? "light" : "dark";
+            const newTheme = this.theme === 'dark' ? 'light' : 'dark';
             this.updateTheme(newTheme);
         },
     },
@@ -779,4 +743,4 @@ export default {
 </script>
 ```
 
-**Remember**: Vue 3 Options API patterns enable reactive, maintainable, and performant frontend applications. Use Options API consistently throughout your project and leverage Inertia.js for seamless Laravel integration.
+**Remember**: Vue 3 Options API patterns enable reactive, maintainable, and performant frontend applications. Prefer Options API for new work, preserve existing `<script setup>` components when touched, and align Inertia usage with local module conventions.

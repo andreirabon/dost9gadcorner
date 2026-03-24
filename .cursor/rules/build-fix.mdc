@@ -1,8 +1,6 @@
 ---
-description: Apply when incrementally fixing build failures with minimal, verifiable changes across Vite, Vue, Tailwind, Inertia, and Laravel integration.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Build and Fix
 
 Incrementally fix build and integration errors with strict safety checks, fast feedback loops, and minimal diffs.

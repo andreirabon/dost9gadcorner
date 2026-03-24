@@ -1,8 +1,6 @@
 ---
-description: Apply when reviewing PRs or code: quality, security, maintainability, performance, tests, and actionable feedback for Laravel + Vue + Inertia.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Code Review Context
 
 **Mode**: Pull Request review, code analysis for Laravel + Vue 3 + Inertia.js applications
@@ -15,7 +13,14 @@ alwaysApply: false
 - Backend often uses service classes under `app/Services/**` with `*Class` naming and controller `option` branching.
 - Authorization is commonly enforced by route middleware/role checks, with policies used in some modules.
 - Frontend is JS-first Vue Options API with Inertia + axios coexistence.
-- UI conventions are primarily BootstrapVue + SCSS, and TS/lint/frontend test tooling may be optional by branch.
+- UI conventions are Tailwind CSS v4 + selective PrimeVue usage in this repository, and TS/lint/frontend test tooling may still be optional by branch.
+- Laravel runtime wiring is centered in `bootstrap/app.php` + `bootstrap/providers.php`; do not assume legacy kernel registration paths.
+
+## Documentation-First Review (Required)
+
+- Validate Laravel/Inertia/Pest review guidance with Laravel Boost `search-docs` first.
+- Use Context7 as supplemental source for non-Laravel libraries and ecosystem tooling.
+- If docs and touched-module conventions conflict, prioritize touched-module conventions and explain the trade-off in review feedback.
 
 ## Core Review Principles
 
@@ -670,7 +675,7 @@ $markets = Market::with('creator')->get();
 
 ## 🟢 MEDIUM Issues (Nice to Have)
 
-### [File: resources/js/Shared/Components/MarketCard.vue]
+### [File: resources/js/components/MarketCard.vue]
 
 **Line 23: Missing Prop Validation**
 
@@ -750,9 +755,9 @@ props: {
 
 ```bash
 # Run before reviewing
-php artisan test --filter=[RelatedArea]  # Run related backend tests
+php artisan test --compact --filter=[RelatedArea]  # Run related backend tests
 # ./vendor/bin/phpstan analyse           # Static analysis (if configured)
-./vendor/bin/pint --dirty               # Format changed PHP files
+./vendor/bin/pint --dirty --format agent # Format changed PHP files
 # npm run test                           # Frontend tests (if configured)
 # npm run type-check                     # TypeScript check (if configured)
 # npm run lint                           # ESLint check (if configured)
@@ -764,10 +769,10 @@ php artisan debugbar:clear            # Clear debugbar
 # Security check
 rg "DB::raw|DB::select\(" app/       # Find raw queries
 rg "all\(\)|get\(\)" app/Http/Controllers/  # Check for missing pagination
-````
+```
 
 ---
 
-**Stack**: Laravel 12 (hybrid kernel/bootstrap) + Vue 3 Options API (JS-first) + Inertia.js v1-era + axios + BootstrapVue + SCSS + MySQL + Pest
+**Stack**: Laravel 12.55 + PHP 8.4 + Vue 3.5 Options API (JS-first) + Inertia.js 2 + axios + Tailwind CSS 4 + selective PrimeVue + MySQL + Pest 3
 
 **Remember**: The goal of code review is to improve code quality and share knowledge, not to criticize. Be constructive, specific, and helpful.

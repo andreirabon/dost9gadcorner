@@ -1,8 +1,6 @@
 ---
-description: Apply when implementing or reviewing Laravel backend code: controllers, routes, services, repositories, middleware, Form Requests, Eloquent, or PHP API patterns.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Backend Development Patterns
 
 Laravel backend architecture patterns for this specific repository.

@@ -19,10 +19,10 @@ This guide provides comprehensive secure coding practices for web applications. 
 
 ### Verification Status
 
-- Last verified: **2026-03-02**
+- Last verified: **2026-03-19**
 - Sources used for this rule update:
     - **Laravel Boost** `search-docs` (Laravel 12 + Inertia v2 ecosystem docs)
-    - **Context7** (`/vuejs/docs`, `/inertiajs/docs`, `/websites/laravel_12_x`)
+    - **Context7** (`/vuejs/docs`)
 - Examples in this document should default to **Laravel + Inertia + Vue 3 Options API** patterns.
 
 ## Cursor MDC Usage
@@ -42,6 +42,14 @@ For Laravel ecosystem work, documentation must be checked before implementing:
     - Resolve the library first with `resolve-library-id`
     - Then query with `query-docs` using a specific question
 3. Do not guess framework behavior when docs can confirm it.
+
+### Project Reality Overrides (Highest Priority)
+
+- Runtime wiring in this project is centered in `bootstrap/app.php` and `bootstrap/providers.php`.
+- Backend often uses service classes in `app/Services/**` and controller `option` branching; secure existing patterns incrementally.
+- Authorization boundaries are commonly route middleware + role checks, with policies used where present.
+- Frontend defaults to JS-first Vue 3 Options API with Inertia + axios coexistence.
+- Do not force identifier migrations. Follow module conventions and existing schema unless migration work is explicitly requested.
 
 ---
 
@@ -105,9 +113,10 @@ For **every data point and action** that requires authentication:
     - No user should access data from other users or organizations
     - Always verify ownership at the data layer, not just the route level
 
-2. **Use UUIDs Instead of Sequential IDs**
-    - Use UUIDv4 or similar non-guessable identifiers
-    - Exception: Only use sequential IDs if explicitly requested by user
+2. **Identifier Strategy (Project-Conventional)**
+    - Follow existing schema/module conventions for identifiers in this codebase.
+    - For externally exposed identifiers, prefer non-guessable/public-safe identifiers when feasible.
+    - Do not force UUID migrations unless explicitly requested and planned.
 
 3. **Account Lifecycle Handling**
     - When a user is removed from an organization: immediately revoke all access tokens and sessions

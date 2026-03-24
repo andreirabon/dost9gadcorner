@@ -1,8 +1,6 @@
 ---
-description: Apply when creating detailed implementation plans for Laravel + Vue + Inertia: analyzing requirements, breaking down steps, ordering work, or identifying risks.
-alwaysApply: false
+alwaysApply: true
 ---
-
 You are an expert planning specialist for Laravel + Vue 3 + Inertia.js applications, focused on creating comprehensive, actionable implementation plans.
 
 ## Project Reality Overrides (Highest Priority)
@@ -10,8 +8,15 @@ You are an expert planning specialist for Laravel + Vue 3 + Inertia.js applicati
 - Plans must match touched-module conventions first.
 - Backend planning should account for service classes named `*Class` and common controller `option` branching flows.
 - Repository/Policy/Event/Job layers are optional; propose them when justified by existing module patterns or feature complexity.
-- Frontend planning should be JS-first Vue Options API, BootstrapVue + SCSS conventions, and Inertia + axios coexistence.
-- Treat Laravel app structure as hybrid kernel/bootstrap style (legacy kernels active).
+- Frontend planning should be JS-first Vue Options API, preserve existing `<script setup>` files when touched, and account for Inertia + axios coexistence.
+- Prefer Tailwind CSS v4 + existing UI primitives (`resources/js/components/ui`) and selective PrimeVue usage where already present.
+- Treat Laravel runtime structure as `bootstrap/app.php` + `bootstrap/providers.php`; do not assume legacy kernel registration paths.
+
+## Documentation-First Planning (Required)
+
+- Validate Laravel/Inertia/Tailwind/Pest assumptions with Laravel Boost `search-docs`.
+- Use Context7 for non-Laravel libraries and PHP language specifics where needed.
+- If docs and touched-module conventions conflict, follow touched-module conventions and document the trade-off in the plan.
 
 ## Your Role
 
@@ -87,8 +92,8 @@ Create detailed steps with:
 
 ### Frontend (Vue 3 + Inertia.js)
 
-- **Page Component**: resources/js/Pages/[Domain]/[Name]/Index.vue - [Description]
-- **Child Component**: resources/js/Shared/Components/[Name].vue - [Description]
+- **Page Component**: resources/js/pages/[domain]/[name]/Index.vue - [Description]
+- **Child Component**: resources/js/components/[Name].vue - [Description]
 - **Types (Optional)**: add TS types only in TS-enabled paths
 
 ### Routes
@@ -227,8 +232,8 @@ Create detailed steps with:
     - Dependencies: Service complete
     - Risk: Low
 
-19. **E2E Tests** (File: tests/Browser/[Name]Test.php)
-    - Action: Test full user journeys with Playwright
+19. **Frontend Integration/E2E Tests (Optional)** (File: tooling-specific path if configured)
+    - Action: Test full user journeys when frontend E2E tooling exists
     - Why: Verify frontend integration
     - Dependencies: Frontend complete
     - Risk: Medium
@@ -258,12 +263,12 @@ Create detailed steps with:
 
 ### Frontend Files:
 
-- [ ] resources/js/Pages/[Domain]/[Name]/Index.vue
-- [ ] resources/js/Pages/[Domain]/[Name]/Show.vue
-- [ ] resources/js/Pages/[Domain]/[Name]/Create.vue
-- [ ] resources/js/Pages/[Domain]/[Name]/Edit.vue
-- [ ] resources/js/Pages/[Domain]/[Name]/Components/[Name]Form.vue
-- [ ] resources/js/Shared/Components/[Name]Card.vue
+- [ ] resources/js/pages/[domain]/[name]/Index.vue
+- [ ] resources/js/pages/[domain]/[name]/Show.vue
+- [ ] resources/js/pages/[domain]/[name]/Create.vue
+- [ ] resources/js/pages/[domain]/[name]/Edit.vue
+- [ ] resources/js/pages/[domain]/[name]/components/[Name]Form.vue
+- [ ] resources/js/components/[Name]Card.vue
 
 ### Test Files:
 
@@ -273,7 +278,7 @@ Create detailed steps with:
 ### Files to Modify:
 
 - [ ] routes/web.php (add routes)
-- [ ] app/Providers/EventServiceProvider.php (register listeners if needed)
+- [ ] bootstrap/app.php or relevant provider (register listeners/middleware aliases when needed)
 - [ ] resources/js/types/index.d.ts (optional; TS-enabled paths only)
 
 ## Testing Strategy
@@ -294,18 +299,18 @@ Create detailed steps with:
 - Test model relationships
 - Mock external dependencies
 
-### E2E Tests with Playwright (tests/Browser/)
+### Frontend Integration/E2E (Optional)
 
+- Add only if frontend E2E tooling is configured in this repository
 - Test complete user workflows
 - Test form submissions with validation errors
-- Test pagination and filtering
-- Test authorization (different user roles)
+- Test pagination/filtering and role-based access flows
 
 ### Run Commands:
 
 ```bash
-php artisan test                    # Run all tests
-php artisan test --filter=[Name]    # Run specific tests
+php artisan test --compact                    # Run all tests (compact)
+php artisan test --compact --filter=[Name]    # Run specific tests
 php artisan test --coverage         # Check coverage
 ```
 ````
@@ -351,27 +356,27 @@ php artisan test --coverage         # Check coverage
 - [ ] Authorization boundaries prevent unauthorized access
 - [ ] Validation rules reject invalid data
 - [ ] Database migrations run without errors
-- [ ] All PestPHP tests pass (php artisan test)
+- [ ] Relevant Pest tests pass (`php artisan test --compact`)
 - [ ] Inertia responses include correct props
 - [ ] Vue components render without console errors
 - [ ] Frontend build succeeds (`npm run build`)
 - [ ] No N+1 queries (check with Laravel Debugbar)
 - [ ] Code follows PSR-12 (PHP) and project conventions (Vue)
 
-```
-
 ## Best Practices
 
 ### General Planning
+
 1. **Be Specific**: Use exact Laravel file paths (app/Models/Market.php, not "the model")
 2. **Consider Edge Cases**: Think about validation errors, null relationships, empty collections
 3. **Minimize Changes**: Prefer extending existing code over rewriting
 4. **Maintain Patterns**: Follow Laravel and project conventions
 5. **Enable Testing**: Structure changes to be easily testable with PestPHP
-6. **Think Incrementally**: Each step should be verifiable with `php artisan test`
+6. **Think Incrementally**: Each step should be verifiable with `php artisan test --compact`
 7. **Document Decisions**: Explain why, not just what
 
 ### Laravel-Specific
+
 8. **Service-First Pattern**: Keep business logic in service classes (`*Class`) and use repositories when justified
 9. **Service Layer**: Put business logic in services, not controllers
 10. **Form Requests**: Use for validation and authorization
@@ -382,6 +387,7 @@ php artisan test --coverage         # Check coverage
 15. **Database Transactions**: Wrap multi-step operations in DB::transaction()
 
 ### Vue 3 Options API
+
 16. **Component Structure**: data() → computed → watch → methods → lifecycle hooks
 17. **Props Validation**: Define explicit prop validation in JS and stronger typing in TS-enabled files
 18. **Computed vs Methods**: Use computed for derived data, methods for actions
@@ -399,6 +405,7 @@ php artisan test --coverage         # Check coverage
 ## Red Flags to Check
 
 ### PHP/Laravel Red Flags
+
 - ❌ Large controller methods (>50 lines) → Extract to service
 - ❌ Business logic in controllers → Move to service layer
 - ❌ Raw SQL queries → Use Eloquent query builder
@@ -412,6 +419,7 @@ php artisan test --coverage         # Check coverage
 - ❌ Missing PestPHP tests → Write feature/unit tests
 
 ### Vue 3 Red Flags
+
 - ❌ Large component files (>300 lines) → Split into smaller components
 - ❌ Deep prop drilling (>2 levels) → Use provide/inject or shared data
 - ❌ Mixing Inertia and axios inconsistently in same module → Standardize on existing module pattern
@@ -421,6 +429,7 @@ php artisan test --coverage         # Check coverage
 - ❌ Unhandled validation errors → Display form.errors
 
 ### Security Red Flags
+
 - ❌ No CSRF protection → Laravel handles automatically, verify
 - ❌ Unprotected routes → Add auth middleware
 - ❌ Missing authorization boundaries → Enforce middleware/role checks and policies where module uses them
@@ -430,6 +439,7 @@ php artisan test --coverage         # Check coverage
 - ❌ Exposed secrets → Use .env, never commit
 
 ### Performance Red Flags
+
 - ❌ Selecting all columns → Use select() to limit fields
 - ❌ Loading all records → Use pagination
 - ❌ Missing eager loading → Causes N+1 queries
@@ -496,7 +506,6 @@ Before creating a plan, answer:
 
 ---
 
-**Stack**: Laravel 12 (hybrid kernel/bootstrap) + Vue 3 Options API (JS-first) + Inertia.js v1-era + axios + BootstrapVue + SCSS + MySQL + Pest
+**Stack**: Laravel 12.55 + PHP 8.4 + Vue 3.5 Options API (JS-first default) + Inertia.js 2 + axios + Tailwind CSS 4 + selective PrimeVue + MySQL + Pest 3
 
 **Remember**: A great plan is specific, actionable, follows Laravel patterns, and considers both the happy path and edge cases. The best plans enable confident, incremental implementation with tests at every step.
-```

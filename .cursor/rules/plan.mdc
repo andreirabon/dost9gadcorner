@@ -1,19 +1,23 @@
 ---
-description: Apply when using /plan or creating an implementation plan before coding; breaking down features, identifying risks, or waiting for user approval.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Plan Command
 
 This command invokes the **planner** agent to create a comprehensive implementation plan before writing any code.
 
 ## Project Reality Overrides (Highest Priority)
 
-- Plans must align with existing module conventions in touched files.
-- Backend plans should account for domain service classes (`*Class`) and common `option`-branch controller flows.
-- Repository/policy/event-heavy designs are optional and should only be proposed when justified by current module patterns.
-- Frontend plans should default to Vue SFC JavaScript (Options API), BootstrapVue + SCSS conventions, and Inertia + axios coexistence.
-- Treat this repository as hybrid Laravel structure (legacy kernels active), not streamlined-layout-only assumptions.
+- Plans must align with touched-file/module conventions first.
+- Backend plans should account for existing domain service classes (`*Class`) and module orchestration patterns; repository/policy/event-heavy designs are optional unless clearly justified.
+- Frontend plans should default to Vue SFC JavaScript (Options API), preserve existing `<script setup>` files when touched, and account for Inertia + axios coexistence.
+- UI planning should prefer Tailwind CSS v4 conventions and existing `resources/js/components/ui` patterns, with selective PrimeVue usage where already present.
+- Treat runtime configuration as Laravel 12 `bootstrap/app.php` + `bootstrap/providers.php`; do not assume legacy kernel registration paths.
+
+## Documentation-First Planning (Required)
+
+- Validate Laravel/Inertia/Tailwind/Pest planning assumptions with Laravel Boost `search-docs`.
+- Use Context7 for non-Laravel libraries or PHP language specifics when needed.
+- If docs and touched-module conventions differ, follow touched-module conventions and call out the trade-off in the plan.
 
 ## What This Command Does
 
@@ -37,11 +41,12 @@ Use `/plan` when:
 The planner agent will:
 
 1. **Analyze the request** and restate requirements in clear terms
-2. **Break down into phases** with specific, actionable steps
-3. **Identify dependencies** between components
-4. **Assess risks** and potential blockers
-5. **Estimate complexity** (High/Medium/Low)
-6. **Present the plan** and WAIT for your explicit confirmation
+2. **Validate framework-specific assumptions** with docs before locking the approach
+3. **Break down into phases** with specific, actionable steps
+4. **Identify dependencies** between components
+5. **Assess risks** and potential blockers
+6. **Estimate complexity** (High/Medium/Low)
+7. **Present the plan** and WAIT for your explicit confirmation
 
 ## Example Usage
 
@@ -199,7 +204,7 @@ If you want changes, respond with:
 After planning:
 
 - Use `/tdd` to implement with test-driven development (PestPHP)
-- Run `php artisan test` to verify implementation
+- Run `php artisan test --compact` to verify implementation
 - Use `/build-and-fix` if build errors occur
 - Use `/code-review` to review completed implementation
 - Use `/security-review` for security-sensitive features
@@ -208,15 +213,16 @@ After planning:
 
 When planning Laravel features, always consider:
 
-1. **Service Layer**: Business logic belongs in existing domain service classes.
-2. **Controller Flow**: Keep/extend `option`-based orchestration where module already uses it.
+1. **Service Layer**: Keep module-level service patterns (`*Class`) where present; avoid unnecessary architectural rewrites.
+2. **Controller Flow**: Follow existing orchestration style in the touched module.
 3. **Validation Strategy**: Prefer Form Requests for new complex mutation flows; preserve legacy inline style where refactor is out of scope.
 4. **Authorization Boundary**: Ensure route middleware + role/ownership checks are covered.
-5. **Migrations**: Database schema changes (up and down) with compatibility notes.
-6. **Factories/Seeders**: Test data generation aligned with existing model setup.
-7. **Repository Pattern (Optional)**: Add only when module already uses it or explicit value exists.
-8. **Events/Jobs (Optional)**: Add only when async/decoupling needs are clear.
-9. **Inertia Props / JSON Contracts**: Define exactly what page props and endpoint payloads are required.
+5. **Middleware Registration**: Plan middleware aliases/groups in `bootstrap/app.php` (unless touched module proves otherwise).
+6. **Migrations**: Database schema changes (up and down) with compatibility notes.
+7. **Factories/Seeders**: Test data generation aligned with existing model setup.
+8. **Repository Pattern (Optional)**: Add only when module already uses it or explicit value exists.
+9. **Events/Jobs (Optional)**: Add only when async/decoupling needs are clear.
+10. **Inertia Props / JSON Contracts**: Define exactly what page props and endpoint payloads are required.
 
 ## Vue 3 Options API Planning
 
@@ -230,6 +236,7 @@ When planning frontend features, consider:
 6. **JS/TS Fit**: Keep JS-first by default; add TS types only when module/file uses TS
 7. **Error Handling**: How to display validation errors
 8. **Loading States**: Show spinners during async operations
+9. **Styling Fit**: Prefer Tailwind v4 + existing UI primitives; use PrimeVue where the touched module already uses it
 
 ## Plan Template Structure
 
@@ -247,5 +254,5 @@ Every plan should include:
 
 ---
 
-**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3
-**Stack Reality**: Laravel 12 (hybrid kernel/bootstrap style) + Vue 3 Options API (JS-first) + Inertia + Axios + BootstrapVue + SCSS + MySQL 8 + PestPHP 3
+**Stack**: Laravel 12.55 + PHP 8.4 + Vue 3.5 Options API + Inertia.js 2 + Tailwind CSS 4 + PrimeVue + MySQL 8 + PestPHP 3
+**Stack Reality**: Laravel 12 (`bootstrap/app.php` runtime) + Vue 3 Options API (JS-first default; preserve existing `<script setup>` when touched) + Inertia + Axios + Tailwind v4 + selective PrimeVue + MySQL 8 + PestPHP 3

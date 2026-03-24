@@ -1,8 +1,6 @@
 ---
-description: Apply when building or reviewing Vue 3 Options API components, client-side UI patterns, state, props/events, and frontend structure.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Frontend Development Patterns
 
 Vue-focused implementation patterns for maintainable, performant client-side code.

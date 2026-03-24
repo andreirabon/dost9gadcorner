@@ -1,8 +1,6 @@
 ---
-description: Apply when implementing Laravel 12 patterns: controllers, models, migrations, Form Requests, policies, jobs, events, or Eloquent usage.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Laravel Development Patterns
 
 Comprehensive patterns for Laravel 12 development in this repository.

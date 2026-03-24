@@ -1,8 +1,6 @@
 ---
-description: Apply when writing or reviewing code for readability, consistency, maintainability, testing, and secure Laravel + Inertia + Vue practices.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Coding Standards & Best Practices
 
 Coding standards for this Laravel + Inertia + Vue codebase.

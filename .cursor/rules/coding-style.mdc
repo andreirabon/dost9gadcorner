@@ -1,8 +1,6 @@
 ---
-description: Apply when enforcing or reviewing day-to-day style conventions for Laravel, Inertia, Vue, TypeScript, and testing code.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Coding Style Guide
 
 Quick reference for style consistency in this repository.

@@ -1,8 +1,6 @@
 ---
-description: Apply when exploring, investigating, or learning before implementing; documenting findings, understanding patterns, or answering how/why questions.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Research Context
 
 **Mode**: Exploration, investigation, learning for Laravel + Vue 3 + Inertia.js applications
@@ -13,8 +11,8 @@ alwaysApply: false
 
 - Use repository conventions as source of truth: service `*Class` modules and frequent controller `option`-branching flows.
 - Assume JS-first Vue Options API with Inertia + axios coexistence.
-- Assume frontend structure typically uses `resources/js/Pages` and shared UI under `resources/js/Shared`.
-- Assume Laravel is hybrid (`bootstrap/app.php` with legacy `app/Http/Kernel.php` patterns still active).
+- Assume frontend structure uses `resources/js/pages`, `resources/js/components`, and `resources/js/layouts`.
+- Assume Laravel runtime wiring is centered in `bootstrap/app.php` + `bootstrap/providers.php`; do not assume legacy kernel registration paths.
 - For Laravel ecosystem docs, use Laravel Boost `search-docs` first; use Context7 as supplemental docs source.
 
 ## Core Research Principles
@@ -149,8 +147,9 @@ ls -la app/Policies/
 # Search for authorization
 rg "authorize|can:|@can" app/
 
-# Check middleware
-ls -la app/Http/Middleware/
+# Check middleware wiring and mapped classes
+rg "->withMiddleware|alias\\(|append\\(|prepend\\(" bootstrap/app.php
+rg --files app/Http/Middleware
 ```
 
 **Questions to Answer:**
@@ -188,10 +187,10 @@ php artisan schedule:list
 
 ```bash
 # Find all components
-rg --files resources/js/Shared
+rg --files resources/js/components
 
 # Find all pages
-rg --files resources/js/Pages
+rg --files resources/js/pages
 
 # Search for component usage
 rg "<ComponentName" resources/js/
@@ -214,7 +213,7 @@ rg "Inertia::render" app/Http/Controllers/
 # Search for Inertia forms in frontend
 rg "this.\$inertia.form" resources/js/
 
-# Check Inertia middleware
+# Check Inertia middleware data sharing
 rg "share\(|Inertia" app/Http/Middleware/HandleInertiaRequests.php
 ```
 
@@ -283,7 +282,7 @@ rg "public function index" app/Http/Controllers/MarketController.php
 rg "Inertia::render\('Markets" app/Http/Controllers/
 
 # Find Vue page
-rg --files resources/js/Pages/Markets
+rg --files resources/js/pages/markets
 ```
 
 **Questions to Answer:**
@@ -518,7 +517,7 @@ Use Laravel Boost `search-docs` first for Laravel ecosystem topics, then Context
 1. Check routes: `ReadFile routes/auth.php`
 2. Examine controllers: `rg --files app/Http/Controllers/Auth`
 3. Check middleware: `ReadFile app/Http/Middleware/Authenticate.php`
-4. Find frontend components: `rg --files resources/js/Pages/Auth`
+4. Find frontend components: `rg --files resources/js/pages/auth`
 5. Review session config: `ReadFile config/session.php`
 6. Document complete auth flow with diagrams
 
@@ -565,6 +564,6 @@ Use Laravel Boost `search-docs` first for Laravel ecosystem topics, then Context
 
 ---
 
-**Stack**: Laravel 12 (hybrid kernel/bootstrap) + Vue 3 Options API (JS-first) + Inertia.js v1-era + axios + BootstrapVue + SCSS + MySQL + Pest
+**Stack**: Laravel 12.55 + PHP 8.4 + Vue 3.5 Options API (JS-first) + Inertia.js 2 + axios + Tailwind CSS 4 + selective PrimeVue + MySQL + Pest 3
 
 **Remember**: Good research takes time. Gather evidence, explore thoroughly, and document findings before recommending solutions.

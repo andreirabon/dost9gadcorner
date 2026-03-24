@@ -1,19 +1,36 @@
 ---
-description: Apply when implementing shared patterns across Laravel and Vue: API responses, validation, error handling, or cross-stack conventions.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Common Patterns
 
-Laravel + Vue 3 Options API + Inertia.js patterns for consistent implementation.
+Shared Laravel + Inertia + Vue patterns for consistent implementation.
+
+## Version Snapshot (Source of Truth)
+
+- PHP: 8.4.17
+- Laravel: 12.55.1
+- Inertia Laravel: 2.0.21
+- Vue: 3.5.30
+- @inertiajs/vue3: 2.3.18
+- Tailwind CSS: 4.2.2
+
+## Documentation-First Workflow (Required)
+
+Before applying or changing framework behavior:
+
+1. Use Laravel Boost `search-docs` first for version-specific guidance.
+2. Use Context7 for supplemental docs/examples when needed.
+3. If docs and touched-module conventions differ, follow touched-module conventions.
 
 ## Project Reality Overrides (Highest Priority)
 
 - Follow touched-module conventions first.
-- Backend commonly uses domain service classes named `*Class` and controller `option` branching.
-- Inertia and `axios` are used together (Inertia for navigation/render, axios for many module interactions).
-- Frontend is mostly JavaScript Vue SFCs (Options API), with selective TypeScript usage.
-- Repository interfaces are optional in this repository; direct service + Eloquent flows are common.
+- Backend commonly uses domain service classes named `*Class`; legacy modules may branch with controller `option` handling.
+- Inertia and `axios` are used together (Inertia for page navigation/render, axios for module interactions where already established).
+- Frontend is mostly Vue SFCs with a mixed codebase; default to Vue Options API for new feature/page work unless the touched file is already `<script setup>`.
+- Styling stack in active frontend paths is Tailwind v4 + PrimeVue (Aura preset), not BootstrapVue + SCSS-first.
+- Runtime bootstrapping follows Laravel 12 via `bootstrap/app.php` and `bootstrap/providers.php`; do not rely on `app/Http/Kernel.php` / `app/Console/Kernel.php`.
+- Repository interfaces are optional; direct service + Eloquent flows are common.
 
 ## Laravel API Response Format (for JSON endpoints)
 
@@ -47,6 +64,8 @@ return response()->json([
 ]);
 ```
 
+Keep one response envelope shape per endpoint/module. Do not mix `success` and `status` payload styles in the same endpoint flow.
+
 ```typescript
 // TypeScript interface for API responses
 interface ApiResponse<T> {
@@ -68,13 +87,13 @@ interface ApiResponse<T> {
 
 ```vue
 <script>
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     data() {
         return {
-            searchValue: "",
-            debouncedValue: "",
+            searchValue: '',
+            debouncedValue: '',
             debounceTimeout: null,
         };
     },
@@ -272,13 +291,44 @@ class MarketController extends Controller
 }
 ```
 
+## Inertia Partial Reload Pattern (v2)
+
+```vue
+<script>
+import { defineComponent } from 'vue';
+import { router } from '@inertiajs/vue3';
+
+export default defineComponent({
+    data() {
+        return {
+            filters: {
+                search: '',
+                status: '',
+            },
+        };
+    },
+    methods: {
+        reloadTable() {
+            router.get('/markets', this.filters, {
+                only: ['markets', 'filters'],
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        },
+    },
+});
+</script>
+```
+
 ## Inertia Form Pattern (Vue 3)
 
 > In touched files, follow the local form style (`useForm` or `axios`) rather than forcing one universal approach.
 
 ```vue
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, type PropType } from 'vue';
+import { router, useForm } from '@inertiajs/vue3';
 
 interface Market {
     id?: number;
@@ -297,10 +347,10 @@ export default defineComponent({
 
     data() {
         return {
-            form: this.$inertia.form({
-                name: this.market?.name || "",
-                description: this.market?.description || "",
-                category: this.market?.category || "politics",
+            form: useForm({
+                name: this.market?.name || '',
+                description: this.market?.description || '',
+                category: this.market?.category || 'politics',
             }),
         };
     },
@@ -308,23 +358,23 @@ export default defineComponent({
     methods: {
         submit() {
             if (this.market) {
-                // Update existing
                 this.form.put(`/markets/${this.market.id}`, {
+                    preserveScroll: true,
                     onSuccess: () => {
-                        // Handle success
+                        router.reload({ only: ['markets'] });
                     },
                     onError: (errors) => {
-                        console.error("Update failed:", errors);
+                        console.error('Update failed:', errors);
                     },
                 });
             } else {
-                // Create new
-                this.form.post("/markets", {
+                this.form.post('/markets', {
+                    preserveScroll: true,
                     onSuccess: () => {
-                        // Handle success
+                        this.form.reset();
                     },
                     onError: (errors) => {
-                        console.error("Creation failed:", errors);
+                        console.error('Creation failed:', errors);
                     },
                 });
             }
@@ -350,10 +400,28 @@ export default defineComponent({
         </div>
 
         <button type="submit" :disabled="form.processing">
-            {{ form.processing ? "Saving..." : "Save" }}
+            {{ form.processing ? 'Saving...' : 'Save' }}
         </button>
     </form>
 </template>
+```
+
+## Middleware Alias Pattern (Laravel 12)
+
+```php
+<?php
+
+use App\Http\Middleware\EnsureMarketIsActive;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Middleware;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'market.active' => EnsureMarketIsActive::class,
+        ]);
+    })
+    ->create();
 ```
 
 ## Eager Loading Pattern (Laravel)
@@ -385,12 +453,12 @@ $markets = Market::with([
 
 ```vue
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType } from 'vue';
 
 interface Market {
     id: number;
     name: string;
-    status: "active" | "closed";
+    status: 'active' | 'closed';
 }
 
 export default defineComponent({
@@ -403,14 +471,14 @@ export default defineComponent({
 
     data() {
         return {
-            searchQuery: "",
+            searchQuery: '',
         };
     },
 
     computed: {
         // Automatically cached
         activeMarkets(): Market[] {
-            return this.markets.filter((m) => m.status === "active");
+            return this.markets.filter((m) => m.status === 'active');
         },
 
         filteredMarkets(): Market[] {
@@ -418,9 +486,7 @@ export default defineComponent({
                 return this.markets;
             }
 
-            return this.markets.filter((m) =>
-                m.name.toLowerCase().includes(this.searchQuery.toLowerCase()),
-            );
+            return this.markets.filter((m) => m.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
         },
 
         marketCount(): number {
@@ -436,15 +502,11 @@ export default defineComponent({
 
         <p>Showing {{ marketCount }} markets</p>
 
-        <MarketCard
-            v-for="market in filteredMarkets"
-            :key="market.id"
-            :market="market"
-        />
+        <MarketCard v-for="market in filteredMarkets" :key="market.id" :market="market" />
     </div>
 </template>
 ```
 
 ---
 
-**Stack**: Laravel 12 (hybrid kernel/bootstrap style) + Vue 3 Options API (JS-first) + Inertia + Axios + BootstrapVue + SCSS + MySQL 8.
+**Stack**: Laravel 12 (`bootstrap/app.php` runtime) + Vue 3 (Options API preferred for new feature/page work) + Inertia v2 + Axios + Tailwind v4 + PrimeVue + MySQL 8.

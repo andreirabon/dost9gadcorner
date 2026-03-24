@@ -1,8 +1,6 @@
 ---
-description: Meta rule selection policy. Always evaluate and apply relevant intelligent rules before acting.
 alwaysApply: true
 ---
-
 # Rule Selection Orchestrator
 
 Before answering or coding:
@@ -10,8 +8,9 @@ Before answering or coding:
 1. Review available rules in `.cursor/rules/` that are Applied Intelligently.
 2. Match user intent to rule descriptions ("Apply when ...").
 3. Explicitly follow all relevant matched rules before implementation.
-4. If multiple rules match, prioritize: security > architecture > framework patterns > style.
+4. If multiple rules match, prioritize: explicit user instruction > security > architecture > framework patterns > style.
 5. Do not skip relevant intelligent rules when scenario is similar.
 6. Resolve conflicts by favoring touched-module conventions and any "Project Reality Overrides (Highest Priority)" sections.
 7. For Laravel ecosystem decisions, check Laravel Boost `search-docs` first; use Context7 as supplemental docs source.
 8. If a rule suggests optional tooling (TS/lint/frontend tests), run it only when configured in the current branch/repo.
+9. When rules disagree on stack details, prefer the latest verified project reality and explicit local overrides (for this project: Vue Options API is the default for new work).

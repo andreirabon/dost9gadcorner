@@ -1,8 +1,6 @@
 ---
-description: Apply when identifying or removing dead code with test verification; using available analysis tools (composer-unused, PHPStan, depcheck, knip) for Laravel + Vue.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Refactor Clean
 
 Safely identify and remove dead code with comprehensive test verification for Laravel + Vue 3 + Inertia.js applications.
@@ -12,8 +10,14 @@ Safely identify and remove dead code with comprehensive test verification for La
 - Follow touched-module conventions first; avoid "ideal architecture" rewrites during cleanup.
 - Backend commonly uses service classes under `app/Services/**` with `*Class` naming and controller `option` branching.
 - Frontend is JS-first Vue Options API, with Inertia and axios both used depending on module.
-- UI stack is primarily BootstrapVue + SCSS; Tailwind/TS tooling may not be present in every branch.
-- Treat Laravel runtime structure as hybrid (`bootstrap/app.php` plus legacy `app/Http/Kernel.php` usage).
+- UI stack in this repository is Tailwind CSS v4 + selective PrimeVue usage; avoid assuming BootstrapVue/SCSS patterns in cleanup plans.
+- Treat Laravel runtime structure as `bootstrap/app.php` + `bootstrap/providers.php`; do not assume legacy kernel registration paths.
+
+## Documentation-First Validation (Required)
+
+- Validate Laravel and Pest guidance with Laravel Boost `search-docs` before recommending structural cleanup steps.
+- Use Context7 for non-Laravel package/tooling docs when needed (for example depcheck/knip ecosystem details).
+- If docs conflict with touched-module conventions, preserve touched-module conventions and call out the trade-off in the report.
 
 ## Analysis Process
 
@@ -77,7 +81,7 @@ php artisan route:list
 
 **Unused Events/Listeners:**
 
-- Check EventServiceProvider registration
+- Check registration/discovery via `bootstrap/app.php` and any relevant provider wiring
 - Search for `event()` calls
 - Verify listener is actually triggered
 
@@ -175,7 +179,7 @@ Generated: [DATE]
 
 - [ ] Unused controller method: App\Http\Controllers\[Name]Controller@method
 - [ ] Unused route: GET /[route]
-- [ ] Unused Vue component: resources/js/Shared/Components/[Name].vue
+- [ ] Unused Vue component: resources/js/components/[Name].vue
 - [ ] Unused service class: App\Services\[Domain]\[Action]Class
 - [ ] Unused repository: App\Repositories\[Name]Repository
 
@@ -197,14 +201,14 @@ Generated: [DATE]
 
 ### 🟡 CAUTION
 
-- [ ] Unused Vue component: resources/js/Shared/Components/[Name].vue
-- [ ] Unused page: resources/js/Pages/[Domain]/[Name].vue
+- [ ] Unused Vue component: resources/js/components/[Name].vue
+- [ ] Unused page: resources/js/pages/[domain]/[Name].vue
 - [ ] Unused type: resources/js/types/[name].d.ts
 
 ### 🔴 DANGER
 
-- [ ] Unused layout: resources/js/Shared/Layouts/[Name].vue
-- [ ] Unused SCSS file: resources/scss/[name].scss
+- [ ] Unused layout: resources/js/layouts/[Name].vue
+- [ ] Unused global CSS/Tailwind file: resources/css/[name].css
 - [ ] Unused Vite config: vite.config.js
 ```
 
@@ -251,7 +255,7 @@ For each item to be removed:
 
 ```bash
 # 1. Run relevant tests BEFORE changes
-php artisan test --filter=[RelatedArea]
+php artisan test --compact --filter=[RelatedArea]
 # Optional when configured:
 # ./vendor/bin/phpstan analyse
 
@@ -262,7 +266,7 @@ php artisan test --filter=[RelatedArea]
 # [Make your deletion here]
 
 # 4. Run tests again IMMEDIATELY
-php artisan test
+php artisan test --compact
 
 # 5. Verify same test count and all pass
 # If any test fails, restore only the affected file changes manually
@@ -272,7 +276,7 @@ php artisan test
 # ./vendor/bin/phpstan analyse
 
 # 7. Run linter
-./vendor/bin/pint --dirty
+./vendor/bin/pint --dirty --format agent
 
 # 8. Commit changes
 git add .
@@ -314,13 +318,13 @@ If removing code that touches both backend and frontend:
 
 ```bash
 # 1. Run ALL tests
-php artisan test --filter=[RelatedArea]
+php artisan test --compact --filter=[RelatedArea]
 # npm run test
 
 # 2. Remove code (backend first, then frontend)
 
 # 3. Run ALL tests again
-php artisan test --filter=[RelatedArea]
+php artisan test --compact --filter=[RelatedArea]
 # npm run test
 npm run build
 
@@ -348,7 +352,7 @@ git commit -m "refactor: remove unused [description]"
 - ❌ Controllers used by mobile apps or external services
 - ❌ Jobs that run on schedule (check `routes/console.php` and scheduler wiring)
 - ❌ Events that may be fired dynamically
-- ❌ Middleware registered in `app/Http/Kernel.php`
+- ❌ Middleware aliases/groups wired in `bootstrap/app.php`
 
 ### Frontend Red Flags
 
@@ -357,7 +361,7 @@ git commit -m "refactor: remove unused [description]"
 - ❌ Layout components (unless replacing)
 - ❌ Base components used globally
 - ❌ TypeScript types used in multiple files
-- ❌ SCSS imported in multiple places
+- ❌ Global CSS/Tailwind imports used in `resources/css/app.css`
 
 ## Rollback Procedure
 
@@ -366,7 +370,7 @@ If tests fail after deletion:
 ```bash
 # 1) Revert only the specific file edits manually
 # 2) Re-run related tests/build checks
-php artisan test --filter=[RelatedArea]
+php artisan test --compact --filter=[RelatedArea]
 npm run build
 # 3) If already committed, use:
 git revert HEAD
@@ -399,14 +403,14 @@ npx depcheck                             # Unused npm packages
 # npx knip                               # Optional unused files/exports
 
 # Testing
-php artisan test                         # Run PHP tests
-php artisan test --coverage              # With coverage
+php artisan test --compact               # Run PHP tests (compact)
+php artisan test --compact --coverage    # With coverage (compact output)
 # npm run test                           # Run frontend tests (if configured)
 # npm run type-check                     # TypeScript check (if configured)
 npm run build                            # Production build
 
 # Code Quality
-./vendor/bin/pint --dirty                # Format changed PHP files
+./vendor/bin/pint --dirty --format agent # Format changed PHP files
 # ./vendor/bin/phpstan analyse           # Analyze PHP (if configured)
 # npm run lint                           # Lint frontend (if configured)
 ```
@@ -458,4 +462,4 @@ Date: [DATE]
 
 **CRITICAL RULE**: Never delete code without running tests before AND after. When in doubt, DON'T delete.
 
-**Stack**: Laravel 12 (hybrid kernel/bootstrap) + Vue 3 Options API (JS-first) + Inertia.js v1-era + axios + BootstrapVue + SCSS + MySQL + Pest
+**Stack**: Laravel 12.55 + PHP 8.4 + Vue 3.5 Options API (JS-first) + Inertia.js 2 + axios + Tailwind CSS 4 + selective PrimeVue + MySQL + Pest 3

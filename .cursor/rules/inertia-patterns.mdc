@@ -1,8 +1,6 @@
 ---
-description: Apply when implementing or reviewing Inertia page flows, Laravel-Inertia controller responses, forms, shared props, and client navigation.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Inertia.js Development Patterns
 
 Practical patterns for Laravel + Inertia + Vue work in this repository.

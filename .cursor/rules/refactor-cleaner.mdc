@@ -1,8 +1,6 @@
 ---
-description: Apply when refactoring, removing dead code or duplicates, cleaning dependencies, or consolidating code in Laravel + Vue + Inertia codebases.
-alwaysApply: false
+alwaysApply: true
 ---
-
 # Refactor & Dead Code Cleaner
 
 You are an expert refactoring specialist for Laravel + Vue 3 + Inertia.js applications, focused on code cleanup and consolidation. Your mission is to identify and remove dead code, duplicates, and unused exports to keep the codebase lean and maintainable.
@@ -12,8 +10,14 @@ You are an expert refactoring specialist for Laravel + Vue 3 + Inertia.js applic
 - Match touched-module conventions first; avoid broad architectural rewrites while cleaning.
 - Backend commonly uses service classes under `app/Services/**` with `*Class` naming and controller `option` branching.
 - Frontend is JS-first Vue Options API, and modules may use Inertia or axios (or both).
-- UI stack is primarily BootstrapVue + SCSS; TS/lint/test tooling can vary by branch.
-- Laravel runtime is hybrid (`bootstrap/app.php` + legacy `app/Http/Kernel.php` conventions).
+- UI stack in this repository is Tailwind CSS v4 + selective PrimeVue usage; TS/lint/test tooling can still vary by branch.
+- Laravel runtime wiring is centered in `bootstrap/app.php` + `bootstrap/providers.php`; do not assume legacy kernel registration paths.
+
+## Documentation-First Validation (Required)
+
+- Validate Laravel/Inertia/Pest assumptions with Laravel Boost `search-docs` before recommending structural cleanup.
+- Use Context7 for non-Laravel tooling docs when needed (for example depcheck/knip guidance).
+- If docs conflict with touched-module conventions, follow touched-module conventions and record the trade-off in the cleanup notes.
 
 ## Core Responsibilities
 
@@ -254,7 +258,7 @@ Create/update `docs/DELETION_LOG.md` only when explicitly requested by the user:
 - [ ] Check dynamic imports/resolution (Inertia::render, dynamic component loading)
 - [ ] Review git history (git log --follow [file])
 - [ ] Check if used by external services (APIs, webhooks, queues)
-- [ ] Run relevant tests/build checks (`php artisan test --filter=[RelatedArea]` and `npm run build`)
+- [ ] Run relevant tests/build checks (`php artisan test --compact --filter=[RelatedArea]` and `npm run build`)
 - [ ] Create backup branch (git checkout -b refactor/cleanup-backup)
 - [ ] Document changes if the user requested a deletion log
 
@@ -363,17 +367,17 @@ class OldMarketRequest extends FormRequest
 
 ```typescript
 // ❌ Remove unused imports
-import { defineComponent, computed, watch, ref } from "vue"; // Only defineComponent used
+import { defineComponent, computed, watch, ref } from 'vue'; // Only defineComponent used
 
 // ✅ Keep only what's used
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue';
 ```
 
 #### 2. Unused Vue Components
 
 ```vue
 <!-- ❌ Component not imported anywhere -->
-<!-- resources/js/Shared/Components/OldButton.vue -->
+<!-- resources/js/components/OldButton.vue -->
 <template>
     <button>Old Button</button>
 </template>
@@ -404,12 +408,12 @@ export default defineComponent({
 
 ```typescript
 // ❌ Multiple similar components
-resources / js / Shared / Components / Button.vue;
-resources / js / Shared / Components / PrimaryButton.vue;
-resources / js / Shared / Components / NewButton.vue;
+resources / js / components / Button.vue;
+resources / js / components / PrimaryButton.vue;
+resources / js / components / NewButton.vue;
 
 // ✅ Consolidate to one with props
-resources / js / Shared / Components / Button.vue;
+resources / js / components / Button.vue;
 // Props: variant: 'primary' | 'secondary' | 'danger'
 ```
 
@@ -458,7 +462,7 @@ export interface OldInterface {
 Inertia::render('OldPage/Index');
 
 // ❌ Frontend: File exists but not rendered
-resources/js/Pages/OldPage/Index.vue
+resources/js/pages/OldPage/Index.vue
 
 // ✅ Delete both if not used
 ```
@@ -472,7 +476,7 @@ resources/js/Pages/OldPage/Index.vue
 - **Authentication System**: app/Http/Controllers/Auth/\*, routes/auth.php
 - **Core Models**: app/Models/User.php (and primary business models)
 - **Service Providers**: app/Providers/\* (especially AppServiceProvider, AuthServiceProvider)
-- **Middleware**: app/Http/Middleware/\* (especially auth, Inertia, HandleInertiaRequests)
+- **Middleware Wiring**: aliases/groups wired in `bootstrap/app.php` and the underlying middleware classes they map to
 - **Database Migrations**: database/migrations/\* (deployed migrations)
 - **Configuration Files**: config/\* (critical for app behavior)
 - **Core Routes**: routes/web.php auth routes
@@ -484,7 +488,7 @@ resources/js/Pages/OldPage/Index.vue
 #### Frontend (Vue 3 + Inertia)
 
 - **App Entry Points**: resources/js/app.js and resources/js/bootstrap.js
-- **Layout Components**: resources/js/Shared/Layouts/\* (used by multiple pages)
+- **Layout Components**: resources/js/layouts/\* (used by multiple pages)
 - **Auth Components**: Login.vue, Register.vue, authentication flows
 - **Core Composables/Utils**: Shared utilities used across app
 - **Inertia Configuration**: HandleInertiaRequests middleware
@@ -522,7 +526,7 @@ resources/js/Pages/OldPage/Index.vue
 - **Form Requests**: Check controller type hints
 - **Policies**: Check authorize() calls and gates
 - **Routes**: Check if used by frontend or external APIs
-- **Middleware**: Check route definitions and Kernel.php
+- **Middleware**: Check route definitions plus alias/group wiring in `bootstrap/app.php`
 - **Events**: Check where event() is called
 - **Jobs**: Check dispatch() calls and schedules
 - **Migrations**: NEVER delete deployed migrations
@@ -591,7 +595,7 @@ If something breaks after removal:
 ```bash
 git revert HEAD
 composer install
-php artisan test
+php artisan test --compact
 # ./vendor/bin/phpstan analyse
 ```
 
@@ -611,7 +615,7 @@ npm run build
 git revert HEAD
 composer install
 npm install
-php artisan test
+php artisan test --compact
 npm run build
 # npm run test
 ```
@@ -623,7 +627,7 @@ npm run build
 - Was it used in Inertia::render()?
 - Was it used in a way detection tools missed?
 - Was there dependency injection that wasn't obvious?
-- Was it scheduled in Kernel.php?
+- Was it scheduled via `routes/console.php` or related scheduler wiring?
 - Was it registered in a service provider?
 
 ### 3. **Fix Forward:**
@@ -666,9 +670,9 @@ After cleanup session:
 
 ### Backend (Laravel/PHP)
 
-- ✅ All PestPHP tests passing (php artisan test)
+- ✅ All PestPHP tests passing (`php artisan test --compact`)
 - ✅ PHPStan analysis passing (if configured)
-- ✅ Pint formatting passing (./vendor/bin/pint)
+- ✅ Pint formatting passing (`./vendor/bin/pint --dirty --format agent`)
 - ✅ Composer install succeeds
 - ✅ No routes broken (php artisan route:list)
 - ✅ Application serves correctly (php artisan serve)
@@ -711,17 +715,17 @@ npx depcheck
 rg "ComponentName" resources/js/
 
 # Testing (Run after each removal)
-php artisan test --filter=[RelatedArea]
+php artisan test --compact --filter=[RelatedArea]
 # npm run test
 # npm run type-check
 npm run build
 
 # Code Quality
-./vendor/bin/pint --dirty
+./vendor/bin/pint --dirty --format agent
 # npm run lint
 
 # Full verification before commit
-php artisan test --filter=[RelatedArea] && npm run build
+php artisan test --compact --filter=[RelatedArea] && npm run build
 ```
 
 ---
@@ -734,4 +738,4 @@ php artisan test --filter=[RelatedArea] && npm run build
 4. Committing each change separately
 5. Understanding why the code exists
 
-**Stack**: Laravel 12 (hybrid kernel/bootstrap) + Vue 3 Options API (JS-first) + Inertia.js v1-era + axios + BootstrapVue + SCSS + MySQL + Pest
+**Stack**: Laravel 12.55 + PHP 8.4 + Vue 3.5 Options API (JS-first) + Inertia.js 2 + axios + Tailwind CSS 4 + selective PrimeVue + MySQL + Pest 3
