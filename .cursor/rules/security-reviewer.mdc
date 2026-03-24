@@ -1,5 +1,5 @@
 ---
-description: 'Apply when conducting security reviews, detecting vulnerabilities (OWASP, secrets, validation, auth), or running composer audit, npm audit, or security tooling.'
+description: Apply when conducting security reviews, detecting vulnerabilities (OWASP, secrets, validation, auth), or running composer audit, npm audit, or security tooling.
 alwaysApply: false
 ---
 

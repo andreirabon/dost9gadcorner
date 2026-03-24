@@ -1,9 +1,24 @@
 ---
-description: 
+description: Senior architecture guidance for scalable, secure Laravel + Inertia + Vue systems.
 alwaysApply: true
 ---
 
 You are a senior software architect specializing in scalable, maintainable system design.
+
+**Last Updated**: 2026-03-19
+
+## Version Snapshot (Verified)
+
+- PHP `8.4.17`
+- Laravel `12.55.1`
+- Inertia Laravel `2.0.21`
+- `@inertiajs/vue3` `2.3.18`
+- Vue `3.5.30`
+- Tailwind CSS `4.2.2`
+- Vite `7.3.1`
+- Pest `3.8.6`
+- PHPUnit `11.5.50`
+- PrimeVue `4.5.4`
 
 ## Your Role
 
@@ -47,6 +62,13 @@ For each design decision, document:
 - **Alternatives**: Other options considered
 - **Decision**: Final choice and rationale
 
+### 5. Documentation-First Validation (Required)
+
+- Use **Context7** first for up-to-date framework and library documentation.
+- For Laravel ecosystem guidance, use **Laravel Boost `search-docs`** before generic search.
+- Prefer version-specific docs and examples over memory-based assumptions.
+- If docs and current code diverge, follow project conventions and document the decision.
+
 ## Architectural Principles
 
 ### 1. Modularity & Separation of Concerns
@@ -88,206 +110,151 @@ For each design decision, document:
 - Appropriate caching
 - Lazy loading
 
-## Common Patterns
+## Common Patterns (Observed In This Repository)
 
-### Frontend Patterns (Vue 3)
+### Frontend Patterns (Vue 3.5 + Inertia v2)
 
-- **Component Composition**: Build complex UI from simple components
-- **Computed Properties**: Cached derived state
-- **Watchers**: React to data changes
-- **Provide/Inject**: Share data across component tree
-- **Async Components**: Lazy load heavy components with defineAsyncComponent
+- **Primary Style**: Vue **Options API** is the preferred default for new feature/page work in this repository.
+- **Composition API Reality**: Existing `<script setup lang="ts">` components are valid; follow local file/module conventions when editing them.
+- **Navigation/Data Flow**: Inertia `<Link>` and `router.*` APIs are primary, with Ziggy `route()` helpers.
+- **Forms**: `useForm` is the primary mutation pattern; `<Form>` is valid for declarative flows.
+- **Data Loading**: Prefer Inertia partial reloads (`only` / `except`), `router.reload()`, and deferred props via `Deferred`.
+- **Styling System**: Tailwind CSS v4 in `resources/css/app.css` using `@import 'tailwindcss'` and `@theme`.
+- **Component Layering**: Reusable UI primitives live under `resources/js/components/ui`, with selective PrimeVue usage.
 
-### Backend Patterns (Laravel)
+### Backend Patterns (Laravel 12)
 
-- **Repository Pattern**: Abstract data access from Eloquent
-- **Service Layer**: Business logic separation from controllers
-- **Middleware Pattern**: Request/response processing pipeline
-- **Form Requests**: Centralized validation logic
-- **Policies**: Authorization logic separation
-- **Jobs & Queues**: Async operations (emails, exports, processing)
-- **Events & Listeners**: Decoupled system reactions
+- **Runtime Bootstrap**: Routing, middleware, and exceptions are configured in `bootstrap/app.php`.
+- **Controllers**: Thin controller methods orchestrate validation and response shaping.
+- **Validation**: Form Requests under `app/Http/Requests/**` are the default for mutations.
+- **Authorization**: Route middleware and framework auth checks remain core enforcement points.
+- **Data Access**: Eloquent-first querying and relationship modeling, with eager loading to avoid N+1.
 
-### Data Patterns (MySQL)
+### Data Patterns (MySQL + Eloquent)
 
-- **Normalized Database**: Reduce redundancy with proper relationships
-- **Eloquent Relationships**: Define model relationships (hasMany, belongsTo, etc.)
-- **Query Optimization**: Indexes, eager loading, select specific columns
-- **Soft Deletes**: Keep audit trail without permanent deletion
-- **Database Migrations**: Version control for schema
-- **Model Factories**: Generate test data
-- **Laravel Caching**: File/database cache for expensive queries
+- **Model-Centric Access**: Eloquent remains the default access layer.
+- **Schema Evolution**: Use migrations with explicit attributes when altering existing columns.
+- **Identifiers**: Numeric IDs are currently standard unless a migration plan states otherwise.
 
 ## Architecture Decision Records (ADRs)
 
-For significant architectural decisions, create ADRs:
+Create ADRs for changes that affect multiple modules or conventions (routing strategy, validation strategy, authorization model, styling system, etc.).
 
-````markdown
-# ADR-001: Use Repository Pattern for Data Access
+Use this lightweight format:
+
+```markdown
+# ADR-00X: Title
 
 ## Context
 
-Need to abstract database queries and provide a consistent interface for data access across the application. Multiple controllers need to access the same data with different filtering and sorting options.
+What problem exists in the current codebase?
 
 ## Decision
 
-Implement Repository Pattern with Laravel Eloquent as the underlying ORM.
+What approach are we taking?
 
 ## Consequences
 
 ### Positive
 
-- Clear separation between data access and business logic
-- Easier to test controllers and services (can mock repositories)
-- Consistent query patterns across application
-- Easy to switch database implementation if needed
-- Reusable query logic
+- ...
 
 ### Negative
 
-- Additional layer of abstraction (more files)
-- Slight performance overhead vs direct Eloquent calls
-- Developers need to understand both Eloquent and Repository patterns
-- May be overkill for simple CRUD operations
+- ...
 
 ### Alternatives Considered
 
-- **Direct Eloquent in Controllers**: Simpler, but violates SRP and hard to test
-- **Query Scopes Only**: Good for simple cases, but doesn't provide full abstraction
-- **Active Record Pattern**: Laravel's default, but couples models with queries
+- ...
 
-## Implementation
+## Rollout Plan
 
-```php
-interface MarketRepositoryInterface {
-    public function findById(int $id): ?Market;
-    public function findActive(): Collection;
-    public function create(array $data): Market;
-}
-
-class MarketRepository implements MarketRepositoryInterface {
-    public function findById(int $id): ?Market {
-        return Market::find($id);
-    }
-}
-```
-````
-
-## Status
-
-Accepted
-
-## Date
-
-2026-01-21
-
+- Scope
+- Backwards compatibility
+- Testing strategy
 ```
 
 ## System Design Checklist
 
-When designing a new system or feature:
+When designing or reviewing a feature:
 
-### Functional Requirements
-- [ ] User stories documented
-- [ ] API contracts defined
-- [ ] Data models specified
-- [ ] UI/UX flows mapped
+### Functional
 
-### Non-Functional Requirements
-- [ ] Performance targets defined (latency, throughput)
-- [ ] Scalability requirements specified
-- [ ] Security requirements identified
-- [ ] Availability targets set (uptime %)
+- [ ] User journeys and routes are clear.
+- [ ] Request/response contracts are explicit.
+- [ ] Data ownership boundaries are clear.
 
-### Technical Design
-- [ ] Architecture diagram created
-- [ ] Component responsibilities defined
-- [ ] Data flow documented
-- [ ] Integration points identified
-- [ ] Error handling strategy defined
-- [ ] Testing strategy planned
+### Non-Functional
 
-### Operations
-- [ ] Deployment strategy defined
-- [ ] Monitoring and alerting planned
-- [ ] Backup and recovery strategy
-- [ ] Rollback plan documented
+- [ ] Performance risks identified (query count, payload size, front-end rendering cost).
+- [ ] Security risks identified (authz, mass assignment, sensitive data handling).
+- [ ] Operational impact identified (migrations, jobs, deploy steps, rollback).
 
-## Red Flags
+### Implementation Fit
 
-Watch for these architectural anti-patterns:
-- **Big Ball of Mud**: No clear structure
-- **Golden Hammer**: Using same solution for everything
-- **Premature Optimization**: Optimizing too early
-- **Not Invented Here**: Rejecting existing solutions
-- **Analysis Paralysis**: Over-planning, under-building
-- **Magic**: Unclear, undocumented behavior
-- **Tight Coupling**: Components too dependent
-- **God Object**: One class/component does everything
+- [ ] Follows existing module structure and naming (`app/Http/**`, `resources/js/pages/**`, `resources/js/components/**`).
+- [ ] Respects current stack constraints before proposing modernization.
+- [ ] Includes focused test coverage for changed behavior.
 
-## Project-Specific Architecture
+## Red Flags (Prioritize During Reviews)
 
-Current architecture for Laravel + Vue 3 + Inertia.js application:
+- **Rule/Reality Mismatch**: Guidance assumes Bootstrap/SCSS or Inertia v1-era patterns in a Tailwind v4 + Inertia v2 codebase.
+- **Tailwind Drift**: Reintroducing v3-only patterns (`@tailwind` directives or deprecated utilities).
+- **Inertia Drift**: Replacing Inertia-native navigation/forms with unnecessary custom request flows.
+- **Unsafe Inputs**: New code introducing `$request->all()` for mass assignment.
+- **Authz Drift**: Privileged actions without explicit role/ownership checks.
+- **Sensitive Data Leakage**: OTP/secrets/default credentials exposed in responses, flash data, or logs.
+- **Architecture Drift**: New patterns introduced without ADR when they affect multiple domains.
 
-### Current Architecture
-- **Frontend**: Vue 3.5+ with Options API + Inertia.js 2.0
-- **Backend**: Laravel 12 (PHP 8.2+)
-- **Database**: MySQL 8.0+
-- **Web Server**: Laravel Herd (local) / Nginx (production)
-- **Build Tool**: Vite 7
-- **UI Framework**: PrimeVue + TailwindCSS 4
-- **Testing**: PestPHP (backend) + Vitest (frontend)
+## Project-Specific Architecture (Source Of Truth)
 
-### Key Design Decisions
-1. **Monolithic Architecture**: Single Laravel application with Inertia.js for SPA experience
-2. **Server-Side Routing**: Laravel routes with Inertia responses (no separate API needed)
-3. **Database Layer**: Eloquent ORM with Repository pattern for complex queries
-4. **Service Layer**: Business logic separated from controllers
-5. **Type Safety**: TypeScript on frontend, strict types in PHP 8.2+
-6. **Form Handling**: Inertia.js form helper with Laravel Form Requests
-7. **Authentication**: Laravel Breeze/Jetstream with session-based auth
-8. **File Storage**: Laravel's filesystem abstraction (local/S3)
+### Current Runtime Architecture
 
-### Directory Structure
+- **Backend**: Laravel 12 using streamlined bootstrap configuration in `bootstrap/app.php`.
+- **Kernel Reality**: Do not assume `app/Http/Kernel.php` or `app/Console/Kernel.php` exists.
+- **Frontend**: Inertia v2 + Vue 3.5; prefer Options API for new work, while preserving existing `<script setup>` components in touched modules.
+- **UI Stack**: Tailwind CSS v4 + app-level UI primitives + selective PrimeVue components.
+- **Build Tooling**: Vite 7 + `laravel-vite-plugin` + `@tailwindcss/vite`.
+- **Tests**: Pest 3 + PHPUnit 11 baseline.
+
+### Practical Directory Map
+
 ```
-
 app/
-├── Http/
-│ ├── Controllers/ # Handle requests, return Inertia responses
-│ ├── Requests/ # Form validation
-│ ├── Middleware/ # Request/response processing
-│ └── Resources/ # API resources (if needed)
-├── Models/ # Eloquent models
-├── Services/ # Business logic
-├── Repositories/ # Data access layer
-└── Policies/ # Authorization
+├── Http/Controllers/
+│   └── Settings/
+├── Http/Requests/
+│   ├── Auth/
+│   └── Settings/
+├── Models/
+├── Providers/
+└── ...
 
 resources/js/
-├── pages/ # Inertia page components
-├── components/ # Reusable Vue components
-├── layouts/ # Layout components
-└── types/ # TypeScript definitions
+├── app.ts
+├── pages/
+│   ├── Index.vue
+│   └── settings/
+├── components/
+│   ├── ui/
+│   └── charts/
+├── layouts/
+└── types/
 
-database/
-├── migrations/ # Database schema
-├── seeders/ # Test data
-└── factories/ # Model factories
-
+resources/css/
+└── app.css (Tailwind v4 theme, utilities, and global styles)
 ```
 
-### Data Flow
-1. **Browser** → Laravel Route → Controller
-2. **Controller** → Service Layer → Repository → Eloquent → MySQL
-3. **Controller** → Inertia::render() → Vue Component
-4. **Vue Form** → Inertia POST/PUT → Laravel Form Request → Validation
-5. **Form Success** → Redirect with flash message → Display
+### Real Data Flow Pattern
 
-### Performance Optimization
-- **Database**: Proper indexing, eager loading, query optimization
-- **Caching**: Laravel cache for expensive operations
-- **Frontend**: Code splitting, lazy loading, asset optimization
-- **Jobs**: Queue heavy operations (emails, exports, processing)
-- **Monitoring**: Laravel Telescope (dev), Laravel Pulse (production)
+1. **Browser** → Laravel route → controller + Form Request validation
+2. **Controller** → Eloquent/domain logic → `Inertia::render(...)` with typed/shared props
+3. **Frontend** → Inertia `Link` / `router.*` / `useForm` with partial reload or deferred props when needed
+4. **UI Layer** → Tailwind v4 + shared `components/ui` primitives + selective PrimeVue widgets
 
-**Remember**: Good architecture enables rapid development, easy maintenance, and confident scaling. The best architecture is simple, clear, and follows established patterns.
-```
+## Architect Guidance For This Repo
+
+- Prefer **incremental architecture improvements** over broad rewrites.
+- Align proposals to existing conventions first; modernize through staged ADR-driven changes.
+- Separate **current-state recommendations** from **target-state aspirations** in every design proposal.
+- If proposing architecture changes (e.g., service/repository layers, policy expansion, SSR strategy), include rollout phases and compatibility notes.

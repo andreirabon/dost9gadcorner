@@ -1,11 +1,19 @@
 ---
-description: 'Apply when writing or reviewing PHP/Laravel code for PSR compliance, naming, types, docblocks, or PHP 8.2+ best practices.'
+description: Apply when writing or reviewing PHP/Laravel code for PSR compliance, naming, types, docblocks, or PHP 8.2+ best practices.
 alwaysApply: false
 ---
 
 # PHP Coding Standards & Best Practices
 
 Universal PHP coding standards for Laravel 12 applications with PHP 8.2+.
+
+## Project Reality Overrides (Highest Priority)
+
+- Follow touched-file/module conventions first.
+- Use modern PHP features incrementally; do not force broad rewrites in legacy files.
+- Prefer explicit parameter/return types in new/changed methods, but avoid massive type-only refactors unless requested.
+- Constructor property promotion is preferred for new classes, not a mandatory retrofit in old services.
+- This repository has mixed patterns (service `*Class`, mixed validation styles, hybrid kernel structure); keep local consistency and improve safely.
 
 ## PSR Standards Compliance
 
@@ -203,35 +211,35 @@ namespace App\Enums;
 
 enum MarketStatus: string
 {
-    case ACTIVE = 'active';
-    case RESOLVED = 'resolved';
-    case CLOSED = 'closed';
-    case CANCELLED = 'cancelled';
+    case Active = 'active';
+    case Resolved = 'resolved';
+    case Closed = 'closed';
+    case Cancelled = 'cancelled';
 
     // ✅ Enum methods
     public function label(): string
     {
         return match ($this) {
-            self::ACTIVE => 'Active',
-            self::RESOLVED => 'Resolved',
-            self::CLOSED => 'Closed',
-            self::CANCELLED => 'Cancelled',
+            self::Active => 'Active',
+            self::Resolved => 'Resolved',
+            self::Closed => 'Closed',
+            self::Cancelled => 'Cancelled',
         };
     }
 
     public function color(): string
     {
         return match ($this) {
-            self::ACTIVE => 'green',
-            self::RESOLVED => 'blue',
-            self::CLOSED => 'gray',
-            self::CANCELLED => 'red',
+            self::Active => 'green',
+            self::Resolved => 'blue',
+            self::Closed => 'gray',
+            self::Cancelled => 'red',
         };
     }
 
     public function isActive(): bool
     {
-        return $this === self::ACTIVE;
+        return $this === self::Active;
     }
 }
 
@@ -247,7 +255,7 @@ class Market extends Model
 }
 
 // Usage in code
-$market->status = MarketStatus::ACTIVE;
+$market->status = MarketStatus::Active;
 if ($market->status->isActive()) {
     // Do something
 }
@@ -302,7 +310,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-// ✅ ALWAYS use strict types in new files
+// ✅ Prefer strict types in new files when consistent with surrounding module/files
 class MarketService
 {
     // Type declarations for all parameters and return types
@@ -332,7 +340,7 @@ class MarketRepository
 
     public function getActive(): Collection
     {
-        return Market::where('status', MarketStatus::ACTIVE)->get();
+        return Market::where('status', MarketStatus::Active)->get();
     }
 
     public function exists(int $id): bool
@@ -677,7 +685,7 @@ $markets = Market::all();
 // Short syntax for simple callbacks
 $names = $markets->map(fn($market) => $market->name);
 
-$active = $markets->filter(fn($market) => $market->status === MarketStatus::ACTIVE);
+$active = $markets->filter(fn($market) => $market->status === MarketStatus::Active);
 
 $volumes = $markets->map(fn($market) => [
     'name' => $market->name,
@@ -695,7 +703,7 @@ $limit = $request->input('limit') ?? 20;
 $category = $filters['category'] ?? 'all';
 
 // ✅ Null coalescing assignment (PHP 7.4+)
-$data['status'] ??= MarketStatus::ACTIVE;
+$data['status'] ??= MarketStatus::Active;
 $config['timeout'] ??= 30;
 
 // ❌ OLD: Ternary with isset
@@ -711,7 +719,7 @@ $limit = isset($request->input('limit')) ? $request->input('limit') : 20;
 
 // ✅ GOOD: One method per line for readability
 $markets = Market::query()
-    ->where('status', MarketStatus::ACTIVE)
+    ->where('status', MarketStatus::Active)
     ->where('end_date', '>', now())
     ->with(['creator', 'options'])
     ->orderBy('created_at', 'desc')
@@ -806,61 +814,42 @@ echo htmlspecialchars($userInput, ENT_QUOTES, 'UTF-8');
 
 ## Testing Standards
 
-### PHPUnit Test Structure
+### Pest Test Structure
 
 ```php
-<?php
-
-namespace Tests\Feature;
-
 use App\Models\Market;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class MarketControllerTest extends TestCase
-{
-    use RefreshDatabase;
+it('displays list of markets', function () {
+    Market::factory()->count(3)->create();
 
-    /** @test */
-    public function it_displays_list_of_markets(): void
-    {
-        // Arrange
-        $markets = Market::factory()->count(3)->create();
-
-        // Act
-        $response = $this->get('/markets');
-
-        // Assert
-        $response->assertOk();
-        $response->assertInertia(fn($page) =>
+    $this->get('/markets')
+        ->assertOk()
+        ->assertInertia(fn($page) =>
             $page->component('Markets/Index')
                 ->has('markets.data', 3)
         );
-    }
+});
 
-    /** @test */
-    public function authenticated_user_can_create_market(): void
-    {
-        $user = User::factory()->create();
+it('allows authenticated user to create market', function () {
+    $user = User::factory()->create();
 
-        $data = [
-            'name' => 'Test Market',
-            'description' => 'Test Description',
-            'category' => 'politics',
-            'end_date' => now()->addDays(30)->toDateTimeString(),
-        ];
+    $data = [
+        'name' => 'Test Market',
+        'description' => 'Test Description',
+        'category' => 'politics',
+        'end_date' => now()->addDays(30)->toDateTimeString(),
+    ];
 
-        $response = $this->actingAs($user)
-            ->post('/markets', $data);
+    $this->actingAs($user)
+        ->post('/markets', $data)
+        ->assertRedirect();
 
-        $response->assertRedirect();
-        $this->assertDatabaseHas('markets', [
-            'name' => 'Test Market',
-            'creator_id' => $user->id,
-        ]);
-    }
-}
+    $this->assertDatabaseHas('markets', [
+        'name' => 'Test Market',
+        'creator_id' => $user->id,
+    ]);
+});
 ```
 
 **Remember**: Modern PHP 8.2+ features enable cleaner, more type-safe code. Follow PSR standards, use Laravel conventions, and leverage PHP's latest features for maintainable applications.

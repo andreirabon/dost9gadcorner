@@ -1,39 +1,102 @@
 ---
-description: 'Apply when implementing or reviewing Inertia.js pages, shared data, form handling, redirects, or Laravel–Vue data flow with Inertia.'
+description: Apply when implementing or reviewing Inertia page flows, Laravel-Inertia controller responses, forms, shared props, and client navigation.
 alwaysApply: false
 ---
 
 # Inertia.js Development Patterns
 
-Comprehensive patterns for building SPAs with Laravel and Vue 3 Options API using Inertia.js.
+Practical patterns for Laravel + Inertia + Vue work in this repository.
 
-## Page Component Patterns
+## Version Snapshot
 
-### Basic Page Component (Options API)
+- Laravel 12.55.1
+- inertiajs/inertia-laravel 2.0.21
+- @inertiajs/vue3 2.3.18
+- Vue 3.5.30
+
+## Project Reality Overrides (Highest Priority)
+
+- Follow touched-module conventions first.
+- Inertia is the page/navigation bridge; `axios` may still be used for local module actions.
+- Vue Options API is the preferred default for new module/page work.
+- Preserve existing `<script setup lang="ts">` patterns in files already using them.
+- Current app boot resolves pages from `resources/js/pages/**/*.vue` in `resources/js/app.ts`.
+- Do not force migrations between layout patterns unless explicitly requested.
+
+## Documentation-First Workflow
+
+1. Use Laravel Boost `search-docs` first for Inertia/Laravel behavior.
+2. Use Context7 for supplemental Inertia/Vue examples.
+3. If docs and local module conventions diverge, keep local conventions and evolve incrementally.
+
+## Core Inertia Flow
+
+Use redirect-based server responses for mutations and Inertia page renders for navigation.
+
+```php
+public function index(): \Inertia\Response
+{
+    return Inertia::render('settings/Profile', [
+        'user' => request()->user()?->only(['id', 'name', 'email']),
+    ]);
+}
+
+public function update(UpdateProfileRequest $request): \Illuminate\Http\RedirectResponse
+{
+    $request->user()->fill($request->validated())->save();
+
+    return to_route('profile.edit')->with('success', 'Profile updated.');
+}
+```
+
+## Server-Side Patterns (Laravel)
+
+### Render Minimal, Explicit Props
+
+- Select only required columns.
+- Eager-load only needed relationships.
+- Paginate large lists.
+- Keep page props small and stable.
+
+### Mutation Responses
+
+- Prefer `to_route(...)` / redirects after `store/update/delete`.
+- Let Inertia handle validation error redirects automatically.
+- Avoid returning mixed JSON payloads from routes intended to render Inertia pages.
+
+### Shared Props (`HandleInertiaRequests`)
+
+- Keep shared props lightweight (`auth`, flash, small app metadata).
+- Use lazy closures for expensive shared values.
+- Do not share sensitive values or oversized objects globally.
+
+### Deferred and Partial Data (v2)
+
+- Use `Inertia::defer(...)` for expensive secondary data loads.
+- Use partial reload-friendly prop design for frequently refreshed sections.
+
+```php
+return Inertia::render('Reports/Index', [
+    'reports' => Report::query()->latest()->paginate(20),
+    'analytics' => Inertia::defer(fn () => $this->analyticsService->summary()),
+]);
+```
+
+## Client-Side Page Patterns (Vue Options API Preferred)
+
+Use `Head`, `Link`, and `router` from `@inertiajs/vue3` for navigation/stateful visits.
 
 ```vue
 <script>
 import { defineComponent } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 
 export default defineComponent({
-    components: {
-        Head,
-        Link,
-        AppLayout,
-    },
+    components: { Head, Link },
 
-    // Props passed from Laravel controller
     props: {
-        markets: {
-            type: Object,
-            required: true,
-        },
-        filters: {
-            type: Object,
-            default: () => ({}),
-        },
+        users: { type: Object, required: true },
+        filters: { type: Object, default: () => ({}) },
     },
 
     data() {
@@ -43,454 +106,9 @@ export default defineComponent({
     },
 
     methods: {
-        search() {
-            this.$inertia.get('/markets', this.localFilters, {
-                preserveState: true,
-                preserveScroll: true,
-            });
-        },
-    },
-});
-</script>
-
-<template>
-    <AppLayout>
-        <Head title="Markets" />
-
-        <div class="markets">
-            <h1>Markets</h1>
-
-            <!-- Search functionality -->
-            <input
-                v-model="localFilters.search"
-                @input="search"
-                placeholder="Search markets..."
-            />
-
-            <!-- Market list -->
-            <div v-for="market in markets.data" :key="market.id">
-                <Link :href="`/markets/${market.id}`">
-                    {{ market.name }}
-                </Link>
-            </div>
-        </div>
-    </AppLayout>
-</template>
-```
-
-## Laravel Controller Patterns
-
-### Rendering Inertia Pages
-
-```php
-<?php
-
-namespace App\Http\Controllers;
-
-use App\Models\Market;
-use Inertia\Inertia;
-use Inertia\Response;
-
-class MarketController extends Controller
-{
-    /**
-     * Display a listing of markets.
-     */
-    public function index(): Response
-    {
-        return Inertia::render('Markets/Index', [
-            // Only pass needed data
-            'markets' => Market::query()
-                ->select('id', 'name', 'status', 'created_at')
-                ->with('creator:id,name')
-                ->latest()
-                ->paginate(20),
-
-            // Preserve filters
-            'filters' => request()->only('search', 'status'),
-        ]);
-    }
-
-    /**
-     * Display a specific market.
-     */
-    public function show(Market $market): Response
-    {
-        return Inertia::render('Markets/Show', [
-            'market' => $market->load([
-                'creator:id,name,email',
-                'options:id,market_id,name',
-                'positions' => fn($query) => $query->latest()->take(10)
-            ]),
-        ]);
-    }
-
-    /**
-     * Using the inertia() helper (shorthand).
-     */
-    public function create(): Response
-    {
-        return inertia('Markets/Create');
-    }
-}
-```
-
-### Lazy Loading Data
-
-```php
-<?php
-
-use Inertia\Inertia;
-
-public function show(Market $market): Response
-{
-    return Inertia::render('Markets/Show', [
-        'market' => $market,
-
-        // ✅ Lazy load expensive data - only loaded when accessed
-        'analytics' => Inertia::lazy(fn() => [
-            'totalVolume' => $market->positions()->sum('amount'),
-            'uniqueTraders' => $market->positions()->distinct('user_id')->count(),
-            'recentTrades' => $market->positions()->latest()->take(10)->get(),
-        ]),
-
-        // ✅ Optional data - included in initial page load but can be made lazy
-        'relatedMarkets' => Inertia::optional(
-            fn() => Market::where('category', $market->category)
-                ->where('id', '!=', $market->id)
-                ->take(5)
-                ->get()
-        ),
-    ]);
-}
-```
-
-## Form Handling with useForm (Options API)
-
-### Creating Forms with Inertia Form Helper
-
-## Shared Data Patterns
-
-### Sharing Data from Laravel Middleware
-
-```php
-<?php
-
-// app/Http/Middleware/HandleInertiaRequests.php
-
-namespace App\Http\Middleware;
-
-use Illuminate\Http\Request;
-use Inertia\Middleware;
-
-class HandleInertiaRequests extends Middleware
-{
-    /**
-     * Define the props that are shared by default.
-     */
-    public function share(Request $request): array
-    {
-        return array_merge(parent::share($request), [
-            // Always included on every request
-            'appName' => config('app.name'),
-
-            // Lazy evaluation - only computed when accessed
-            'auth' => [
-                'user' => fn() => $request->user()
-                    ? $request->user()->only('id', 'name', 'email', 'avatar')
-                    : null,
-            ],
-
-            // Flash messages from session
-            'flash' => [
-                'message' => fn() => $request->session()->get('message'),
-                'error' => fn() => $request->session()->get('error'),
-                'success' => fn() => $request->session()->get('success'),
-            ],
-
-            // Permissions
-            'permissions' => fn() => [
-                'canCreateMarkets' => $request->user()?->can('create', \App\Models\Market::class),
-                'canManageUsers' => $request->user()?->hasRole('admin'),
-            ],
-
-            // Ziggy routes (for route() helper in Vue)
-            'ziggy' => fn() => [
-                ...\Tightenco\Ziggy\Ziggy::generate()->toArray(),
-                'location' => $request->url(),
-            ],
-        ]);
-    }
-}
-```
-
-### Accessing Shared Data in Vue (Options API)
-
-```vue
-<script>
-import { defineComponent } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import { Link } from '@inertiajs/vue3';
-
-export default defineComponent({
-    components: {
-        Link,
-    },
-
-    setup() {
-        const page = usePage();
-        return { page };
-    },
-
-    computed: {
-        user() {
-            return this.page.props.auth.user;
-        },
-
-        flash() {
-            return this.page.props.flash;
-        },
-
-        canCreateMarkets() {
-            return this.page.props.permissions?.canCreateMarkets;
-        },
-    },
-});
-</script>
-
-<template>
-    <div>
-        <!-- Flash messages -->
-        <div v-if="flash.success" class="alert alert-success">
-            {{ flash.success }}
-        </div>
-
-        <div v-if="flash.error" class="alert alert-error">
-            {{ flash.error }}
-        </div>
-
-        <!-- User info -->
-        <header v-if="user">
-            <img :src="user.avatar" :alt="user.name" />
-            <span>{{ user.name }}</span>
-        </header>
-
-        <!-- Conditional rendering based on permissions -->
-        <Link v-if="canCreateMarkets" href="/markets/create">
-            Create Market
-        </Link>
-    </div>
-</template>
-```
-
-## Navigation Patterns
-
-### Link Component
-
-```vue
-<template>
-    <!-- ✅ Basic link -->
-    <Link href="/markets">Markets</Link>
-
-    <!-- ✅ Link with method -->
-    <Link href="/logout" method="post" as="button"> Logout </Link>
-
-    <!-- ✅ Link with confirmation -->
-    <Link
-        href="/markets/1"
-        method="delete"
-        as="button"
-        @before="() => confirm('Are you sure?')"
-    >
-        Delete
-    </Link>
-
-    <!-- ✅ Link with custom data -->
-    <Link href="/markets" :data="{ search: 'election', status: 'active' }">
-        Search
-    </Link>
-
-    <!-- ✅ Preserve scroll position -->
-    <Link href="/markets?page=2" preserve-scroll> Next Page </Link>
-
-    <!-- ✅ Replace history state -->
-    <Link href="/markets" replace> Markets </Link>
-
-    <!-- ✅ Active link styling -->
-    <Link href="/markets" :class="{ active: $page.url === '/markets' }">
-        Markets
-    </Link>
-</template>
-```
-
-### Programmatic Navigation (Options API)
-
-```vue
-<script>
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-    methods: {
-        navigateToMarkets() {
-            this.$inertia.get('/markets');
-        },
-
-        searchMarkets(query) {
-            this.$inertia.get(
-                '/markets',
-                { search: query },
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    only: ['markets'], // Only reload 'markets' prop
-                },
-            );
-        },
-
-        createMarket(data) {
-            this.$inertia.post('/markets', data, {
-                onSuccess: () => {
-                    console.log('Market created!');
-                },
-                onError: (errors) => {
-                    console.error('Validation failed:', errors);
-                },
-            });
-        },
-
-        deleteMarket(id) {
-            if (confirm('Are you sure?')) {
-                this.$inertia.delete(`/markets/${id}`);
-            }
-        },
-    },
-});
-</script>
-```
-
-### Prefetching Links
-
-```vue
-<template>
-    <!-- Prefetch on hover -->
-    <Link href="/markets/1" prefetch> View Market </Link>
-
-    <!-- Prefetch on mount -->
-    <Link href="/markets/1" prefetch="mount"> View Market </Link>
-
-    <!-- Prefetch on click -->
-    <Link href="/markets/1" prefetch="click"> View Market </Link>
-</template>
-```
-
-## Layout Patterns
-
-### Persistent Layouts (Options API)
-
-```vue
-<!-- resources/js/layouts/AppLayout.vue -->
-<script>
-import { defineComponent } from 'vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-
-export default defineComponent({
-    components: {
-        Head,
-        Link,
-    },
-
-    setup() {
-        const page = usePage();
-        return { page };
-    },
-
-    computed: {
-        user() {
-            return this.page.props.auth.user;
-        },
-    },
-});
-</script>
-
-<template>
-    <div class="app-layout">
-        <nav>
-            <Link href="/">Home</Link>
-            <Link href="/markets">Markets</Link>
-
-            <div v-if="user">
-                <span>{{ user.name }}</span>
-                <Link href="/logout" method="post">Logout</Link>
-            </div>
-        </nav>
-
-        <main>
-            <slot />
-        </main>
-
-        <footer>
-            <!-- Footer content -->
-        </footer>
-    </div>
-</template>
-```
-
-### Using Layouts in Pages
-
-```vue
-<!-- Option 1: Using component -->
-<script setup>
-import AppLayout from '@/layouts/AppLayout.vue';
-</script>
-
-<template>
-    <AppLayout>
-        <h1>Markets</h1>
-        <!-- Page content -->
-    </AppLayout>
-</template>
-
-<!-- Option 2: Using layout property -->
-<script>
-import AppLayout from '@/layouts/AppLayout.vue';
-
-export default {
-    layout: AppLayout,
-};
-</script>
-
-<template>
-    <h1>Markets</h1>
-    <!-- Page content -->
-</template>
-```
-
-## Advanced Patterns
-
-### Partial Reloads (Options API)
-
-```vue
-<script>
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-    methods: {
-        updateMarketStatus(marketId, status) {
-            this.$inertia.patch(
-                `/markets/${marketId}`,
-                { status },
-                {
-                    // Only reload specific props
-                    only: ['market', 'flash'],
-                    preserveScroll: true,
-                },
-            );
-        },
-
-        filterMarkets(filters) {
-            this.$inertia.get('/markets', filters, {
-                // Only reload markets list, keep other data
-                only: ['markets'],
+        applyFilters() {
+            router.get('/users', this.localFilters, {
+                only: ['users', 'filters'],
                 preserveState: true,
                 preserveScroll: true,
             });
@@ -500,39 +118,32 @@ export default defineComponent({
 </script>
 ```
 
-### Manual Form Submissions (Options API)
+## Form Patterns
+
+Follow local module conventions: use `useForm`, `<Form>`, or existing validated `axios` flow where appropriate.
+
+### `useForm` (Programmatic Control)
 
 ```vue
 <script>
 import { defineComponent } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
 export default defineComponent({
-    data() {
-        return {
-            form: {
-                name: '',
-                description: '',
-            },
-            errors: {},
-            processing: false,
-        };
+    setup() {
+        const form = useForm({
+            name: '',
+            email: '',
+        });
+
+        return { form };
     },
 
     methods: {
         submit() {
-            this.processing = true;
-
-            this.$inertia.post('/markets', this.form, {
-                onSuccess: () => {
-                    this.form = { name: '', description: '' };
-                    this.errors = {};
-                },
-                onError: (serverErrors) => {
-                    this.errors = serverErrors;
-                },
-                onFinish: () => {
-                    this.processing = false;
-                },
+            this.form.post('/users', {
+                preserveScroll: true,
+                onSuccess: () => this.form.reset('email'),
             });
         },
     },
@@ -540,160 +151,91 @@ export default defineComponent({
 </script>
 ```
 
-### Remember Scroll Position (Options API)
+### `<Form>` Component (Declarative)
 
-```vue
-<script>
-import { defineComponent } from 'vue';
+- Use for simple declarative form flows.
+- Use slot state (`errors`, `processing`, `wasSuccessful`) for UX feedback.
+- Use `options.only/except/reset` for partial reload behavior control.
 
-export default defineComponent({
-    methods: {
-        searchMarkets(query) {
-            this.$inertia.get(
-                '/markets',
-                { search: query },
-                {
-                    preserveScroll: true,
-                    // or
-                    preserveScroll: (page) => {
-                        // Custom logic to determine if scroll should be preserved
-                        return page.props.markets.current_page > 1;
-                    },
-                },
-            );
-        },
-    },
-});
-</script>
+## Navigation and Reload Patterns
+
+- Use `<Link>` for navigation links.
+- Use `router.get/post/put/patch/delete/visit/reload` for programmatic flows.
+- Use `only` / `except` / `reset` for partial reload optimization on same page component.
+- Use `preserveScroll`/`preserveState` deliberately, not by default everywhere.
+
+```js
+router.reload({ only: ['users'] });
+router.get('/users', { search: 'john' }, { only: ['users', 'filters'] });
 ```
 
-### Global Event Listeners (Options API)
+## Deferred, Visibility, and Infinite Loading (v2)
+
+- Use `Deferred` for deferred props client rendering fallback.
+- Use `WhenVisible`/`InfiniteScroll` for lazy loading sections when appropriate.
+- Ensure fallback states are explicit (skeleton/loading/empty/error) to avoid layout jumps.
 
 ```vue
-<script>
-import { defineComponent } from 'vue';
-import { router } from '@inertiajs/vue3';
-
-export default defineComponent({
-    data() {
-        return {
-            listeners: [],
-        };
-    },
-
-    mounted() {
-        this.listeners.push(
-            router.on('start', (event) => {
-                console.log('Navigation started to:', event.detail.visit.url);
-            }),
-        );
-
-        this.listeners.push(
-            router.on('progress', (event) => {
-                console.log(
-                    'Upload progress:',
-                    event.detail.progress.percentage,
-                );
-            }),
-        );
-
-        this.listeners.push(
-            router.on('success', (event) => {
-                console.log('Navigation completed successfully');
-            }),
-        );
-
-        this.listeners.push(
-            router.on('error', (errors) => {
-                console.error('Validation errors:', errors);
-            }),
-        );
-    },
-
-    beforeUnmount() {
-        // Clean up all listeners
-        this.listeners.forEach((removeListener) => removeListener());
-    },
-});
-</script>
+<template>
+    <Deferred data="analytics">
+        <template #fallback>
+            <div>Loading analytics...</div>
+        </template>
+        <AnalyticsPanel :data="analytics" />
+    </Deferred>
+</template>
 ```
 
-## Testing Patterns
+## Inertia + Axios Coexistence
 
-### Testing Inertia Responses (Laravel)
+- Use Inertia for page navigation and mutation flows expecting redirect/validation behavior.
+- Use `axios` for local widget/table interactions that should not trigger page visits.
+- Do not replace standard page navigation with ad-hoc `fetch`/`axios` calls.
+
+## Layout and Page Resolution
+
+- Respect current page resolver convention from `resources/js/app.ts`:
+    - `./pages/${name}.vue`
+- Keep layout usage consistent with touched files (`AppLayout`, settings layout wrappers, etc.).
+- Avoid forcing global-default layout assumptions where module-level layout wrappers exist.
+
+## Testing Patterns (Pest + Inertia)
+
+Use Inertia assertions for page shape and advanced v2 reload behavior.
 
 ```php
-<?php
-
-use function Pest\Laravel\{get, post};
-
-test('markets index returns inertia response', function () {
-    get('/markets')
+it('renders users index', function () {
+    $this->get('/users')
         ->assertOk()
-        ->assertInertia(fn($page) =>
-            $page->component('Markets/Index')
-                ->has('markets')
-        );
-});
-
-test('markets index passes correct data', function () {
-    Market::factory()->count(3)->create();
-
-    get('/markets')
-        ->assertInertia(fn($page) =>
-            $page->component('Markets/Index')
-                ->has('markets.data', 3)
-                ->has('markets.data.0', fn($market) =>
-                    $market->has('id')
-                        ->has('name')
-                        ->has('status')
-                )
+        ->assertInertia(fn ($page) => $page
+            ->component('Users/Index')
+            ->has('users')
         );
 });
 ```
 
-## Performance Optimization
+- Test partial reloads with `reloadOnly(...)` / `reloadExcept(...)`.
+- Test deferred props with `loadDeferredProps(...)` when deferred behavior is introduced.
 
-### Limiting Data Sent to Frontend
+## Performance Guardrails
 
-```php
-<?php
+- Keep page props lean; avoid sending full models/relations unnecessarily.
+- Use pagination for lists.
+- Use partial reloads for high-frequency filter/search interactions.
+- Avoid globally shared props that are expensive to compute on every request.
 
-// ❌ BAD: Sending all data
-public function index()
-{
-    return Inertia::render('Markets/Index', [
-        'markets' => Market::with('creator', 'options', 'positions')->get(),
-    ]);
-}
+## Common Pitfalls
 
-// ✅ GOOD: Select only needed fields
-public function index()
-{
-    return Inertia::render('Markets/Index', [
-        'markets' => Market::query()
-            ->select('id', 'name', 'status', 'created_at')
-            ->with('creator:id,name')
-            ->paginate(20),
-    ]);
-}
-```
+- Mixing `router` and legacy `this.$inertia` styles in the same file.
+- Returning JSON from routes that should return `Inertia::render(...)`.
+- Overusing `preserveState` and accidentally masking stale UI state.
+- Sending heavy data in shared props instead of page/deferred props.
+- Ignoring fallback UI for deferred/visibility-based loading.
 
-### Using Lazy Props
+## Completion Checklist
 
-```php
-<?php
-
-public function show(Market $market)
-{
-    return Inertia::render('Markets/Show', [
-        'market' => $market,
-
-        // Expensive data loaded only when accessed
-        'analytics' => Inertia::lazy(fn() => $this->getAnalytics($market)),
-        'relatedMarkets' => Inertia::lazy(fn() => $this->getRelatedMarkets($market)),
-    ]);
-}
-```
-
-**Remember**: Inertia.js bridges Laravel and Vue seamlessly. Use server-side routing with Vue 3 Options API, leverage Laravel's features, and build reactive UIs without building a separate API. Follow these patterns for maintainable, performant SPAs.
+- [ ] Uses module-consistent Inertia style (`router`, `Link`, `useForm`/`<Form>` as appropriate).
+- [ ] Uses redirect-based mutation flow with server-side validation.
+- [ ] Keeps props explicit, minimal, and performance-conscious.
+- [ ] Uses partial/deferred reload features only when beneficial and tested.
+- [ ] Preserves existing layout and file-style conventions in touched modules.

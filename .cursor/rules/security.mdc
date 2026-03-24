@@ -1,5 +1,5 @@
 ---
-description: 'Apply when implementing or checking security: secrets, validation, CSRF, auth, authorization, rate limiting, mass assignment, or secure defaults for Laravel + Vue.'
+description: Apply when implementing or checking security: secrets, validation, CSRF, auth, authorization, rate limiting, mass assignment, or secure defaults for Laravel + Vue.
 alwaysApply: false
 ---
 

@@ -1,193 +1,225 @@
 ---
-description: 'Apply when incrementally fixing build or type errors; running diagnostics (tsc, vite build, eslint, artisan) and applying minimal fixes with safety checks.'
+description: Apply when incrementally fixing build failures with minimal, verifiable changes across Vite, Vue, Tailwind, Inertia, and Laravel integration.
 alwaysApply: false
 ---
 
 # Build and Fix
 
-Incrementally fix TypeScript, Vue, Laravel, and build errors with safety checks.
+Incrementally fix build and integration errors with strict safety checks, fast feedback loops, and minimal diffs.
 
-## Workflow
+**Last Updated**: 2026-03-19
 
-### 1. Initial Diagnostics
+## Version Snapshot (Verified)
 
-Run all relevant checks:
+- Laravel `12.55.1`
+- Inertia Laravel `2.0.21`
+- `@inertiajs/vue3` `2.3.18`
+- Vue `3.5.30`
+- Vite `7.3.1`
+- Tailwind CSS `4.2.2`
+- `@tailwindcss/vite` `4.2.2`
+- TypeScript `5.9.3`
+- Pest `3.8.6`
 
-```bash
-# Frontend (Vite + TypeScript)
-npm run build              # Vite production build
-npx tsc --noEmit          # TypeScript type check
-npx eslint . --ext .ts,.vue,.js  # Linting
+## Documentation-First Validation (Required)
 
-# Backend (Laravel)
-php artisan about         # Laravel system check
-composer validate         # Composer validation
-php artisan test          # Run PestPHP tests
-```
+- Use **Laravel Boost `search-docs`** first for Laravel/Inertia/Tailwind behavior and command guidance.
+- Use **Context7** for current Vite/Tailwind/Vue troubleshooting details when uncertain.
+- Prefer version-specific guidance over memory.
 
-### 2. Parse Error Output
+## Repository Reality (Apply First)
 
-Organize errors by:
+- Primary frontend check is `npm run build`.
+- Frontend entrypoint is `resources/js/app.ts`; SSR entrypoint is `resources/js/ssr.ts`.
+- Inertia pages resolve via `./pages/**/*.vue` (lowercase).
+- Vite alias `@` points to `resources/js`.
+- Styling is Tailwind v4 in `resources/css/app.css` (`@import 'tailwindcss'`, `@theme`).
+- Do not assume SCSS pipelines are active in this branch.
+- Do not assume `tsc` is a mandatory gate unless TypeScript errors are part of the failing build.
+- Vue preference: default to **Options API** for new fixes; preserve existing `<script setup>` files when touched.
 
-- **File location** - Group errors by file
-- **Severity** - Critical (build breaking) → High (type errors) → Medium (warnings)
-- **Type** - TypeScript, Vue template, Vite, Laravel, PHP, Composer
+## Incremental Fix Workflow
 
-Error categories:
+### 1) Initial Diagnostics
 
-- 🔴 **Critical**: Build fails, app won't run
-- 🟡 **High**: Type errors, component errors
-- 🟢 **Medium**: Linting warnings, deprecation notices
-
-### 3. Fix Each Error Incrementally
-
-For each error (one at a time):
-
-**a) Show Error Context**
-
-```
-File: resources/js/pages/Markets/Index.vue
-Line: 45
-Error: Property 'market' does not exist on type 'ComponentPublicInstance'
-
-Context (5 lines before/after):
-40| export default defineComponent({
-41|   data() {
-42|     return {
-43|       markets: []
-44|     }
-45|   },
-46|   computed: {
-47|     activeMarkets() {
-48|       return this.markets.filter(m => m.status === 'active')
-49|     }
-50|   }
-```
-
-**b) Explain the Issue**
-
-- What caused the error?
-- Why is TypeScript/Vue/Laravel complaining?
-- What is the expected behavior?
-
-**c) Propose Fix**
-
-- Show exact code change
-- Explain why this fix works
-- Note any potential side effects
-
-**d) Apply Fix**
-
-- Make minimal changes
-- Preserve existing logic
-- Keep code style consistent
-
-**e) Re-run Build**
+Run only what is needed, in order:
 
 ```bash
-npx tsc --noEmit  # Verify TypeScript
-npm run build     # Verify Vite build
+# Primary build gate
+npm run build
+
+# Laravel health/integration checks (when relevant)
+php artisan about
+php artisan optimize:clear
+
+# Composer checks for classmap/autoload issues
+composer validate
+composer dump-autoload
 ```
 
-**f) Verify Error Resolved**
+Notes:
 
-- ✅ Error gone from output
-- ✅ No new errors introduced
-- ✅ Related functionality still works
+- Do not run `npm install`/`npm ci` unless dependency state is actually broken.
+- Avoid running `npm run lint` first because it auto-fixes and may create unrelated diff noise.
 
-### 4. Safety Checks - Stop If:
+### 2) Parse and Prioritize
 
-- ❌ **New errors introduced** - Revert and try different approach
-- ❌ **Same error persists after 3 attempts** - Ask for user guidance
-- ❌ **Build time increases significantly** - Review changes
-- ❌ **Tests start failing** - Revert changes
-- ❌ **User requests pause** - Stop and summarize progress
+Group failures by:
 
-### 5. Show Summary After Each Fix
+- **Location**: file(s) and line(s)
+- **Severity**:
+    - Critical: build halts
+    - High: compile/runtime-transform errors
+    - Medium: warnings/deprecations
+- **Type**:
+    - Vite module resolution/config
+    - Vue SFC compile/reactivity
+    - Tailwind v4 processing (`@apply`, `@reference`, theme variables)
+    - Inertia page resolution
+    - Laravel integration (manifest/cache/autoload)
+
+### 3) Fix One Error at a Time
+
+For each blocking error:
+
+1. Capture exact failing message and file/line.
+2. Apply smallest safe patch that addresses root cause.
+3. Re-run `npm run build`.
+4. Confirm:
+    - original error is gone
+    - no new blocking error from the change
+
+### 4) Stop Conditions
+
+Pause and reassess if:
+
+- Same error persists after 3 focused attempts
+- New critical errors appear repeatedly after each fix
+- Proposed fix requires architectural changes or dependency additions
+- User requests pause/redirection
+
+## Practical Fix Patterns
+
+### Pattern A: Vite Import Resolution
+
+Symptoms:
+
+- `Failed to resolve import "@/..."`
+
+Checks:
+
+- File exists under `resources/js`
+- Correct casing on import path
+- Alias usage matches `vite.config.ts`
+
+### Pattern B: Inertia Page Lookup
+
+Symptoms:
+
+- Page component not found during resolve
+
+Checks:
+
+- Page path matches lowercase `./pages/...`
+- Component filename and route/render name align
+
+### Pattern C: Tailwind v4 in Vue `<style>`
+
+Symptoms:
+
+- `@apply` or theme utility not recognized in SFC style block
+
+Fix:
+
+- Prefer utility classes in template markup when possible.
+- If style block must use Tailwind utilities, use `@reference` to global CSS.
+- Do not reintroduce v3-only configuration patterns.
+
+### Pattern D: Laravel Vite Manifest Errors
+
+Symptoms:
+
+- `Unable to locate file in Vite manifest`
+
+Fix sequence:
+
+1. `npm run build`
+2. `php artisan optimize:clear`
+3. Verify Vite entrypoints/config alignment
+4. Use `npm run dev` / `composer run dev` for local dev flow when appropriate
+
+### Pattern E: Vue Reactivity (Options API)
+
+Symptoms:
+
+- Prop mutation, undefined instance properties, event mismatch
+
+Fix:
+
+- Never mutate props directly
+- Emit updates or map prop to local state in `data()`
+- Keep methods/computed/watch organized per Options API conventions
+
+## Minimal Diff Discipline
+
+### Do
+
+- Touch only files implicated by current errors.
+- Keep patches small and reversible.
+- Preserve behavior and existing public interfaces.
+- Keep imports at top of file.
+
+### Avoid
+
+- Refactors during build triage.
+- Bulk style/lint rewrites unrelated to the failing error.
+- New dependencies unless explicitly approved.
+- Renames/moves unless path correction requires it.
+
+## Verification Checklist
+
+- [ ] `npm run build` passes
+- [ ] No new unresolved imports
+- [ ] Inertia page resolution still works for touched pages
+- [ ] No Tailwind v4 misuse introduced
+- [ ] Laravel boots if backend/config was touched
+- [ ] Changes are limited to failing scope
+
+## Fix Summary Template
 
 ```markdown
-## Fix Summary
+## Build Fix Summary
 
-**Error Fixed:** #3 of 12
-**File:** resources/js/pages/Markets/Index.vue
-**Type:** TypeScript type error
-**Status:** ✅ RESOLVED
+**Issue:** [short title]
+**File(s):** [paths]
+**Type:** [Vite/Vue/Tailwind/Inertia/Laravel]
+**Status:** RESOLVED / PARTIAL / BLOCKED
 
-### Changes Made:
+### Root Cause
 
-- Added type annotation to `markets` data property
-- Lines changed: 1
+- [1-2 bullets]
 
-### Verification:
+### Minimal Change Applied
 
-- ✅ TypeScript check passes
-- ✅ Vite build succeeds
-- ✅ No new errors
-- ✅ Tests still pass
+- [exact change summary]
 
-### Remaining Errors: 9
+### Verification
 
-- 🔴 Critical: 2
-- 🟡 High: 5
-- 🟢 Medium: 2
+- npm run build: PASS/FAIL
+- php artisan about (if run): PASS/FAIL
+- php artisan optimize:clear (if run): PASS/FAIL
+
+### Remaining Issues
+
+- [if any]
 ```
-
-## Error Types & Quick Fixes
-
-### TypeScript Errors
-
-```typescript
-// Missing type annotation
-data() {
-  return {
-    markets: [] as Market[]  // Add type
-  }
-}
-```
-
-### Vue Template Errors
-
-```vue
-<!-- Undefined property -->
-<template>
-    <div>{{ market?.name }}</div>
-    <!-- Add optional chaining -->
-</template>
-```
-
-### Vite Import Errors
-
-```typescript
-// Use correct alias
-import Button from '@/components/ui/Button.vue';
-```
-
-### Laravel Errors
-
-```bash
-# Class not found
-composer dump-autoload
-
-# Config cache
-php artisan config:clear
-```
-
-## Best Practices
-
-1. **One Error at a Time** - Don't fix multiple errors simultaneously
-2. **Verify After Each Fix** - Run build/tests after each change
-3. **Minimal Changes** - Fix only what's necessary
-4. **Preserve Logic** - Don't refactor while fixing
-5. **Document Changes** - Explain each fix clearly
-6. **Test Immediately** - Verify fix doesn't break other code
 
 ## Stack-Specific Context
 
-- **Frontend**: Vue 3 Options API + TypeScript + Inertia.js + Vite + PrimeVue
-- **Backend**: Laravel 12 + PHP 8.2+ + MySQL
-- **Testing**: PestPHP (backend) + Vitest (frontend)
-- **Build**: Vite 7 for asset compilation
+- Frontend: Vue 3.5 + Inertia v2 + Vite 7 + Tailwind 4 (+ PrimeVue usage)
+- Backend: Laravel 12
+- Tests: Pest for backend behavior verification
 
 ---
 
-**Remember**: Fix one error at a time for safety. Verify each fix before moving to the next. Keep changes minimal and focused.
+**Remember**: Fix one blocker at a time, validate immediately, and keep the diff as small as possible.

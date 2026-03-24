@@ -1,5 +1,5 @@
 ---
-description: 'Apply when reviewing PRs or code: quality, security, maintainability, performance, tests, and actionable feedback for Laravel + Vue + Inertia.'
+description: Apply when reviewing PRs or code: quality, security, maintainability, performance, tests, and actionable feedback for Laravel + Vue + Inertia.
 alwaysApply: false
 ---
 
@@ -8,6 +8,14 @@ alwaysApply: false
 **Mode**: Pull Request review, code analysis for Laravel + Vue 3 + Inertia.js applications
 **Focus**: Quality, security, maintainability, performance
 **Goal**: Provide constructive feedback with actionable improvements
+
+## Project Reality Overrides (Highest Priority)
+
+- Review against existing module conventions first (do not force idealized patterns across legacy modules).
+- Backend often uses service classes under `app/Services/**` with `*Class` naming and controller `option` branching.
+- Authorization is commonly enforced by route middleware/role checks, with policies used in some modules.
+- Frontend is JS-first Vue Options API with Inertia + axios coexistence.
+- UI conventions are primarily BootstrapVue + SCSS, and TS/lint/frontend test tooling may be optional by branch.
 
 ## Core Review Principles
 
@@ -71,10 +79,10 @@ alwaysApply: false
 ### Phase 6: Final Check (3 minutes)
 
 - PSR-12 compliance (PHP)
-- ESLint compliance (Vue/TS)
-- TypeScript compilation
+- ESLint compliance (if configured)
+- TypeScript compilation (if TS-enabled)
 - No console.log() left in code
-- Documentation updated
+- Documentation updated (only if requested)
 
 ## Backend (Laravel/PHP) Review Checklist
 
@@ -118,7 +126,7 @@ public function update(Request $request, Market $market)
     $market->update($request->validated());
 }
 
-// ✅ CORRECT: Use policy
+// ✅ CORRECT: Enforce module authorization boundary (policy or middleware/role check)
 public function update(UpdateMarketRequest $request, Market $market)
 {
     $this->authorize('update', $market);
@@ -135,7 +143,7 @@ public function store(Request $request)
     Market::create($request->all());
 }
 
-// ✅ CORRECT: Use Form Request
+// ✅ CORRECT: Use validated allowlisted input (Form Request preferred for new complex flows)
 public function store(StoreMarketRequest $request)
 {
     Market::create($request->validated());
@@ -185,11 +193,10 @@ public function store(Request $request)
     });
 }
 
-// ✅ CORRECT: Use service layer
+// ✅ CORRECT: Delegate to existing service class pattern
 public function store(StoreMarketRequest $request)
 {
-    $market = $this->marketService->create($request->validated());
-    return redirect()->route('markets.show', $market);
+    return $this->saveClass->store($request);
 }
 ```
 
@@ -289,7 +296,7 @@ if ($market->volume > Market::VOLUME_THRESHOLD) {
 }
 ```
 
-## Frontend (Vue 3/TypeScript) Review Checklist
+## Frontend (Vue 3 / JS-first) Review Checklist
 
 ### 🔴 CRITICAL (Security)
 
@@ -326,7 +333,7 @@ export default defineComponent({
 
 ```typescript
 // ❌ CRITICAL: API key in frontend
-const API_KEY = 'sk-1234567890abcdef';
+const API_KEY = "sk-1234567890abcdef";
 
 // ✅ CORRECT: Use backend proxy
 // Never put secrets in frontend code
@@ -338,29 +345,22 @@ const API_KEY = 'sk-1234567890abcdef';
 
 ```vue
 <!-- ❌ HIGH: No prop validation -->
-<script lang="ts">
+<script>
 export default defineComponent({
-    props: ['market', 'user'],
+    props: ["market", "user"],
 });
 </script>
 
-<!-- ✅ CORRECT: Full prop validation -->
-<script lang="ts">
-import { PropType } from 'vue';
-
-interface Market {
-    id: number;
-    name: string;
-}
-
+<!-- ✅ CORRECT: Explicit prop validation (JS-first) -->
+<script>
 export default defineComponent({
     props: {
         market: {
-            type: Object as PropType<Market>,
+            type: Object,
             required: true,
         },
         user: {
-            type: Object as PropType<User>,
+            type: Object,
             default: null,
         },
     },
@@ -402,7 +402,7 @@ export default defineComponent({
 <!-- ✅ CORRECT: Show loading state -->
 <template>
     <button @click="submit" :disabled="form.processing">
-        {{ form.processing ? 'Submitting...' : 'Submit' }}
+        {{ form.processing ? "Submitting..." : "Submit" }}
     </button>
 </template>
 ```
@@ -469,7 +469,7 @@ function processData(data: any) {
 interface MarketData {
     id: number;
     name: string;
-    status: 'active' | 'closed';
+    status: "active" | "closed";
 }
 
 function processData(data: MarketData) {
@@ -553,22 +553,22 @@ test('guest cannot create market', function () {
 });
 ```
 
-### Frontend Testing (Vitest)
+### Frontend Testing (if configured)
 
 ```typescript
 // ✅ Test component with props and events
-import { mount } from '@vue/test-utils';
-import MarketCard from './MarketCard.vue';
+import { mount } from "@vue/test-utils";
+import MarketCard from "./MarketCard.vue";
 
-test('emits update event when clicked', () => {
+test("emits update event when clicked", () => {
     const wrapper = mount(MarketCard, {
         props: {
-            market: { id: 1, name: 'Test' },
+            market: { id: 1, name: "Test" },
         },
     });
 
-    wrapper.find('button').trigger('click');
-    expect(wrapper.emitted('update')).toBeTruthy();
+    wrapper.find("button").trigger("click");
+    expect(wrapper.emitted("update")).toBeTruthy();
 });
 ```
 
@@ -647,7 +647,7 @@ $markets = DB::select("SELECT * FROM markets WHERE id = ?", [$id]);
 
 ## 🟡 HIGH Issues (Should Fix)
 
-### [File: app/Services/MarketService.php]
+### [File: app/Services/Markets/SaveClass.php]
 
 **Line 67: N+1 Query Problem**
 
@@ -670,7 +670,7 @@ $markets = Market::with('creator')->get();
 
 ## 🟢 MEDIUM Issues (Nice to Have)
 
-### [File: resources/js/components/MarketCard.vue]
+### [File: resources/js/Shared/Components/MarketCard.vue]
 
 **Line 23: Missing Prop Validation**
 
@@ -686,7 +686,7 @@ props: {
 
 **Severity:** MEDIUM
 **Impact:** Type safety and maintainability
-**Recommendation:** Add TypeScript prop types
+**Recommendation:** Add explicit prop validation (and TS typing only in TS-enabled files)
 
 ---
 
@@ -732,7 +732,7 @@ props: {
 6. **Acknowledge Good Work** - Point out what's done well
 7. **Use Severity Levels** - Critical > High > Medium > Low
 8. **Check Tests** - Ensure adequate coverage
-9. **Verify Standards** - PSR-12 (PHP), ESLint (Vue/TS)
+9. **Verify Standards** - PSR-12 (PHP), plus frontend lint/type checks if configured
 10. **Be Professional** - Constructive, not condescending
 
 ## Common Review Mistakes to Avoid
@@ -750,12 +750,12 @@ props: {
 
 ```bash
 # Run before reviewing
-php artisan test                      # Run backend tests
-./vendor/bin/phpstan analyse         # Static analysis
-./vendor/bin/pint --test            # Check code style
-npm run test                          # Run frontend tests
-npm run type-check                    # TypeScript check
-npm run lint                          # ESLint check
+php artisan test --filter=[RelatedArea]  # Run related backend tests
+# ./vendor/bin/phpstan analyse           # Static analysis (if configured)
+./vendor/bin/pint --dirty               # Format changed PHP files
+# npm run test                           # Frontend tests (if configured)
+# npm run type-check                     # TypeScript check (if configured)
+# npm run lint                           # ESLint check (if configured)
 
 # Performance check
 php artisan debugbar:clear            # Clear debugbar
@@ -768,6 +768,6 @@ rg "all\(\)|get\(\)" app/Http/Controllers/  # Check for missing pagination
 
 ---
 
-**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3
+**Stack**: Laravel 12 (hybrid kernel/bootstrap) + Vue 3 Options API (JS-first) + Inertia.js v1-era + axios + BootstrapVue + SCSS + MySQL + Pest
 
 **Remember**: The goal of code review is to improve code quality and share knowledge, not to criticize. Be constructive, specific, and helpful.

@@ -1,11 +1,19 @@
 ---
-description: 'Apply when implementing shared patterns across Laravel and Vue: API responses, validation, error handling, or cross-stack conventions.'
+description: Apply when implementing shared patterns across Laravel and Vue: API responses, validation, error handling, or cross-stack conventions.
 alwaysApply: false
 ---
 
 # Common Patterns
 
 Laravel + Vue 3 Options API + Inertia.js patterns for consistent implementation.
+
+## Project Reality Overrides (Highest Priority)
+
+- Follow touched-module conventions first.
+- Backend commonly uses domain service classes named `*Class` and controller `option` branching.
+- Inertia and `axios` are used together (Inertia for navigation/render, axios for many module interactions).
+- Frontend is mostly JavaScript Vue SFCs (Options API), with selective TypeScript usage.
+- Repository interfaces are optional in this repository; direct service + Eloquent flows are common.
 
 ## Laravel API Response Format (for JSON endpoints)
 
@@ -29,6 +37,14 @@ return response()->json([
     'message' => 'Resource not found',
     'errors' => $validator->errors()
 ], 404);
+
+// Common module response envelope used in this repository
+return response()->json([
+    'status' => 'success',
+    'message' => 'Saved successfully.',
+    'info' => null,
+    'data' => $payload,
+]);
 ```
 
 ```typescript
@@ -44,19 +60,21 @@ interface ApiResponse<T> {
         per_page: number;
     };
 }
+
+// JS-first modules may rely on runtime shape checks instead of TS interfaces.
 ```
 
 ## Debounce Pattern (Vue 3 Options API)
 
 ```vue
 <script>
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
 export default defineComponent({
     data() {
         return {
-            searchValue: '',
-            debouncedValue: '',
+            searchValue: "",
+            debouncedValue: "",
             debounceTimeout: null,
         };
     },
@@ -78,6 +96,8 @@ export default defineComponent({
 ```
 
 ## Repository Pattern (Laravel)
+
+> Repository pattern is optional here. Use it only when the touched domain already follows repository abstractions or when explicitly requested.
 
 ```php
 <?php
@@ -151,6 +171,7 @@ namespace App\Services;
 
 use App\Models\Market;
 use App\Repositories\MarketRepositoryInterface;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class MarketService
@@ -203,6 +224,8 @@ class MarketService
 
 ## Inertia Response Pattern
 
+> In this repository, use Inertia for page-level rendering/navigation, and use `axios` for module-level partial table/filter interactions where that pattern already exists.
+
 ```php
 <?php
 
@@ -251,9 +274,11 @@ class MarketController extends Controller
 
 ## Inertia Form Pattern (Vue 3)
 
+> In touched files, follow the local form style (`useForm` or `axios`) rather than forcing one universal approach.
+
 ```vue
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
 interface Market {
     id?: number;
@@ -273,9 +298,9 @@ export default defineComponent({
     data() {
         return {
             form: this.$inertia.form({
-                name: this.market?.name || '',
-                description: this.market?.description || '',
-                category: this.market?.category || 'politics',
+                name: this.market?.name || "",
+                description: this.market?.description || "",
+                category: this.market?.category || "politics",
             }),
         };
     },
@@ -289,17 +314,17 @@ export default defineComponent({
                         // Handle success
                     },
                     onError: (errors) => {
-                        console.error('Update failed:', errors);
+                        console.error("Update failed:", errors);
                     },
                 });
             } else {
                 // Create new
-                this.form.post('/markets', {
+                this.form.post("/markets", {
                     onSuccess: () => {
                         // Handle success
                     },
                     onError: (errors) => {
-                        console.error('Creation failed:', errors);
+                        console.error("Creation failed:", errors);
                     },
                 });
             }
@@ -325,7 +350,7 @@ export default defineComponent({
         </div>
 
         <button type="submit" :disabled="form.processing">
-            {{ form.processing ? 'Saving...' : 'Save' }}
+            {{ form.processing ? "Saving..." : "Save" }}
         </button>
     </form>
 </template>
@@ -360,12 +385,12 @@ $markets = Market::with([
 
 ```vue
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType } from "vue";
 
 interface Market {
     id: number;
     name: string;
-    status: 'active' | 'closed';
+    status: "active" | "closed";
 }
 
 export default defineComponent({
@@ -378,14 +403,14 @@ export default defineComponent({
 
     data() {
         return {
-            searchQuery: '',
+            searchQuery: "",
         };
     },
 
     computed: {
         // Automatically cached
         activeMarkets(): Market[] {
-            return this.markets.filter((m) => m.status === 'active');
+            return this.markets.filter((m) => m.status === "active");
         },
 
         filteredMarkets(): Market[] {
@@ -422,4 +447,4 @@ export default defineComponent({
 
 ---
 
-**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8
+**Stack**: Laravel 12 (hybrid kernel/bootstrap style) + Vue 3 Options API (JS-first) + Inertia + Axios + BootstrapVue + SCSS + MySQL 8.

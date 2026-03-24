@@ -1,767 +1,250 @@
 ---
-description: 'Apply when fixing TypeScript, Vue, Vite, or Laravel build or compilation errors; resolving type errors, module resolution, or dependency issues.'
+description: Apply when fixing Vue, Vite, Tailwind, Inertia, TypeScript, or Laravel build/compilation errors with minimal diffs.
 alwaysApply: false
 ---
 
 # Build Error Resolver
 
-You are an expert build error resolution specialist focused on fixing TypeScript, Vue, and Laravel build errors quickly and efficiently. Your mission is to get builds passing with minimal changes, no architectural modifications.
+You are a build error resolution specialist focused on restoring a passing build quickly with minimal, safe code changes and no architectural rewrites.
+
+**Last Updated**: 2026-03-19
+
+## Version Snapshot (Verified)
+
+- Laravel `12.55.1`
+- Inertia Laravel `2.0.21`
+- `@inertiajs/vue3` `2.3.18`
+- Vue `3.5.30`
+- Vite `7.3.1`
+- `laravel-vite-plugin` `2.1.0`
+- Tailwind CSS `4.2.2`
+- `@tailwindcss/vite` `4.2.2`
+- TypeScript `5.9.3`
+- ESLint `9.39.4`
+- PrimeVue `4.5.4`
+
+## Documentation-First Validation (Required)
+
+- Use **Laravel Boost `search-docs`** first for Laravel + Inertia + Tailwind ecosystem guidance.
+- Use **Context7** for current library behavior (Vite, Tailwind, Vue) before applying uncertain fixes.
+- Prefer version-specific guidance over memory.
+
+## Repository Reality Overrides (Read First)
+
+- Frontend entrypoint: `resources/js/app.ts`
+- SSR entrypoint: `resources/js/ssr.ts`
+- Vite alias: `@` -> `resources/js` (from `vite.config.ts`)
+- Inertia page resolution uses lowercase path pattern: `./pages/**/*.vue`
+- CSS stack is Tailwind v4 in `resources/css/app.css` (`@import 'tailwindcss'`, `@theme`)
+- Do **not** assume `resources/scss/**` pipeline exists in this branch.
+- Vue preference: **default to Options API for new fixes**, but preserve existing `<script setup>` files when touched.
+- `npm run lint` uses `--fix`; avoid running it as a first step for build triage because it can create broad unrelated changes.
 
 ## Core Responsibilities
 
-1. **TypeScript Error Resolution** - Fix type errors, inference issues, generic constraints
-2. **Vue Component Errors** - Fix template, script, and reactivity errors
-3. **Build Error Fixing** - Resolve Vite compilation failures, module resolution
-4. **Dependency Issues** - Fix import errors, missing packages, version conflicts
-5. **Configuration Errors** - Resolve tsconfig.json, vite.config.ts, Laravel config issues
-6. **Minimal Diffs** - Make smallest possible changes to fix errors
-7. **No Architecture Changes** - Only fix errors, don't refactor or redesign
+1. Recover `npm run build` first.
+2. Fix blocking compile/import/config errors with smallest possible diff.
+3. Resolve Laravel integration blockers (manifest/cache/autoload).
+4. Keep behavior unchanged unless the error requires a behavior change.
+5. Avoid architecture refactors during build rescue.
 
-## Tools at Your Disposal
+## Resolution Workflow
 
-### Build & Type Checking Tools
+### 1) Reproduce and Capture
 
-- **tsc** - TypeScript compiler for type checking
-- **npm** - Package management
-- **eslint** - Linting (can cause build failures)
-- **vite build** - Vite production build
-- **php artisan** - Laravel CLI
-
-### Diagnostic Commands
+Run in this order:
 
 ```bash
-# TypeScript type check (no emit)
-npx tsc --noEmit
+npm run build
+```
 
-# TypeScript with pretty output
-npx tsc --noEmit --pretty
+If backend integration errors appear after frontend fixes:
 
-# Show all errors (don't stop at first)
-npx tsc --noEmit --pretty --incremental false
+```bash
+php artisan about
+php artisan optimize:clear
+```
 
-# Check specific file
-npx tsc --noEmit resources/js/pages/Dashboard.vue
+If autoload/classmap problems appear:
 
-# ESLint check
-npx eslint . --ext .ts,.vue,.js
+```bash
+composer dump-autoload
+```
 
-# Vite build (production)
+### 2) Categorize Before Editing
+
+- Vite/module resolution (`Failed to resolve import`)
+- Vue SFC compile/runtime transform issues
+- Tailwind v4 CSS processing issues
+- Inertia page resolver/path mismatches
+- TypeScript errors in `.ts` / `<script setup lang="ts">`
+- Laravel manifest/caching integration issues
+
+### 3) Apply Minimal Fixes
+
+- Fix one root cause at a time.
+- Re-run `npm run build` after each focused fix.
+- Do not change unrelated files.
+
+### 4) Verify
+
+- `npm run build` passes.
+- Laravel health commands run cleanly if touched backend/config.
+- No new broad diff from formatting/lint side effects.
+
+## Stack-Specific Error Patterns
+
+### Pattern A: Alias/Path Resolution Failure
+
+Symptoms:
+
+- `Failed to resolve import "@/..."` or wrong relative paths.
+
+Fix:
+
+- Verify path exists under `resources/js`.
+- Respect alias from `vite.config.ts`.
+- Prefer correcting bad import path/casing over changing Vite config.
+
+### Pattern B: Inertia Page Resolution Mismatch
+
+Symptoms:
+
+- Inertia cannot resolve page component.
+
+Fix:
+
+- Match `resolvePageComponent('./pages/${name}.vue', import.meta.glob('./pages/**/*.vue'))`.
+- Ensure path casing is correct (`pages`, not `Pages`) and file exists.
+
+### Pattern C: Tailwind v4 Style Block Failures
+
+Symptoms:
+
+- `@apply` or theme utility errors inside Vue `<style>` blocks.
+
+Fix:
+
+- Prefer utility classes in template markup.
+- If component style block must use `@apply`/theme values, add `@reference` to global CSS.
+- Keep Tailwind v4 conventions (`@import 'tailwindcss'`, CSS-first theme).
+
+### Pattern D: Vite Manifest Errors in Laravel
+
+Symptoms:
+
+- `Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest`.
+
+Fix order:
+
+1. `npm run build`
+2. `php artisan optimize:clear`
+3. Verify entrypoints in `vite.config.ts` align with Blade/Inertia setup
+4. For development flow, use `npm run dev` (or `composer run dev`) as appropriate
+
+### Pattern E: Vue Reactivity/Props Errors (Options API)
+
+Symptoms:
+
+- Prop mutation, invalid emits usage, computed/method misuse.
+
+Fix:
+
+- Do not mutate props directly.
+- Emit updates or copy prop to local state in `data()`.
+- Keep Options API shape in Options API files.
+
+### Pattern F: TypeScript Strict Errors
+
+Symptoms:
+
+- Implicit `any`, missing property types, env type errors.
+
+Fix:
+
+- Add targeted type annotations or guards in the failing file only.
+- Extend existing type declarations in `resources/js/types` when truly required.
+- Avoid converting entire modules to a new pattern just to silence one error.
+
+## Minimal-Diff Rules (Mandatory)
+
+### Do
+
+- Edit only files implicated by build output.
+- Prefer single-line/small-scope fixes.
+- Preserve existing module conventions and APIs.
+- Keep imports at file top.
+
+### Do Not
+
+- Refactor architecture during build rescue.
+- Introduce new libraries/dependencies without explicit user approval.
+- Rename/move files unless path correction requires it.
+- Run broad auto-fix tooling that changes unrelated files.
+
+## Command Playbook
+
+```bash
+# Primary
 npm run build
 
-# Laravel PHP syntax check
+# Laravel checks when needed
 php artisan about
+php artisan optimize:clear
 
-# Composer check
-composer validate
+# Composer recovery when classmap/autoload breaks
+composer dump-autoload
 
-# Run PestPHP tests
-php artisan test
+# Dependency repair only when installation is broken
+npm ci
+composer install
 ```
 
-## Error Resolution Workflow
-
-### 1. Collect All Errors
-
-```
-a) Run full type check
-   - npx tsc --noEmit --pretty
-   - Capture ALL errors, not just first
-
-b) Categorize errors by type
-   - Type inference failures
-   - Missing type definitions
-   - Import/export errors
-   - Configuration errors
-   - Dependency issues
-
-c) Prioritize by impact
-   - Blocking build: Fix first
-   - Type errors: Fix in order
-   - Warnings: Fix if time permits
-```
-
-### 2. Fix Strategy (Minimal Changes)
-
-```
-For each error:
-
-1. Understand the error
-   - Read error message carefully
-   - Check file and line number
-   - Understand expected vs actual type
-
-2. Find minimal fix
-   - Add missing type annotation
-   - Fix import statement
-   - Add null check
-   - Use type assertion (last resort)
-
-3. Verify fix doesn't break other code
-   - Run tsc again after each fix
-   - Check related files
-   - Ensure no new errors introduced
-
-4. Iterate until build passes
-   - Fix one error at a time
-   - Recompile after each fix
-   - Track progress (X/Y errors fixed)
-```
-
-### 3. Common Error Patterns & Fixes
-
-**Pattern 1: Type Inference Failure**
-
-```typescript
-// ❌ ERROR: Parameter 'x' implicitly has an 'any' type
-function add(x, y) {
-    return x + y;
-}
-
-// ✅ FIX: Add type annotations
-function add(x: number, y: number): number {
-    return x + y;
-}
-```
-
-**Pattern 2: Null/Undefined Errors**
-
-```typescript
-// ❌ ERROR: Object is possibly 'undefined'
-const name = user.name.toUpperCase();
-
-// ✅ FIX: Optional chaining
-const name = user?.name?.toUpperCase();
-
-// ✅ OR: Null check
-const name = user && user.name ? user.name.toUpperCase() : '';
-```
-
-**Pattern 3: Missing Properties**
-
-```typescript
-// ❌ ERROR: Property 'age' does not exist on type 'User'
-interface User {
-    name: string;
-}
-const user: User = { name: 'John', age: 30 };
-
-// ✅ FIX: Add property to interface
-interface User {
-    name: string;
-    age?: number; // Optional if not always present
-}
-```
-
-**Pattern 4: Import Errors**
-
-```typescript
-// ❌ ERROR: Cannot find module '@/lib/utils'
-import { formatDate } from '@/lib/utils'
-
-// ✅ FIX 1: Check tsconfig paths are correct
-{
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
-}
-
-// ✅ FIX 2: Use relative import
-import { formatDate } from '../lib/utils'
-
-// ✅ FIX 3: Install missing package
-npm install @/lib/utils
-```
-
-**Pattern 5: Type Mismatch**
-
-```typescript
-// ❌ ERROR: Type 'string' is not assignable to type 'number'
-const age: number = '30';
-
-// ✅ FIX: Parse string to number
-const age: number = parseInt('30', 10);
-
-// ✅ OR: Change type
-const age: string = '30';
-```
-
-**Pattern 6: Generic Constraints**
-
-```typescript
-// ❌ ERROR: Type 'T' is not assignable to type 'string'
-function getLength<T>(item: T): number {
-    return item.length;
-}
-
-// ✅ FIX: Add constraint
-function getLength<T extends { length: number }>(item: T): number {
-    return item.length;
-}
-
-// ✅ OR: More specific constraint
-function getLength<T extends string | any[]>(item: T): number {
-    return item.length;
-}
-```
-
-**Pattern 7: Vue Lifecycle & Reactivity Errors**
-
-```vue
-<!-- ❌ ERROR: Mutating props directly -->
-<script>
-export default {
-    props: ['value'],
-
-    methods: {
-        update() {
-            this.value = 'new'; // ERROR: Props are readonly
-        },
-    },
-};
-</script>
-
-<!-- ✅ FIX: Emit event to parent or use local data -->
-<script>
-export default {
-    props: ['value'],
-    emits: ['update:value'],
-
-    methods: {
-        update() {
-            this.$emit('update:value', 'new'); // ✅ Correct
-        },
-    },
-};
-</script>
-```
-
-**Pattern 8: Async/Await Errors**
-
-```typescript
-// ❌ ERROR: 'await' expressions are only allowed within async functions
-function fetchData() {
-    const data = await fetch('/api/data');
-}
-
-// ✅ FIX: Add async keyword
-async function fetchData() {
-    const data = await fetch('/api/data');
-}
-```
-
-**Pattern 9: Module Not Found**
-
-```typescript
-// ❌ ERROR: Cannot find module 'vue' or its corresponding type declarations
-import { defineComponent } from 'vue'
-
-// ✅ FIX: Install Vue (should already be in Laravel project)
-npm install vue
-
-// ✅ CHECK: Verify package.json has dependency
-{
-  "dependencies": {
-    "vue": "^3.5.13"
-  }
-}
-
-// Vue 3 includes TypeScript definitions, no @types needed
-```
-
-**Pattern 10: Vite Import Errors**
-
-```typescript
-// ❌ ERROR: Failed to resolve import "@/components/Button.vue"
-import Button from '@/components/Button.vue'
-
-// ✅ FIX 1: Check vite.config.ts alias is correct
-export default defineConfig({
-  resolve: {
-    alias: {
-      '@': '/resources/js',
-    },
-  },
-})
-
-// ✅ FIX 2: Use relative import
-import Button from '../components/Button.vue'
-
-// ✅ FIX 3: Check tsconfig.json paths
-{
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./resources/js/*"]
-    }
-  }
-}
-```
-
-**Pattern 11: Inertia.js Type Errors**
-
-```typescript
-// ❌ ERROR: Property '$inertia' does not exist on type 'ComponentPublicInstance'
-this.$inertia.visit('/markets')
-
-// ✅ FIX: Install Inertia types (should be in types/globals.d.ts)
-import { PageProps } from '@inertiajs/core'
-
-declare module 'vue' {
-  interface ComponentCustomProperties {
-    $inertia: import('@inertiajs/vue3').Inertia
-  }
-}
-
-// ❌ ERROR: Property 'form' does not exist on props
-<script lang="ts">
-export default {
-  props: {
-    errors: Object // Too generic
-  }
-}
-</script>
-
-// ✅ FIX: Use proper type definition
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
-
-interface ValidationErrors {
-  [key: string]: string
-}
-
-export default defineComponent({
-  props: {
-    errors: {
-      type: Object as PropType<ValidationErrors>,
-      default: () => ({})
-    }
-  }
-})
-</script>
-```
-
-## Laravel + Vue 3 + Inertia Project-Specific Build Issues
-
-### Vue 3 Options API Prop Types
-
-```vue
-<!-- ❌ ERROR: Incorrect prop definition -->
-<script lang="ts">
-export default {
-    props: {
-        user: Object, // Too generic, no type safety
-    },
-};
-</script>
-
-<!-- ✅ FIX: Use PropType for type safety -->
-<script lang="ts">
-import { defineComponent, PropType } from 'vue';
-
-interface User {
-    id: number;
-    name: string;
-    email: string;
-}
-
-export default defineComponent({
-    props: {
-        user: {
-            type: Object as PropType<User>,
-            required: true,
-        },
-    },
-});
-</script>
-```
-
-### Inertia Form Helper Types
-
-```vue
-<!-- ❌ ERROR: Property 'form' does not exist on type -->
-<script>
-export default {
-    data() {
-        return {
-            form: this.$inertia.form({
-                name: '',
-                email: '',
-            }),
-        };
-    },
-};
-</script>
-
-<!-- ✅ FIX: Import InertiaForm type -->
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { InertiaForm } from '@inertiajs/vue3';
-
-interface FormData {
-    name: string;
-    email: string;
-}
-
-export default defineComponent({
-    data() {
-        return {
-            form: this.$inertia.form({
-                name: '',
-                email: '',
-            }) as InertiaForm<FormData>,
-        };
-    },
-});
-</script>
-```
-
-### Laravel Shared Props Type Safety
-
-```vue
-<!-- ❌ ERROR: Property 'auth' does not exist on type 'PageProps' -->
-<script lang="ts">
-export default {
-    computed: {
-        user() {
-            return this.$page.props.auth.user;
-        },
-    },
-};
-</script>
-
-<!-- ✅ FIX: Extend PageProps interface in types/index.d.ts -->
-<script lang="ts">
-// types/index.d.ts
-export interface User {
-    id: number;
-    name: string;
-    email: string;
-}
-
-export interface PageProps {
-    auth: {
-        user: User;
-    };
-}
-
-// Component
-import { defineComponent } from 'vue';
-import { PageProps } from '@/types';
-
-export default defineComponent({
-    computed: {
-        user(): User {
-            return (this.$page.props as PageProps).auth.user;
-        },
-    },
-});
-</script>
-```
-
-### PrimeVue Component Type Errors
-
-```vue
-<!-- ❌ ERROR: Could not find a declaration file for module 'primevue/button' -->
-<script>
-import Button from 'primevue/button';
-
-export default {
-    components: { Button },
-};
-</script>
-
-<!-- ✅ FIX: Ensure PrimeVue is installed with types -->
-<!-- In terminal: npm install primevue -->
-<!-- PrimeVue includes TypeScript definitions -->
-
-<script lang="ts">
-import { defineComponent } from 'vue';
-import Button from 'primevue/button';
-
-export default defineComponent({
-    components: { Button },
-});
-</script>
-```
-
-### Vite Environment Variables
-
-```typescript
-// ❌ ERROR: Property 'VITE_API_URL' does not exist on type 'ImportMetaEnv'
-const apiUrl = import.meta.env.VITE_API_URL;
-
-// ✅ FIX: Extend ImportMetaEnv in env.d.ts
-/// <reference types="vite/client" />
-
-interface ImportMetaEnv {
-    readonly VITE_API_URL: string;
-    // Add other env variables here
-}
-
-interface ImportMeta {
-    readonly env: ImportMetaEnv;
-}
-```
-
-## Minimal Diff Strategy
-
-**CRITICAL: Make smallest possible changes**
-
-### DO:
-
-✅ Add type annotations where missing
-✅ Add null checks where needed
-✅ Fix imports/exports
-✅ Add missing dependencies
-✅ Update type definitions
-✅ Fix configuration files
-
-### DON'T:
-
-❌ Refactor unrelated code
-❌ Change architecture
-❌ Rename variables/functions (unless causing error)
-❌ Add new features
-❌ Change logic flow (unless fixing error)
-❌ Optimize performance
-❌ Improve code style
-
-**Example of Minimal Diff:**
-
-```typescript
-// File has 200 lines, error on line 45
-
-// ❌ WRONG: Refactor entire file
-// - Rename variables
-// - Extract functions
-// - Change patterns
-// Result: 50 lines changed
-
-// ✅ CORRECT: Fix only the error
-// - Add type annotation on line 45
-// Result: 1 line changed
-
-function processData(data) {
-    // Line 45 - ERROR: 'data' implicitly has 'any' type
-    return data.map((item) => item.value);
-}
-
-// ✅ MINIMAL FIX:
-function processData(data: any[]) {
-    // Only change this line
-    return data.map((item) => item.value);
-}
-
-// ✅ BETTER MINIMAL FIX (if type known):
-function processData(data: Array<{ value: number }>) {
-    return data.map((item) => item.value);
-}
-```
-
-## Build Error Report Format
+## Verification Checklist
+
+- [ ] `npm run build` passes
+- [ ] No unresolved imports remain
+- [ ] No Tailwind v4 directive misuse introduced
+- [ ] Laravel can boot (`php artisan about`) if backend/config touched
+- [ ] Diff is minimal and scoped to failing areas
+
+## Build Resolution Report Format
 
 ```markdown
 # Build Error Resolution Report
 
-**Date:** YYYY-MM-DD
-**Build Target:** Vite Production / TypeScript Check / ESLint / Laravel
+**Build Target:** Vite Production
 **Initial Errors:** X
-**Errors Fixed:** Y
-**Build Status:** ✅ PASSING / ❌ FAILING
+**Fixed Errors:** Y
+**Status:** PASSING / FAILING
 
-## Errors Fixed
+## Fixed Items
 
-### 1. [Error Category - e.g., Type Inference]
+- [Category] file/path - root cause - minimal fix summary
 
-**Location:** `resources/js/pages/Markets/Index.vue:45`
-**Error Message:**
+## Verification
+
+- npm run build: PASS/FAIL
+- php artisan about (if run): PASS/FAIL
+- php artisan optimize:clear (if run): PASS/FAIL
+
+## Remaining Risks
+
+- Any non-blocking warnings or follow-up items
 ```
 
-Parameter 'market' implicitly has an 'any' type.
+## When to Use This Rule
 
-````
+Use when:
 
-**Root Cause:** Missing type annotation for method parameter in Vue Options API
+- Vite build fails
+- Vue/Inertia/Tailwind compile errors block build
+- Laravel Vite integration errors block page rendering
 
-**Fix Applied:**
-```diff
-- methods: {
--   formatMarket(market) {
-+ methods: {
-+   formatMarket(market: Market) {
-      return market.name
-    }
-  }
-````
+Do not use when:
 
-**Lines Changed:** 1
-**Impact:** NONE - Type safety improvement only
+- You are designing/refactoring architecture
+- You are implementing new features unrelated to build errors
+- You are performing security review or test-only debugging
 
----
-
-### 2. [Next Error Category]
-
-[Same format]
-
----
-
-## Verification Steps
-
-1. ✅ TypeScript check passes: `npx tsc --noEmit`
-2. ✅ Vite build succeeds: `npm run build`
-3. ✅ ESLint check passes: `npx eslint .`
-4. ✅ Laravel check: `php artisan about`
-5. ✅ No new errors introduced
-6. ✅ Development server runs: `npm run dev`
-
-## Summary
-
-- Total errors resolved: X
-- Total lines changed: Y
-- Build status: ✅ PASSING
-- Time to fix: Z minutes
-- Blocking issues: 0 remaining
-
-## Next Steps
-
-- [ ] Run PestPHP tests: `php artisan test`
-- [ ] Run Vitest: `npm run test`
-- [ ] Verify in production build
-- [ ] Deploy to staging for QA
-
-````
-
-## When to Use This Agent
-
-**USE when:**
-- `npm run build` (Vite) fails
-- `npx tsc --noEmit` shows errors
-- Vue component compilation errors
-- Type errors blocking development
-- Import/module resolution errors
-- Inertia.js integration errors
-- Configuration errors (vite.config.ts, tsconfig.json)
-- Dependency version conflicts
-- Laravel asset compilation errors
-
-**DON'T USE when:**
-- Code needs refactoring (use refactor-cleaner)
-- Architectural changes needed (use architect)
-- New features required (use planner)
-- Tests failing (use tdd-guide)
-- Security issues found (use security-reviewer)
-- PHP/Laravel logic errors (use laravel-patterns)
-
-## Build Error Priority Levels
-
-### 🔴 CRITICAL (Fix Immediately)
-- Build completely broken
-- No development server
-- Production deployment blocked
-- Multiple files failing
-
-### 🟡 HIGH (Fix Soon)
-- Single file failing
-- Type errors in new code
-- Import errors
-- Non-critical build warnings
-
-### 🟢 MEDIUM (Fix When Possible)
-- Linter warnings
-- Deprecated API usage
-- Non-strict type issues
-- Minor configuration warnings
-
-## Quick Reference Commands
-
-```bash
-# Check for TypeScript errors
-npx tsc --noEmit
-
-# Build Vite (production)
-npm run build
-
-# Clear Vite cache and rebuild
-rm -rf node_modules/.vite
-npm run build
-
-# Check specific Vue file
-npx tsc --noEmit resources/js/pages/Dashboard.vue
-
-# Install missing dependencies
-npm install
-
-# Fix ESLint issues automatically
-npx eslint . --fix
-
-# Update TypeScript
-npm install --save-dev typescript@latest
-
-# Verify node_modules
-rm -rf node_modules package-lock.json
-npm install
-
-# Laravel specific
-php artisan about
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
-
-# Composer
-composer install
-composer dump-autoload
-````
-
-## Success Metrics
-
-After build error resolution:
-
-- ✅ `npx tsc --noEmit` exits with code 0
-- ✅ `npm run build` (Vite) completes successfully
-- ✅ `php artisan about` shows no errors
-- ✅ No new errors introduced
-- ✅ Minimal lines changed (< 5% of affected file)
-- ✅ Build time not significantly increased
-- ✅ Development server runs without errors: `npm run dev`
-- ✅ Laravel tests still passing: `php artisan test`
-- ✅ Vue components render correctly
-
-## Laravel-Specific Build Errors
-
-### PHP Syntax Errors
-
-```bash
-# Check PHP syntax
-php -l app/Http/Controllers/MarketController.php
-
-# Run Laravel
-php artisan about
-```
-
-### Composer Autoload Issues
-
-```bash
-# ❌ ERROR: Class 'App\Services\MarketService' not found
-
-# ✅ FIX: Regenerate autoload
-composer dump-autoload
-```
-
-### Asset Compilation Errors
-
-```bash
-# ❌ ERROR: Vite manifest not found
-
-# ✅ FIX: Build assets
-npm run build
-
-# ✅ OR for development:
-npm run dev
-```
-
----
-
-**Remember**: The goal is to fix errors quickly with minimal changes. Don't refactor, don't optimize, don't redesign. Fix the error, verify the build passes, move on. Speed and precision over perfection.
-
-**Stack-Specific Focus**: Laravel + Vue 3 Options API + Inertia.js + Vite + MySQL + PrimeVue
+**Remember**: Fast, precise, minimal fixes win. Restore the build first, avoid unnecessary changes, and preserve existing project conventions.

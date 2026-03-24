@@ -1,60 +1,98 @@
 ---
-description: 'Apply when writing or reviewing CSS, Tailwind classes, or Vue templates for layout/animations to keep UIs smooth and high FPS (avoid heavy effects, broad transitions, and unnecessary scroll behavior).'
+description: Apply when writing or reviewing Tailwind/CSS styles and Vue templates to keep UI interactions smooth and avoid FPS drops.
 alwaysApply: true
 ---
 
-# Frontend Performance (CSS & Animations)
+# Frontend Performance (CSS and Animations)
 
-Rules to keep the UI responsive and avoid sluggishness or low frames per second. Follow these when adding or changing styles, especially in grids, cards, modals, and scrollable sections.
+Performance guardrails for responsive, smooth UI in lists, cards, modals, and scroll-heavy screens.
+
+## Version Snapshot
+
+- Vue 3.5.30
+- Tailwind CSS 4.2.2
+- Vite 7.3.1
+
+## Project Reality Overrides (Highest Priority)
+
+- Follow touched-file/module conventions first.
+- Vue Options API is the default for new component/page work.
+- Prefer Tailwind v4 utility patterns in touched frontend modules.
+- Keep legacy local style patterns where already established, but avoid adding new heavy global effects.
 
 ## Avoid Expensive Effects
 
-### Backdrop blur
+### 1) Backdrop Blur on Repeated Elements
 
-- **Do not** use `backdrop-blur` (or `backdrop-blur-sm`, `backdrop-blur-md`, etc.) on multiple elements in the same view (e.g. every card in a grid). Blur is composited and repainted often; it is a major cause of low FPS.
-- **Prefer** solid or semi-transparent backgrounds (e.g. `bg-purple-500/80`, `bg-black/40`) for the same visual weight without the cost.
-- **If** you need a single “glass” accent (e.g. one hero badge or one modal overlay), one `backdrop-blur` is acceptable; avoid it on repeated list/grid items.
+- Do not apply `backdrop-filter: blur(...)` / `backdrop-blur-*` to many repeated items (cards in grids/lists).
+- Prefer solid or semi-transparent backgrounds for repeated components.
+- If glassmorphism is needed, keep blur to a single accent element per view.
 
-### Scroll-smooth on content sections
+### 2) Smooth Scrolling on Containers
 
-- **Do not** add `scroll-smooth` to content sections or cards. It can make scrolling feel heavy and hurt FPS when that section is in view.
-- **Prefer** smooth scrolling only where the user explicitly triggers it (e.g. “Scroll to section” button) via `element.scrollTo({ behavior: 'smooth' })` in JavaScript. Do not put `scroll-smooth` on the section element itself.
+- Do not set global `scroll-behavior: smooth` on large content containers.
+- Prefer user-triggered smooth scrolling in JS:
+    - `element.scrollTo({ behavior: 'smooth' })`
+- Avoid `scroll-smooth` on continuously scrolled sections.
 
 ## Prefer Explicit Transitions
 
-### Avoid transition-all
+### 3) Avoid Broad Transition Targets
 
-- **Do not** use `transition-all` for hover or state changes. It animates every animatable property and can trigger extra layout and paint.
-- **Prefer** scoped transition utilities, e.g.:
-    - `transition-opacity duration-300` when only opacity changes
-    - `transition-colors duration-200` when only colors change
-    - `transition-[transform,opacity]` when you need both and nothing else
+- Do not use `transition: all` or Tailwind `transition-all` by default.
+- Use property-specific transitions only:
+    - `transition-opacity`
+    - `transition-colors`
+    - `transition-[opacity,transform]` only when transform actually applies
 
 ```html
-<!-- ❌ Avoid: animates everything -->
-<button class="transition-all duration-300 ... ...">
-    <!-- ✅ Prefer: only what changes -->
-    <div class="transition-opacity duration-300 ... ..."></div>
-</button>
+<!-- Avoid -->
+<button class="transition-all duration-300">...</button>
+
+<!-- Prefer -->
+<button class="transition-colors duration-200">...</button>
 ```
 
-## Paint containment
+### 4) Tailwind v4 Transform Transition Detail
 
-- For **repeated blocks** that form a grid or list (e.g. project cards, news cards), consider adding paint containment so the browser can limit repaints to that block.
-- In Tailwind you can use an arbitrary value, e.g. `[contain:paint]`, on the repeated element’s root (e.g. the card wrapper). Use only where it doesn’t break layout (e.g. avoid on elements that need to overflow or affect layout outside the box).
+- In Tailwind v4, transform utilities use individual properties (`scale`, `rotate`, `translate`).
+- If animating `scale-*`, do not rely on `transition-[...,transform]`.
+- Prefer explicit property transitions such as:
+    - `transition-[opacity,scale]`
+    - `transition-[opacity,translate]`
 
-## Summary
+## Repaint and Layout Containment
 
-| Avoid                            | Prefer                                                                    |
-| -------------------------------- | ------------------------------------------------------------------------- |
-| `backdrop-blur` on many elements | Solid or semi-transparent backgrounds; at most one blur per view          |
-| `scroll-smooth` on sections      | JS `scrollTo({ behavior: 'smooth' })` when user triggers scroll           |
-| `transition-all`                 | `transition-opacity`, `transition-colors`, or explicit `transition-[...]` |
-| (optional) none                  | `[contain:paint]` on repeated grid/list item roots                        |
+### 5) Paint Containment for Repeated Blocks
 
-## Global CSS
+- Consider `contain: paint;` (or Tailwind arbitrary `[contain:paint]`) on repeated card/list roots.
+- Use only when containment does not break overflow/layout expectations.
 
-- **Check `resources/css/app.css`** when the whole page or a section feels heavy: global class names (e.g. `.project-card`, `.modal-overlay`) may add `transition: all` or `backdrop-filter` even if the component no longer uses them. Prefer **transform-only** or **property-specific** transitions and avoid **backdrop-filter** in global overlay/card styles.
-- Prefer defining transitions in the component (Tailwind) so they stay explicit and easy to audit; avoid duplicating or overriding with broad transitions in app.css.
+### 6) Keep Animations Compositor-Friendly
 
-Apply these when writing or reviewing Vue templates, Tailwind, and app.css so the projects section and similar areas stay smooth and high FPS.
+- Prefer animating `opacity` and `transform`.
+- Avoid animating layout-heavy properties repeatedly (`width`, `height`, `top`, `left`) in dense UIs.
+
+## Global Style Audit Points
+
+- Check `resources/css/app.css` for broad transitions/effects that impact whole pages.
+- If legacy module styles exist, audit those files too before adding new utility classes.
+- Keep transitions near component scope (SFC/local classes) when possible for easier auditing.
+
+## Quick Do / Don’t
+
+| Do                                                  | Don’t                                               |
+| --------------------------------------------------- | --------------------------------------------------- |
+| Use `transition-colors` / `transition-opacity`      | Use `transition-all` by default                     |
+| Use one optional blur accent per view               | Blur every card in a grid                           |
+| Use JS-triggered smooth scroll for explicit actions | Put smooth scroll on high-traffic containers        |
+| Consider `[contain:paint]` on repeated blocks       | Apply containment where overflow/layout must escape |
+
+## Verification Checklist
+
+- [ ] No repeated blur filters on grid/list items.
+- [ ] No broad transition-all usage in touched UI.
+- [ ] Transition properties match what actually changes.
+- [ ] No global smooth scrolling on heavy content sections.
+- [ ] Checked `resources/css/app.css` for expensive global effects.
+- [ ] UI remains responsive during hover, scroll, and modal open/close.

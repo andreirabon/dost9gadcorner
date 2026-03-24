@@ -1,6 +1,6 @@
 ---
-description: 'Apply when building or reviewing Vue 3 Options API components, props, events, lifecycle, or Vue–Inertia integration patterns.'
-alwaysApply: false
+description: Apply when building or reviewing Vue 3 Options API components, props, events, lifecycle, or Vue–Inertia integration patterns.
+alwaysApply: true
 ---
 
 # Vue 3 Development Patterns
@@ -13,10 +13,10 @@ Comprehensive patterns for Vue 3 with Options API and Inertia.js integration.
 
 ```vue
 <script>
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
 export default defineComponent({
-    name: 'MarketCard',
+    name: "MarketCard",
 
     props: {
         market: {
@@ -29,7 +29,7 @@ export default defineComponent({
         },
     },
 
-    emits: ['update', 'delete'],
+    emits: ["update", "delete"],
 
     data() {
         return {
@@ -41,7 +41,7 @@ export default defineComponent({
     computed: {
         isActive() {
             return (
-                this.localStatus === 'active' &&
+                this.localStatus === "active" &&
                 new Date(this.market.end_date) > new Date()
             );
         },
@@ -52,7 +52,7 @@ export default defineComponent({
     },
 
     watch: {
-        'market.status'(newStatus) {
+        "market.status"(newStatus) {
             this.localStatus = newStatus;
         },
     },
@@ -63,18 +63,18 @@ export default defineComponent({
         },
 
         handleUpdate() {
-            this.$emit('update', this.market.id);
+            this.$emit("update", this.market.id);
         },
 
         handleDelete() {
-            if (confirm('Are you sure?')) {
-                this.$emit('delete', this.market.id);
+            if (confirm("Are you sure?")) {
+                this.$emit("delete", this.market.id);
             }
         },
     },
 
     mounted() {
-        console.log('MarketCard mounted:', this.market.name);
+        console.log("MarketCard mounted:", this.market.name);
     },
 
     beforeUnmount() {
@@ -94,7 +94,7 @@ export default defineComponent({
         </div>
 
         <button @click="toggleExpand">
-            {{ isExpanded ? 'Show Less' : 'Show More' }}
+            {{ isExpanded ? "Show Less" : "Show More" }}
         </button>
 
         <div v-if="showActions" class="actions">
@@ -121,19 +121,19 @@ export default defineComponent({
 
 ```vue
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType } from "vue";
 
 interface Market {
     id: number;
     name: string;
     description: string;
-    status: 'active' | 'resolved' | 'closed';
+    status: "active" | "resolved" | "closed";
     end_date: string;
     created_at: string;
 }
 
 export default defineComponent({
-    name: 'MarketCard',
+    name: "MarketCard",
 
     props: {
         market: {
@@ -154,14 +154,14 @@ export default defineComponent({
     data() {
         return {
             isExpanded: false as boolean,
-            localStatus: this.market.status as Market['status'],
+            localStatus: this.market.status as Market["status"],
         };
     },
 
     computed: {
         isActive(): boolean {
             return (
-                this.localStatus === 'active' &&
+                this.localStatus === "active" &&
                 new Date(this.market.end_date) > new Date()
             );
         },
@@ -177,12 +177,12 @@ export default defineComponent({
         },
 
         handleUpdate(): void {
-            this.$emit('update', this.market.id);
+            this.$emit("update", this.market.id);
         },
 
         handleDelete(): void {
-            if (confirm('Are you sure?')) {
-                this.$emit('delete', this.market.id);
+            if (confirm("Are you sure?")) {
+                this.$emit("delete", this.market.id);
             }
         },
     },
@@ -196,12 +196,12 @@ export default defineComponent({
 
 ```vue
 <script>
-import { defineComponent } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { defineComponent } from "vue";
+import { Head, Link } from "@inertiajs/vue3";
+import AppLayout from "@/layouts/AppLayout.vue";
 
 export default defineComponent({
-    name: 'MarketsIndex',
+    name: "MarketsIndex",
 
     components: {
         Head,
@@ -222,8 +222,8 @@ export default defineComponent({
 
     data() {
         return {
-            searchQuery: this.filters.search || '',
-            selectedStatus: this.filters.status || 'all',
+            searchQuery: this.filters.search || "",
+            selectedStatus: this.filters.status || "all",
         };
     },
 
@@ -242,7 +242,7 @@ export default defineComponent({
     methods: {
         search() {
             this.$inertia.get(
-                '/markets',
+                "/markets",
                 {
                     search: this.searchQuery,
                     status: this.selectedStatus,
@@ -259,12 +259,12 @@ export default defineComponent({
         }, 300),
 
         deleteMarket(id) {
-            if (!confirm('Are you sure?')) return;
+            if (!confirm("Are you sure?")) return;
 
             this.$inertia.delete(`/markets/${id}`, {
                 preserveScroll: true,
                 onSuccess: () => {
-                    this.$toast.success('Market deleted successfully');
+                    this.$toast.success("Market deleted successfully");
                 },
             });
         },
@@ -334,8 +334,8 @@ export default defineComponent({
 
 ```vue
 <script>
-import { defineComponent } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { defineComponent } from "vue";
+import { Head, Link } from "@inertiajs/vue3";
 
 export default defineComponent({
     components: {
@@ -353,10 +353,10 @@ export default defineComponent({
     data() {
         return {
             form: this.$inertia.form({
-                name: this.market?.name || '',
-                description: this.market?.description || '',
-                category: this.market?.category || 'politics',
-                end_date: this.market?.end_date || '',
+                name: this.market?.name || "",
+                description: this.market?.description || "",
+                category: this.market?.category || "politics",
+                end_date: this.market?.end_date || "",
             }),
         };
     },
@@ -366,7 +366,7 @@ export default defineComponent({
             if (this.market) {
                 this.form.put(`/markets/${this.market.id}`);
             } else {
-                this.form.post('/markets', {
+                this.form.post("/markets", {
                     onSuccess: () => this.form.reset(),
                 });
             }
@@ -382,8 +382,8 @@ export default defineComponent({
 
 ```vue
 <script>
-import { defineComponent } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { defineComponent } from "vue";
+import { usePage } from "@inertiajs/vue3";
 
 export default defineComponent({
     setup() {
@@ -438,7 +438,7 @@ export default defineComponent({
 
 ```javascript
 // stores/marketStore.js
-import { reactive } from 'vue';
+import { reactive } from "vue";
 
 const state = reactive({
     markets: [],
@@ -450,7 +450,7 @@ export const marketStore = {
     state,
 
     getActiveMarkets() {
-        return state.markets.filter((m) => m.status === 'active');
+        return state.markets.filter((m) => m.status === "active");
     },
 
     setMarkets(markets) {
@@ -471,8 +471,8 @@ export const marketStore = {
 
 ```vue
 <script>
-import { defineComponent } from 'vue';
-import { marketStore } from '@/stores/marketStore';
+import { defineComponent } from "vue";
+import { marketStore } from "@/stores/marketStore";
 
 export default defineComponent({
     data() {
@@ -515,7 +515,7 @@ export default defineComponent({
 
 ```vue
 <script>
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 
 export default defineComponent({
     data() {
@@ -528,7 +528,7 @@ export default defineComponent({
     created() {
         // Component instance is created
         // No access to DOM yet
-        console.log('Component created');
+        console.log("Component created");
     },
 
     mounted() {
@@ -540,7 +540,7 @@ export default defineComponent({
 
     updated() {
         // Component re-rendered due to reactive data changes
-        console.log('Component updated');
+        console.log("Component updated");
     },
 
     beforeUnmount() {
@@ -551,7 +551,7 @@ export default defineComponent({
 
     unmounted() {
         // Component is fully unmounted
-        console.log('Component unmounted');
+        console.log("Component unmounted");
     },
 
     methods: {
@@ -570,8 +570,8 @@ export default defineComponent({
 
         subscribeToUpdates() {
             // Subscribe to real-time updates
-            this.subscription = window.Echo.channel('markets').listen(
-                'MarketUpdated',
+            this.subscription = window.Echo.channel("markets").listen(
+                "MarketUpdated",
                 (e) => {
                     this.handleMarketUpdate(e.market);
                 },
@@ -580,8 +580,8 @@ export default defineComponent({
 
         unsubscribeFromUpdates() {
             if (this.subscription) {
-                this.subscription.stopListening('MarketUpdated');
-                window.Echo.leave('markets');
+                this.subscription.stopListening("MarketUpdated");
+                window.Echo.leave("markets");
             }
         },
 
@@ -613,16 +613,16 @@ export default {
     computed: {
         // ✅ GOOD: Cached, only recalculates when markets change
         activeMarkets() {
-            console.log('Computing active markets');
-            return this.markets.filter((m) => m.status === 'active');
+            console.log("Computing active markets");
+            return this.markets.filter((m) => m.status === "active");
         },
     },
 
     methods: {
         // ❌ BAD: Recalculates on every render
         getActiveMarkets() {
-            console.log('Getting active markets');
-            return this.markets.filter((m) => m.status === 'active');
+            console.log("Getting active markets");
+            return this.markets.filter((m) => m.status === "active");
         },
     },
 };
@@ -722,15 +722,15 @@ export default {
         },
     },
 
-    emits: ['update', 'delete'],
+    emits: ["update", "delete"],
 
     methods: {
         updateMarket(data) {
-            this.$emit('update', this.market.id, data);
+            this.$emit("update", this.market.id, data);
         },
 
         deleteMarket() {
-            this.$emit('delete', this.market.id);
+            this.$emit("delete", this.market.id);
         },
     },
 };
@@ -745,14 +745,14 @@ export default {
 export default {
     provide() {
         return {
-            theme: 'dark',
+            theme: "dark",
             updateTheme: this.updateTheme,
         };
     },
 
     data() {
         return {
-            currentTheme: 'dark',
+            currentTheme: "dark",
         };
     },
 
@@ -767,11 +767,11 @@ export default {
 <!-- Deeply nested component -->
 <script>
 export default {
-    inject: ['theme', 'updateTheme'],
+    inject: ["theme", "updateTheme"],
 
     methods: {
         toggleTheme() {
-            const newTheme = this.theme === 'dark' ? 'light' : 'dark';
+            const newTheme = this.theme === "dark" ? "light" : "dark";
             this.updateTheme(newTheme);
         },
     },

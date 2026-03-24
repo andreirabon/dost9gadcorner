@@ -1,11 +1,19 @@
 ---
-description: 'Apply when using /plan or creating an implementation plan before coding; breaking down features, identifying risks, or waiting for user approval.'
+description: Apply when using /plan or creating an implementation plan before coding; breaking down features, identifying risks, or waiting for user approval.
 alwaysApply: false
 ---
 
 # Plan Command
 
 This command invokes the **planner** agent to create a comprehensive implementation plan before writing any code.
+
+## Project Reality Overrides (Highest Priority)
+
+- Plans must align with existing module conventions in touched files.
+- Backend plans should account for domain service classes (`*Class`) and common `option`-branch controller flows.
+- Repository/policy/event-heavy designs are optional and should only be proposed when justified by current module patterns.
+- Frontend plans should default to Vue SFC JavaScript (Options API), BootstrapVue + SCSS conventions, and Inertia + axios coexistence.
+- Treat this repository as hybrid Laravel structure (legacy kernels active), not streamlined-layout-only assumptions.
 
 ## What This Command Does
 
@@ -200,16 +208,15 @@ After planning:
 
 When planning Laravel features, always consider:
 
-1. **Repository Pattern**: Separate data access logic
-2. **Service Layer**: Business logic belongs in services
-3. **Events & Listeners**: Decouple related actions
-4. **Jobs & Queues**: Async processing for heavy tasks
-5. **Form Requests**: Validation and authorization
-6. **Policies**: Resource authorization logic
-7. **Observers**: Model lifecycle hooks
-8. **Migrations**: Database schema changes (up and down)
-9. **Factories**: Test data generation
-10. **Inertia Props**: What data to pass to Vue components
+1. **Service Layer**: Business logic belongs in existing domain service classes.
+2. **Controller Flow**: Keep/extend `option`-based orchestration where module already uses it.
+3. **Validation Strategy**: Prefer Form Requests for new complex mutation flows; preserve legacy inline style where refactor is out of scope.
+4. **Authorization Boundary**: Ensure route middleware + role/ownership checks are covered.
+5. **Migrations**: Database schema changes (up and down) with compatibility notes.
+6. **Factories/Seeders**: Test data generation aligned with existing model setup.
+7. **Repository Pattern (Optional)**: Add only when module already uses it or explicit value exists.
+8. **Events/Jobs (Optional)**: Add only when async/decoupling needs are clear.
+9. **Inertia Props / JSON Contracts**: Define exactly what page props and endpoint payloads are required.
 
 ## Vue 3 Options API Planning
 
@@ -217,10 +224,10 @@ When planning frontend features, consider:
 
 1. **Component Structure**: data(), computed, watch, methods, mounted
 2. **Props & Emits**: Parent-child communication
-3. **Inertia Forms**: Use `this.$inertia.form()` for validation
+3. **Form Pattern Choice**: Use `useForm` or `axios` based on local module conventions
 4. **Shared Data**: What auth/user data is needed globally
 5. **Component Reusability**: Break into smaller components
-6. **TypeScript Types**: Define interfaces for props and data
+6. **JS/TS Fit**: Keep JS-first by default; add TS types only when module/file uses TS
 7. **Error Handling**: How to display validation errors
 8. **Loading States**: Show spinners during async operations
 
@@ -241,3 +248,4 @@ Every plan should include:
 ---
 
 **Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3
+**Stack Reality**: Laravel 12 (hybrid kernel/bootstrap style) + Vue 3 Options API (JS-first) + Inertia + Axios + BootstrapVue + SCSS + MySQL 8 + PestPHP 3

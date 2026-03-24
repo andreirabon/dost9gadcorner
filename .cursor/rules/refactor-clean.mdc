@@ -1,11 +1,19 @@
 ---
-description: 'Apply when identifying or removing dead code with test verification; running composer unused, PHPStan, knip, or similar analysis for Laravel + Vue.'
+description: Apply when identifying or removing dead code with test verification; using available analysis tools (composer-unused, PHPStan, depcheck, knip) for Laravel + Vue.
 alwaysApply: false
 ---
 
 # Refactor Clean
 
 Safely identify and remove dead code with comprehensive test verification for Laravel + Vue 3 + Inertia.js applications.
+
+## Project Reality Overrides (Highest Priority)
+
+- Follow touched-module conventions first; avoid "ideal architecture" rewrites during cleanup.
+- Backend commonly uses service classes under `app/Services/**` with `*Class` naming and controller `option` branching.
+- Frontend is JS-first Vue Options API, with Inertia and axios both used depending on module.
+- UI stack is primarily BootstrapVue + SCSS; Tailwind/TS tooling may not be present in every branch.
+- Treat Laravel runtime structure as hybrid (`bootstrap/app.php` plus legacy `app/Http/Kernel.php` usage).
 
 ## Analysis Process
 
@@ -20,7 +28,7 @@ composer global require icanhazstring/composer-unused
 composer unused
 ```
 
-#### 1.2 Static Analysis (PHPStan)
+#### 1.2 Static Analysis (Optional if configured)
 
 ```bash
 ./vendor/bin/phpstan analyse app --level=max
@@ -57,9 +65,9 @@ php artisan route:list
 
 **Unused Policies:**
 
-- Check policy registration in AuthServiceProvider
+- Check where policies are registered/discovered in current app structure
 - Search for `authorize()` calls referencing policy
-- Verify no automatic policy discovery usage
+- Verify no implicit policy discovery usage
 
 **Unused Services/Repositories:**
 
@@ -90,7 +98,7 @@ php artisan route:list
 - Check email templates
 - Verify not used in notifications
 
-### Phase 2: Frontend Analysis (Vue 3/TypeScript)
+### Phase 2: Frontend Analysis (Vue 3 / JS-first)
 
 #### 2.1 Unused NPM Dependencies
 
@@ -98,13 +106,13 @@ php artisan route:list
 npx depcheck
 ```
 
-#### 2.2 Unused TypeScript Exports
+#### 2.2 Unused TypeScript Exports (Optional)
 
 ```bash
 npx ts-prune --project tsconfig.json
 ```
 
-#### 2.3 Unused Files and Exports
+#### 2.3 Unused Files and Exports (Optional)
 
 ```bash
 npx knip
@@ -167,8 +175,8 @@ Generated: [DATE]
 
 - [ ] Unused controller method: App\Http\Controllers\[Name]Controller@method
 - [ ] Unused route: GET /[route]
-- [ ] Unused Vue component: resources/js/components/[Name].vue
-- [ ] Unused service: App\Services\[Name]Service
+- [ ] Unused Vue component: resources/js/Shared/Components/[Name].vue
+- [ ] Unused service class: App\Services\[Domain]\[Action]Class
 - [ ] Unused repository: App\Repositories\[Name]Repository
 
 ### 🔴 DANGER - Do NOT remove without careful review
@@ -179,25 +187,25 @@ Generated: [DATE]
 - [ ] Unused event: App\Events\[Name]Event
 - [ ] Unused config file: config/[name].php
 
-## Frontend (Vue 3/TypeScript)
+## Frontend (Vue 3 / JavaScript-first)
 
 ### 🟢 SAFE
 
 - [ ] Unused npm package: [package-name]
-- [ ] Unused TypeScript utility: resources/js/lib/[name].ts
+- [ ] Unused TypeScript utility (if TS-enabled): resources/js/lib/[name].ts
 - [ ] Unused icon: public/svg/[name].svg
 
 ### 🟡 CAUTION
 
-- [ ] Unused Vue component: resources/js/components/[Name].vue
-- [ ] Unused page: resources/js/pages/[Name].vue
+- [ ] Unused Vue component: resources/js/Shared/Components/[Name].vue
+- [ ] Unused page: resources/js/Pages/[Domain]/[Name].vue
 - [ ] Unused type: resources/js/types/[name].d.ts
 
 ### 🔴 DANGER
 
-- [ ] Unused layout: resources/js/layouts/[Name].vue
-- [ ] Unused CSS file: resources/css/[name].css
-- [ ] Unused Vite config: vite.config.ts
+- [ ] Unused layout: resources/js/Shared/Layouts/[Name].vue
+- [ ] Unused SCSS file: resources/scss/[name].scss
+- [ ] Unused Vite config: vite.config.js
 ```
 
 ## Categorization Rules
@@ -221,7 +229,7 @@ Generated: [DATE]
 - Unused services/repositories (verify no dynamic resolution)
 - Unused Inertia pages (verify no dynamic rendering)
 - Unused form requests (check controller usage)
-- Unused policies (check AuthServiceProvider)
+- Unused policies (check registration/discovery and usage)
 - Unused middleware (check route definitions)
 
 ### 🔴 DANGER (High Risk - Manual Review Required)
@@ -242,9 +250,10 @@ For each item to be removed:
 ### Backend (PHP) Deletion Process
 
 ```bash
-# 1. Run full test suite BEFORE changes
-php artisan test
-./vendor/bin/phpstan analyse
+# 1. Run relevant tests BEFORE changes
+php artisan test --filter=[RelatedArea]
+# Optional when configured:
+# ./vendor/bin/phpstan analyse
 
 # 2. Make note of passing test count
 # Example: Tests: 145 passed
@@ -256,25 +265,26 @@ php artisan test
 php artisan test
 
 # 5. Verify same test count and all pass
-# If any test fails, ROLLBACK immediately with git
+# If any test fails, restore only the affected file changes manually
 
 # 6. Run static analysis
-./vendor/bin/phpstan analyse
+# Optional:
+# ./vendor/bin/phpstan analyse
 
 # 7. Run linter
-./vendor/bin/pint
+./vendor/bin/pint --dirty
 
 # 8. Commit changes
 git add .
 git commit -m "refactor: remove unused [description]"
 ```
 
-### Frontend (Vue/TypeScript) Deletion Process
+### Frontend (Vue/JS-first) Deletion Process
 
 ```bash
-# 1. Run full test suite BEFORE changes
-npm run test
-npm run type-check
+# 1. Run available frontend checks BEFORE changes
+# npm run test
+# npm run type-check
 
 # 2. Make note of passing test count
 
@@ -282,36 +292,36 @@ npm run type-check
 # [Make your deletion here]
 
 # 4. Run tests again IMMEDIATELY
-npm run test
+# npm run test
 
 # 5. Check TypeScript compilation
-npm run type-check
+# npm run type-check
 
 # 6. Build to verify no runtime errors
 npm run build
 
 # 7. Run linter
-npm run lint
+# npm run lint
 
 # 8. Commit changes
 git add .
 git commit -m "refactor: remove unused [description]"
 ```
 
-### Full Stack Deletion Process
+### Full Stack Deletion Process (Minimal Checks)
 
 If removing code that touches both backend and frontend:
 
 ```bash
 # 1. Run ALL tests
-php artisan test
-npm run test
+php artisan test --filter=[RelatedArea]
+# npm run test
 
 # 2. Remove code (backend first, then frontend)
 
 # 3. Run ALL tests again
-php artisan test
-npm run test
+php artisan test --filter=[RelatedArea]
+# npm run test
 npm run build
 
 # 4. Verify app still works locally
@@ -336,39 +346,36 @@ git commit -m "refactor: remove unused [description]"
 - ❌ Models with relationships (may break cascade deletes)
 - ❌ Routes used by external APIs or webhooks
 - ❌ Controllers used by mobile apps or external services
-- ❌ Jobs that run on schedule (check `app/Console/Kernel.php`)
+- ❌ Jobs that run on schedule (check `routes/console.php` and scheduler wiring)
 - ❌ Events that may be fired dynamically
 - ❌ Middleware registered in `app/Http/Kernel.php`
 
 ### Frontend Red Flags
 
-- ❌ Anything in `resources/js/app.ts` (entry point)
-- ❌ Anything in `resources/js/ssr.ts` (SSR entry)
+- ❌ Anything in `resources/js/app.js` (entry point)
+- ❌ Core bootstrapping files like `resources/js/bootstrap.js`
 - ❌ Layout components (unless replacing)
 - ❌ Base components used globally
 - ❌ TypeScript types used in multiple files
-- ❌ CSS imported in multiple places
+- ❌ SCSS imported in multiple places
 
 ## Rollback Procedure
 
 If tests fail after deletion:
 
 ```bash
-# Immediate rollback
-git reset --hard HEAD
-
-# Or if committed
+# 1) Revert only the specific file edits manually
+# 2) Re-run related tests/build checks
+php artisan test --filter=[RelatedArea]
+npm run build
+# 3) If already committed, use:
 git revert HEAD
-
-# Verify tests pass again
-php artisan test
-npm run test
 ```
 
 ## Best Practices
 
 1. **Start Small**: Remove one item at a time, not bulk deletions
-2. **Test After Each**: Run full test suite after every removal
+2. **Test After Each**: Run the smallest relevant tests/build checks after every removal
 3. **Commit Frequently**: Each removal should be its own commit
 4. **Check Git History**: See when/why code was added before removing
 5. **Search Thoroughly**: Use IDE's "Find in Files" to check usage
@@ -388,20 +395,20 @@ php artisan route:list                   # List all routes
 
 # Frontend Analysis
 npx depcheck                             # Unused npm packages
-npx ts-prune                             # Unused TypeScript exports
-npx knip                                 # Unused files/exports
+# npx ts-prune                           # Optional TS export checks
+# npx knip                               # Optional unused files/exports
 
 # Testing
 php artisan test                         # Run PHP tests
 php artisan test --coverage              # With coverage
-npm run test                             # Run Vue tests
-npm run type-check                       # TypeScript check
+# npm run test                           # Run frontend tests (if configured)
+# npm run type-check                     # TypeScript check (if configured)
 npm run build                            # Production build
 
 # Code Quality
-./vendor/bin/pint                        # Format PHP
-./vendor/bin/phpstan analyse             # Analyze PHP
-npm run lint                             # Lint Vue/TS
+./vendor/bin/pint --dirty                # Format changed PHP files
+# ./vendor/bin/phpstan analyse           # Analyze PHP (if configured)
+# npm run lint                           # Lint frontend (if configured)
 ```
 
 ## Summary Report Template
@@ -425,13 +432,13 @@ Date: [DATE]
 
 - ✅ All 145 backend tests passing
 - ✅ All 67 frontend tests passing
-- ✅ TypeScript compilation successful
+- ✅ Frontend build successful
 - ✅ Production build successful
 
 ## Lines of Code Removed
 
 - PHP: -450 lines
-- Vue/TypeScript: -320 lines
+- Vue/JavaScript: -320 lines
 - Total: -770 lines
 
 ## Commits
@@ -451,4 +458,4 @@ Date: [DATE]
 
 **CRITICAL RULE**: Never delete code without running tests before AND after. When in doubt, DON'T delete.
 
-**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3
+**Stack**: Laravel 12 (hybrid kernel/bootstrap) + Vue 3 Options API (JS-first) + Inertia.js v1-era + axios + BootstrapVue + SCSS + MySQL + Pest

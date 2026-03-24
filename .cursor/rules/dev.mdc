@@ -1,231 +1,172 @@
 ---
-description: 'Apply when in active development: implementing features, running commands, testing changes, or following the implementation-first workflow for Laravel + Vue + Inertia.'
+description: Apply when actively implementing features, fixing bugs, running commands, and validating changes in this Laravel + Inertia + Vue codebase.
 alwaysApply: false
 ---
 
 # Development Mode
 
-**Context**: Active development - Laravel + Vue 3 + Inertia.js
-**Focus**: Implementation, coding, building features
+**Context**: Active implementation work.
+**Focus**: Ship working changes quickly, safely, and with minimal diff.
+
+## Version Snapshot
+
+- PHP 8.4.17
+- Laravel 12.55.1
+- inertiajs/inertia-laravel 2.0.21
+- @inertiajs/vue3 2.3.18
+- Vue 3.5.30
+- Tailwind CSS 4.2.2
+- Vite 7.3.1
+- TypeScript 5.9.3
+- Pest 3.8.6 / PHPUnit 11.5.50
+
+## Project Reality Overrides (Highest Priority)
+
+- Follow touched-module conventions before introducing new patterns.
+- Vue Options API is the default for new page/feature implementation.
+- Preserve existing `<script setup>` files when touching Composition API code.
+- Frontend stack is Inertia v2 + Tailwind v4 with selective PrimeVue usage.
+- Backend is Laravel 12 with middleware/routing configured in `bootstrap/app.php`.
+- Keep controllers thin and Form Request-first for new complex mutation flows.
+- Enforce authorization server-side using middleware/policies/ownership checks.
 
 ## Development Mindset
 
-- **Write code first, explain after** - Ship working code quickly
-- **Working > Perfect** - Iterate and improve, don't over-engineer
-- **Test immediately** - Run tests after each change
-- **Commit atomically** - Small, focused commits
+- **Implement first**: ship a working change quickly.
+- **Constrain scope**: avoid unrelated refactors while fixing a task.
+- **Verify early**: run targeted tests/checks after each substantive edit.
+- **Harden before done**: validation, authorization, and error handling are not optional.
 
-## Priorities
+## Documentation-First Rule
 
-1. **Get it working** - Make it function correctly
-2. **Get it right** - Add proper validation, error handling, authorization
-3. **Get it clean** - Refactor, optimize, document
+Before framework-sensitive implementation decisions:
 
-## Quick Commands
+1. Use Laravel Boost `search-docs` first for Laravel/Inertia/Pest/Tailwind.
+2. Use Context7 for supplemental library-specific examples.
+3. If docs conflict with local conventions in touched modules, follow local conventions.
+
+## Command Playbook
 
 ### Backend (Laravel)
 
 ```bash
-# Start development server
-php artisan serve
+# Environment and app info
+php artisan about
 
-# Run tests
-php artisan test
-php artisan test --filter MarketTest
+# Tests
+php artisan test --compact
+php artisan test --compact --filter=SomeTestName
+php artisan test --compact tests/Feature/SomeFeatureTest.php
 
-# Migrations
+# Database
 php artisan migrate
 php artisan migrate:fresh --seed
 
-# Clear caches
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
+# Cache cleanup (when config/container/view feels stale)
+php artisan optimize:clear
 
-# Code quality
-./vendor/bin/pint           # Format code
-./vendor/bin/phpstan       # Static analysis
-
-# Tinker (REPL)
-php artisan tinker
+# Formatting (PHP)
+vendor/bin/pint --dirty --format agent
 ```
 
 ### Frontend (Vite + Vue)
 
 ```bash
-# Start dev server with HMR
+# Development build/watch
 npm run dev
 
-# Build for production
+# Production build verification
 npm run build
 
-# Type check
+# Optional checks (only if configured in branch)
 npx tsc --noEmit
-
-# Lint
-npx eslint . --ext .ts,.vue,.js
-
-# Test
-npm run test                # Vitest
+npx eslint . --ext .ts,.js,.vue
 ```
 
-### Database
+### Scaffolding (Non-Interactive)
 
 ```bash
-# Create migration
-php artisan make:migration create_markets_table
-
-# Create model with migration
-php artisan make:model Market -m
-
-# Create factory
-php artisan make:factory MarketFactory
-
-# Create seeder
-php artisan make:seeder MarketSeeder
-
-# Seed database
-php artisan db:seed
+php artisan make:controller ExampleController --no-interaction
+php artisan make:request StoreExampleRequest --no-interaction
+php artisan make:test --pest ExampleFeatureTest --no-interaction
+php artisan make:migration create_examples_table --no-interaction
+php artisan make:model Example -mf --no-interaction
 ```
 
-## Development Workflow
+## Implementation Workflow
 
-### 1. Feature Development
+### 1) Feature Work
 
-```bash
-# 1. Create feature branch
-git checkout -b feature/market-creation
+1. Read existing routes/controller/page patterns in the touched module.
+2. Add/update a focused test first when practical (especially for mutations).
+3. Implement minimal backend + frontend changes.
+4. Validate authorization + input handling.
+5. Run targeted tests and relevant build checks.
+6. Run formatter/lint tools needed for touched files.
 
-# 2. Generate resources
-php artisan make:controller MarketController --resource
-php artisan make:request StoreMarketRequest
-php artisan make:policy MarketPolicy
+### 2) Bug Fixing
 
-# 3. Write tests (TDD)
-php artisan make:test MarketTest
+1. Reproduce with concrete steps.
+2. Add a failing test (or a precise verification path when test is not feasible).
+3. Apply the smallest safe fix.
+4. Re-run targeted tests/checks.
+5. Confirm no regression in adjacent behavior.
 
-# 4. Implement feature
-# - Controller (thin, delegates to service)
-# - Service (business logic)
-# - View (Inertia Vue component)
+### 3) Build Break / Type Error Loop
 
-# 5. Run tests
-php artisan test
+1. Run `npm run build` (and `php artisan test --compact` when backend changed).
+2. Fix one error cluster at a time.
+3. Re-run the failing command after each fix.
+4. Stop once build is clean; avoid opportunistic rewrites.
 
-# 6. Type check
-npx tsc --noEmit
+## Vue + Inertia Development Notes
 
-# 7. Commit
-git add .
-git commit -m "feat: add market creation"
-```
+- Default to Options API for new components in this repository.
+- Use object-style `props` with explicit validation metadata.
+- Declare `emits`; avoid direct prop mutation.
+- Keep derived values in `computed`; keep side effects in `methods`.
+- Use Inertia `<Link>`, `router.*`, `useForm` or `<Form>` based on local module style.
+- Use partial reloads (`only` / `except`) when reducing payloads is useful.
 
-### 2. Bug Fixing
+## Backend Development Notes
 
-```bash
-# 1. Reproduce bug
-# 2. Write failing test
-# 3. Fix code
-# 4. Verify test passes
-php artisan test --filter testBugName
-# 5. Commit
-git commit -m "fix: resolve market deletion error"
-```
+- Use Form Requests for new complex write flows.
+- Use `$request->validated()` for create/update payloads.
+- Avoid `$request->all()` mass-assignment writes.
+- Prefer Eloquent and relationships over raw SQL.
+- Use transactions for multi-step write operations.
+- Keep authorization checks explicit and fail closed.
 
-### 3. Debugging
+## Debugging Guidance
 
-**Backend:**
+### Backend
 
-```php
-// Quick debugging
-dd($variable);              // Dump and die
-dump($variable);            // Dump and continue
-logger()->info('Debug', ['data' => $data]);
+- `logger()->debug()` / `logger()->info()` for traceable debugging.
+- `dump()` / `dd()` only for short local debugging loops; remove before finalizing.
 
-// Laravel Telescope (in development)
-// Visit: http://localhost/telescope
-```
+### Frontend
 
-**Frontend:**
+- Temporary `console.log`/`console.table` is fine during diagnosis.
+- Remove temporary debug output before finalizing changes.
+- Use Vue DevTools + network panel for Inertia request/response flow checks.
 
-```typescript
-// Console debugging
-console.log('Debug:', data);
-console.table(markets);
+## Quality Gates Before Completion
 
-// Vue DevTools in browser
-```
+- [ ] Behavior works for intended path.
+- [ ] Validation + authorization are enforced server-side.
+- [ ] Relevant tests pass (`php artisan test --compact ...`).
+- [ ] Frontend build passes when frontend was changed (`npm run build`).
+- [ ] PHP formatting applied when PHP files were touched (`vendor/bin/pint --dirty --format agent`).
+- [ ] No unrelated architectural or style drift introduced.
 
-## Tools to Use
+## Anti-Patterns to Avoid
 
-### Code Modification
-
-- `StrReplace` - Edit existing code (precise changes)
-- `Write` - Create new files
-- `Read` - Inspect files before editing
-
-### Code Discovery
-
-- `Grep` - Search for code patterns
-- `Glob` - Find files by name
-- `SemanticSearch` - Find code by meaning
-
-### Execution
-
-- `Shell` - Run commands (artisan, npm, git)
-- `ReadLints` - Check for errors after changes
-
-## Best Practices During Development
-
-### PHP/Laravel
-
-- ✅ Use type declarations (PHP 8.2+)
-- ✅ Keep controllers thin (<100 lines)
-- ✅ Use Form Requests for validation
-- ✅ Use Policies for authorization
-- ✅ Eager load to prevent N+1
-- ✅ Use transactions for multi-step operations
-- ✅ Write tests for new features
-
-### Vue 3/TypeScript
-
-- ✅ Use PropType for all props
-- ✅ Use computed properties for derived state
-- ✅ Handle errors in async operations
-- ✅ Add TypeScript types
-- ✅ Test components with Vitest
-
-### General
-
-- ✅ Commit often (atomic commits)
-- ✅ Run tests before committing
-- ✅ Clear caches when config changes
-- ✅ Use `dd()` / `console.log()` for quick debugging (remove before commit)
-
-## Common Tasks
-
-### Add New Feature
-
-1. Route → Controller → Service → Repository → Model
-2. Form Request → Validation rules
-3. Policy → Authorization rules
-4. Inertia page → Vue component
-5. Tests → Feature + Unit tests
-
-### Add New API Endpoint
-
-1. Route → API Controller
-2. API Resource → Transform data
-3. Form Request → Validation
-4. Tests → API tests
-
-### Add New Database Table
-
-1. Migration → Schema
-2. Model → Eloquent model
-3. Factory → Test data
-4. Seeder → Sample data
+- Large refactors in the same change as a bug fix.
+- Mixing Options API and Composition API styles in one Vue file.
+- Introducing new architecture layers for trivial CRUD work.
+- Skipping test/build verification after substantive edits.
+- Leaving debug output in finalized code.
 
 ---
 
-**Remember**: Ship working code quickly, iterate and improve. Don't over-engineer on first pass.
+**Remember**: implement quickly, verify immediately, and keep changes minimal and secure.

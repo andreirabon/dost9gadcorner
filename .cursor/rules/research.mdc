@@ -1,5 +1,5 @@
 ---
-description: 'Apply when exploring, investigating, or learning before implementing; documenting findings, understanding patterns, or answering how/why questions.'
+description: Apply when exploring, investigating, or learning before implementing; documenting findings, understanding patterns, or answering how/why questions.
 alwaysApply: false
 ---
 
@@ -8,6 +8,14 @@ alwaysApply: false
 **Mode**: Exploration, investigation, learning for Laravel + Vue 3 + Inertia.js applications
 **Focus**: Deep understanding before acting
 **Goal**: Gather evidence, understand patterns, document findings
+
+## Project Reality Overrides (Highest Priority)
+
+- Use repository conventions as source of truth: service `*Class` modules and frequent controller `option`-branching flows.
+- Assume JS-first Vue Options API with Inertia + axios coexistence.
+- Assume frontend structure typically uses `resources/js/Pages` and shared UI under `resources/js/Shared`.
+- Assume Laravel is hybrid (`bootstrap/app.php` with legacy `app/Http/Kernel.php` patterns still active).
+- For Laravel ecosystem docs, use Laravel Boost `search-docs` first; use Context7 as supplemental docs source.
 
 ## Core Research Principles
 
@@ -94,21 +102,21 @@ rg "belongsTo|hasMany|belongsToMany" app/Models/
 
 ```bash
 # Find all services
-find app/Services -type f -name "*.php"
+rg --files app/Services
 
 # Find all repositories
-find app/Repositories -type f -name "*.php"
+rg --files app/Repositories
 
 # Search for service usage
-rg "MarketService" app/Http/Controllers/
+rg "SaveClass|UpdateClass|DeleteClass|option" app/Http/Controllers/
 ```
 
 **Questions to Answer:**
 
 - Is Repository pattern used?
-- Is Service layer implemented?
+- Is Service `*Class` layer implemented?
 - How is business logic organized?
-- Are services properly injected?
+- Are services delegated from controllers (including option-branching)?
 - Are repositories tested?
 
 #### 3. Researching Routes and Controllers
@@ -157,13 +165,13 @@ ls -la app/Http/Middleware/
 
 ```bash
 # Find all jobs
-find app/Jobs -type f -name "*.php"
+rg --files app/Jobs
 
 # Search for dispatch calls
 rg "dispatch|dispatchSync" app/
 
 # Check scheduled tasks
-cat app/Console/Kernel.php
+php artisan schedule:list
 ```
 
 **Questions to Answer:**
@@ -180,10 +188,10 @@ cat app/Console/Kernel.php
 
 ```bash
 # Find all components
-find resources/js/components -type f -name "*.vue"
+rg --files resources/js/Shared
 
 # Find all pages
-find resources/js/pages -type f -name "*.vue"
+rg --files resources/js/Pages
 
 # Search for component usage
 rg "<ComponentName" resources/js/
@@ -207,7 +215,7 @@ rg "Inertia::render" app/Http/Controllers/
 rg "this.\$inertia.form" resources/js/
 
 # Check Inertia middleware
-cat app/Http/Middleware/HandleInertiaRequests.php
+rg "share\(|Inertia" app/Http/Middleware/HandleInertiaRequests.php
 ```
 
 **Questions to Answer:**
@@ -243,7 +251,7 @@ rg "provide|inject" resources/js/
 
 ```bash
 # Check type definitions
-cat resources/js/types/index.d.ts
+rg --files resources/js/types
 
 # Search for interface usage
 rg "interface|type" resources/js/types/
@@ -266,7 +274,7 @@ rg "PropType" resources/js/
 
 ```bash
 # Start with route
-php artisan route:list | grep markets
+php artisan route:list --name=markets
 
 # Find controller method
 rg "public function index" app/Http/Controllers/MarketController.php
@@ -275,7 +283,7 @@ rg "public function index" app/Http/Controllers/MarketController.php
 rg "Inertia::render\('Markets" app/Http/Controllers/
 
 # Find Vue page
-cat resources/js/pages/Markets/Index.vue
+rg --files resources/js/Pages/Markets
 ```
 
 **Questions to Answer:**
@@ -364,13 +372,9 @@ rg "pattern" app/                         # Search in app/
 rg -t php "class.*Service" app/          # Search PHP files
 rg -i "market" app/                       # Case-insensitive
 
-# Find - File search
-find app/ -name "*Service.php"            # Find files
-find app/ -type f -name "*.php"          # All PHP files
-
-# Glob - Pattern matching
-ls app/Services/*.php                     # List services
-ls app/Models/*.php                       # List models
+# File listing with rg --files
+rg --files app/Services                   # List services
+rg --files app/Models                     # List models
 ```
 
 ### Database Research
@@ -380,8 +384,8 @@ ls app/Models/*.php                       # List models
 php artisan tinker
 
 # In Tinker:
-DB::table('markets')->count();            # Count records
-DB::table('markets')->first();            # Get first record
+App\Models\Market::query()->count();      # Count records
+App\Models\Market::query()->first();      # Get first record
 DB::getQueryLog();                        # Show queries (if enabled)
 ```
 
@@ -389,15 +393,15 @@ DB::getQueryLog();                        # Show queries (if enabled)
 
 ```bash
 # TypeScript
-npm run type-check                        # Check types
-npx tsc --noEmit                         # TypeScript check
+# npm run type-check                      # Check types (if configured)
+# npx tsc --noEmit                        # TypeScript check (if configured)
 
 # Build
 npm run build                             # Production build
 npm run dev                               # Development build
 
 # Testing
-npm run test                              # Run Vitest tests
+# npm run test                            # Run frontend tests (if configured)
 ```
 
 ## Documentation Research
@@ -412,7 +416,7 @@ npm run test                              # Run Vitest tests
 
 ### Search for Best Practices
 
-Use WebSearch tool to find:
+Use Laravel Boost `search-docs` first for Laravel ecosystem topics, then Context7/WebSearch for supplemental references:
 
 - "Laravel 12 [feature] best practices"
 - "Vue 3 Options API [pattern]"
@@ -503,7 +507,7 @@ Use WebSearch tool to find:
 ### Task 1: "How do we handle file uploads?"
 
 1. Search for upload handling: `rg "store|storeAs" app/`
-2. Check for storage configuration: `cat config/filesystems.php`
+2. Check for storage configuration: `ReadFile config/filesystems.php`
 3. Look for upload validation: `rg "file|mimes" app/Http/Requests/`
 4. Find frontend upload components: `rg "type=\"file\"" resources/js/`
 5. Check tests: `rg "UploadedFile" tests/`
@@ -511,16 +515,16 @@ Use WebSearch tool to find:
 
 ### Task 2: "What's our authentication flow?"
 
-1. Check routes: `cat routes/auth.php`
-2. Examine controllers: `ls app/Http/Controllers/Auth/`
-3. Check middleware: `cat app/Http/Middleware/Authenticate.php`
-4. Find frontend components: `ls resources/js/pages/auth/`
-5. Review session config: `cat config/session.php`
+1. Check routes: `ReadFile routes/auth.php`
+2. Examine controllers: `rg --files app/Http/Controllers/Auth`
+3. Check middleware: `ReadFile app/Http/Middleware/Authenticate.php`
+4. Find frontend components: `rg --files resources/js/Pages/Auth`
+5. Review session config: `ReadFile config/session.php`
 6. Document complete auth flow with diagrams
 
 ### Task 3: "How can we optimize market listing performance?"
 
-1. Check controller: `cat app/Http/Controllers/MarketController.php`
+1. Check controller: `ReadFile app/Http/Controllers/MarketController.php`
 2. Look for N+1 queries: Search for `get()` without `with()`
 3. Check pagination: Look for `paginate()` usage
 4. Examine indexes: `rg "index" database/migrations/*markets*`
@@ -535,7 +539,7 @@ Use WebSearch tool to find:
 4. **Be Clear**: Use simple language and structured format
 5. **Be Helpful**: Provide actionable recommendations
 6. **Be Honest**: Acknowledge unknowns and limitations
-7. **Be Fast**: Use appropriate tools (grep vs reading entire files)
+7. **Be Fast**: Use appropriate tools (`rg`, targeted reads, scoped searches)
 8. **Be Stack-Aware**: Consider Laravel, Vue, Inertia, MySQL contexts
 
 ## When to Use Research Mode
@@ -561,6 +565,6 @@ Use WebSearch tool to find:
 
 ---
 
-**Stack**: Laravel 12 (PHP 8.2+) + Vue 3.5+ Options API + Inertia.js 2 + MySQL 8 + PestPHP 3
+**Stack**: Laravel 12 (hybrid kernel/bootstrap) + Vue 3 Options API (JS-first) + Inertia.js v1-era + axios + BootstrapVue + SCSS + MySQL + Pest
 
 **Remember**: Good research takes time. Gather evidence, explore thoroughly, and document findings before recommending solutions.

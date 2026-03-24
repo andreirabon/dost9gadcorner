@@ -1,1003 +1,253 @@
 ---
-description: 'Apply when writing or reviewing code for quality, readability, DRY, testing, error handling, or Laravel + Vue 3 best practices and conventions.'
+description: Apply when writing or reviewing code for readability, consistency, maintainability, testing, and secure Laravel + Inertia + Vue practices.
 alwaysApply: false
 ---
 
 # Coding Standards & Best Practices
 
-Coding standards for Laravel + Vue 3 applications with PHP 8.2+ and TypeScript.
+Coding standards for this Laravel + Inertia + Vue codebase.
 
-## Code Quality Principles
+**Last Updated**: 2026-03-19
 
-### 1. Readability First
+## Version Snapshot (Verified)
 
-- Code is read more than written
-- Clear variable and function names
-- Self-documenting code preferred over comments
-- Consistent formatting
+- PHP `8.4.17`
+- Laravel `12.55.1`
+- Inertia Laravel `2.0.21`
+- `@inertiajs/vue3` `2.3.18`
+- Vue `3.5.30`
+- Tailwind CSS `4.2.2`
+- Vite `7.3.1`
+- TypeScript `5.9.3`
+- Pest `3.8.6`
+- PHPUnit `11.5.50`
 
-### 2. KISS (Keep It Simple, Stupid)
+## Documentation-First Validation (Required)
 
-- Simplest solution that works
-- Avoid over-engineering
-- No premature optimization
-- Easy to understand > clever code
+- Use **Laravel Boost `search-docs`** first for Laravel/Inertia/Tailwind/Pest guidance.
+- Use **Context7** for current framework/library references and examples.
+- Prefer version-specific documented behavior over memory.
 
-### 3. DRY (Don't Repeat Yourself)
+## Project Reality Overrides (Highest Priority)
 
-- Extract common logic into functions
-- Create reusable components
-- Share utilities across modules
-- Avoid copy-paste programming
+- Follow touched-file conventions first; do not force global pattern rewrites.
+- Vue preference: **use Options API by default for new feature/page work**.
+- Existing `<script setup>` components are valid; preserve local module style when editing them.
+- Frontend uses Inertia v2 + Vue + Tailwind v4 (+ selective PrimeVue), not BootstrapVue/SCSS-first.
+- Routing/middleware/bootstrap config follows Laravel 12 streamlined setup in `bootstrap/app.php`.
+- Avoid introducing speculative service/repository layers unless complexity justifies it.
 
-### 4. YAGNI (You Aren't Gonna Need It)
+## Core Code Quality Principles
 
-- Don't build features before they're needed
-- Avoid speculative generality
-- Add complexity only when required
-- Start simple, refactor when needed
+### 1) Readability First
 
-## PHP/Laravel Standards
+- Prefer clear names over short/clever names.
+- Keep functions/components focused and easy to scan.
+- Use comments for intent/why, not for obvious what/how.
 
-### Variable Naming (PHP)
+### 2) Minimal Complexity
 
-```php
-// ✅ GOOD: Descriptive names with proper casing
-$marketSearchQuery = 'election';
-$isUserAuthenticated = true;
-$totalRevenue = 1000;
+- Choose the simplest solution that satisfies current requirements.
+- Avoid speculative abstractions.
+- Add indirection only when duplication or complexity is real.
 
-// ❌ BAD: Unclear names
-$q = 'election';
-$flag = true;
-$x = 1000;
-```
+### 3) Consistency Over Preference
 
-### Function/Method Naming (PHP)
+- Match existing module patterns before applying generic style ideals.
+- Keep naming, error handling, response shape, and file structure consistent in touched areas.
 
-```php
-// ✅ GOOD: Clear, descriptive method names
-public function fetchMarketData(int $marketId): Market { }
-public function calculateProbability(Market $market, Option $option): float { }
-public function isValidEmail(string $email): bool { }
+## PHP / Laravel Standards
 
-// ❌ BAD: Unclear names
-public function market($id) { }
-public function calculate($m, $o) { }
-public function check($e) { }
-```
+### Type Declarations and Signatures
 
-### Type Declarations (PHP 8.2+)
+- Use explicit parameter and return types on methods/functions.
+- Use nullable types where needed (`?Type`).
+- Use constructor property promotion when appropriate.
+- Keep imports at top of file; avoid inline imports.
 
 ```php
-// ✅ GOOD: Full type declarations
-public function calculateTotal(array $items): float
+public function update(ProfileUpdateRequest $request): RedirectResponse
 {
-    return array_sum(array_column($items, 'price'));
-}
+    $request->user()->fill($request->validated())->save();
 
-public function getUserById(int $id): ?User
-{
-    return User::find($id);
-}
-
-// ❌ BAD: No type hints
-public function calculateTotal($items)
-{
-    return array_sum(array_column($items, 'price'));
+    return to_route('settings.profile.edit');
 }
 ```
 
-### Laravel Controller Standards
+### Validation
+
+- Prefer Form Requests for create/update and security-sensitive mutations.
+- Use `$request->validated()` (or `safe()->only()/except()`) before writes.
+- Keep inline validation only for narrow, local checks in existing flows.
 
 ```php
-// ✅ GOOD: Thin controller using services
-class MarketController extends Controller
+public function store(StorePostRequest $request): RedirectResponse
 {
-    public function __construct(
-        protected MarketService $marketService
-    ) {}
+    Post::create($request->validated());
 
-    public function store(StoreMarketRequest $request): RedirectResponse
-    {
-        $market = $this->marketService->create($request->validated());
-
-        return redirect()
-            ->route('markets.show', $market)
-            ->with('message', 'Market created successfully');
-    }
-}
-
-// ❌ BAD: Fat controller with business logic
-class MarketController extends Controller
-{
-    public function store(Request $request)
-    {
-        // 100 lines of validation, logic, database operations
-        // All in the controller - BAD!
-    }
+    return to_route('posts.index');
 }
 ```
 
-### Laravel Service Layer
+### Authorization
+
+- Enforce authorization on the backend (middleware + explicit checks as needed).
+- Never treat frontend visibility as security.
+- Fail closed on uncertain authorization (`403` / `404` as appropriate).
+
+### Eloquent and Queries
+
+- Prefer Eloquent relationships and eager loading to prevent N+1.
+- Select only required columns on heavy lists.
+- Avoid raw SQL unless complexity/performance requires it.
+- Never use unfiltered `$request->all()` for create/update.
 
 ```php
-// ✅ GOOD: Service with single responsibility
-class MarketService
-{
-    public function __construct(
-        protected MarketRepositoryInterface $repository
-    ) {}
-
-    /**
-     * Create a new market with options.
-     *
-     * @param array $data Market data including options
-     * @return Market The created market
-     * @throws \Exception If creation fails
-     */
-    public function create(array $data): Market
-    {
-        return DB::transaction(function () use ($data) {
-            $market = $this->repository->create([
-                'name' => $data['name'],
-                'description' => $data['description'],
-                'category' => $data['category'],
-                'creator_id' => auth()->id(),
-            ]);
-
-            foreach ($data['options'] as $option) {
-                $market->options()->create($option);
-            }
-
-            event(new MarketCreated($market));
-
-            return $market->load('options');
-        });
-    }
-}
+$users = User::query()
+    ->select(['id', 'name', 'email'])
+    ->with('roles:id,name')
+    ->get();
 ```
 
-### Laravel Form Request Validation
+### Controllers and Responses
 
-```php
-// ✅ GOOD: Dedicated Form Request class
-class StoreMarketRequest extends FormRequest
-{
-    public function authorize(): bool
-    {
-        return auth()->check();
-    }
+- Keep controllers orchestration-focused (validate, authorize, delegate, respond).
+- Use Inertia responses for pages and redirects for mutations.
+- Keep response shape stable for any consumed JSON endpoints.
 
-    public function rules(): array
-    {
-        return [
-            'name' => ['required', 'string', 'max:200'],
-            'description' => ['required', 'string', 'max:2000'],
-            'category' => ['required', 'in:politics,sports,entertainment'],
-            'end_date' => ['required', 'date', 'after:now'],
-            'options' => ['required', 'array', 'min:2'],
-            'options.*.name' => ['required', 'string', 'max:100'],
-            'options.*.probability' => ['required', 'numeric', 'min:0', 'max:100'],
-        ];
-    }
+### Routing and Middleware
 
-    public function messages(): array
-    {
-        return [
-            'options.min' => 'A market must have at least 2 options.',
-        ];
-    }
-}
+- Register/adjust middleware in `bootstrap/app.php`.
+- Prefer named routes and route model binding.
+- Keep route grouping and naming conventions consistent.
 
-// ❌ BAD: Validation in controller
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        // Long validation rules here - BAD!
-    ]);
-}
-```
+## Vue / JavaScript / TypeScript Standards
 
-### Error Handling (PHP/Laravel)
+### Vue Style Preference
 
-```php
-// ✅ GOOD: Proper exception handling
-public function fetchExternalData(string $url): array
-{
-    try {
-        $response = Http::timeout(5)->get($url);
+- **Default for new work: Vue Options API.**
+- In existing `<script setup>` files, stay consistent unless migration is requested.
 
-        if ($response->failed()) {
-            throw new ExternalApiException('API request failed');
-        }
-
-        return $response->json();
-    } catch (\Exception $e) {
-        Log::error('External API error', [
-            'url' => $url,
-            'error' => $e->getMessage()
-        ]);
-
-        throw $e;
-    }
-}
-
-// ❌ BAD: No error handling
-public function fetchExternalData($url)
-{
-    $response = Http::get($url);
-    return $response->json();
-}
-```
-
-### PHPDoc Standards
-
-```php
-/**
- * Calculate the probability distribution for market options.
- *
- * Uses the current trading volume and historical data to compute
- * probability percentages for each option in the market.
- *
- * @param Market $market The market to calculate probabilities for
- * @param bool $normalized Whether to normalize probabilities to 100%
- * @return array<int, float> Array of option IDs to probability percentages
- * @throws InvalidMarketException If market has no options
- *
- * @example
- * $probabilities = $service->calculateProbabilities($market, true);
- * // [1 => 45.5, 2 => 54.5]
- */
-public function calculateProbabilities(Market $market, bool $normalized = true): array
-{
-    // Implementation
-}
-```
-
-## TypeScript/JavaScript Standards
-
-### Variable Naming
-
-```typescript
-// ✅ GOOD: Descriptive names
-const marketSearchQuery = 'election';
-const isUserAuthenticated = true;
-const totalRevenue = 1000;
-
-// ❌ BAD: Unclear names
-const q = 'election';
-const flag = true;
-const x = 1000;
-```
-
-### Function Naming
-
-```typescript
-// ✅ GOOD: Verb-noun pattern
-async function fetchMarketData(marketId: string) {}
-function calculateSimilarity(a: number[], b: number[]) {}
-function isValidEmail(email: string): boolean {}
-
-// ❌ BAD: Unclear or noun-only
-async function market(id: string) {}
-function similarity(a, b) {}
-function email(e) {}
-```
-
-### Immutability Pattern (CRITICAL)
-
-```typescript
-// ✅ ALWAYS use spread operator
-const updatedUser = {
-    ...user,
-    name: 'New Name',
-};
-
-const updatedArray = [...items, newItem];
-
-// ❌ NEVER mutate directly
-user.name = 'New Name'; // BAD
-items.push(newItem); // BAD
-```
-
-### Error Handling
-
-```typescript
-// ✅ GOOD: Comprehensive error handling
-async function fetchData(url: string) {
-    try {
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('Fetch failed:', error);
-        throw new Error('Failed to fetch data');
-    }
-}
-
-// ❌ BAD: No error handling
-async function fetchData(url) {
-    const response = await fetch(url);
-    return response.json();
-}
-```
-
-### Async/Await Best Practices
-
-```typescript
-// ✅ GOOD: Parallel execution when possible
-const [users, markets, stats] = await Promise.all([
-    fetchUsers(),
-    fetchMarkets(),
-    fetchStats(),
-]);
-
-// ❌ BAD: Sequential when unnecessary
-const users = await fetchUsers();
-const markets = await fetchMarkets();
-const stats = await fetchStats();
-```
-
-### Type Safety
-
-```typescript
-// ✅ GOOD: Proper types
-interface Market {
-    id: string;
-    name: string;
-    status: 'active' | 'resolved' | 'closed';
-    created_at: Date;
-}
-
-function getMarket(id: string): Promise<Market> {
-    // Implementation
-}
-
-// ❌ BAD: Using 'any'
-function getMarket(id: any): Promise<any> {
-    // Implementation
-}
-```
-
-## Vue 3 Best Practices
-
-### Component Structure (Options API)
-
-```vue
-<script lang="ts">
-import { defineComponent, PropType } from 'vue';
-
-interface ButtonVariant {
-    variant: 'primary' | 'secondary';
-}
-
-export default defineComponent({
-    name: 'Button',
-
-    props: {
-        disabled: {
-            type: Boolean,
-            default: false,
-        },
-        variant: {
-            type: String as PropType<ButtonVariant['variant']>,
-            default: 'primary',
-        },
-    },
-
-    emits: ['click'],
-
-    methods: {
-        handleClick() {
-            if (!this.disabled) {
-                this.$emit('click');
-            }
-        },
-    },
-});
-</script>
-
-<template>
-    <button
-        :disabled="disabled"
-        :class="`btn btn-${variant}`"
-        @click="handleClick"
-    >
-        <slot />
-    </button>
-</template>
-```
-
-### Computed Properties & Watchers
-
-```vue
-<script>
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-    data() {
-        return {
-            searchQuery: '',
-            debouncedQuery: '',
-        };
-    },
-
-    watch: {
-        searchQuery: {
-            handler(newValue) {
-                clearTimeout(this.debounceTimeout);
-                this.debounceTimeout = setTimeout(() => {
-                    this.debouncedQuery = newValue;
-                }, 500);
-            },
-            immediate: true,
-        },
-    },
-
-    beforeUnmount() {
-        clearTimeout(this.debounceTimeout);
-    },
-});
-</script>
-```
-
-### State Management
+### Options API Component Shape (Default)
 
 ```vue
 <script>
 export default {
+    name: 'ProfileCard',
+    props: {
+        user: {
+            type: Object,
+            required: true,
+        },
+    },
+    emits: ['refresh'],
     data() {
         return {
-            count: 0,
+            isLoading: false,
         };
     },
-
-    methods: {
-        // ✅ GOOD: Update state directly in Options API
-        increment() {
-            this.count++;
+    computed: {
+        displayName() {
+            return this.user.name ?? 'Unknown';
         },
-
-        // ✅ GOOD: Functional update when based on current value
-        incrementBy(amount) {
-            this.count += amount;
+    },
+    methods: {
+        async reload() {
+            this.isLoading = true;
+            this.$emit('refresh');
+            this.isLoading = false;
         },
     },
 };
 </script>
 ```
 
-### Conditional Rendering
+### Reactivity and Props
 
-```vue
-<template>
-    <!-- ✅ GOOD: Clear conditional rendering -->
-    <Spinner v-if="isLoading" />
-    <ErrorMessage v-else-if="error" :error="error" />
-    <DataDisplay v-else-if="data" :data="data" />
+- Do not mutate props directly.
+- Use local `data()` state or emit events (`update:*`) for parent-owned state.
+- Use computed properties for derived values; methods for actions/side effects.
 
-    <!-- ❌ BAD: Nested ternaries (use v-if/v-else-if instead) -->
-    {{ isLoading ? 'Loading...' : error ? error : data ? data : null }}
-</template>
-```
+### JS/TS General Practices
 
-## Laravel Routing & API Standards
+- Use descriptive names (`marketSearchQuery`, not `q`).
+- Use `async/await` with meaningful error handling for async flows.
+- Prefer immutable updates when transforming arrays/objects.
+- Keep imports grouped at top of file.
+- For TS unions/enums, prefer exhaustive switch handling where relevant.
 
-### Laravel Route Conventions
+## Inertia Standards
 
-```php
-// ✅ GOOD: RESTful resource routes with Inertia
-Route::middleware(['auth'])->group(function () {
-    // Resource routes (Inertia pages)
-    Route::resource('markets', MarketController::class);
+- Use `Inertia::render(...)` in controllers for page responses.
+- Use `useForm` / `<Form>` for form flows consistent with touched module.
+- Use visit options intentionally (`preserveScroll`, `preserveState`, `only`, `except`).
+- Prefer named routes and Ziggy route helpers where used in the module.
 
-    // Generated routes:
-    // GET    /markets              # index()   - List all markets
-    // GET    /markets/create       # create()  - Show create form
-    // POST   /markets              # store()   - Create new market
-    // GET    /markets/{market}     # show()    - Show specific market
-    // GET    /markets/{market}/edit # edit()   - Show edit form
-    // PUT    /markets/{market}     # update()  - Update market
-    // DELETE /markets/{market}     # destroy() - Delete market
-});
-
-// API routes (if needed for external consumption)
-Route::prefix('api')->middleware(['auth:sanctum'])->group(function () {
-    Route::get('/markets', [Api\MarketController::class, 'index']);
-    Route::post('/markets', [Api\MarketController::class, 'store']);
+```javascript
+form.post(route('profile.update'), {
+    preserveScroll: true,
+    onSuccess: () => form.reset('password'),
 });
 ```
 
-### Laravel Inertia Response Format
+## Styling Standards
+
+### Tailwind v4 Conventions
+
+- Use Tailwind v4 CSS-first setup (`@import 'tailwindcss'`, `@theme`).
+- Do not reintroduce Tailwind v3-only patterns.
+- In Vue style blocks using `@apply`, use `@reference` to the global stylesheet when required.
+
+### Performance-Aware Styling
+
+- Avoid `transition-all`; prefer scoped transition properties.
+- Avoid repeated expensive visual effects on list/grid items.
+- Keep style changes local and predictable.
+
+## Error Handling Standards
+
+- Handle external/network failures explicitly.
+- Log actionable context server-side without leaking secrets.
+- Return user-safe messages; avoid exposing internals in flash/API payloads.
 
 ```php
-// ✅ GOOD: Inertia response with proper structure
-public function index(Request $request): Response
-{
-    $markets = Market::query()
-        ->when($request->input('status'), fn($q, $status) =>
-            $q->where('status', $status)
-        )
-        ->with(['creator:id,name', 'options'])
-        ->paginate(10)
-        ->withQueryString();
-
-    return Inertia::render('Markets/Index', [
-        'markets' => $markets,
-        'filters' => $request->only(['status', 'category']),
-    ]);
-}
-
-// ✅ GOOD: JSON response for API endpoints
-public function store(StoreMarketRequest $request): JsonResponse
-{
-    $market = $this->marketService->create($request->validated());
-
-    return response()->json([
-        'success' => true,
-        'data' => new MarketResource($market),
-        'message' => 'Market created successfully'
-    ], 201);
-}
-
-// Error response
-return response()->json([
-    'success' => false,
-    'message' => 'Invalid request',
-    'errors' => $validator->errors()
-], 422);
-```
-
-### Laravel Validation (Form Requests)
-
-```php
-// ✅ GOOD: Form Request with comprehensive rules
-class StoreMarketRequest extends FormRequest
-{
-    public function rules(): array
-    {
-        return [
-            'name' => ['required', 'string', 'min:3', 'max:200'],
-            'description' => ['required', 'string', 'min:10', 'max:2000'],
-            'category' => ['required', Rule::in(['politics', 'sports', 'entertainment'])],
-            'end_date' => ['required', 'date', 'after:now'],
-            'options' => ['required', 'array', 'min:2', 'max:10'],
-            'options.*.name' => ['required', 'string', 'max:100'],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'options.min' => 'A market requires at least 2 options.',
-            'end_date.after' => 'Market must end in the future.',
-        ];
-    }
-}
-```
-
-## File Organization
-
-### Project Structure
-
-```
-resources/js/
-├── pages/                 # Inertia page components
-│   ├── Markets/          # Market pages
-│   ├── Auth/             # Auth pages
-│   └── Settings/         # Settings pages
-├── components/            # Vue components
-│   ├── ui/               # Generic UI components
-│   ├── forms/            # Form components
-│   └── charts/           # Chart components
-├── layouts/              # Layout components
-│   ├── AppLayout.vue
-│   └── AuthLayout.vue
-├── composables/          # Reusable logic (if needed)
-├── lib/                  # Utilities and configs
-│   ├── utils.ts         # Helper functions
-│   └── constants.ts     # Constants
-├── types/                # TypeScript types
-│   ├── index.d.ts
-│   └── globals.d.ts
-└── stores/               # State management (if needed)
-```
-
-### File Naming
-
-```
-components/Button.vue         # PascalCase for components
-composables/useAuth.ts        # camelCase with 'use' prefix (if needed)
-lib/formatDate.ts             # camelCase for utilities
-types/market.types.ts         # camelCase with .types suffix
-pages/Markets/Index.vue       # PascalCase for pages
-```
-
-## Comments & Documentation
-
-### When to Comment
-
-```typescript
-// ✅ GOOD: Explain WHY, not WHAT
-// Use exponential backoff to avoid overwhelming the API during outages
-const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-
-// Deliberately using mutation here for performance with large arrays
-items.push(newItem);
-
-// ❌ BAD: Stating the obvious
-// Increment counter by 1
-count++;
-
-// Set name to user's name
-name = user.name;
-```
-
-### JSDoc for Public APIs
-
-````typescript
-/**
- * Searches markets using semantic similarity.
- *
- * @param query - Natural language search query
- * @param limit - Maximum number of results (default: 10)
- * @returns Array of markets sorted by similarity score
- * @throws {Error} If OpenAI API fails or Redis unavailable
- *
- * @example
- * ```typescript
- * const results = await searchMarkets('election', 5)
- * console.log(results[0].name) // "Trump vs Biden"
- * ```
- */
-export async function searchMarkets(
-    query: string,
-    limit: number = 10,
-): Promise<Market[]> {
-    // Implementation
-}
-````
-
-## Performance Best Practices
-
-### Memoization (Vue 3)
-
-```vue
-<script>
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-    data() {
-        return {
-            markets: [],
-        };
-    },
-
-    computed: {
-        // ✅ GOOD: Computed properties are automatically cached
-        sortedMarkets() {
-            return [...this.markets].sort((a, b) => b.volume - a.volume);
-        },
-    },
-
-    methods: {
-        // ✅ GOOD: Methods are automatically bound to component instance
-        handleSearch(query) {
-            this.searchQuery = query;
-        },
-    },
-});
-</script>
-```
-
-### Lazy Loading (Vue 3)
-
-```vue
-<script>
-import { defineComponent, defineAsyncComponent } from 'vue';
-
-export default defineComponent({
-    components: {
-        // ✅ GOOD: Lazy load heavy components
-        HeavyChart: defineAsyncComponent(() => import('./HeavyChart.vue')),
-    },
-});
-</script>
-
-<template>
-    <div>
-        <Suspense>
-            <template #default>
-                <HeavyChart />
-            </template>
-            <template #fallback>
-                <Spinner />
-            </template>
-        </Suspense>
-    </div>
-</template>
-```
-
-### Database Queries (Laravel Eloquent)
-
-```php
-// ✅ GOOD: Select only needed columns
-$markets = Market::select(['id', 'name', 'status'])
-    ->where('status', 'active')
-    ->limit(10)
-    ->get();
-
-// ✅ GOOD: Eager loading to prevent N+1
-$markets = Market::with(['creator:id,name', 'options'])
-    ->where('status', 'active')
-    ->get();
-
-// ❌ BAD: Select everything (loads unnecessary columns)
-$markets = Market::all();
-
-// ❌ BAD: N+1 query problem
-$markets = Market::all();
-foreach ($markets as $market) {
-    echo $market->creator->name; // N queries!
+try {
+    // ...
+} catch (\Throwable $exception) {
+    Log::error('Profile update failed', ['error' => $exception->getMessage()]);
+    throw $exception;
 }
 ```
 
 ## Testing Standards
 
-### PestPHP Test Structure (Backend)
+- Backend tests use Pest.
+- Add/update focused tests for changed behavior (validation, authorization, mutation paths).
+- Run the smallest relevant test set first; expand if needed.
 
-```php
-// ✅ GOOD: Clear test with AAA pattern
-it('creates a market with options', function () {
-    // Arrange
-    $user = User::factory()->create();
-    $data = [
-        'name' => 'Election 2024',
-        'description' => 'Presidential election market',
-        'category' => 'politics',
-        'options' => [
-            ['name' => 'Candidate A'],
-            ['name' => 'Candidate B'],
-        ]
-    ];
-
-    // Act
-    $response = actingAs($user)->post('/markets', $data);
-
-    // Assert
-    $response->assertRedirect();
-    expect(Market::count())->toBe(1);
-    expect(Market::first()->options)->toHaveCount(2);
-});
-
-// ✅ GOOD: Test with authorization check
-it('prevents unauthorized users from deleting markets', function () {
-    $market = Market::factory()->create();
-    $otherUser = User::factory()->create();
-
-    actingAs($otherUser)
-        ->delete("/markets/{$market->id}")
-        ->assertForbidden();
-
-    expect(Market::count())->toBe(1);
-});
+```bash
+php artisan test --compact tests/Feature/Settings/ProfileUpdateTest.php
 ```
 
-### Vitest Test Structure (Frontend)
+## Formatting and Tooling
 
-```typescript
-// ✅ GOOD: Vue component test
-import { mount } from '@vue/test-utils';
-import MarketCard from '@/components/MarketCard.vue';
+- For PHP changes, run Pint on changed files:
 
-describe('MarketCard', () => {
-    it('renders market information correctly', () => {
-        // Arrange
-        const market = {
-            id: 1,
-            name: 'Test Market',
-            status: 'active',
-        };
-
-        // Act
-        const wrapper = mount(MarketCard, {
-            props: { market },
-        });
-
-        // Assert
-        expect(wrapper.text()).toContain('Test Market');
-        expect(wrapper.text()).toContain('active');
-    });
-});
+```bash
+vendor/bin/pint --dirty --format agent
 ```
 
-### Test Naming
+- Run ESLint/Prettier only when configured and relevant to touched frontend files.
+- Avoid broad auto-fix runs that create unrelated diffs.
 
-```php
-// ✅ GOOD: Descriptive test names (PestPHP)
-it('returns only active markets when status filter is applied', function () { });
-it('throws validation error when market name is too short', function () { });
-it('prevents users from editing markets they do not own', function () { });
+## Anti-Patterns to Avoid
 
-// ❌ BAD: Vague test names
-it('works', function () { });
-it('test market', function () { });
-```
+- Changing architecture during small feature/fix work.
+- Introducing new dependencies without explicit approval.
+- Writing create/update flows with unvalidated mass assignment.
+- Mixing unrelated refactors into focused fixes.
+- Rewriting module style (Options API vs script setup) without need.
 
-## Code Smell Detection
+---
 
-Watch for these anti-patterns:
-
-### 1. Long Functions/Methods
-
-```php
-// ❌ BAD: Controller method > 50 lines
-public function store(Request $request)
-{
-    // 100 lines of business logic, validation, database operations
-}
-
-// ✅ GOOD: Extract to service layer
-public function store(StoreMarketRequest $request): RedirectResponse
-{
-    $market = $this->marketService->create($request->validated());
-    return redirect()->route('markets.show', $market);
-}
-```
-
-### 2. Deep Nesting
-
-```php
-// ❌ BAD: 5+ levels of nesting
-if ($user) {
-    if ($user->is_admin) {
-        if ($market) {
-            if ($market->isActive()) {
-                if (Gate::allows('update', $market)) {
-                    // Do something
-                }
-            }
-        }
-    }
-}
-
-// ✅ GOOD: Early returns
-if (!$user) {
-    abort(401);
-}
-
-if (!$user->is_admin) {
-    abort(403);
-}
-
-if (!$market || !$market->isActive()) {
-    abort(404);
-}
-
-Gate::authorize('update', $market);
-
-// Do something
-```
-
-### 3. Magic Numbers
-
-```php
-// ❌ BAD: Unexplained numbers
-if ($retryCount > 3) { }
-sleep(5);
-
-// ✅ GOOD: Named constants
-private const MAX_RETRIES = 3;
-private const RETRY_DELAY_SECONDS = 5;
-
-if ($retryCount > self::MAX_RETRIES) { }
-sleep(self::RETRY_DELAY_SECONDS);
-```
-
-### 4. Missing Type Declarations
-
-```php
-// ❌ BAD: No types (PHP 8.2+)
-public function calculateTotal($items)
-{
-    return array_sum($items);
-}
-
-// ✅ GOOD: Full type declarations
-public function calculateTotal(array $items): float
-{
-    return array_sum($items);
-}
-```
-
-### 5. Fat Models
-
-```php
-// ❌ BAD: Model with business logic (>200 lines)
-class Market extends Model
-{
-    // 50 methods with complex business logic
-}
-
-// ✅ GOOD: Extract to service or repository
-class Market extends Model
-{
-    // Only relationships, scopes, accessors, mutators
-}
-
-class MarketService
-{
-    // Business logic here
-}
-```
-
-## Laravel-Specific Best Practices
-
-### 1. Use Route Model Binding
-
-```php
-// ✅ GOOD: Automatic model resolution
-public function show(Market $market): Response
-{
-    return Inertia::render('Markets/Show', compact('market'));
-}
-
-// ❌ BAD: Manual lookup
-public function show($id)
-{
-    $market = Market::findOrFail($id);
-    return Inertia::render('Markets/Show', compact('market'));
-}
-```
-
-### 2. Use Policies for Authorization
-
-```php
-// ✅ GOOD: Policy check
-public function update(UpdateMarketRequest $request, Market $market): RedirectResponse
-{
-    $this->authorize('update', $market);
-
-    $market->update($request->validated());
-    return back();
-}
-
-// ❌ BAD: Manual permission check
-public function update(Request $request, Market $market)
-{
-    if ($market->creator_id !== auth()->id()) {
-        abort(403);
-    }
-}
-```
-
-### 3. Use Database Transactions
-
-```php
-// ✅ GOOD: Transaction for multi-step operations
-public function create(array $data): Market
-{
-    return DB::transaction(function () use ($data) {
-        $market = Market::create($data);
-        $market->options()->createMany($data['options']);
-        return $market;
-    });
-}
-
-// ❌ BAD: No transaction protection
-public function create(array $data)
-{
-    $market = Market::create($data);
-    $market->options()->createMany($data['options']); // Could fail!
-    return $market;
-}
-```
-
-**Remember**: Code quality is not negotiable. Clear, maintainable code enables rapid development and confident refactoring.
-
-**Stack**: Laravel 12 (PHP 8.2+) + Vue 3 Options API + Inertia.js 2 + MySQL 8 + TypeScript
+**Remember**: Prioritize correctness, security, and consistency with touched-module conventions. Default to Vue Options API for new work, and keep changes small, explicit, and testable.
