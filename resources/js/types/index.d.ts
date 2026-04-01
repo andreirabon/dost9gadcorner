@@ -26,6 +26,15 @@ export interface ProjectItem {
     backgroundImage?: string;
 }
 
+export interface YearItem {
+    id: number;
+    year: string;
+    href: string;
+    colorTheme?: 'violet' | 'purple' | 'indigo';
+    description?: string;
+    backgroundImage?: string;
+}
+
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     name: string;
     quote: { message: string; author: string };

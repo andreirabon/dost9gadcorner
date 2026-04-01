@@ -4,7 +4,7 @@ defineOptions({
 });
 
 defineEmits<{
-    scrollToProjects: [];
+    scrollToYears: [];
     scrollToNews: [];
 }>();
 </script>
@@ -13,26 +13,26 @@ defineEmits<{
     <section
         v-once
         aria-labelledby="hero-heading"
-        class="min-h-screen-safe pt-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
+        class="min-h-screen min-h-screen-safe pt-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
     >
         <!-- Left side decorative illustrations -->
         <div
             aria-hidden="true"
-            class="pointer-events-none absolute top-[10%] left-[1%] hidden w-1/4 max-w-xs items-center justify-center pl-2 sm:flex sm:pl-4 md:pl-6 lg:pl-8"
+            class="pointer-events-none absolute top-[12%] left-[2%] flex w-20 items-center justify-center sm:w-28 md:w-32 lg:w-40"
         >
-            <img src="/svg/gendericon.svg" alt="" class="block h-auto w-full opacity-90" loading="lazy" decoding="async" />
+            <img src="/svg/gendericon.svg" alt="" class="block h-auto w-full opacity-70 sm:opacity-90" loading="lazy" decoding="async" />
         </div>
 
         <!-- Right side decorative illustration -->
         <div
             aria-hidden="true"
-            class="pointer-events-none absolute top-[36%] right-[1%] hidden w-1/4 max-w-xs items-center justify-center pr-2 sm:flex sm:pr-4 md:pr-6 lg:pr-8"
+            class="pointer-events-none absolute top-[30%] right-[2%] flex w-20 items-center justify-center sm:w-28 md:w-32 lg:w-40"
         >
-            <img src="/svg/development1.svg" alt="" class="block h-auto w-full opacity-90" loading="lazy" decoding="async" />
+            <img src="/svg/development1.svg" alt="" class="block h-auto w-full opacity-70 sm:opacity-90" loading="lazy" decoding="async" />
         </div>
         <div class="absolute inset-0 -z-10 overflow-hidden">
             <!-- Subtle single-hue atmospheric background (purple) -->
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,theme(colors.purple.400)/25%,transparent_70%)]" />
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,var(--color-purple-400)/25%,transparent_70%)]" />
         </div>
 
         <!-- Hero textual content -->
@@ -49,13 +49,13 @@ defineEmits<{
                 />
             </div>
             <p
-                class="inline-block rounded-full border border-cyan-300/50 bg-cyan-800/50 bg-gradient-to-r from-[#47BACD] to-[#44B4C8] bg-clip-text px-3 py-1 text-sm font-normal tracking-wide text-transparent shadow-sm sm:px-4 sm:text-base"
+                class="inline-block rounded-full border border-cyan-300/50 bg-cyan-800/50 bg-linear-to-r from-[#47BACD] to-[#44B4C8] bg-clip-text px-3 py-1 text-sm font-normal tracking-wide text-transparent shadow-sm sm:px-4 sm:text-base"
             >
                 Department of Science and Technology Region IX
             </p>
             <h1
                 id="hero-heading"
-                class="m-0 bg-gradient-to-r from-purple-100 via-fuchsia-300 to-pink-200 bg-clip-text px-4 text-3xl leading-tight font-semibold tracking-tight text-transparent sm:px-0 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
+                class="glow-text m-0 bg-linear-to-r from-purple-100 via-fuchsia-300 to-pink-200 bg-clip-text px-4 text-3xl leading-tight font-semibold tracking-tight text-transparent sm:px-0 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
             >
                 Gender and Development
             </h1>
@@ -65,11 +65,11 @@ defineEmits<{
             <div class="flex flex-col items-center justify-center gap-3 px-4 pt-2 sm:flex-row sm:gap-4">
                 <button
                     type="button"
-                    @click="$emit('scrollToProjects')"
-                    aria-label="Scroll to projects section"
+                    @click="$emit('scrollToYears')"
+                    aria-label="Scroll to yearly reports section"
                     class="group touch-target tap-highlight-none inline-flex w-full items-center justify-center gap-2 rounded-md bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:outline-none sm:w-auto sm:text-base"
                 >
-                    View Projects
+                    Years
                     <span aria-hidden="true">↓</span>
                 </button>
                 <button
@@ -95,3 +95,23 @@ defineEmits<{
         </div>
     </section>
 </template>
+
+<style scoped>
+.glow-text {
+    filter: drop-shadow(0 0 25px rgba(232, 121, 249, 0.5)) drop-shadow(0 0 50px rgba(168, 85, 247, 0.3)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.2));
+    animation: glow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+    0%,
+    100% {
+        filter: drop-shadow(0 0 20px rgba(232, 121, 249, 0.4)) drop-shadow(0 0 40px rgba(168, 85, 247, 0.25)) drop-shadow(0 0 70px rgba(139, 92, 246, 0.15));
+    }
+    33% {
+        filter: drop-shadow(0 0 28px rgba(232, 121, 249, 0.55)) drop-shadow(0 0 55px rgba(168, 85, 247, 0.4)) drop-shadow(0 0 90px rgba(139, 92, 246, 0.25));
+    }
+    66% {
+        filter: drop-shadow(0 0 24px rgba(232, 121, 249, 0.5)) drop-shadow(0 0 48px rgba(168, 85, 247, 0.35)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.2));
+    }
+}
+</style>

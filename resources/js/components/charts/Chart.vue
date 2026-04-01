@@ -153,7 +153,9 @@ onMounted(createChart);
 
 onUnmounted(() => {
     if (chartInstance.value) {
+        chartInstance.value.stop();
         chartInstance.value.destroy();
+        chartInstance.value = null;
     }
 });
 </script>

@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import HeroSection from '@/components/HeroSection.vue';
-import NewsUpdates from '@/components/NewsUpdates.vue';
-import ProjectsSection from '@/components/ProjectsSection.vue';
+import YearlySection from '@/components/YearlySection.vue';
 import { Head } from '@inertiajs/vue3';
 
 defineOptions({
     name: 'IndexPage',
 });
 
-const scrollToProjects = (): void => {
-    const section = document.getElementById('projects');
+const scrollToYears = (): void => {
+    const section = document.getElementById('yearly');
     if (!section) return;
     window.scrollTo({ top: section.offsetTop, behavior: 'smooth' });
     // 600ms aligns with the CSS scroll-behavior transition duration
@@ -35,8 +34,7 @@ const scrollToNews = (): void => {
     <Head title="GAD Corner" />
 
     <div class="inter-font mobile-optimized bg-purple-950 text-white">
-        <HeroSection @scroll-to-projects="scrollToProjects" @scroll-to-news="scrollToNews" />
-        <NewsUpdates />
-        <ProjectsSection />
+        <HeroSection @scroll-to-years="scrollToYears" @scroll-to-news="scrollToNews" />
+        <YearlySection />
     </div>
 </template>
