@@ -13,12 +13,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(ReportLookupSeeder::class);
+        $this->call(ReportYear2025Seeder::class);
 
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::query()->firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => 'password',
+            ],
+        );
     }
 }

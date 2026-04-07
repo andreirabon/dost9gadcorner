@@ -2,7 +2,8 @@
 import HeroSection from '@/components/HeroSection.vue';
 import YearlySection from '@/components/YearlySection.vue';
 import type { YearItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface Props {
     years: YearItem[];
@@ -12,6 +13,12 @@ defineProps<Props>();
 
 defineOptions({
     name: 'IndexPage',
+});
+
+const page = usePage();
+
+const reportManagementHref = computed(() => {
+    return page.props.auth?.user ? route('report-years.index') : null;
 });
 
 const scrollToYears = (): void => {
@@ -41,7 +48,11 @@ const scrollToNews = (): void => {
     <Head title="GAD Corner" />
 
     <div class="inter-font mobile-optimized bg-purple-950 text-white">
-        <HeroSection @scroll-to-years="scrollToYears" @scroll-to-news="scrollToNews" />
+        <HeroSection
+            :report-management-href="reportManagementHref"
+            @scroll-to-years="scrollToYears"
+            @scroll-to-news="scrollToNews"
+        />
         <YearlySection :years="years" />
     </div>
 </template>

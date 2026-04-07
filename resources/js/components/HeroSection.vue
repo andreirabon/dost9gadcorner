@@ -1,7 +1,13 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+
 defineOptions({
     name: 'HeroSection',
 });
+
+defineProps<{
+    reportManagementHref?: string | null;
+}>();
 
 defineEmits<{
     scrollToYears: [];
@@ -15,6 +21,15 @@ defineEmits<{
         aria-labelledby="hero-heading"
         class="min-h-screen min-h-screen-safe pt-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
     >
+        <div v-if="reportManagementHref" class="absolute top-4 right-4 z-20 sm:top-6 sm:right-6">
+            <Link
+                :href="reportManagementHref"
+                class="inline-flex items-center gap-2 rounded-full border border-cyan-300/70 bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-colors duration-200 hover:bg-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+                Manage Reports
+                <span aria-hidden="true">→</span>
+            </Link>
+        </div>
         <!-- Left side decorative illustrations -->
         <div
             aria-hidden="true"
@@ -72,7 +87,7 @@ defineEmits<{
                     Years
                     <span aria-hidden="true">↓</span>
                 </button>
-                <button
+                <!-- <button
                     type="button"
                     @click="$emit('scrollToNews')"
                     aria-label="Scroll to news section"
@@ -80,7 +95,15 @@ defineEmits<{
                 >
                     View News
                     <span aria-hidden="true">↓</span>
-                </button>
+                </button> -->
+                <Link
+                    v-if="reportManagementHref"
+                    :href="reportManagementHref"
+                    class="group touch-target tap-highlight-none inline-flex w-full items-center justify-center gap-2 rounded-md border border-cyan-300/60 bg-cyan-700/40 px-6 py-3 text-sm font-medium text-cyan-50 shadow-lg hover:bg-cyan-600/60 focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:outline-none sm:w-auto sm:text-base"
+                >
+                    Manage Reports
+                    <span aria-hidden="true">→</span>
+                </Link>
             </div>
         </div>
         <!-- Center bottom layered illustration -->

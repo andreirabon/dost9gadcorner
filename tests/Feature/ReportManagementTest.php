@@ -12,6 +12,11 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
+test('guest user is redirected to the homepage when opening report management', function () {
+    $this->get('/report-years')
+        ->assertRedirect('/');
+});
+
 test('authenticated user can create a report year shell', function () {
     $this->seed(ReportLookupSeeder::class);
 
