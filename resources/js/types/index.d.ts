@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-vue-next';
 import type { Config } from 'ziggy-js';
+import type { ReportYearData } from './reports';
 
 export interface Auth {
     user: User;
@@ -33,6 +34,8 @@ export interface YearItem {
     colorTheme?: 'violet' | 'purple' | 'indigo';
     description?: string;
     backgroundImage?: string;
+    status?: 'pending' | 'published';
+    reportData?: ReportYearData | null;
 }
 
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {

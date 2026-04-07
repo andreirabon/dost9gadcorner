@@ -20,6 +20,13 @@ const yearTheme = computed(() => {
             focus: 'focus-visible:ring-violet-400',
             hover: 'from-violet-500/40 to-purple-600/40',
         },
+        '2026': {
+            border: 'border-indigo-400/40',
+            bg: 'bg-gradient-to-br from-indigo-600/30 to-blue-800/30',
+            text: 'text-indigo-100',
+            focus: 'focus-visible:ring-indigo-400',
+            hover: 'from-indigo-500/40 to-blue-700/40',
+        },
         default: {
             border: 'border-purple-400/40',
             bg: 'bg-gradient-to-br from-purple-600/30 to-indigo-700/30',

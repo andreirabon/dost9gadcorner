@@ -5,6 +5,10 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    build: {
+        // ApexCharts minifies to ~520 kB; default 500 kB warning is noisy for legitimate heavy vendors.
+        chunkSizeWarningLimit: 640,
+    },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'resources/js'),

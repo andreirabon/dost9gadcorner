@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import YearCard from '@/components/YearCard.vue';
 import YearModal from '@/components/YearModal.vue';
-import { years } from '@/data/years';
 import type { YearItem } from '@/types';
 import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
 
 defineOptions({
     name: 'YearlySection',
 });
+
+defineProps<{
+    years: YearItem[];
+}>();
 
 const selectedYear = shallowRef<YearItem | null>(null);
 const isModalOpen = ref(false);
@@ -71,7 +74,11 @@ onUnmounted(() => {
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 gap-2.5 px-3 sm:grid-cols-2 sm:gap-3 sm:px-4 lg:grid-cols-3 lg:gap-4">
+            <div v-if="years.length === 0" class="rounded-xl bg-white/10 p-8 text-center text-sm text-purple-100 shadow-sm">
+                No yearly reports have been added yet.
+            </div>
+
+            <div v-else class="grid grid-cols-1 gap-2.5 px-3 sm:grid-cols-2 sm:gap-3 sm:px-4 lg:grid-cols-3 lg:gap-4">
                 <YearCard v-for="year in years" :key="year.id" v-memo="[year.id]" :year="year" @click="openYearModal" />
             </div>
         </div>

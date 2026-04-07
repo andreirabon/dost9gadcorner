@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import HeroSection from '@/components/HeroSection.vue';
 import YearlySection from '@/components/YearlySection.vue';
+import type { YearItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
+
+interface Props {
+    years: YearItem[];
+}
+
+defineProps<Props>();
 
 defineOptions({
     name: 'IndexPage',
@@ -35,6 +42,6 @@ const scrollToNews = (): void => {
 
     <div class="inter-font mobile-optimized bg-purple-950 text-white">
         <HeroSection @scroll-to-years="scrollToYears" @scroll-to-news="scrollToNews" />
-        <YearlySection />
+        <YearlySection :years="years" />
     </div>
 </template>
