@@ -498,6 +498,29 @@
     .right-safe {
         right: env(safe-area-inset-right);
     }
+
+    /**
+     * Horizontal page gutter: respects notch / home-indicator side insets on phones and tablets.
+     * Use on full-bleed marketing sections (GAD Corner index) instead of raw px-4 alone.
+     */
+    .px-page-gutter {
+        padding-left: max(1rem, env(safe-area-inset-left, 0px));
+        padding-right: max(1rem, env(safe-area-inset-right, 0px));
+    }
+
+    @media (min-width: 640px) {
+        .px-page-gutter {
+            padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+            padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .px-page-gutter {
+            padding-left: max(2rem, env(safe-area-inset-left, 0px));
+            padding-right: max(2rem, env(safe-area-inset-right, 0px));
+        }
+    }
 }
 
 /* Mobile Touch Optimizations */

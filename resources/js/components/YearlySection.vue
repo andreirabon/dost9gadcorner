@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IndexSectionDecor from '@/components/IndexSectionDecor.vue';
 import YearCard from '@/components/YearCard.vue';
 import YearModal from '@/components/YearModal.vue';
 import type { YearItem } from '@/types';
@@ -46,10 +47,11 @@ onUnmounted(() => {
 <template>
     <section
         id="yearly"
-        class="relative min-h-screen border-t border-purple-700/60 bg-purple-900/60 px-4 pt-20 pb-8 sm:pt-24 md:pt-28 md:pb-10 lg:pt-32"
+        class="relative isolate min-h-screen border-t border-purple-500/45 bg-linear-to-b from-purple-900/75 via-violet-950/55 to-purple-950/90 px-page-gutter pt-20 pb-8 sm:pt-24 md:pt-28 md:pb-10 lg:pt-32"
         aria-labelledby="yearly-heading"
     >
-        <div class="mx-auto w-full max-w-6xl">
+        <IndexSectionDecor variant="yearly" />
+        <div class="relative z-10 mx-auto w-full max-w-6xl">
             <div class="mb-5 flex flex-col items-center gap-2 text-center sm:mb-6 md:mb-8">
                 <div class="mb-2 flex justify-center sm:mb-3">
                     <img
@@ -74,7 +76,10 @@ onUnmounted(() => {
                 </p>
             </div>
 
-            <div v-if="years.length === 0" class="rounded-xl bg-white/10 p-8 text-center text-sm text-purple-100 shadow-sm">
+            <div
+                v-if="years.length === 0"
+                class="rounded-xl border border-purple-400/25 bg-purple-900/50 p-8 text-center text-sm text-purple-100 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
+            >
                 No yearly reports have been added yet.
             </div>
 

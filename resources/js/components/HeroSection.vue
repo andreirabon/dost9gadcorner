@@ -9,19 +9,26 @@ defineProps<{
     reportManagementHref?: string | null;
 }>();
 
+/** Inline noise tile for hero backdrop (matches IndexSectionDecor). */
+const heroNoiseDataUrl =
+    'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'128\' height=\'128\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'128\' height=\'128\' filter=\'url(%23n)\' opacity=\'0.5\'/%3E%3C/svg%3E")';
+
 defineEmits<{
     scrollToYears: [];
     scrollToNews: [];
+    scrollToOrgChart: [];
 }>();
 </script>
 
 <template>
     <section
-        v-once
         aria-labelledby="hero-heading"
         class="min-h-screen min-h-screen-safe pt-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
     >
-        <div v-if="reportManagementHref" class="absolute top-4 right-4 z-20 sm:top-6 sm:right-6">
+        <div
+            v-if="reportManagementHref"
+            class="absolute top-[max(1rem,env(safe-area-inset-top,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-20 sm:top-[max(1.5rem,env(safe-area-inset-top,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]"
+        >
             <Link
                 :href="reportManagementHref"
                 class="inline-flex items-center gap-2 rounded-full border border-cyan-300/70 bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-colors duration-200 hover:bg-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -48,6 +55,27 @@ defineEmits<{
         <div class="absolute inset-0 -z-10 overflow-hidden">
             <!-- Subtle single-hue atmospheric background (purple) -->
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,var(--color-purple-400)/25%,transparent_70%)]" />
+            <div
+                aria-hidden="true"
+                class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-size-[40px_40px] opacity-80"
+            />
+            <div
+                aria-hidden="true"
+                class="absolute inset-0 mix-blend-soft-light opacity-[0.04]"
+                :style="{ backgroundImage: heroNoiseDataUrl }"
+            />
+            <div
+                aria-hidden="true"
+                class="absolute top-[20%] -left-[20%] h-[28rem] w-[28rem] rounded-full bg-cyan-400/12 blur-3xl sm:-left-[10%]"
+            />
+            <div
+                aria-hidden="true"
+                class="absolute top-[35%] -right-[18%] h-[26rem] w-[26rem] rounded-full bg-fuchsia-500/14 blur-3xl sm:-right-[8%]"
+            />
+            <div
+                aria-hidden="true"
+                class="absolute bottom-[-5%] left-[25%] h-[22rem] w-[22rem] rounded-full bg-violet-500/12 blur-3xl"
+            />
         </div>
 
         <!-- Hero textual content -->
@@ -77,7 +105,7 @@ defineEmits<{
             <p class="text-responsive mx-auto max-w-2xl px-4 leading-relaxed text-pretty text-purple-100 sm:px-6">
                 Discover how our projects drive gender equality, women's empowerment, and inclusive development through science and technology.
             </p>
-            <div class="flex flex-col items-center justify-center gap-3 px-4 pt-2 sm:flex-row sm:gap-4">
+            <div class="flex flex-col items-center justify-center gap-3 px-4 pt-2 sm:flex-row sm:flex-wrap sm:gap-4">
                 <button
                     type="button"
                     @click="$emit('scrollToYears')"
@@ -87,6 +115,7 @@ defineEmits<{
                     Years
                     <span aria-hidden="true">↓</span>
                 </button>
+
                 <!-- <button
                     type="button"
                     @click="$emit('scrollToNews')"
