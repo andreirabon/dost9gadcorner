@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import GadStrategicFrameworkSection from '@/components/GadStrategicFrameworkSection.vue';
-import HeroSection from '@/components/HeroSection.vue';
-import OrganizationalChartSection from '@/components/OrganizationalChartSection.vue';
-import YearlySection from '@/components/YearlySection.vue';
+import GadStrategicFrameworkSection from '@/components/home/GadStrategicFrameworkSection.vue';
+import HeroSection from '@/components/home/HeroSection.vue';
+import OrganizationalChartSection from '@/components/home/OrganizationalChartSection.vue';
+import YearlySection from '@/components/home/YearlySection.vue';
+import AppFooter from '@/components/layout/AppFooter.vue';
 import type { YearItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
@@ -20,25 +21,13 @@ defineOptions({
 const page = usePage();
 
 const reportManagementHref = computed(() => {
-    return page.props.auth?.user ? route('report-years.index') : null;
+    return page.props.auth?.user?.is_admin ? route('report-years.index') : null;
 });
 
 const scrollToYears = (): void => {
     const section = document.getElementById('yearly');
     if (!section) return;
     window.scrollTo({ top: section.offsetTop, behavior: 'smooth' });
-    // 600ms aligns with the CSS scroll-behavior transition duration
-    setTimeout(() => {
-        const focusable = section.querySelector<HTMLHeadingElement>('[data-focus-anchor="true"]');
-        focusable?.focus({ preventScroll: true });
-    }, 600);
-};
-
-const scrollToNews = (): void => {
-    const section = document.getElementById('news-updates');
-    if (!section) return;
-    window.scrollTo({ top: section.offsetTop, behavior: 'smooth' });
-    // 600ms aligns with the CSS scroll-behavior transition duration
     setTimeout(() => {
         const focusable = section.querySelector<HTMLHeadingElement>('[data-focus-anchor="true"]');
         focusable?.focus({ preventScroll: true });
@@ -59,22 +48,19 @@ const scrollToOrgChart = (): void => {
 <template>
     <Head title="GAD Corner" />
 
-    <div
-        class="inter-font mobile-optimized min-w-0 bg-linear-to-b from-purple-950 via-violet-950/40 to-purple-950 pb-safe text-white"
-    >
-        <HeroSection
-            :report-management-href="reportManagementHref"
-            @scroll-to-years="scrollToYears"
-            @scroll-to-news="scrollToNews"
-            @scroll-to-org-chart="scrollToOrgChart"
-        />
-        <!-- Spacer: extra scroll distance after the hero so GAD ScrollTrigger scrub / parallax can ramp up. -->
+    <div class="inter-font mobile-optimized flex min-h-screen min-w-0 flex-col">
         <div
-            class="h-[12vh] min-h-14 shrink-0 bg-linear-to-b from-transparent via-purple-950/30 to-purple-950/80 sm:h-[15vh] sm:min-h-16 md:h-[18vh]"
-            aria-hidden="true"
-        />
-        <GadStrategicFrameworkSection />
-        <OrganizationalChartSection />
-        <YearlySection :years="years" />
+            class="pb-safe min-w-0 flex-1 bg-linear-to-b from-purple-950 via-violet-950/45 to-purple-950 text-white [color-scheme:dark]"
+        >
+            <HeroSection :report-management-href="reportManagementHref" @scroll-to-years="scrollToYears" @scroll-to-org-chart="scrollToOrgChart" />
+            <div
+                class="h-[12vh] min-h-14 shrink-0 bg-linear-to-b from-transparent via-violet-950/35 to-purple-950 sm:h-[15vh] sm:min-h-16 md:h-[18vh]"
+                aria-hidden="true"
+            />
+            <GadStrategicFrameworkSection />
+            <OrganizationalChartSection />
+            <YearlySection :years="years" />
+        </div>
+        <AppFooter />
     </div>
 </template>

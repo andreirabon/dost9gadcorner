@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 
-import DeleteUser from '@/components/DeleteUser.vue';
-import HeadingSmall from '@/components/HeadingSmall.vue';
-import InputError from '@/components/InputError.vue';
+import DeleteUser from '@/components/settings/DeleteUser.vue';
+import HeadingSmall from '@/components/shared/HeadingSmall.vue';
+import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +26,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 ];
 
 const page = usePage();
-const user = page.props.auth.user as User;
+const user = page.props.auth.user! as User;
 
 const form = useForm({
     name: user.name,

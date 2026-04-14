@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ReportYear;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -9,7 +10,10 @@ class UpdateScholarshipSummaryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        /** @var ReportYear $reportYear */
+        $reportYear = $this->route('reportYear');
+
+        return $this->user()?->can('update', $reportYear) ?? false;
     }
 
     /**

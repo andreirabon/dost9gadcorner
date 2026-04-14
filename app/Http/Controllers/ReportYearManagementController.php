@@ -29,6 +29,8 @@ class ReportYearManagementController extends Controller
 {
     public function index(): Response
     {
+        $this->authorize('viewAny', ReportYear::class);
+
         return Inertia::render('reports/Index', [
             'reportYears' => ReportYear::query()
                 ->orderByDesc('year')
@@ -58,6 +60,8 @@ class ReportYearManagementController extends Controller
 
     public function edit(ReportYear $reportYear): Response
     {
+        $this->authorize('view', $reportYear);
+
         $reportYear->load([
             'gfpsMembershipSummary',
             'gfpsAssemblyAttendances',

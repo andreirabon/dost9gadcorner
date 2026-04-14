@@ -17,12 +17,20 @@ test('guest user is redirected to the homepage when opening report management', 
         ->assertRedirect('/');
 });
 
+test('non-admin user cannot access report management', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+
+    $this->actingAs($user)
+        ->get('/report-years')
+        ->assertForbidden();
+});
+
 test('authenticated user can create a report year shell', function () {
     $this->seed(ReportLookupSeeder::class);
 
     $user = User::factory()->create();
 
-    $this->actingAs($user)
+    $response = $this->actingAs($user)
         ->post('/report-years', [
             'year' => 2027,
             'title' => '2027 report',
@@ -30,8 +38,11 @@ test('authenticated user can create a report year shell', function () {
             'status' => ReportYear::STATUS_PUBLISHED,
             'color_theme' => 'indigo',
             'background_image' => '/svg/reports.svg',
-        ])
-        ->assertRedirect('/report-years/1/edit');
+        ]);
+
+    $reportYear = ReportYear::query()->where('year', 2027)->firstOrFail();
+
+    $response->assertRedirect(route('report-years.edit', $reportYear, false));
 
     $this->assertDatabaseHas('report_years', [
         'year' => 2027,

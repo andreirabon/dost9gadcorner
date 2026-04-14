@@ -76,6 +76,10 @@ These migration files created the database structure:
 - `database/migrations/2026_04_07_012657_create_report_lookup_tables.php`
 - `database/migrations/2026_04_07_012658_create_report_fact_tables.php`
 
+A later migration adds **who may manage** yearly reports at the account level:
+
+- `database/migrations/2026_04_14_000001_add_is_admin_to_users_table.php` — adds `users.is_admin` (boolean, default `true` so existing accounts keep access until you flip the flag).
+
 ## Parent Table
 
 ### `report_years`
@@ -104,6 +108,18 @@ Why it exists:
 Important rule:
 
 - `year` is unique, so only one `2025` report can exist.
+
+## Users table and who can edit reports
+
+Report-year **data** lives in the tables above, but **editing** that data is restricted in the application to **admin users**.
+
+The `users` table (from `0001_01_01_000000_create_users_table.php`) gained:
+
+- `is_admin` — `boolean`; when `true`, the user may list, create, and update `report_years` and related fact rows (enforced by `App\Policies\ReportYearPolicy` and form requests). When `false`, those routes return **403**.
+
+This flag is application authorization, not a foreign key on `report_years`. There is no `created_by` on yearly report rows in the current schema; access is “any admin can edit any year.”
+
+For local/testing, `database/factories/UserFactory.php` defaults `is_admin` to `true`, and `database/seeders/DatabaseSeeder.php` sets `is_admin` on the seeded demo user so migrations + seed still allow report management out of the box.
 
 ## Lookup Tables
 
@@ -420,9 +436,10 @@ The modal no longer depends on hard-coded yearly values. It now depends on `repo
 
 ## How The Management Side Was Prepared
 
-The project also includes report maintenance scaffolding for future manual entry:
+The project also includes report maintenance scaffolding for manual entry:
 
-- `app/Http/Controllers/ReportYearManagementController.php`
+- `app/Http/Controllers/ReportYearManagementController.php` — `index` / `edit` call `$this->authorize(...)`; mutations go through form requests below.
+- `app/Policies/ReportYearPolicy.php` — `viewAny`, `view`, `create`, `update`, `delete` require `auth` user with `is_admin === true`.
 - `app/Http/Requests/StoreReportYearRequest.php`
 - `app/Http/Requests/UpdateReportYearRequest.php`
 - `app/Http/Requests/UpdateGfpsMembershipSummaryRequest.php`
@@ -432,12 +449,18 @@ The project also includes report maintenance scaffolding for future manual entry
 - `app/Http/Requests/UpdateRstlMonthlyBreakdownsRequest.php`
 - `app/Http/Requests/UpdateProgramFundingSummariesRequest.php`
 
-Frontend maintenance pages were also added:
+Each update request’s `authorize()` checks the policy against the route’s `reportYear` (or `create` for new years).
+
+Routes live in `routes/web.php` under `Route::middleware('auth')->prefix('report-years')->...` so only signed-in users hit the controller; the policy then enforces admin.
+
+Frontend maintenance pages:
 
 - `resources/js/pages/reports/Index.vue`
 - `resources/js/pages/reports/Edit.vue`
 
-These pages were designed so future users can update one section at a time.
+The UI shows “Manage Reports” / navigation entries only when `auth.user.is_admin` is true (still call the same APIs; server returns 403 if not admin).
+
+These pages were designed so users can update one section at a time.
 
 ## Commands Used
 
@@ -564,4 +587,5 @@ As a result:
 
 - the database now stores the yearly report structure properly,
 - 2025 lives in MySQL instead of Vue constants,
-- the app is ready for future manual yearly report entry.
+- the app is ready for future manual yearly report entry,
+- admin users (`users.is_admin`) can manage report data through the policy-protected routes; non-admins cannot change yearly report tables via the app.

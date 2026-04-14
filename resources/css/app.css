@@ -5,9 +5,10 @@
 @source '../../storage/framework/views/*.php';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant report-light (&:is(.report-theme-light *));
 
 @theme inline {
-    --font-sans: Instrument Sans, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -85,12 +86,6 @@
 }
 
 @layer utilities {
-    body,
-    html {
-        --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    }
-
     /* Improved mobile readability */
     .mobile-readable {
         font-size: 16px;
@@ -264,13 +259,18 @@
     * {
         @apply border-border outline-ring/50;
     }
+
+    html {
+        @apply font-sans antialiased;
+    }
+
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background font-sans text-foreground antialiased;
     }
 }
 
 .inter-font {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
     font-optical-sizing: auto;
     font-style: normal;
 }

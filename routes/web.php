@@ -2,9 +2,15 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ReportYearManagementController;
+use App\Http\Controllers\ReportYearPublicController;
+use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
+
+Route::get('/reports/{reportYear}', [ReportYearPublicController::class, 'show'])->name('reports.show');
 
 Route::middleware('auth')
     ->prefix('report-years')
@@ -22,4 +28,18 @@ Route::middleware('auth')
         Route::patch('/{reportYear}/program-funding', [ReportYearManagementController::class, 'updateProgramFunding'])->name('program-funding.update');
     });
 
-require __DIR__.'/settings.php';
+Route::middleware('auth')
+    ->prefix('settings')
+    ->name('settings.')
+    ->group(function (): void {
+        Route::redirect('/', '/settings/appearance');
+
+        Route::get('/appearance', fn () => Inertia::render('settings/Appearance'))->name('appearance');
+
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        Route::get('/password', [PasswordController::class, 'edit'])->name('password.edit');
+        Route::put('/password', [PasswordController::class, 'update'])->name('password.update');
+    });

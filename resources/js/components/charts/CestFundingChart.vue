@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useReportChartAppearance } from '@/composables/useReportPageTheme';
+import { reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
@@ -16,9 +18,11 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    title: 'CEST: Number and Amount of Projects Funded',
+    title: '',
 });
 const chartFontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+
+const appearance = useReportChartAppearance();
 
 const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('en-PH', {
@@ -50,143 +54,168 @@ const series = computed(() => [
     },
 ]);
 
-const chartOptions = computed<ApexOptions>(() => ({
-    chart: {
-        type: 'bar',
-        fontFamily: chartFontFamily,
-        foreColor: '#334155',
-        toolbar: { show: false },
-        animations: {
-            enabled: true,
-            speed: 500,
-            easing: 'easeout',
-        },
-    },
-    title: {
-        text: props.title,
-        style: {
-            fontFamily: chartFontFamily,
-            fontSize: '15px',
-            fontWeight: '600',
-            color: '#0F172A',
-        },
-    },
-    colors: ['#2563EB', '#F59E0B'],
-    xaxis: {
-        categories: ['Male', 'Female'],
-        labels: {
-            style: {
-                    fontFamily: chartFontFamily,
-                fontSize: '14px',
-                fontWeight: 700,
-                    colors: '#334155',
-            },
-        },
-    },
-    yaxis: [
-        {
-            min: 0,
-            title: {
-                text: 'Number of Projects',
-                style: {
-                    fontFamily: chartFontFamily,
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    color: '#2563EB',
-                },
-            },
-            labels: {
-                style: {
-                    fontFamily: chartFontFamily,
-                    fontSize: '12px',
-                    colors: ['#64748B'],
-                },
-            },
-        },
-        {
-            opposite: true,
-            min: 0,
-            title: {
-                text: 'Amount (PHP)',
-                style: {
-                    fontFamily: chartFontFamily,
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    color: '#F59E0B',
-                },
-            },
-            labels: {
-                formatter: (value: number) => formatCompactCurrency(value),
-                style: {
-                    fontFamily: chartFontFamily,
-                    fontSize: '11px',
-                    colors: ['#64748B'],
-                },
-            },
-        },
-    ],
-    dataLabels: {
-        enabled: true,
-        formatter: (value: number, options?: { seriesIndex?: number }) => {
-            if (options?.seriesIndex === 1) {
-                return formatCompactCurrency(value);
-            }
+const chartOptions = computed<ApexOptions>(() => {
+    const ui = reportChartUi(appearance.value);
 
-            return `${value}`;
+    return {
+        theme: {
+            mode: ui.themeMode,
         },
-        offsetY: -4,
-        style: {
+        chart: {
+            type: 'bar',
             fontFamily: chartFontFamily,
-            fontSize: '13px',
-            fontWeight: 700,
-            colors: ['#2563EB', '#D97706'],
+            foreColor: ui.foreColor,
+            toolbar: { show: false },
+            offsetY: 0,
+            parentHeightOffset: 0,
+            animations: {
+                enabled: true,
+                speed: 500,
+                easing: 'easeout',
+            },
         },
-    },
-    legend: {
-        position: 'bottom',
-        fontSize: '12px',
-        fontFamily: chartFontFamily,
-        labels: {
-            colors: '#334155',
+        ...(props.title
+            ? {
+                  title: {
+                      text: props.title,
+                      style: {
+                          fontFamily: chartFontFamily,
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: ui.titleColor,
+                      },
+                  },
+              }
+            : {}),
+        colors: ['#F87171', '#60A5FA'],
+        xaxis: {
+            categories: ['Male', 'Female'],
+            labels: {
+                style: {
+                    fontFamily: chartFontFamily,
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    colors: ui.legendColor,
+                },
+            },
         },
-        markers: {
-            width: 10,
-            height: 10,
-            radius: 4,
-        },
-    },
-    tooltip: {
-        shared: true,
-        intersect: false,
-        theme: 'light',
-        y: {
+        yaxis: [
+            {
+                min: 0,
+                title: {
+                    text: 'Number of Projects',
+                    style: {
+                        fontFamily: chartFontFamily,
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: '#EF4444',
+                    },
+                },
+                labels: {
+                    style: {
+                        fontFamily: chartFontFamily,
+                        fontSize: '12px',
+                        colors: [ui.labelMuted],
+                    },
+                },
+            },
+            {
+                opposite: true,
+                min: 0,
+                title: {
+                    text: 'Amount (PHP)',
+                    style: {
+                        fontFamily: chartFontFamily,
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: '#3B82F6',
+                    },
+                },
+                labels: {
+                    formatter: (value: number) => formatCompactCurrency(value),
+                    style: {
+                        fontFamily: chartFontFamily,
+                        fontSize: '11px',
+                        colors: [ui.labelMuted],
+                    },
+                },
+            },
+        ],
+        dataLabels: {
+            enabled: true,
             formatter: (value: number, options?: { seriesIndex?: number }) => {
                 if (options?.seriesIndex === 1) {
-                    return formatCurrency(value);
+                    return formatCompactCurrency(value);
                 }
 
                 return `${value}`;
             },
+            offsetY: -4,
+            style: {
+                fontFamily: chartFontFamily,
+                fontSize: '13px',
+                fontWeight: 700,
+                colors: [ui.dataLabelColor],
+            },
         },
-    },
-    plotOptions: {
-        bar: {
-            borderRadius: 4,
-            columnWidth: '55%',
+        legend: {
+            position: 'top',
+            horizontalAlign: 'center',
+            offsetY: -4,
+            fontSize: '11px',
+            fontFamily: chartFontFamily,
+            itemMargin: {
+                horizontal: 10,
+                vertical: 0,
+            },
+            labels: {
+                colors: ui.legendColor,
+            },
+            markers: {
+                width: 8,
+                height: 8,
+                radius: 2,
+            },
         },
-    },
-    stroke: {
-        width: 1,
-    },
-    grid: {
-        borderColor: '#E2E8F0',
-        xaxis: { lines: { show: false } },
-    },
-}));
+        tooltip: {
+            shared: true,
+            intersect: false,
+            theme: ui.tooltipTheme,
+            y: {
+                formatter: (value: number, options?: { seriesIndex?: number }) => {
+                    if (options?.seriesIndex === 1) {
+                        return formatCurrency(value);
+                    }
+
+                    return `${value}`;
+                },
+            },
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                columnWidth: '55%',
+            },
+        },
+        stroke: {
+            width: 1,
+        },
+        grid: {
+            borderColor: ui.gridBorder,
+            xaxis: { lines: { show: false } },
+            padding: {
+                top: -8,
+                right: 4,
+                bottom: 0,
+                left: 4,
+            },
+        },
+    };
+});
 </script>
 
 <template>
-    <div class="relative h-96 w-full">
+    <div class="relative h-72 w-full sm:h-80">
         <VueApexCharts type="bar" width="100%" height="100%" :options="chartOptions" :series="series" />
     </div>
 </template>

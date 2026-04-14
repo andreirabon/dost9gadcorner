@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import UserInfo from '@/components/UserInfo.vue';
+import UserInfo from '@/components/user/UserInfo.vue';
 import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
@@ -30,7 +30,7 @@ defineProps<Props>();
                 Settings
             </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem :as-child="true">
+        <DropdownMenuItem v-if="user.is_admin" :as-child="true">
             <Link class="block w-full" :href="route('report-years.index')" prefetch as="button">
                 <FileChartColumnIncreasing class="mr-2 h-4 w-4" />
                 Manage Reports

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import AppLogo from '@/components/AppLogo.vue';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import AppLogo from '@/components/layout/AppLogo.vue';
+import AppLogoIcon from '@/components/layout/AppLogoIcon.vue';
+import Breadcrumbs from '@/components/layout/Breadcrumbs.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import UserMenuContent from '@/components/UserMenuContent.vue';
+import UserMenuContent from '@/components/user/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -32,18 +32,24 @@ const activeItemStyles = computed(
     () => (url: string) => (isCurrentRoute.value(url) ? 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : ''),
 );
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Report Years',
-        href: '/report-years',
-        icon: FileChartColumnIncreasing,
-    },
-];
+const mainNavItems = computed((): NavItem[] => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
+    ];
+    if (page.props.auth.user?.is_admin) {
+        items.push({
+            title: 'Report Years',
+            href: '/report-years',
+            icon: FileChartColumnIncreasing,
+        });
+    }
+
+    return items;
+});
 
 const rightNavItems: NavItem[] = [
     {
@@ -161,7 +167,7 @@ const rightNavItems: NavItem[] = [
                         </div>
                     </div>
 
-                    <DropdownMenu>
+                    <DropdownMenu v-if="auth.user">
                         <DropdownMenuTrigger :as-child="true">
                             <Button
                                 variant="ghost"
@@ -171,7 +177,7 @@ const rightNavItems: NavItem[] = [
                                 <Avatar class="size-8 overflow-hidden rounded-full">
                                     <AvatarImage v-if="auth.user.avatar" :src="auth.user.avatar" :alt="auth.user.name" />
                                     <AvatarFallback class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white">
-                                        {{ getInitials(auth.user?.name) }}
+                                        {{ getInitials(auth.user.name) }}
                                     </AvatarFallback>
                                 </Avatar>
                                 <span class="sr-only">Open user menu</span>

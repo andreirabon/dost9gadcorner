@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import IndexSectionDecor from '@/components/IndexSectionDecor.vue';
-import YearCard from '@/components/YearCard.vue';
-import YearModal from '@/components/YearModal.vue';
+import IndexSectionDecor from '@/components/home/IndexSectionDecor.vue';
+import YearCard from '@/components/home/YearCard.vue';
 import type { YearItem } from '@/types';
-import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
 
 defineOptions({
     name: 'YearlySection',
@@ -12,36 +10,6 @@ defineOptions({
 defineProps<{
     years: YearItem[];
 }>();
-
-const selectedYear = shallowRef<YearItem | null>(null);
-const isModalOpen = ref(false);
-
-const openYearModal = (year: YearItem): void => {
-    selectedYear.value = year;
-    isModalOpen.value = true;
-};
-
-const closeYearModal = (): void => {
-    isModalOpen.value = false;
-    // Delay clearing data to allow modal exit animation
-    setTimeout(() => {
-        selectedYear.value = null;
-    }, 300);
-};
-
-const handleKeydown = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && isModalOpen.value) {
-        closeYearModal();
-    }
-};
-
-onMounted(() => {
-    document.addEventListener('keydown', handleKeydown);
-});
-
-onUnmounted(() => {
-    document.removeEventListener('keydown', handleKeydown);
-});
 </script>
 
 <template>
@@ -84,10 +52,8 @@ onUnmounted(() => {
             </div>
 
             <div v-else class="grid grid-cols-1 gap-2.5 px-3 sm:grid-cols-2 sm:gap-3 sm:px-4 lg:grid-cols-3 lg:gap-4">
-                <YearCard v-for="year in years" :key="year.id" v-memo="[year.id]" :year="year" @click="openYearModal" />
+                <YearCard v-for="year in years" :key="year.id" v-memo="[year.id, year.href]" :year="year" />
             </div>
         </div>
     </section>
-
-    <YearModal :year="selectedYear" :is-open="isModalOpen" @close="closeYearModal" />
 </template>

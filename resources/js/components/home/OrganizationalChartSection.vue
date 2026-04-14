@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import D3OrgChartPanel from '@/components/D3OrgChartPanel.vue';
-import IndexSectionDecor from '@/components/IndexSectionDecor.vue';
+import D3OrgChartPanel from '@/components/home/D3OrgChartPanel.vue';
+import IndexSectionDecor from '@/components/home/IndexSectionDecor.vue';
 import { getGfpsNodes, getMoveNodes } from '@/data/organizationalChartData';
 
 defineOptions({
@@ -13,7 +13,7 @@ const moveOrgNodes = getMoveNodes();
 
 /*
  * To restore the previous `<OrgTreeBranch />` layout, add:
- *   import OrgTreeBranch from '@/components/OrgTreeBranch.vue';
+ *   import OrgTreeBranch from '@/components/home/OrgTreeBranch.vue';
  *   import { buildOrgTree, type OrgTreeNode } from '@/data/organizationalChartData';
  *   import { computed } from 'vue';
  *   const gfpsTree = computed((): OrgTreeNode[] => buildOrgTree(gfpsOrgNodes));
@@ -56,9 +56,6 @@ const moveOrgNodes = getMoveNodes();
                         <p class="mt-1 text-sm text-purple-200/80">
                             Scroll up or down with your mouse to zoom; drag to pan. On mobile, pinch to zoom in or out, then drag to move.
                         </p>
-                        <p class="mt-2 text-sm font-medium text-purple-100/95">
-                            Use the + and − buttons on the chart nodes to expand or collapse branches.
-                        </p>
                     </div>
                     <div
                         class="relative overflow-x-auto rounded-2xl border border-purple-400/35 bg-purple-900/55 px-4 py-6 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 sm:px-8 sm:py-8"
@@ -87,9 +84,6 @@ const moveOrgNodes = getMoveNodes();
                         </h3>
                         <p class="mt-1 text-sm text-purple-200/80">
                             Scroll up or down with your mouse to zoom; drag to pan. On mobile, pinch to zoom in or out, then drag to move.
-                        </p>
-                        <p class="mt-2 text-sm font-medium text-purple-100/95">
-                            Use the + and − buttons on the chart nodes to expand or collapse branches.
                         </p>
                     </div>
                     <div

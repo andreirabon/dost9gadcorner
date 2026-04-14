@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import IndexSectionDecor from '@/components/IndexSectionDecor.vue';
+import IndexSectionDecor from '@/components/home/IndexSectionDecor.vue';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
@@ -33,6 +33,11 @@ let ctx: gsap.Context | null = null;
 
 onMounted(async () => {
     await nextTick();
+
+    const scopeRoot = sectionRef.value;
+    if (!scopeRoot) {
+        return;
+    }
 
     ctx = gsap.context(() => {
         if (typeof window === 'undefined') {
@@ -100,7 +105,7 @@ onMounted(async () => {
                 },
             );
         }
-    }, sectionRef);
+    }, scopeRoot);
 
     await nextTick();
     ScrollTrigger.refresh();

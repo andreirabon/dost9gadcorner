@@ -1,8 +1,13 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
+
+test('guest is redirected from settings profile', function () {
+    $this->get('/settings/profile')->assertRedirect('/');
+});
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();

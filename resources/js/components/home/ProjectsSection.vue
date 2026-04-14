@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ProjectCard from '@/components/ProjectCard.vue';
-import ProjectModal from '@/components/ProjectModal.vue';
+import ProjectCard from '@/components/home/ProjectCard.vue';
+import ProjectModal from '@/components/home/ProjectModal.vue';
 import { projects } from '@/data/projects';
 import type { ProjectItem } from '@/types';
 import { onMounted, onUnmounted, ref, shallowRef } from 'vue';

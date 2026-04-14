@@ -3,7 +3,7 @@ import type { Config } from 'ziggy-js';
 import type { ReportYearData } from './reports';
 
 export interface Auth {
-    user: User;
+    user: User | null;
 }
 
 export interface BreadcrumbItem {
@@ -52,8 +52,7 @@ export interface User {
     email: string;
     avatar?: string;
     email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
+    is_admin: boolean;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

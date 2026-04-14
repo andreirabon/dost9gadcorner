@@ -1,25 +1,34 @@
 <script setup lang="ts">
-import NavFooter from '@/components/NavFooter.vue';
-import NavMain from '@/components/NavMain.vue';
-import NavUser from '@/components/NavUser.vue';
+import AppLogo from '@/components/layout/AppLogo.vue';
+import NavFooter from '@/components/layout/NavFooter.vue';
+import NavMain from '@/components/layout/NavMain.vue';
+import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, FileChartColumnIncreasing, Folder, LayoutGrid } from 'lucide-vue-next';
-import AppLogo from './AppLogo.vue';
+import { computed } from 'vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Report Years',
-        href: '/report-years',
-        icon: FileChartColumnIncreasing,
-    },
-];
+const page = usePage();
+
+const mainNavItems = computed((): NavItem[] => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+        },
+    ];
+    if (page.props.auth.user?.is_admin) {
+        items.push({
+            title: 'Report Years',
+            href: '/report-years',
+            icon: FileChartColumnIncreasing,
+        });
+    }
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {

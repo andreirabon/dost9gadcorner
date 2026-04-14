@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import type { YearItem } from '@/types';
+import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps<{
     year: YearItem;
-}>();
-
-defineEmits<{
-    click: [year: YearItem];
 }>();
 
 const yearTheme = computed(() => {
@@ -40,9 +37,9 @@ const yearTheme = computed(() => {
 </script>
 
 <template>
-    <button
-        type="button"
-        @click="$emit('click', year)"
+    <Link
+        :href="year.href"
+        prefetch
         :class="[
             'year-card group touch-target tap-highlight-none relative flex h-28 flex-col items-center justify-center overflow-hidden rounded-lg p-3 text-center shadow-md contain-[paint] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none sm:h-32 sm:rounded-xl sm:p-4',
             yearTheme.border,
@@ -89,5 +86,5 @@ const yearTheme = computed(() => {
         <span class="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden="true">
             <span :class="['absolute inset-0 bg-linear-to-br', yearTheme.hover]" />
         </span>
-    </button>
+    </Link>
 </template>

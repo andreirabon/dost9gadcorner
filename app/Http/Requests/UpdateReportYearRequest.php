@@ -11,7 +11,10 @@ class UpdateReportYearRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        /** @var ReportYear $reportYear */
+        $reportYear = $this->route('reportYear');
+
+        return $this->user()?->can('update', $reportYear) ?? false;
     }
 
     /**
