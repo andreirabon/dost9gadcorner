@@ -18,7 +18,6 @@ class ReportYearFactory extends Factory
             'description' => fake()->sentence(),
             'status' => ReportYear::STATUS_PENDING,
             'color_theme' => fake()->randomElement(['violet', 'purple', 'indigo']),
-            'background_image' => '/svg/reports.svg',
             'published_at' => null,
         ];
     }

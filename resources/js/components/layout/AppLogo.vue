@@ -1,12 +1,29 @@
 <script setup lang="ts">
-import AppLogoIcon from '@/components/layout/AppLogoIcon.vue';
+import type { AppPageProps } from '@/types';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const page = usePage<AppPageProps>();
+
+const appName = computed(() => {
+    const raw = page.props.name?.trim();
+    return raw || 'GAD Corner';
+});
+
+const monogram = computed(() => appName.value.charAt(0).toUpperCase());
 </script>
 
 <template>
-    <div class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-        <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
-    </div>
-    <div class="ml-1 grid flex-1 text-left text-sm">
-        <span class="mb-0.5 truncate leading-tight font-semibold">Laravel Starter Kit</span>
+    <div class="flex min-w-0 items-center gap-3">
+        <div
+            class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-indigo-600 to-violet-700 text-sm font-bold text-white shadow-sm"
+            aria-hidden="true"
+        >
+            {{ monogram }}
+        </div>
+        <div class="group-data-[collapsible=icon]:hidden grid min-w-0 flex-1 text-left leading-tight">
+            <span class="truncate font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">{{ appName }}</span>
+            <span class="truncate text-[11px] text-zinc-500 dark:text-zinc-400">Admin</span>
+        </div>
     </div>
 </template>

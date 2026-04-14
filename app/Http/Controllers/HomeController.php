@@ -16,6 +16,7 @@ class HomeController extends Controller
     public function index(): Response
     {
         $reportYears = ReportYear::query()
+            ->where('status', ReportYear::STATUS_PUBLISHED)
             ->orderByDesc('year')
             ->get();
 

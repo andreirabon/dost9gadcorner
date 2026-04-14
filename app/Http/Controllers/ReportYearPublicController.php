@@ -15,6 +15,8 @@ class ReportYearPublicController extends Controller
 
     public function show(ReportYear $reportYear): Response
     {
+        abort_unless($reportYear->status === ReportYear::STATUS_PUBLISHED, 404);
+
         $reportYear->load([
             'gfpsMembershipSummary',
             'gfpsAssemblyAttendances.gfpsAssemblyPeriod',

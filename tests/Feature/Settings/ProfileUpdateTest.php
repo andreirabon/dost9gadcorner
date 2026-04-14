@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('guest is redirected from settings profile', function () {
-    $this->get('/settings/profile')->assertRedirect('/');
+    $this->get('/settings/profile')->assertRedirect(route('login'));
 });
 
 test('profile page is displayed', function () {

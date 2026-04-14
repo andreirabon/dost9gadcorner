@@ -213,15 +213,47 @@
     --input: hsl(0 0% 89.8%);
     --ring: hsl(0 0% 3.9%);
     --radius: 0.5rem;
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(0 0% 94%);
-    --sidebar-accent-foreground: hsl(0 0% 30%);
-    --sidebar-border: hsl(0 0% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(0 0% 98%);
+    --sidebar-background: hsl(210 20% 98%);
+    --sidebar-foreground: hsl(222 47% 11%);
+    --sidebar-primary: hsl(243 75% 42%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(226 100% 97%);
+    --sidebar-accent-foreground: hsl(243 75% 30%);
+    --sidebar-border: hsl(214 32% 91%);
+    --sidebar-ring: hsl(239 84% 67%);
+    --sidebar: hsl(210 20% 98%);
+}
+
+/* Reset to :root light tokens when global html.dark is active (e.g. auth pages). */
+.theme-light-isolate {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(0 0% 3.9%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(0 0% 3.9%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(0 0% 3.9%);
+    --primary: hsl(0 0% 9%);
+    --primary-foreground: hsl(0 0% 98%);
+    --secondary: hsl(0 0% 92.1%);
+    --secondary-foreground: hsl(0 0% 9%);
+    --muted: hsl(0 0% 96.1%);
+    --muted-foreground: hsl(0 0% 45.1%);
+    --accent: hsl(0 0% 96.1%);
+    --accent-foreground: hsl(0 0% 9%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(0 0% 92.8%);
+    --input: hsl(0 0% 89.8%);
+    --ring: hsl(0 0% 3.9%);
+    --sidebar-background: hsl(210 20% 98%);
+    --sidebar-foreground: hsl(222 47% 11%);
+    --sidebar-primary: hsl(243 75% 42%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(226 100% 97%);
+    --sidebar-accent-foreground: hsl(243 75% 30%);
+    --sidebar-border: hsl(214 32% 91%);
+    --sidebar-ring: hsl(239 84% 67%);
+    --sidebar: hsl(210 20% 98%);
 }
 
 .dark {
@@ -244,15 +276,15 @@
     --border: hsl(0 0% 14.9%);
     --input: hsl(0 0% 14.9%);
     --ring: hsl(0 0% 83.1%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
+    --sidebar-background: hsl(222 47% 6%);
+    --sidebar-foreground: hsl(210 40% 96%);
+    --sidebar-primary: hsl(234 89% 74%);
+    --sidebar-primary-foreground: hsl(222 47% 8%);
+    --sidebar-accent: hsl(217 33% 14%);
+    --sidebar-accent-foreground: hsl(210 40% 96%);
+    --sidebar-border: hsl(217 33% 16%);
+    --sidebar-ring: hsl(239 84% 67%);
+    --sidebar: hsl(222 47% 6%);
 }
 
 @layer base {
@@ -868,5 +900,44 @@
         .container-mobile {
             max-width: 1280px;
         }
+    }
+}
+
+@layer components {
+    /* Yearly report admin — avoids generic dashboard card / muted UI */
+    .report-panel {
+        @apply rounded-2xl border border-zinc-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:bg-zinc-900/80 dark:shadow-none;
+    }
+
+    .report-panel-emphasis {
+        @apply border-l-[3px] border-l-indigo-500;
+    }
+
+    .report-btn-primary {
+        @apply rounded-lg border-0 bg-indigo-600 text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400;
+    }
+
+    .report-btn-secondary {
+        @apply rounded-lg border border-zinc-200 bg-white text-zinc-800 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400/30 focus-visible:outline-none dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800/80;
+    }
+
+    .report-field {
+        @apply border-zinc-200/90 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100;
+    }
+
+    .report-row {
+        @apply rounded-xl border border-zinc-200/80 bg-zinc-50/90 dark:border-zinc-800 dark:bg-zinc-950/60;
+    }
+
+    .report-list-item {
+        @apply rounded-xl border border-zinc-200/90 bg-white transition-colors duration-200 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700;
+    }
+
+    .report-textarea {
+        @apply min-h-28 w-full rounded-lg border border-zinc-200/90 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-indigo-400/15;
+    }
+
+    .report-select {
+        @apply w-full rounded-lg border border-zinc-200/90 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-indigo-400/15;
     }
 }

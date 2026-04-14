@@ -12,9 +12,9 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-test('guest user is redirected to the homepage when opening report management', function () {
+test('guest user is redirected to login when opening report management', function () {
     $this->get('/report-years')
-        ->assertRedirect('/');
+        ->assertRedirect(route('login'));
 });
 
 test('non-admin user cannot access report management', function () {
@@ -23,6 +23,29 @@ test('non-admin user cannot access report management', function () {
     $this->actingAs($user)
         ->get('/report-years')
         ->assertForbidden();
+});
+
+test('guest is redirected to login when opening new report year form', function () {
+    $this->get('/report-years/create')
+        ->assertRedirect(route('login'));
+});
+
+test('non-admin user cannot open new report year form', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+
+    $this->actingAs($user)
+        ->get('/report-years/create')
+        ->assertForbidden();
+});
+
+test('admin can open new report year form', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/report-years/create')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('reports/Create'));
 });
 
 test('authenticated user can create a report year shell', function () {
@@ -37,7 +60,6 @@ test('authenticated user can create a report year shell', function () {
             'description' => 'Pending annual report',
             'status' => ReportYear::STATUS_PUBLISHED,
             'color_theme' => 'indigo',
-            'background_image' => '/svg/reports.svg',
         ]);
 
     $reportYear = ReportYear::query()->where('year', 2027)->firstOrFail();

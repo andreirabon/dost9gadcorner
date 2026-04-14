@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ReportYearManagementController;
 use App\Http\Controllers\ReportYearPublicController;
@@ -10,6 +11,13 @@ use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
+Route::middleware('guest')->group(function (): void {
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+});
+
+Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
+
 Route::get('/reports/{reportYear}', [ReportYearPublicController::class, 'show'])->name('reports.show');
 
 Route::middleware('auth')
@@ -17,6 +25,7 @@ Route::middleware('auth')
     ->name('report-years.')
     ->group(function (): void {
         Route::get('/', [ReportYearManagementController::class, 'index'])->name('index');
+        Route::get('/create', [ReportYearManagementController::class, 'create'])->name('create');
         Route::post('/', [ReportYearManagementController::class, 'store'])->name('store');
         Route::get('/{reportYear}/edit', [ReportYearManagementController::class, 'edit'])->name('edit');
         Route::patch('/{reportYear}', [ReportYearManagementController::class, 'update'])->name('update');

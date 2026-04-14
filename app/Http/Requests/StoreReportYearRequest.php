@@ -25,7 +25,6 @@ class StoreReportYearRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:4000'],
             'status' => ['required', Rule::in([ReportYear::STATUS_PENDING, ReportYear::STATUS_PUBLISHED])],
             'color_theme' => ['nullable', Rule::in(['violet', 'purple', 'indigo'])],
-            'background_image' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

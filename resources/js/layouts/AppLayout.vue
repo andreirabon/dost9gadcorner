@@ -4,15 +4,17 @@ import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
+    showFooter?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
+    showFooter: true,
 });
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <AppLayout :breadcrumbs="breadcrumbs" :show-footer="showFooter">
         <slot />
     </AppLayout>
 </template>

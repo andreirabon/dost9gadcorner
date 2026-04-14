@@ -26,7 +26,6 @@ class ReportYear extends Model
         'description',
         'status',
         'color_theme',
-        'background_image',
         'published_at',
     ];
 

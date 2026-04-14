@@ -15,10 +15,7 @@ This database was designed to replace the old hard-coded yearly chart values tha
 
 ## What Problem This Solves
 
-Before this database work, the yearly report charts were using fixed values inside:
-
-- `resources/js/components/YearModal.vue`
-- `resources/js/data/years.ts`
+Before this database work, the yearly report charts were using fixed values inside the old frontend (for example a year modal and static `years` data files). Those paths are no longer the source of truth.
 
 That meant:
 
@@ -66,7 +63,8 @@ The database was created in this order:
 4. create Eloquent models and relationships,
 5. create lookup seeders,
 6. create a dedicated seeder for the old 2025 hard-coded values,
-7. wire the frontend to read from the database instead of local constants.
+7. wire the public app to read from MySQL (homepage + report detail via `ReportYearTransformer`, **published-only** on public routes),
+8. add session login/logout and policy-protected management routes for admins.
 
 ## Migrations That Created The Tables
 
@@ -105,9 +103,10 @@ Why it exists:
 - frontend year cards use this table,
 - published vs pending state is stored here.
 
-Important rule:
+Important rules:
 
 - `year` is unique, so only one `2025` report can exist.
+- **Public site** (`/` and `/reports/{reportYear}`) only exposes rows where `status` is **published**. Rows with `status` **pending** stay in MySQL for admin use (`/report-years` and edit flows) until they are published.
 
 ## Users table and who can edit reports
 
@@ -120,6 +119,10 @@ The `users` table (from `0001_01_01_000000_create_users_table.php`) gained:
 This flag is application authorization, not a foreign key on `report_years`. There is no `created_by` on yearly report rows in the current schema; access is “any admin can edit any year.”
 
 For local/testing, `database/factories/UserFactory.php` defaults `is_admin` to `true`, and `database/seeders/DatabaseSeeder.php` sets `is_admin` on the seeded demo user so migrations + seed still allow report management out of the box.
+
+### Session authentication (login / logout)
+
+Report management and settings routes live behind Laravel’s `auth` middleware. Unauthenticated visitors are redirected to **`/login`** (`login` route); signing out uses **`POST /logout`** (`logout` route). This is **not** stored in the yearly-report tables—it only controls who can reach the management UI that edits `report_years` and related fact rows.
 
 ## Lookup Tables
 
@@ -364,6 +367,8 @@ These models define:
 
 `ReportYear` is the main parent model.
 
+Public Inertia payloads are shaped by **`App\Support\ReportYearTransformer`** (`toCardArray()` for homepage cards, `toDetailArray()` for the public report page), so the database shape stays separate from chart-friendly JSON.
+
 ## Seeders Created
 
 Two important seeders were created:
@@ -399,7 +404,7 @@ That means you can run it again without creating duplicate 2025 rows.
 
 ## The Old 2025 Data
 
-The original 2025 values came from the old frontend constants that used to live inside `resources/js/components/YearModal.vue`.
+The original 2025 values came from the old frontend constants (before the normalized `report_years` / fact tables).
 
 Those values were moved into the database through:
 
@@ -415,24 +420,41 @@ So instead of storing 2025 numbers inside Vue, the app now reads them from MySQL
 
 ## How The Frontend Now Reads The Data
 
+### Public homepage (`/`)
+
 The homepage is loaded through:
 
 - `app/Http/Controllers/HomeController.php`
 
 This controller:
 
-1. loads all `ReportYear` records,
-2. eager-loads all related report tables,
-3. transforms them into chart-friendly arrays,
-4. sends them to the Inertia page.
+1. loads **`ReportYear` records with `status = published` only** (ordered by `year` descending),
+2. maps each row through `App\Support\ReportYearTransformer::toCardArray()` (lightweight card props: id, year, href, description, theme, etc.—**no** `reportData` on the index),
+3. sends them to the Inertia page.
 
 The public page then renders:
 
 - `resources/js/pages/Index.vue`
-- `resources/js/components/YearlySection.vue`
-- `resources/js/components/YearModal.vue`
+- `resources/js/components/home/YearlySection.vue`
+- `resources/js/components/home/YearCard.vue`
 
-The modal no longer depends on hard-coded yearly values. It now depends on `reportData` provided by Laravel.
+### Public report detail (`/reports/{reportYear}`)
+
+The per-year report page is loaded through:
+
+- `app/Http/Controllers/ReportYearPublicController.php`
+
+This controller:
+
+1. returns **404** unless the year is **published** (`abort_unless` on status),
+2. **eager-loads** related fact tables (membership, assemblies, employees, scholarship, RSTL months, funding),
+3. maps the model through `ReportYearTransformer::toDetailArray()` (includes `reportData` for charts when published).
+
+The detail page renders:
+
+- `resources/js/pages/reports/Show.vue`
+
+Charts and sections use **props from Laravel**, not hard-coded JSON in the frontend.
 
 ## How The Management Side Was Prepared
 
@@ -451,16 +473,23 @@ The project also includes report maintenance scaffolding for manual entry:
 
 Each update request’s `authorize()` checks the policy against the route’s `reportYear` (or `create` for new years).
 
-Routes live in `routes/web.php` under `Route::middleware('auth')->prefix('report-years')->...` so only signed-in users hit the controller; the policy then enforces admin.
+Routes live in `routes/web.php` under `Route::middleware('auth')->prefix('report-years')->...` so only signed-in users hit the controller; the policy then enforces admin. Guest access to protected routes redirects to **`/login`**.
 
 Frontend maintenance pages:
 
-- `resources/js/pages/reports/Index.vue`
-- `resources/js/pages/reports/Edit.vue`
+- `resources/js/pages/reports/Index.vue` — create a new year shell (`POST report-years`) and list existing years; the create form is linkable via `#create-report-year` on the same URL.
+- `resources/js/pages/reports/Edit.vue` — section-by-section updates for normalized data.
 
-The UI shows “Manage Reports” / navigation entries only when `auth.user.is_admin` is true (still call the same APIs; server returns 403 if not admin).
+On the **public home** layout, admins see a **Reports** dropdown (all report years, new report year) plus **Log out** and avatar in `resources/js/components/home/HomeTopNav.vue` when `auth.user.is_admin` is true; non-admins still need `auth` for settings but do not manage report years. The server always enforces policy (403 if not admin).
 
 These pages were designed so users can update one section at a time.
+
+### Quick admin access (sign in → manage reports)
+
+1. **URL:** `/login` (guest-only; after login you are redirected away from this route).
+2. **Who can manage report years:** users with `users.is_admin = true`. The migration defaults new users to admin; turn off per account in the database if someone should not manage reports.
+3. **After login:** admins are sent to `/report-years` by default (unless the session had another “intended” URL, for example you tried to open a protected page while logged out).
+4. **Workflow:** `/report-years` → create a year or open **Edit** on an existing row → fill sections → set **status** to **published** when ready (pending years stay off the public site).
 
 ## Commands Used
 
@@ -551,7 +580,8 @@ The recommended future flow is:
 1. create a new record in `report_years`,
 2. set its `status` to `pending`,
 3. fill each section,
-4. publish it when complete.
+4. publish it when complete (`status = published`, set `published_at` as appropriate),
+5. confirm it appears on `/` and is reachable at `/reports/{id}` (pending years never show on the public site).
 
 Example years that can be added later:
 
@@ -588,4 +618,5 @@ As a result:
 - the database now stores the yearly report structure properly,
 - 2025 lives in MySQL instead of Vue constants,
 - the app is ready for future manual yearly report entry,
-- admin users (`users.is_admin`) can manage report data through the policy-protected routes; non-admins cannot change yearly report tables via the app.
+- **published** years are listed on the public homepage and viewable at `/reports/{id}`; **pending** years remain in the database only until published,
+- admin users (`users.is_admin`) can manage report data through the policy-protected routes after signing in; non-admins cannot change yearly report tables via the app.

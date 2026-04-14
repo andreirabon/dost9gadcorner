@@ -11,7 +11,7 @@
     <meta name="msapplication-TileColor" content="#581c87">
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-    <script>
+    <script nonce="{{ $cspNonce }}">
         (function () {
             const appearance = '{{ $appearance ?? "system" }}';
 
@@ -26,7 +26,7 @@
     </script>
 
     {{-- Inline style to set the HTML background color based on our theme in app.css --}}
-    <style>
+    <style nonce="{{ $cspNonce }}">
         html {
             background-color: oklch(1 0 0);
         }
@@ -45,7 +45,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    @routes
+    @routes(null, $cspNonce)
     @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
     @inertiaHead
 </head>

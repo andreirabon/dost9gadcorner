@@ -17,7 +17,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-test('homepage renders published and pending report years from the database', function () {
+test('homepage lists only published report years and hides draft report pages', function () {
     $this->seed(ReportLookupSeeder::class);
 
     $pendingYear = ReportYear::factory()->create([
@@ -30,7 +30,6 @@ test('homepage renders published and pending report years from the database', fu
         'year' => 2025,
         'description' => 'Sex-disaggregated data report for 2025.',
         'color_theme' => 'violet',
-        'background_image' => '/svg/reports.svg',
     ]);
 
     GfpsMembershipSummary::query()->create([
@@ -91,15 +90,11 @@ test('homepage renders published and pending report years from the database', fu
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Index')
-            ->has('years', 2)
-            ->where('years.0.id', $pendingYear->id)
-            ->where('years.0.status', ReportYear::STATUS_PENDING)
-            ->where('years.0.href', route('reports.show', $pendingYear))
+            ->has('years', 1)
+            ->where('years.0.id', $publishedYear->id)
+            ->where('years.0.year', '2025')
+            ->where('years.0.href', route('reports.show', $publishedYear))
             ->missing('years.0.reportData')
-            ->where('years.1.id', $publishedYear->id)
-            ->where('years.1.year', '2025')
-            ->where('years.1.href', route('reports.show', $publishedYear))
-            ->missing('years.1.reportData')
         );
 
     $this->get(route('reports.show', $publishedYear))
@@ -116,11 +111,5 @@ test('homepage renders published and pending report years from the database', fu
             ->where('year.reportData.cestFunding.femaleProjects', 8)
         );
 
-    $this->get(route('reports.show', $pendingYear))
-        ->assertSuccessful()
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('reports/Show')
-            ->where('year.id', $pendingYear->id)
-            ->where('year.reportData', null)
-        );
+    $this->get(route('reports.show', $pendingYear))->assertNotFound();
 });

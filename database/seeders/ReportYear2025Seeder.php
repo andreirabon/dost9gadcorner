@@ -27,10 +27,9 @@ class ReportYear2025Seeder extends Seeder
                 ['year' => 2025],
                 [
                     'title' => '2025 Sex Disaggregated Data Report',
-                    'description' => 'Sex-disaggregated data report for 2025 covering DOST IX employees, RSTL services, SETUP, and CEST programs.',
+                    'description' => 'Data report for 2025 covering DOST IX employees, RSTL services, SETUP, and CEST programs.',
                     'status' => ReportYear::STATUS_PUBLISHED,
                     'color_theme' => 'violet',
-                    'background_image' => '/svg/reports.svg',
                     'published_at' => now(),
                 ],
             );

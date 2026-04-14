@@ -87,7 +87,6 @@ export interface EditableReportYear {
     description: string | null;
     status: 'pending' | 'published';
     colorTheme: 'violet' | 'purple' | 'indigo' | null;
-    backgroundImage: string | null;
     publishedAt: string | null;
     gfpsMembership: GfpsMembershipData;
     gfpsAssemblies: EditableGfpsAssemblyRow[];
@@ -104,6 +103,5 @@ export interface ManagedReportYearListItem {
     description: string | null;
     status: 'pending' | 'published';
     colorTheme: 'violet' | 'purple' | 'indigo' | null;
-    backgroundImage: string | null;
     publishedAt: string | null;
 }

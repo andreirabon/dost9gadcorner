@@ -21,7 +21,6 @@ class ReportYearTransformer
             'href' => route('reports.show', $reportYear),
             'colorTheme' => $reportYear->color_theme ?? 'violet',
             'description' => $reportYear->description,
-            'backgroundImage' => $reportYear->background_image,
             'status' => $reportYear->status,
         ];
     }
@@ -39,7 +38,6 @@ class ReportYearTransformer
             'href' => route('reports.show', $reportYear),
             'colorTheme' => $reportYear->color_theme ?? 'violet',
             'description' => $reportYear->description,
-            'backgroundImage' => $reportYear->background_image,
             'status' => $reportYear->status,
             'reportData' => $reportYear->status === ReportYear::STATUS_PENDING
                 ? null

@@ -42,10 +42,16 @@ class ReportYearManagementController extends Controller
                     'description' => $reportYear->description,
                     'status' => $reportYear->status,
                     'colorTheme' => $reportYear->color_theme,
-                    'backgroundImage' => $reportYear->background_image,
                     'publishedAt' => $reportYear->published_at?->toDateString(),
                 ]),
         ]);
+    }
+
+    public function create(): Response
+    {
+        $this->authorize('create', ReportYear::class);
+
+        return Inertia::render('reports/Create');
     }
 
     public function store(StoreReportYearRequest $request): RedirectResponse
@@ -79,7 +85,6 @@ class ReportYearManagementController extends Controller
                 'description' => $reportYear->description,
                 'status' => $reportYear->status,
                 'colorTheme' => $reportYear->color_theme,
-                'backgroundImage' => $reportYear->background_image,
                 'publishedAt' => $reportYear->published_at?->toDateString(),
                 'gfpsMembership' => [
                     'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),

@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { ChevronDown } from 'lucide-vue-next';
 
 defineOptions({
     name: 'HeroSection',
 });
-
-defineProps<{
-    reportManagementHref?: string | null;
-}>();
 
 const heroNoiseDataUrl =
     'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'128\' height=\'128\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'128\' height=\'128\' filter=\'url(%23n)\' opacity=\'0.5\'/%3E%3C/svg%3E")';
@@ -21,20 +17,8 @@ defineEmits<{
 <template>
     <section
         aria-labelledby="hero-heading"
-        class="min-h-screen min-h-screen-safe pt-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 text-center sm:pb-64 md:pt-28 md:pb-72 lg:pb-80"
+        class="min-h-screen min-h-screen-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 pt-6 text-center sm:pb-64 md:pt-10 md:pb-72 lg:pb-80"
     >
-        <div
-            v-if="reportManagementHref"
-            class="absolute top-[max(1rem,env(safe-area-inset-top,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-20 sm:top-[max(1.5rem,env(safe-area-inset-top,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]"
-        >
-            <Link
-                :href="reportManagementHref"
-                class="inline-flex items-center gap-2 rounded-full border border-purple-400/50 bg-purple-700/90 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-950/30 transition-colors duration-200 hover:bg-purple-600 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none"
-            >
-                Manage Reports
-                <span aria-hidden="true">→</span>
-            </Link>
-        </div>
         <!-- Left side decorative illustrations -->
         <div
             aria-hidden="true"
@@ -107,28 +91,20 @@ defineEmits<{
                     type="button"
                     @click="$emit('scrollToYears')"
                     aria-label="Scroll to yearly reports section"
-                    class="group touch-target tap-highlight-none inline-flex w-full items-center justify-center gap-2 rounded-md bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-purple-950/25 hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none sm:w-auto sm:text-base"
+                    class="group touch-target tap-highlight-none inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-purple-950/25 hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none sm:w-auto sm:text-base"
                 >
                     Years
-                    <span aria-hidden="true">↓</span>
+                    <ChevronDown class="size-4 shrink-0 opacity-90" aria-hidden="true" :stroke-width="2.5" />
                 </button>
                 <button
                     type="button"
                     @click="$emit('scrollToOrgChart')"
                     aria-label="Scroll to organizational chart section"
-                    class="group touch-target tap-highlight-none inline-flex w-full items-center justify-center gap-2 rounded-md bg-violet-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-purple-950/25 hover:bg-violet-500 focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none sm:w-auto sm:text-base"
+                    class="group touch-target tap-highlight-none inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-violet-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-purple-950/25 hover:bg-violet-500 focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none sm:w-auto sm:text-base"
                 >
                     Organizational Chart
-                    <span aria-hidden="true">↓</span>
+                    <ChevronDown class="size-4 shrink-0 opacity-90" aria-hidden="true" :stroke-width="2.5" />
                 </button>
-                <Link
-                    v-if="reportManagementHref"
-                    :href="reportManagementHref"
-                    class="group touch-target tap-highlight-none inline-flex w-full items-center justify-center gap-2 rounded-md border border-purple-400/45 bg-purple-900/55 px-6 py-3 text-sm font-medium text-purple-50 shadow-lg shadow-purple-950/20 hover:bg-purple-800/70 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none sm:w-auto sm:text-base"
-                >
-                    Manage Reports
-                    <span aria-hidden="true">→</span>
-                </Link>
             </div>
         </div>
         <!-- Center bottom layered illustration -->

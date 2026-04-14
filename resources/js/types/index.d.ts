@@ -33,7 +33,6 @@ export interface YearItem {
     href: string;
     colorTheme?: 'violet' | 'purple' | 'indigo';
     description?: string;
-    backgroundImage?: string;
     status?: 'pending' | 'published';
     reportData?: ReportYearData | null;
 }

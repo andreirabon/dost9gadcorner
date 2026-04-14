@@ -8,10 +8,12 @@ import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
+    showFooter?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
+    showFooter: true,
 });
 </script>
 
@@ -24,7 +26,7 @@ withDefaults(defineProps<Props>(), {
                 <div class="min-h-0 flex-1">
                     <slot />
                 </div>
-                <AppFooter />
+                <AppFooter v-if="showFooter" />
             </div>
         </AppContent>
     </AppShell>
