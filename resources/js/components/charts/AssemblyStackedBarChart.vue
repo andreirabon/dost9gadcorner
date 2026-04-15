@@ -114,9 +114,7 @@ const chartOptions = computed<ApexOptions>(() => {
                 colors: ui.legendColor,
             },
             markers: {
-                width: 8,
-                height: 8,
-                radius: 2,
+                size: 8,
             },
         },
         dataLabels: {

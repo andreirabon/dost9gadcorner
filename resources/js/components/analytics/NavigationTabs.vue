@@ -42,7 +42,7 @@ const getTabValue = (tab: string | TabItem): string => {
         <!-- Header Section -->
         <div class="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-2 sm:gap-3">
-                <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md sm:h-10 sm:w-10">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md sm:h-10 sm:w-10">
                     <svg class="h-4 w-4 text-white sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path
                             stroke-linecap="round"
@@ -140,7 +140,7 @@ const getTabValue = (tab: string | TabItem): string => {
         <div class="mt-4 rounded-lg border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-3 sm:mt-6 sm:p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-2 sm:gap-3">
-                    <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 sm:h-8 sm:w-8">
+                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 sm:h-8 sm:w-8">
                         <svg class="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>

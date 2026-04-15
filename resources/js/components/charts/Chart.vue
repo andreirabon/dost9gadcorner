@@ -75,7 +75,7 @@ const chartOptions = computed<ApexOptions>(() => ({
         fontSize: isPieChart.value ? '11px' : '12px',
         fontFamily: chartFontFamily,
         labels: { colors: '#334155' },
-        markers: { width: 10, height: 10, radius: 4 },
+        markers: { size: 10 },
     },
     dataLabels: {
         enabled: isPieChart.value,
