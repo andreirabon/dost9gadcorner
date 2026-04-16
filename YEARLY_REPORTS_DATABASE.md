@@ -91,8 +91,6 @@ Columns:
 - `title`
 - `description`
 - `status`
-- `color_theme`
-- `background_image`
 - `published_at`
 - `created_at`
 - `updated_at`
@@ -429,7 +427,7 @@ The homepage is loaded through:
 This controller:
 
 1. loads **`ReportYear` records with `status = published` only** (ordered by `year` descending),
-2. maps each row through `App\Support\ReportYearTransformer::toCardArray()` (lightweight card props: id, year, href, description, theme, etc.—**no** `reportData` on the index),
+2. maps each row through `App\Support\ReportYearTransformer::toCardArray()` (lightweight card props: id, year, href, description, etc.—**no** `reportData` on the index),
 3. sends them to the Inertia page.
 
 The public page then renders:

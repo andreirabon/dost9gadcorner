@@ -19,6 +19,7 @@ use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\RstlMonthlyBreakdown;
+use App\Models\SchoolYear;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,6 @@ class ReportYearManagementController extends Controller
                     'title' => $reportYear->title,
                     'description' => $reportYear->description,
                     'status' => $reportYear->status,
-                    'colorTheme' => $reportYear->color_theme,
                     'publishedAt' => $reportYear->published_at?->toDateString(),
                 ]),
         ]);
@@ -78,13 +78,16 @@ class ReportYearManagementController extends Controller
         ]);
 
         return Inertia::render('reports/Edit', [
+            'schoolYears' => SchoolYear::query()->orderBy('sort_order')->get()->map(fn (SchoolYear $sy) => [
+                'id' => $sy->id,
+                'label' => $sy->name,
+            ]),
             'reportYear' => [
                 'id' => $reportYear->id,
                 'year' => $reportYear->year,
                 'title' => $reportYear->title,
                 'description' => $reportYear->description,
                 'status' => $reportYear->status,
-                'colorTheme' => $reportYear->color_theme,
                 'publishedAt' => $reportYear->published_at?->toDateString(),
                 'gfpsMembership' => [
                     'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),
@@ -93,7 +96,7 @@ class ReportYearManagementController extends Controller
                 'gfpsAssemblies' => $this->editableGfpsAssemblyRows($reportYear),
                 'employeeStatuses' => $this->editableEmployeeStatusRows($reportYear),
                 'scholarship' => [
-                    'schoolYearLabel' => (string) ($reportYear->scholarshipSummary?->school_year_label ?? ''),
+                    'schoolYearId' => $reportYear->scholarshipSummary?->school_year_id,
                     'asOfDate' => $reportYear->scholarshipSummary?->as_of_date?->toDateString(),
                     'femaleCount' => (int) ($reportYear->scholarshipSummary?->female_count ?? 0),
                     'maleCount' => (int) ($reportYear->scholarshipSummary?->male_count ?? 0),

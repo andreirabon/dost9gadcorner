@@ -244,7 +244,7 @@ onBeforeUnmount(() => {
     background: linear-gradient(145deg, rgba(30, 16, 51, 0.98) 0%, rgba(24, 12, 42, 0.99) 100%);
     border: 1px solid rgba(167, 139, 250, 0.38);
     box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.06) inset,
+        0 1px 0 rgba(250, 250, 250, 0.06) inset,
         0 8px 24px rgba(0, 0, 0, 0.35);
     color: #f5f3ff;
     overflow: hidden;
@@ -313,7 +313,7 @@ onBeforeUnmount(() => {
     border: 1px solid rgba(233, 213, 255, 0.55);
     background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 100%);
     box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.12) inset,
+        0 1px 0 rgba(250, 250, 250, 0.12) inset,
         0 3px 10px rgba(0, 0, 0, 0.35);
 }
 

@@ -29,7 +29,6 @@ class ReportYear2025Seeder extends Seeder
                     'title' => '2025 Sex Disaggregated Data Report',
                     'description' => 'Data report for 2025 covering DOST IX employees, RSTL services, SETUP, and CEST programs.',
                     'status' => ReportYear::STATUS_PUBLISHED,
-                    'color_theme' => 'violet',
                     'published_at' => now(),
                 ],
             );
@@ -76,10 +75,12 @@ class ReportYear2025Seeder extends Seeder
                 );
             }
 
+            $schoolYear = \App\Models\SchoolYear::query()->where('name', '2025-2026')->first();
+
             ScholarshipSummary::query()->updateOrCreate(
                 ['report_year_id' => $reportYear->id],
                 [
-                    'school_year_label' => '2025-2026',
+                    'school_year_id' => $schoolYear->id ?? null,
                     'as_of_date' => '2025-01-13',
                     'female_count' => 64,
                     'male_count' => 114,

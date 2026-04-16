@@ -59,7 +59,6 @@ test('authenticated user can create a report year shell', function () {
             'title' => '2027 report',
             'description' => 'Pending annual report',
             'status' => ReportYear::STATUS_PUBLISHED,
-            'color_theme' => 'indigo',
         ]);
 
     $reportYear = ReportYear::query()->where('year', 2027)->firstOrFail();
@@ -70,7 +69,6 @@ test('authenticated user can create a report year shell', function () {
         'year' => 2027,
         'title' => '2027 report',
         'status' => ReportYear::STATUS_PUBLISHED,
-        'color_theme' => 'indigo',
     ]);
 });
 
@@ -126,9 +124,11 @@ test('authenticated user can view and update normalized report sections', functi
         ])
         ->assertRedirect();
 
+    $schoolYear = \App\Models\SchoolYear::query()->where('name', '2025-2026')->first();
+
     $this->actingAs($user)
         ->patch("/report-years/{$reportYear->id}/scholarship", [
-            'school_year_label' => '2025-2026',
+            'school_year_id' => $schoolYear->id,
             'as_of_date' => '2025-01-13',
             'female_count' => 64,
             'male_count' => 114,
@@ -171,7 +171,7 @@ test('authenticated user can view and update normalized report sections', functi
     $this->assertDatabaseCount('program_funding_summaries', 2);
     $this->assertDatabaseHas('scholarship_summaries', [
         'report_year_id' => $reportYear->id,
-        'school_year_label' => '2025-2026',
+        'school_year_id' => $schoolYear->id,
         'female_count' => 64,
         'male_count' => 114,
     ]);

@@ -153,7 +153,7 @@ onBeforeUnmount(() => {
                                     <!-- Column width matches the tile only; a fixed 13–15rem track left a blank band beside the icon. -->
                                     <div class="shrink-0 self-center lg:self-auto">
                                         <div
-                                            class="relative flex items-center justify-center rounded-[1.75rem] bg-linear-to-br from-fuchsia-500/15 via-purple-400/10 to-indigo-500/10 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-fuchsia-400/25 sm:p-5"
+                                            class="relative flex items-center justify-center rounded-[1.75rem] bg-linear-to-br from-fuchsia-500/15 via-purple-400/10 to-indigo-500/10 p-4 shadow-[inset_0_1px_0_rgba(250,250,250,0.12)] ring-1 ring-fuchsia-400/25 sm:p-5"
                                         >
                                             <div
                                                 class="pointer-events-none absolute inset-0 rounded-[1.75rem] bg-radial-[at_30%_20%] from-white/10 to-transparent opacity-80"

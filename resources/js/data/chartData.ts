@@ -48,7 +48,7 @@ export const mockChartData = {
                 {
                     data: [245, 185, 156, 128, 95],
                     backgroundColor: ['#3b82f6', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6'],
-                    borderColor: '#ffffff',
+                    borderColor: '#FAFAFA',
                     borderWidth: 2,
                 },
             ],
@@ -103,7 +103,7 @@ export const mockChartData = {
                 {
                     data: [45, 38, 32, 28, 67],
                     backgroundColor: ['#3b82f6', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6'],
-                    borderColor: '#ffffff',
+                    borderColor: '#FAFAFA',
                     borderWidth: 2,
                 },
             ],
@@ -158,7 +158,7 @@ export const mockChartData = {
                 {
                     data: [35, 28, 42, 38, 25],
                     backgroundColor: ['#3b82f6', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6'],
-                    borderColor: '#ffffff',
+                    borderColor: '#FAFAFA',
                     borderWidth: 2,
                 },
             ],

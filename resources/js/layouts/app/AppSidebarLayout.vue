@@ -9,11 +9,14 @@ import type { BreadcrumbItemType } from '@/types';
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
     showFooter?: boolean;
+    /** Main column (below breadcrumb bar): flex + background for full-height pages */
+    contentClass?: string;
 }
 
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
     showFooter: true,
+    contentClass: '',
 });
 </script>
 
@@ -23,7 +26,7 @@ withDefaults(defineProps<Props>(), {
         <AppContent variant="sidebar" class="flex min-h-0 flex-1 flex-col overflow-x-hidden">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <div class="flex min-h-0 flex-1 flex-col">
-                <div class="min-h-0 flex-1">
+                <div class="min-h-0 flex-1" :class="contentClass">
                     <slot />
                 </div>
                 <AppFooter v-if="showFooter" />

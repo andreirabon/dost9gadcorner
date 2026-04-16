@@ -60,7 +60,7 @@ const mainNavItems = computed((): NavItem[] => {
                         <SheetContent side="left" class="w-[280px] p-4 sm:w-[300px] sm:p-6">
                             <SheetTitle class="sr-only">Navigation Menu</SheetTitle>
                             <SheetHeader class="border-zinc-200 border-b pb-3 text-left dark:border-zinc-800">
-                                <span class="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Menu</span>
+                                <span class="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Menu</span>
                             </SheetHeader>
                             <div class="flex flex-1 flex-col space-y-4 py-6">
                                 <nav class="-mx-1 space-y-1">

@@ -31,6 +31,6 @@ export function reportChartUi(appearance: 'light' | 'dark'): ReportChartUi {
         gridBorder: '#3f3f46',
         titleColor: '#f4f4f5',
         tooltipTheme: 'dark',
-        dataLabelColor: '#ffffff',
+        dataLabelColor: '#FAFAFA',
     };
 }

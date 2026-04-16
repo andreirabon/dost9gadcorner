@@ -29,7 +29,6 @@ test('homepage lists only published report years and hides draft report pages', 
     $publishedYear = ReportYear::factory()->published()->create([
         'year' => 2025,
         'description' => 'Sex-disaggregated data report for 2025.',
-        'color_theme' => 'violet',
     ]);
 
     GfpsMembershipSummary::query()->create([
@@ -38,9 +37,11 @@ test('homepage lists only published report years and hides draft report pages', 
         'male_count' => 6,
     ]);
 
+    $schoolYear = \App\Models\SchoolYear::query()->where('name', '2025-2026')->first();
+
     ScholarshipSummary::query()->create([
         'report_year_id' => $publishedYear->id,
-        'school_year_label' => '2025-2026',
+        'school_year_id' => $schoolYear->id,
         'as_of_date' => '2025-01-13',
         'female_count' => 64,
         'male_count' => 114,

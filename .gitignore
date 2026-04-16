@@ -24,3 +24,7 @@ yarn-error.log
 /.zed
 /.cursor
 /.github
+.agents/
+.cursor/
+AGENTS.md
+skills-lock.json

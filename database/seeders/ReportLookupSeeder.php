@@ -45,5 +45,7 @@ class ReportLookupSeeder extends Seeder
             ['name' => 'SETUP', 'slug' => 'setup', 'sort_order' => 1],
             ['name' => 'CEST', 'slug' => 'cest', 'sort_order' => 2],
         ], ['slug'], ['name', 'sort_order']);
+
+        $this->call(SchoolYearSeeder::class);
     }
 }

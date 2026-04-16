@@ -15,7 +15,7 @@ class ScholarshipSummary extends Model
      */
     protected $fillable = [
         'report_year_id',
-        'school_year_label',
+        'school_year_id',
         'as_of_date',
         'female_count',
         'male_count',
@@ -34,5 +34,10 @@ class ScholarshipSummary extends Model
     public function reportYear(): BelongsTo
     {
         return $this->belongsTo(ReportYear::class);
+    }
+
+    public function schoolYear(): BelongsTo
+    {
+        return $this->belongsTo(SchoolYear::class);
     }
 }

@@ -125,7 +125,7 @@ const flushLogout = (): void => {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-56" :side-offset="8">
-                            <UserMenuContent :user="user" hide-manage-reports hide-logout />
+                            <UserMenuContent :user="user" hide-logout />
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </template>

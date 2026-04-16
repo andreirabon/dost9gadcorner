@@ -38,7 +38,7 @@ defineEmits<{
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,var(--color-purple-400)/22%,transparent_68%)]" />
             <div
                 aria-hidden="true"
-                class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-size-[40px_40px] opacity-80"
+                class="absolute inset-0 bg-[linear-gradient(to_right,rgba(250,250,250,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(250,250,250,0.045)_1px,transparent_1px)] bg-size-[40px_40px] opacity-80"
             />
             <div
                 aria-hidden="true"

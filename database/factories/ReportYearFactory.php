@@ -17,7 +17,6 @@ class ReportYearFactory extends Factory
             'title' => null,
             'description' => fake()->sentence(),
             'status' => ReportYear::STATUS_PENDING,
-            'color_theme' => fake()->randomElement(['violet', 'purple', 'indigo']),
             'published_at' => null,
         ];
     }

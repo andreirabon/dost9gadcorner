@@ -38,7 +38,7 @@ const blobBottomClass = computed((): string => {
 <template>
     <div class="pointer-events-none absolute inset-0 isolate overflow-hidden" aria-hidden="true">
         <div
-            class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.055)_1px,transparent_1px)] bg-size-[44px_44px] opacity-90"
+            class="absolute inset-0 bg-[linear-gradient(to_right,rgba(250,250,250,0.055)_1px,transparent_1px),linear-gradient(to_bottom,rgba(250,250,250,0.055)_1px,transparent_1px)] bg-size-[44px_44px] opacity-90"
         />
         <div
             class="absolute inset-0 mix-blend-soft-light opacity-[0.05] sm:opacity-[0.055]"

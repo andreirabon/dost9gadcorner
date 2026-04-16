@@ -48,7 +48,44 @@ class AuthenticatedSessionController extends Controller
             ? route('report-years.index')
             : route('index');
 
-        return redirect()->intended($default);
+        $intended = $request->session()->pull('url.intended');
+
+        if ($this->isSafeInternalRedirectTarget($intended)) {
+            return redirect()->to($intended);
+        }
+
+        return redirect()->to($default);
+    }
+
+    /**
+     * Only allow post-login redirects to this application (relative paths or same-host URLs).
+     * Avoids trusting session-stored full URLs that point off-site (open redirect).
+     */
+    private function isSafeInternalRedirectTarget(mixed $url): bool
+    {
+        if (! is_string($url) || $url === '') {
+            return false;
+        }
+
+        if (str_starts_with($url, '/') && ! str_starts_with($url, '//')) {
+            return true;
+        }
+
+        $parsed = parse_url($url);
+        if ($parsed === false || ! isset($parsed['scheme'], $parsed['host'])) {
+            return false;
+        }
+
+        if (! in_array(strtolower((string) $parsed['scheme']), ['http', 'https'], true)) {
+            return false;
+        }
+
+        $appParsed = parse_url((string) config('app.url'));
+        if ($appParsed === false || ! isset($appParsed['host'])) {
+            return false;
+        }
+
+        return strcasecmp((string) $parsed['host'], (string) $appParsed['host']) === 0;
     }
 
     public function destroy(Request $request): RedirectResponse

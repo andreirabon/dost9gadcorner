@@ -22,7 +22,7 @@ class UpdateScholarshipSummaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'school_year_label' => ['required', 'string', 'max:50'],
+            'school_year_id' => ['required', 'exists:school_years,id'],
             'as_of_date' => ['nullable', 'date'],
             'female_count' => ['required', 'integer', 'min:0'],
             'male_count' => ['required', 'integer', 'min:0'],

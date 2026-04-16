@@ -19,7 +19,6 @@ class ReportYearTransformer
             'id' => $reportYear->id,
             'year' => (string) $reportYear->year,
             'href' => route('reports.show', $reportYear),
-            'colorTheme' => $reportYear->color_theme ?? 'violet',
             'description' => $reportYear->description,
             'status' => $reportYear->status,
         ];
@@ -36,7 +35,6 @@ class ReportYearTransformer
             'id' => $reportYear->id,
             'year' => (string) $reportYear->year,
             'href' => route('reports.show', $reportYear),
-            'colorTheme' => $reportYear->color_theme ?? 'violet',
             'description' => $reportYear->description,
             'status' => $reportYear->status,
             'reportData' => $reportYear->status === ReportYear::STATUS_PENDING
@@ -49,7 +47,7 @@ class ReportYearTransformer
                     'gfpsAssemblies' => $this->transformGfpsAssemblyAttendances($reportYear),
                     'employeeStatuses' => $this->transformEmployeeStatusBreakdowns($reportYear),
                     'scholarship' => [
-                        'schoolYearLabel' => (string) ($reportYear->scholarshipSummary?->school_year_label ?? ''),
+                        'schoolYearLabel' => (string) ($reportYear->scholarshipSummary?->schoolYear?->name ?? ''),
                         'asOfDate' => $reportYear->scholarshipSummary?->as_of_date?->toDateString(),
                         'femaleCount' => (int) ($reportYear->scholarshipSummary?->female_count ?? 0),
                         'maleCount' => (int) ($reportYear->scholarshipSummary?->male_count ?? 0),

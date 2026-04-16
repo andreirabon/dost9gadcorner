@@ -10,6 +10,9 @@
 @theme inline {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
+    /* App off-white: replaces default #fff for all `*-white` utilities */
+    --color-white: #fafafa;
+
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
@@ -193,11 +196,11 @@
 }
 
 :root {
-    --background: hsl(0 0% 100%);
+    --background: #fafafa;
     --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
+    --card: #fafafa;
     --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
+    --popover: #fafafa;
     --popover-foreground: hsl(0 0% 3.9%);
     --primary: hsl(0 0% 9%);
     --primary-foreground: hsl(0 0% 98%);
@@ -216,7 +219,7 @@
     --sidebar-background: hsl(210 20% 98%);
     --sidebar-foreground: hsl(222 47% 11%);
     --sidebar-primary: hsl(243 75% 42%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-primary-foreground: #fafafa;
     --sidebar-accent: hsl(226 100% 97%);
     --sidebar-accent-foreground: hsl(243 75% 30%);
     --sidebar-border: hsl(214 32% 91%);
@@ -226,11 +229,11 @@
 
 /* Reset to :root light tokens when global html.dark is active (e.g. auth pages). */
 .theme-light-isolate {
-    --background: hsl(0 0% 100%);
+    --background: #fafafa;
     --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
+    --card: #fafafa;
     --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
+    --popover: #fafafa;
     --popover-foreground: hsl(0 0% 3.9%);
     --primary: hsl(0 0% 9%);
     --primary-foreground: hsl(0 0% 98%);
@@ -248,7 +251,7 @@
     --sidebar-background: hsl(210 20% 98%);
     --sidebar-foreground: hsl(222 47% 11%);
     --sidebar-primary: hsl(243 75% 42%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-primary-foreground: #fafafa;
     --sidebar-accent: hsl(226 100% 97%);
     --sidebar-accent-foreground: hsl(243 75% 30%);
     --sidebar-border: hsl(214 32% 91%);
@@ -356,7 +359,7 @@
 }
 
 .chart-container canvas {
-    background: white;
+    background: #fafafa;
     border-radius: 0.5rem;
     transition: opacity 0.3s ease;
     transform: translateZ(0);
@@ -684,7 +687,7 @@
             top: 0;
             background: inherit;
             z-index: 10;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(250, 250, 250, 0.1);
         }
 
         /* Better modal body spacing */
@@ -698,7 +701,7 @@
             position: sticky;
             bottom: 0;
             background: inherit;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(250, 250, 250, 0.1);
         }
     }
 
@@ -909,20 +912,17 @@
         @apply rounded-2xl border border-zinc-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:bg-zinc-900/80 dark:shadow-none;
     }
 
-    .report-panel-emphasis {
-        @apply border-l-[3px] border-l-indigo-500;
-    }
-
+    /* Default: muted surface; hover: solid purple (ghost/outline hover utilities are overridden with !) */
     .report-btn-primary {
-        @apply rounded-lg border-0 bg-indigo-600 text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400;
+        @apply rounded-lg border border-zinc-200 !bg-zinc-100 !text-zinc-900 shadow-sm transition-colors duration-200 hover:!border-purple-600 hover:!bg-purple-600 hover:!text-white focus-visible:ring-2 focus-visible:ring-purple-500/45 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-600 dark:!bg-zinc-800 dark:!text-zinc-100 dark:hover:!border-purple-600 dark:hover:!bg-purple-600 dark:hover:!text-white;
     }
 
     .report-btn-secondary {
-        @apply rounded-lg border border-zinc-200 bg-white text-zinc-800 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400/30 focus-visible:outline-none dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800/80;
+        @apply rounded-lg border border-zinc-200 bg-white text-zinc-800 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400/30 focus-visible:outline-none dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800/80;
     }
 
     .report-field {
-        @apply border-zinc-200/90 bg-white text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100;
+        @apply h-8 border-zinc-200/90 bg-white px-2.5 py-1 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50;
     }
 
     .report-row {
@@ -934,10 +934,10 @@
     }
 
     .report-textarea {
-        @apply min-h-28 w-full rounded-lg border border-zinc-200/90 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:ring-indigo-400/15;
+        @apply min-h-24 w-full rounded-md border border-zinc-200/90 bg-white px-2.5 py-2 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:ring-2 focus:ring-purple-500/25 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:ring-purple-400/20;
     }
 
     .report-select {
-        @apply w-full rounded-lg border border-zinc-200/90 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:ring-indigo-400/15;
+        @apply relative h-8 w-full rounded-md border border-zinc-200/90 bg-white py-1 pr-8 pl-2.5 text-sm text-zinc-900 shadow-sm focus:ring-2 focus:ring-purple-500/25 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:ring-purple-400/20;
     }
 }
