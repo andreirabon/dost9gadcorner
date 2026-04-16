@@ -259,6 +259,49 @@
     --sidebar: hsl(210 20% 98%);
 }
 
+/* DOST HR-style admin sidebar (expanded #4a5d96, collapsed #404e82) */
+@layer components {
+    .sidebar-dost-shell .group[data-state='expanded'] [data-sidebar='sidebar'] {
+        background-color: #4a5d96;
+        color: #b8c2de;
+        border-color: rgb(255 255 255 / 0.12);
+        --sidebar: #4a5d96;
+        --sidebar-background: #4a5d96;
+        --sidebar-foreground: #b8c2de;
+        --sidebar-primary: #ffffff;
+        --sidebar-primary-foreground: #4a5d96;
+        --sidebar-accent: rgb(255 255 255 / 0.12);
+        --sidebar-accent-foreground: #ffffff;
+        --sidebar-border: rgb(255 255 255 / 0.12);
+        --sidebar-ring: rgb(255 255 255 / 0.35);
+    }
+
+    .sidebar-dost-shell .group[data-state='collapsed'] [data-sidebar='sidebar'] {
+        background-color: #404e82;
+        color: #a8b2d1;
+        border-color: rgb(255 255 255 / 0.1);
+        --sidebar: #404e82;
+        --sidebar-background: #404e82;
+        --sidebar-foreground: #a8b2d1;
+        --sidebar-accent: rgb(255 255 255 / 0.1);
+        --sidebar-accent-foreground: #ffffff;
+        --sidebar-border: rgb(255 255 255 / 0.1);
+        --sidebar-ring: rgb(255 255 255 / 0.3);
+    }
+
+    [data-sidebar='sidebar'][data-mobile='true'] {
+        background-color: #4a5d96;
+        color: #b8c2de;
+        --sidebar: #4a5d96;
+        --sidebar-background: #4a5d96;
+        --sidebar-foreground: #b8c2de;
+        --sidebar-accent: rgb(255 255 255 / 0.12);
+        --sidebar-accent-foreground: #ffffff;
+        --sidebar-border: rgb(255 255 255 / 0.12);
+        --sidebar-ring: rgb(255 255 255 / 0.35);
+    }
+}
+
 .dark {
     --background: hsl(0 0% 3.9%);
     --foreground: hsl(0 0% 98%);

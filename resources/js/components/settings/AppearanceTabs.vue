@@ -9,7 +9,7 @@ interface Props {
     compact?: boolean;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
     compact: false,
 });
 
@@ -30,14 +30,36 @@ function isSelected(value: 'light' | 'dark'): boolean {
 
     return false;
 }
+
+function buttonClass(selected: boolean): string {
+    const base =
+        'flex cursor-pointer items-center justify-center rounded-md transition-colors duration-200';
+    const size = props.compact ? 'min-h-9 flex-1 px-2 py-1.5' : 'px-3.5 py-1.5';
+
+    if (!selected) {
+        return [base, size, 'text-[#4a5a7a] hover:bg-white/50 hover:text-[#2a3550]'].join(' ');
+    }
+
+    return [base, size, 'bg-white text-[#2f3a5c] shadow-sm'].join(' ');
+}
+
+function iconClass(value: 'light' | 'dark', selected: boolean): string {
+    if (!selected) {
+        return 'h-4 w-4 shrink-0 text-current';
+    }
+    if (value === 'light') {
+        return 'h-4 w-4 shrink-0 text-yellow-400';
+    }
+    return 'h-4 w-4 shrink-0 text-zinc-600';
+}
 </script>
 
 <template>
     <div
         :class="
             compact
-                ? 'flex w-full gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800'
-                : 'inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800'
+                ? 'scheme-light flex w-full gap-1 rounded-lg bg-[#8a99c0]/40 p-1'
+                : 'scheme-light inline-flex gap-1 rounded-lg bg-[#8a99c0]/40 p-1'
         "
     >
         <button
@@ -46,16 +68,14 @@ function isSelected(value: 'light' | 'dark'): boolean {
             type="button"
             :aria-label="label"
             :aria-pressed="isSelected(value)"
+            :class="buttonClass(isSelected(value))"
             @click="updateAppearance(value)"
-            :class="[
-                'flex items-center justify-center rounded-md transition-colors',
-                compact ? 'min-h-9 flex-1 px-2 py-1.5' : 'px-3.5 py-1.5',
-                isSelected(value)
-                    ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
-                    : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
-            ]"
         >
-            <component :is="Icon" class="h-4 w-4 shrink-0" :class="compact ? '' : '-ml-1'" />
+            <component
+                :is="Icon"
+                :class="[iconClass(value, isSelected(value)), compact ? '' : '-ml-1']"
+                :stroke-width="isSelected(value) ? 2.25 : 2"
+            />
             <span v-if="!compact" class="ml-1.5 text-sm">{{ label }}</span>
         </button>
     </div>

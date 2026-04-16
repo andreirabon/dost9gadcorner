@@ -22,31 +22,14 @@ withDefaults(defineProps<Props>(), {
     hideLogout: false,
     plain: false,
 });
-
-const sidebarLinkClass =
-    'flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring';
 </script>
 
 <template>
     <template v-if="plain">
-        <div class="space-y-2 border-sidebar-border border-t pt-2">
-            <p class="truncate px-2 text-xs text-muted-foreground">{{ user.email }}</p>
+        <div class="border-t border-white/10 pt-2">
             <div class="px-2">
                 <AppearanceTabs compact />
             </div>
-            <nav class="flex flex-col gap-0.5" aria-label="Account">
-                <Link
-                    v-if="!hideLogout"
-                    :class="sidebarLinkClass"
-                    method="post"
-                    :href="route('logout')"
-                    as="button"
-                    @click="handleLogout"
-                >
-                    <LogOut class="size-4 shrink-0 opacity-80" :stroke-width="2" aria-hidden="true" />
-                    Log out
-                </Link>
-            </nav>
         </div>
     </template>
 
