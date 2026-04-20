@@ -89,6 +89,7 @@ class ReportYearManagementController extends Controller
                 'description' => $reportYear->description,
                 'status' => $reportYear->status,
                 'publishedAt' => $reportYear->published_at?->toDateString(),
+                'coverImageUrl' => null,
                 'gfpsMembership' => [
                     'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),
                     'maleCount' => (int) ($reportYear->gfpsMembershipSummary?->male_count ?? 0),
@@ -117,6 +118,15 @@ class ReportYearManagementController extends Controller
         $reportYear->update($validated);
 
         return back();
+    }
+
+    public function destroy(ReportYear $reportYear): RedirectResponse
+    {
+        $this->authorize('delete', $reportYear);
+
+        $reportYear->delete();
+
+        return to_route('report-years.index');
     }
 
     public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear): RedirectResponse
@@ -319,7 +329,7 @@ class ReportYearManagementController extends Controller
 
                 return [
                     'reportMonthId' => $month->id,
-                    'label' => $month->short_name,
+                    'label' => $month->name,
                     'femaleCount' => (int) ($breakdown?->female_count ?? 0),
                     'femaleLedCount' => (int) ($breakdown?->female_led_count ?? 0),
                     'maleCount' => (int) ($breakdown?->male_count ?? 0),

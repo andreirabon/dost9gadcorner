@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(ReportLookupSeeder::class);
+        // Demo 2025 report (GFPS, RSTL, scholarship, program funding, etc.). Funding amounts live in that seeder.
         $this->call(ReportYear2025Seeder::class);
 
         // User::factory(10)->create();

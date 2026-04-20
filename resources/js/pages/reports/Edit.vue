@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
+import ReportPanelWatermark from '@/components/shared/ReportPanelWatermark.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +9,19 @@ import { REPORT_YEAR_FIELD_LIMITS } from '@/constants/reportYearFields';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { EditableReportYear, LookupSchoolYear } from '@/types/reports';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, FileChartColumnIncreasing } from 'lucide-vue-next';
+import {
+    ArrowLeft,
+    Briefcase,
+    Calendar,
+    CheckCircle2,
+    FileChartColumnIncreasing,
+    FlaskConical,
+    GraduationCap,
+    PieChart,
+    Presentation,
+    Save,
+    Users,
+} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Props {
@@ -131,6 +144,32 @@ const publishedAtLabel = computed(() => {
 
 const descriptionLength = computed(() => String(metadataForm.description ?? '').length);
 
+const displayReportTitle = computed(() => {
+    const t = String(metadataForm.title ?? '').trim();
+    if (t) {
+        return t;
+    }
+    const fromServer = props.reportYear.title?.trim();
+    if (fromServer) {
+        return fromServer;
+    }
+
+    return `${props.reportYear.year} report`;
+});
+
+const toNum = (v: unknown): number => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+};
+
+const gfpsMembershipTotal = computed(() =>
+    toNum(gfpsMembershipForm.female_count) + toNum(gfpsMembershipForm.male_count),
+);
+
+const scholarshipTotal = computed(() =>
+    toNum(scholarshipForm.female_count) + toNum(scholarshipForm.male_count),
+);
+
 const activeTab = ref('metadata');
 
 const tabs = [
@@ -151,24 +190,52 @@ const tabs = [
     >
         <Head :title="`Manage ${reportYear.year} report`" />
 
-            <div class="w-full px-2 sm:px-4 py-6">
-                <!-- Header and Tabs visually merged -->
+            <div class="w-full px-2 py-6 sm:px-4">
                 <header class="mb-2">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex min-w-0 flex-1 items-start gap-3">
                             <div
-                                class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white dark:bg-slate-800"
+                                class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/90 bg-slate-100 text-slate-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                                 aria-hidden="true"
                             >
                                 <FileChartColumnIncreasing class="size-5" :stroke-width="2" />
                             </div>
                             <div class="min-w-0 flex flex-col justify-center">
-                                <p class="text-[10px] font-bold tracking-[0.15em] text-slate-500 uppercase dark:text-zinc-400 mb-0.5">Editing year</p>
-                                <h1 class="text-2xl font-bold tracking-tight text-slate-900 tabular-nums leading-none dark:text-zinc-50">
-                                    {{ reportYear.year }}
+                                <div class="mb-0.5 flex flex-wrap items-center gap-x-4 gap-y-2">
+                                    <p class="text-[10px] font-bold tracking-[0.15em] text-slate-500 uppercase dark:text-zinc-400">
+                                        Editing year
+                                    </p>
+                                    <span
+                                        class="inline-flex max-w-full items-center gap-2 rounded-lg border border-emerald-200/85 bg-emerald-50/80 px-2.5 py-1 shadow-[0_1px_2px_rgba(16,185,129,0.08)] ring-1 ring-emerald-100/80 backdrop-blur-sm dark:border-emerald-800/55 dark:bg-emerald-950/50 dark:ring-emerald-900/45"
+                                    >
+                                        <span
+                                            class="flex size-7 shrink-0 items-center justify-center rounded-md border border-emerald-200/90 bg-white/60 shadow-sm dark:border-emerald-600/35 dark:bg-emerald-900/60"
+                                            aria-hidden="true"
+                                        >
+                                            <Calendar class="size-3.5 text-emerald-700 dark:text-emerald-300" :stroke-width="2" />
+                                        </span>
+                                        <span class="min-w-0 text-[10px] font-bold tracking-[0.12em] text-emerald-800 uppercase dark:text-emerald-300">
+                                            Published date
+                                        </span>
+                                        <span
+                                            v-if="publishedAtLabel"
+                                            class="text-[11px] font-semibold normal-case tracking-normal text-emerald-950 dark:text-emerald-100"
+                                        >
+                                            {{ publishedAtLabel }}
+                                        </span>
+                                        <span
+                                            v-else
+                                            class="text-[11px] font-medium normal-case tracking-normal text-emerald-600/75 dark:text-emerald-500/80"
+                                        >
+                                            —
+                                        </span>
+                                    </span>
+                                </div>
+                                <h1 class="text-2xl font-bold leading-none tracking-tight text-slate-900 tabular-nums dark:text-zinc-50">
+                                {{ displayReportTitle }}
                                 </h1>
                                 <p class="mt-1 max-w-xl text-xs text-slate-500 dark:text-zinc-400">
-                                    You can work in any order—use each tab’s save button when that section’s data is complete.
+                                    You can work in any order. Use each tab’s save button when that section’s data is complete.
                                 </p>
                             </div>
                         </div>
@@ -180,17 +247,20 @@ const tabs = [
                         </Button>
                     </div>
 
-                    <div class="border-b border-slate-200 dark:border-zinc-800 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        <nav class="-mb-px flex space-x-8 min-w-max px-1" aria-label="Tabs">
+                    <div class="overflow-x-auto overflow-y-hidden border-slate-200 border-b [scrollbar-width:none] dark:border-zinc-800 [&::-webkit-scrollbar]:hidden">
+                        <nav class="-mb-px flex min-w-max space-x-8 px-1" aria-label="Report sections" role="tablist">
                             <button
                                 v-for="tab in tabs"
                                 :key="tab.id"
+                                type="button"
+                                role="tab"
+                                :aria-selected="activeTab === tab.id"
                                 @click="activeTab = tab.id"
                                 :class="[
                                     activeTab === tab.id
-                                        ? 'border-purple-600 text-purple-600 dark:text-purple-400 dark:border-purple-400'
-                                        : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-zinc-700',
-                                    'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors'
+                                        ? 'border-teal-600 text-slate-900 dark:border-teal-500 dark:text-zinc-50'
+                                        : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-300',
+                                    'cursor-pointer whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors duration-200',
                                 ]"
                             >
                                 {{ tab.name }}
@@ -200,23 +270,31 @@ const tabs = [
                 </header>
 
                 <div class="w-full">
-                    <section v-show="activeTab === 'metadata'" class="report-panel">
-                        <HeadingSmall
-                        variant="report"
-                        title="Metadata"
-                    />
+                    <section v-show="activeTab === 'metadata'" class="report-panel" role="tabpanel">
+                        <ReportPanelWatermark>
+                            <Calendar class="size-32 sm:size-40" :stroke-width="1.5" />
+                        </ReportPanelWatermark>
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                            <div
+                                class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300"
+                                aria-hidden="true"
+                            >
+                                <Calendar class="size-5" :stroke-width="2" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <HeadingSmall
+                                    variant="report"
+                                    title="Metadata"
+                                    description="Calendar year, publication status, and the title and description readers see for this report."
+                                />
+                            </div>
+                        </div>
 
                     <form
-                        class="mt-6 flex flex-col gap-5 max-w-3xl [&_label]:text-[11px] [&_label]:uppercase [&_label]:tracking-wide [&_label]:font-semibold [&_label]:text-zinc-500 dark:[&_label]:text-zinc-400"
+                        class="report-form mt-6 flex max-w-3xl flex-col gap-6"
                         autocomplete="off"
                         @submit.prevent="updateMetadata"
                     >
-                        <div v-if="publishedAtLabel" class="rounded-lg border border-purple-200/90 bg-purple-50/80 px-3 py-2 text-sm text-purple-950 dark:border-purple-900/50 dark:bg-purple-950/40 dark:text-purple-100">
-                            <span class="font-medium">Published</span>
-                            <span class="text-purple-800 dark:text-purple-200"> · {{ publishedAtLabel }}</span>
-                            <span class="mt-0.5 block text-xs text-purple-800/80 dark:text-purple-300/80">From <code class="text-[11px]">published_at</code> (set on first publish).</span>
-                        </div>
-
                         <div class="grid gap-5 sm:grid-cols-[10rem_14rem]">
                             <div class="grid gap-2">
                                 <Label for="year">Year</Label>
@@ -254,7 +332,7 @@ const tabs = [
                                 :maxlength="REPORT_YEAR_FIELD_LIMITS.title"
                                 :class="inputClass"
                             />
-                            <p class="text-xs text-zinc-500 dark:text-zinc-500">Max {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-500">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
                             <InputError :message="metadataForm.errors.title" />
                         </div>
 
@@ -274,144 +352,238 @@ const tabs = [
                             <InputError :message="metadataForm.errors.description" />
                         </div>
 
-                        <div class="flex items-center gap-4">
-                            <Button :disabled="metadataForm.processing" variant="outline" class="report-btn-primary h-9 px-5">SAVE METADATA</Button>
-                            <p v-show="metadataForm.recentlySuccessful" class="text-sm text-zinc-500 dark:text-zinc-400">Saved.</p>
+                        <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+                            <Button type="submit" :disabled="metadataForm.processing" class="report-save-btn">
+                                <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
+                                Save metadata
+                            </Button>
+                            <p v-show="metadataForm.recentlySuccessful" class="report-save-hint">
+                                <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
+                                Saved
+                            </p>
                         </div>
                     </form>
                 </section>
 
-                <section v-show="activeTab === 'gfps_membership'" class="report-panel">
-                    <HeadingSmall variant="report" title="GFPS membership"/>
+                <section v-show="activeTab === 'gfps_membership'" class="report-panel" role="tabpanel">
+                    <ReportPanelWatermark>
+                        <Users class="size-32 sm:size-40" :stroke-width="1.5" />
+                    </ReportPanelWatermark>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300"
+                            aria-hidden="true"
+                        >
+                            <Users class="size-5" :stroke-width="2" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <HeadingSmall
+                                variant="report"
+                                title="GFPS membership"
+                                description="Total GFPS members by sex for this reporting year. Use whole numbers only."
+                            />
+                        </div>
+                    </div>
 
                         <form
-                            class="mt-6 space-y-5 max-w-3xl [&_label]:text-[11px] [&_label]:uppercase [&_label]:tracking-wide [&_label]:font-semibold [&_label]:text-zinc-500 dark:[&_label]:text-zinc-400"
+                            class="report-form mt-6 max-w-3xl space-y-6"
                             @submit.prevent="updateGfpsMembership"
                         >
-                            <div class="grid gap-5 sm:grid-cols-[12rem_12rem]">
-                                <div class="grid gap-2">
-                                    <Label for="gfps_female_count">Female count</Label>
-                                    <Input
-                                        id="gfps_female_count"
-                                        v-model="gfpsMembershipForm.female_count"
-                                        type="number"
-                                        min="0"
-                                        :class="inputClass"
-                                    />
-                                    <InputError :message="gfpsMembershipForm.errors.female_count" />
-                                </div>
+                            <div class="rounded-xl border border-zinc-200/80 bg-zinc-50/60 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+                                <div class="grid gap-5 sm:grid-cols-2">
+                                    <div class="grid gap-2 border-l-2 border-rose-200/90 pl-3 dark:border-rose-900/40">
+                                        <Label for="gfps_female_count">Female count</Label>
+                                        <Input
+                                            id="gfps_female_count"
+                                            v-model="gfpsMembershipForm.female_count"
+                                            type="number"
+                                            min="0"
+                                            inputmode="numeric"
+                                            :class="inputClass"
+                                        />
+                                        <InputError :message="gfpsMembershipForm.errors.female_count" />
+                                    </div>
 
-                                <div class="grid gap-2">
-                                    <Label for="gfps_male_count">Male count</Label>
-                                    <Input id="gfps_male_count" v-model="gfpsMembershipForm.male_count" type="number" min="0" :class="inputClass" />
-                                    <InputError :message="gfpsMembershipForm.errors.male_count" />
+                                    <div class="grid gap-2 border-l-2 border-sky-200/90 pl-3 dark:border-sky-900/40">
+                                        <Label for="gfps_male_count">Male count</Label>
+                                        <Input
+                                            id="gfps_male_count"
+                                            v-model="gfpsMembershipForm.male_count"
+                                            type="number"
+                                            min="0"
+                                            inputmode="numeric"
+                                            :class="inputClass"
+                                        />
+                                        <InputError :message="gfpsMembershipForm.errors.male_count" />
+                                    </div>
                                 </div>
+                                <p class="mt-1 max-w-md text-xs text-zinc-500 dark:text-zinc-500">
+                                    Total members: <span class="font-medium text-zinc-700 tabular-nums dark:text-zinc-300">{{ gfpsMembershipTotal }}</span>
+                                </p>
                             </div>
 
-                            <div class="flex items-center gap-4">
-                                <Button type="submit" variant="outline" class="report-btn-primary h-9 px-5" :disabled="gfpsMembershipForm.processing">
-                                    SAVE GFPS MEMBERSHIP
+                            <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+                                <Button type="submit" class="report-save-btn" :disabled="gfpsMembershipForm.processing">
+                                    <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
+                                    Save GFPS membership
                                 </Button>
-                                <p v-show="gfpsMembershipForm.recentlySuccessful" class="text-sm text-zinc-500 dark:text-zinc-400">Saved.</p>
+                                <p v-show="gfpsMembershipForm.recentlySuccessful" class="report-save-hint">
+                                    <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
+                                    Saved
+                                </p>
                             </div>
                         </form>
                 </section>
 
-                <section v-show="activeTab === 'scholarship'" class="report-panel">
-                    <HeadingSmall variant="report" title="Scholarship"/>
+                <section v-show="activeTab === 'scholarship'" class="report-panel" role="tabpanel">
+                    <ReportPanelWatermark>
+                        <GraduationCap class="size-32 sm:size-40" :stroke-width="1.5" />
+                    </ReportPanelWatermark>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300"
+                            aria-hidden="true"
+                        >
+                            <GraduationCap class="size-5" :stroke-width="2" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <HeadingSmall
+                                variant="report"
+                                title="Scholarship"
+                                description="Pick the school year, the reference date for the counts, then enter scholars by sex."
+                            />
+                        </div>
+                    </div>
 
                         <form
-                            class="mt-6 space-y-5 max-w-3xl [&_label]:text-[11px] [&_label]:uppercase [&_label]:tracking-wide [&_label]:font-semibold [&_label]:text-zinc-500 dark:[&_label]:text-zinc-400"
+                            class="report-form mt-6 max-w-3xl space-y-6"
                             @submit.prevent="updateScholarship"
                         >
-                            <div class="grid gap-2 max-w-md">
-                                <Label for="school_year_id">School year</Label>
-                                <select
-                                    id="school_year_id"
-                                    v-model="scholarshipForm.school_year_id"
-                                    class="report-select"
-                                >
-                                    <option value="" disabled>Select school year...</option>
-                                    <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
-                                        {{ sy.label }}
-                                    </option>
-                                </select>
-                                <InputError :message="scholarshipForm.errors.school_year_id" />
-                            </div>
-
-                            <div class="grid gap-2 max-w-xs">
-                                <Label for="as_of_date">As of date</Label>
-                                <Input id="as_of_date" v-model="scholarshipForm.as_of_date" type="date" :class="inputClass" />
-                                <InputError :message="scholarshipForm.errors.as_of_date" />
-                            </div>
-
-                            <div class="grid gap-5 sm:grid-cols-[12rem_12rem]">
+                            <div class="grid gap-5 sm:grid-cols-[minmax(0,1fr)_11rem]">
                                 <div class="grid gap-2">
-                                    <Label for="scholarship_female_count">Female count</Label>
-                                    <Input
-                                        id="scholarship_female_count"
-                                        v-model="scholarshipForm.female_count"
-                                        type="number"
-                                        min="0"
-                                        :class="inputClass"
-                                    />
-                                    <InputError :message="scholarshipForm.errors.female_count" />
+                                    <Label for="school_year_id">School year</Label>
+                                    <select
+                                        id="school_year_id"
+                                        v-model="scholarshipForm.school_year_id"
+                                        class="report-select"
+                                    >
+                                        <option value="" disabled>Select school year…</option>
+                                        <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
+                                            {{ sy.label }}
+                                        </option>
+                                    </select>
+                                    <InputError :message="scholarshipForm.errors.school_year_id" />
                                 </div>
 
                                 <div class="grid gap-2">
-                                    <Label for="scholarship_male_count">Male count</Label>
-                                    <Input
-                                        id="scholarship_male_count"
-                                        v-model="scholarshipForm.male_count"
-                                        type="number"
-                                        min="0"
-                                        :class="inputClass"
-                                    />
-                                    <InputError :message="scholarshipForm.errors.male_count" />
+                                    <Label for="as_of_date">As of date</Label>
+                                    <Input id="as_of_date" v-model="scholarshipForm.as_of_date" type="date" :class="inputClass" />
+                                    <InputError :message="scholarshipForm.errors.as_of_date" />
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-4">
-                                <Button type="submit" variant="outline" class="report-btn-primary h-9 px-5" :disabled="scholarshipForm.processing">
-                                    SAVE SCHOLARSHIP
+                            <div class="rounded-xl border border-zinc-200/80 bg-zinc-50/60 p-4 dark:border-zinc-800 dark:bg-zinc-950/50">
+                                <div class="grid gap-5 sm:grid-cols-2">
+                                    <div class="grid gap-2 border-l-2 border-rose-200/90 pl-3 dark:border-rose-900/40">
+                                        <Label for="scholarship_female_count">Female count</Label>
+                                        <Input
+                                            id="scholarship_female_count"
+                                            v-model="scholarshipForm.female_count"
+                                            type="number"
+                                            min="0"
+                                            inputmode="numeric"
+                                            :class="inputClass"
+                                        />
+                                        <InputError :message="scholarshipForm.errors.female_count" />
+                                    </div>
+
+                                    <div class="grid gap-2 border-l-2 border-sky-200/90 pl-3 dark:border-sky-900/40">
+                                        <Label for="scholarship_male_count">Male count</Label>
+                                        <Input
+                                            id="scholarship_male_count"
+                                            v-model="scholarshipForm.male_count"
+                                            type="number"
+                                            min="0"
+                                            inputmode="numeric"
+                                            :class="inputClass"
+                                        />
+                                        <InputError :message="scholarshipForm.errors.male_count" />
+                                    </div>
+                                </div>
+                                <p class="mt-1 max-w-md text-xs text-zinc-500 dark:text-zinc-500">
+                                    Total scholars: <span class="font-medium text-zinc-700 tabular-nums dark:text-zinc-300">{{ scholarshipTotal }}</span>
+                                </p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+                                <Button type="submit" class="report-save-btn" :disabled="scholarshipForm.processing">
+                                    <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
+                                    Save scholarship
                                 </Button>
-                                <p v-show="scholarshipForm.recentlySuccessful" class="text-sm text-zinc-500 dark:text-zinc-400">Saved.</p>
+                                <p v-show="scholarshipForm.recentlySuccessful" class="report-save-hint">
+                                    <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
+                                    Saved
+                                </p>
                             </div>
                         </form>
                 </section>
 
-                <section v-show="activeTab === 'gfps_assemblies'" class="report-panel">
-                    <HeadingSmall variant="report" title="GFPS assemblies"/>
+                <section v-show="activeTab === 'gfps_assemblies'" class="report-panel" role="tabpanel">
+                    <ReportPanelWatermark>
+                        <Presentation class="size-32 sm:size-40" :stroke-width="1.5" />
+                    </ReportPanelWatermark>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300"
+                            aria-hidden="true"
+                        >
+                            <Presentation class="size-5" :stroke-width="2" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <HeadingSmall
+                                variant="report"
+                                title="GFPS assemblies"
+                                description="Attendance by assembly period. Enter headcounts by sex for each row."
+                            />
+                        </div>
+                    </div>
 
-                    <form class="mt-6 space-y-5 max-w-3xl [&_label]:text-[11px] [&_label]:uppercase [&_label]:tracking-wide [&_label]:font-semibold [&_label]:text-zinc-500 dark:[&_label]:text-zinc-400" @submit.prevent="updateGfpsAssemblies">
-                        <div class="grid gap-4">
+                    <form class="report-form mt-6 max-w-3xl space-y-6" @submit.prevent="updateGfpsAssemblies">
+                        <div class="report-data-shell divide-y divide-zinc-200/70 dark:divide-zinc-800">
+                            <div class="report-data-head md:grid-cols-[minmax(0,1fr)_9rem_9rem]">
+                                <span>Period</span>
+                                <span>Female</span>
+                                <span>Male</span>
+                            </div>
                             <div
                                 v-for="(row, index) in gfpsAssembliesForm.attendances"
                                 :key="row.period_id"
-                                class="report-row grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_9rem_9rem]"
+                                class="report-data-row md:grid-cols-[minmax(0,1fr)_9rem_9rem]"
                             >
-                                <div class="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                                <div class="mb-3 text-sm font-semibold text-zinc-900 md:mb-0 dark:text-zinc-100">
                                     {{ reportYear.gfpsAssemblies[index]?.label }}
                                 </div>
 
                                 <div class="grid gap-2">
-                                    <Label :for="`gfps_assembly_female_${row.period_id}`">Female count</Label>
+                                    <Label :for="`gfps_assembly_female_${row.period_id}`" class="md:sr-only">Female count</Label>
                                     <Input
                                         :id="`gfps_assembly_female_${row.period_id}`"
                                         v-model="row.female_count"
                                         type="number"
                                         min="0"
+                                        inputmode="numeric"
                                         :class="inputClass"
                                     />
                                 </div>
 
                                 <div class="grid gap-2">
-                                    <Label :for="`gfps_assembly_male_${row.period_id}`">Male count</Label>
+                                    <Label :for="`gfps_assembly_male_${row.period_id}`" class="md:sr-only">Male count</Label>
                                     <Input
                                         :id="`gfps_assembly_male_${row.period_id}`"
                                         v-model="row.male_count"
                                         type="number"
                                         min="0"
+                                        inputmode="numeric"
                                         :class="inputClass"
                                     />
                                 </div>
@@ -420,47 +592,75 @@ const tabs = [
 
                         <InputError :message="gfpsAssembliesForm.errors.attendances" />
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" variant="outline" class="report-btn-primary h-9 px-5" :disabled="gfpsAssembliesForm.processing">
-                                SAVE ASSEMBLIES
+                        <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+                            <Button type="submit" class="report-save-btn" :disabled="gfpsAssembliesForm.processing">
+                                <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
+                                Save assemblies
                             </Button>
-                            <p v-show="gfpsAssembliesForm.recentlySuccessful" class="text-sm text-zinc-500 dark:text-zinc-400">Saved.</p>
+                            <p v-show="gfpsAssembliesForm.recentlySuccessful" class="report-save-hint">
+                                <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
+                                Saved
+                            </p>
                         </div>
                     </form>
                 </section>
 
-                <section v-show="activeTab === 'employee_status'" class="report-panel">
-                    <HeadingSmall variant="report" title="Employee status"/>
+                <section v-show="activeTab === 'employee_status'" class="report-panel" role="tabpanel">
+                    <ReportPanelWatermark>
+                        <Briefcase class="size-32 sm:size-40" :stroke-width="1.5" />
+                    </ReportPanelWatermark>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300"
+                            aria-hidden="true"
+                        >
+                            <Briefcase class="size-5" :stroke-width="2" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <HeadingSmall
+                                variant="report"
+                                title="Employee status"
+                                description="Workforce headcounts by employment status and sex. Use the same definitions as HR records."
+                            />
+                        </div>
+                    </div>
 
-                    <form class="mt-6 space-y-5 max-w-3xl [&_label]:text-[11px] [&_label]:uppercase [&_label]:tracking-wide [&_label]:font-semibold [&_label]:text-zinc-500 dark:[&_label]:text-zinc-400" @submit.prevent="updateEmployeeStatuses">
-                        <div class="grid gap-4">
+                    <form class="report-form mt-6 max-w-3xl space-y-6" @submit.prevent="updateEmployeeStatuses">
+                        <div class="report-data-shell divide-y divide-zinc-200/70 dark:divide-zinc-800">
+                            <div class="report-data-head md:grid-cols-[minmax(0,1fr)_9rem_9rem]">
+                                <span>Employment status</span>
+                                <span>Female</span>
+                                <span>Male</span>
+                            </div>
                             <div
                                 v-for="(row, index) in employeeStatusesForm.breakdowns"
                                 :key="row.employment_status_id"
-                                class="report-row grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_9rem_9rem]"
+                                class="report-data-row md:grid-cols-[minmax(0,1fr)_9rem_9rem]"
                             >
-                                <div class="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                                <div class="mb-3 text-sm font-semibold text-zinc-900 md:mb-0 dark:text-zinc-100">
                                     {{ reportYear.employeeStatuses[index]?.label }}
                                 </div>
 
                                 <div class="grid gap-2">
-                                    <Label :for="`employee_female_${row.employment_status_id}`">Female count</Label>
+                                    <Label :for="`employee_female_${row.employment_status_id}`" class="md:sr-only">Female count</Label>
                                     <Input
                                         :id="`employee_female_${row.employment_status_id}`"
                                         v-model="row.female_count"
                                         type="number"
                                         min="0"
+                                        inputmode="numeric"
                                         :class="inputClass"
                                     />
                                 </div>
 
                                 <div class="grid gap-2">
-                                    <Label :for="`employee_male_${row.employment_status_id}`">Male count</Label>
+                                    <Label :for="`employee_male_${row.employment_status_id}`" class="md:sr-only">Male count</Label>
                                     <Input
                                         :id="`employee_male_${row.employment_status_id}`"
                                         v-model="row.male_count"
                                         type="number"
                                         min="0"
+                                        inputmode="numeric"
                                         :class="inputClass"
                                     />
                                 </div>
@@ -469,141 +669,235 @@ const tabs = [
 
                         <InputError :message="employeeStatusesForm.errors.breakdowns" />
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" variant="outline" class="report-btn-primary h-9 px-5" :disabled="employeeStatusesForm.processing">
-                                SAVE EMPLOYEES
+                        <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+                            <Button type="submit" class="report-save-btn" :disabled="employeeStatusesForm.processing">
+                                <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
+                                Save employee status
                             </Button>
-                            <p v-show="employeeStatusesForm.recentlySuccessful" class="text-sm text-zinc-500 dark:text-zinc-400">Saved.</p>
+                            <p v-show="employeeStatusesForm.recentlySuccessful" class="report-save-hint">
+                                <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
+                                Saved
+                            </p>
                         </div>
                     </form>
                 </section>
 
-                <section v-show="activeTab === 'rstl_monthly'" class="report-panel">
-                    <HeadingSmall variant="report" title="RSTL by month"/>
+                <section v-show="activeTab === 'rstl_monthly'" class="report-panel" role="tabpanel">
+                    <ReportPanelWatermark>
+                        <FlaskConical class="size-32 sm:size-40" :stroke-width="1.5" />
+                    </ReportPanelWatermark>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300"
+                            aria-hidden="true"
+                        >
+                            <FlaskConical class="size-5" :stroke-width="2" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <HeadingSmall
+                                variant="report"
+                                title="RSTL by month"
+                                description="Monthly RSTL activity: clients or visits by sex, plus female-led and male-led counts. Scroll horizontally on small screens if the column labels do not fit."
+                            />
+                        </div>
+                    </div>
 
-                    <form class="mt-6 space-y-5 max-w-5xl [&_label]:text-[11px] [&_label]:uppercase [&_label]:tracking-wide [&_label]:font-semibold [&_label]:text-zinc-500 dark:[&_label]:text-zinc-400" @submit.prevent="updateRstlMonthly">
-                        <div class="grid gap-4">
-                            <div
-                                v-for="(row, index) in rstlForm.breakdowns"
-                                :key="row.report_month_id"
-                                class="report-row grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_repeat(4,8rem)]"
-                            >
-                                <div class="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                                    {{ reportYear.rstlMonthly[index]?.label }}
-                                </div>
+                    <form class="report-form mt-6 max-w-5xl space-y-6" @submit.prevent="updateRstlMonthly">
+                        <div class="-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0">
+                            <div class="min-w-176">
+                                <div class="report-data-shell divide-y divide-zinc-200/70 dark:divide-zinc-800">
+                                    <div
+                                        class="report-data-head md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(5.5rem,8rem))]"
+                                    >
+                                        <span>Month</span>
+                                        <span>Female</span>
+                                        <span>Female-led</span>
+                                        <span>Male</span>
+                                        <span>Male-led</span>
+                                    </div>
+                                    <div
+                                        v-for="(row, index) in rstlForm.breakdowns"
+                                        :key="row.report_month_id"
+                                        class="report-data-row md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(5.5rem,8rem))]"
+                                    >
+                                        <div class="mb-3 text-sm font-semibold text-zinc-900 md:mb-0 dark:text-zinc-100">
+                                            {{ reportYear.rstlMonthly[index]?.label }}
+                                        </div>
 
-                                <div class="grid gap-2">
-                                    <Label :for="`rstl_female_${row.report_month_id}`">Female</Label>
-                                    <Input :id="`rstl_female_${row.report_month_id}`" v-model="row.female_count" type="number" min="0" :class="inputClass" />
-                                </div>
+                                        <div class="grid gap-2">
+                                            <Label :for="`rstl_female_${row.report_month_id}`" class="md:sr-only">Female</Label>
+                                            <Input
+                                                :id="`rstl_female_${row.report_month_id}`"
+                                                v-model="row.female_count"
+                                                type="number"
+                                                min="0"
+                                                inputmode="numeric"
+                                                :class="inputClass"
+                                            />
+                                        </div>
 
-                                <div class="grid gap-2">
-                                    <Label :for="`rstl_female_led_${row.report_month_id}`">Female-led</Label>
-                                    <Input
-                                        :id="`rstl_female_led_${row.report_month_id}`"
-                                        v-model="row.female_led_count"
-                                        type="number"
-                                        min="0"
-                                        :class="inputClass"
-                                    />
-                                </div>
+                                        <div class="grid gap-2">
+                                            <Label :for="`rstl_female_led_${row.report_month_id}`" class="md:sr-only">Female-led</Label>
+                                            <Input
+                                                :id="`rstl_female_led_${row.report_month_id}`"
+                                                v-model="row.female_led_count"
+                                                type="number"
+                                                min="0"
+                                                inputmode="numeric"
+                                                :class="inputClass"
+                                            />
+                                        </div>
 
-                                <div class="grid gap-2">
-                                    <Label :for="`rstl_male_${row.report_month_id}`">Male</Label>
-                                    <Input :id="`rstl_male_${row.report_month_id}`" v-model="row.male_count" type="number" min="0" :class="inputClass" />
-                                </div>
+                                        <div class="grid gap-2">
+                                            <Label :for="`rstl_male_${row.report_month_id}`" class="md:sr-only">Male</Label>
+                                            <Input
+                                                :id="`rstl_male_${row.report_month_id}`"
+                                                v-model="row.male_count"
+                                                type="number"
+                                                min="0"
+                                                inputmode="numeric"
+                                                :class="inputClass"
+                                            />
+                                        </div>
 
-                                <div class="grid gap-2">
-                                    <Label :for="`rstl_male_led_${row.report_month_id}`">Male-led</Label>
-                                    <Input
-                                        :id="`rstl_male_led_${row.report_month_id}`"
-                                        v-model="row.male_led_count"
-                                        type="number"
-                                        min="0"
-                                        :class="inputClass"
-                                    />
+                                        <div class="grid gap-2">
+                                            <Label :for="`rstl_male_led_${row.report_month_id}`" class="md:sr-only">Male-led</Label>
+                                            <Input
+                                                :id="`rstl_male_led_${row.report_month_id}`"
+                                                v-model="row.male_led_count"
+                                                type="number"
+                                                min="0"
+                                                inputmode="numeric"
+                                                :class="inputClass"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <InputError :message="rstlForm.errors.breakdowns" />
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" variant="outline" class="report-btn-primary h-9 px-5" :disabled="rstlForm.processing">SAVE RSTL</Button>
-                            <p v-show="rstlForm.recentlySuccessful" class="text-sm text-zinc-500 dark:text-zinc-400">Saved.</p>
+                        <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+                            <Button type="submit" class="report-save-btn" :disabled="rstlForm.processing">
+                                <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
+                                Save RSTL
+                            </Button>
+                            <p v-show="rstlForm.recentlySuccessful" class="report-save-hint">
+                                <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
+                                Saved
+                            </p>
                         </div>
                     </form>
                 </section>
 
-                <section v-show="activeTab === 'program_funding'" class="report-panel">
-                    <HeadingSmall variant="report" title="Program funding"/>
+                <section v-show="activeTab === 'program_funding'" class="report-panel" role="tabpanel">
+                    <ReportPanelWatermark>
+                        <PieChart class="size-32 sm:size-40" :stroke-width="1.5" />
+                    </ReportPanelWatermark>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <div
+                            class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-teal-200/80 bg-teal-50 text-teal-700 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-300"
+                            aria-hidden="true"
+                        >
+                            <PieChart class="size-5" :stroke-width="2" />
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <HeadingSmall
+                                variant="report"
+                                title="Program funding"
+                                description="Projects and funding amounts by program, split by sex. Amounts use your organization’s currency; enter decimals as needed."
+                            />
+                        </div>
+                    </div>
 
-                    <form class="mt-6 space-y-5 max-w-5xl [&_label]:text-[11px] [&_label]:uppercase [&_label]:tracking-wide [&_label]:font-semibold [&_label]:text-zinc-500 dark:[&_label]:text-zinc-400" @submit.prevent="updateProgramFunding">
-                        <div class="grid gap-4">
-                            <div
-                                v-for="(row, index) in fundingForm.summaries"
-                                :key="row.funding_program_id"
-                                class="report-row grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_repeat(4,9rem)]"
-                            >
-                                <div class="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                                    {{ reportYear.programFunding[index]?.label }}
-                                </div>
+                    <form class="report-form mt-6 max-w-5xl space-y-6" @submit.prevent="updateProgramFunding">
+                        <div class="-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0">
+                            <div class="min-w-208">
+                                <div class="report-data-shell divide-y divide-zinc-200/70 dark:divide-zinc-800">
+                                    <div class="report-data-head md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(6.5rem,9rem))]">
+                                        <span>Program</span>
+                                        <span>Female projects</span>
+                                        <span>Female amount</span>
+                                        <span>Male projects</span>
+                                        <span>Male amount</span>
+                                    </div>
+                                    <div
+                                        v-for="(row, index) in fundingForm.summaries"
+                                        :key="row.funding_program_id"
+                                        class="report-data-row md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(6.5rem,9rem))]"
+                                    >
+                                        <div class="mb-3 text-sm font-semibold text-zinc-900 md:mb-0 dark:text-zinc-100">
+                                            {{ reportYear.programFunding[index]?.label }}
+                                        </div>
 
-                                <div class="grid gap-2">
-                                    <Label :for="`funding_female_projects_${row.funding_program_id}`">Female projects</Label>
-                                    <Input
-                                        :id="`funding_female_projects_${row.funding_program_id}`"
-                                        v-model="row.female_projects"
-                                        type="number"
-                                        min="0"
-                                        :class="inputClass"
-                                    />
-                                </div>
+                                        <div class="grid gap-2">
+                                            <Label :for="`funding_female_projects_${row.funding_program_id}`" class="md:sr-only">Female projects</Label>
+                                            <Input
+                                                :id="`funding_female_projects_${row.funding_program_id}`"
+                                                v-model="row.female_projects"
+                                                type="number"
+                                                min="0"
+                                                inputmode="numeric"
+                                                :class="inputClass"
+                                            />
+                                        </div>
 
-                                <div class="grid gap-2">
-                                    <Label :for="`funding_female_amount_${row.funding_program_id}`">Female amount</Label>
-                                    <Input
-                                        :id="`funding_female_amount_${row.funding_program_id}`"
-                                        v-model="row.female_amount"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        :class="inputClass"
-                                    />
-                                </div>
+                                        <div class="grid gap-2">
+                                            <Label :for="`funding_female_amount_${row.funding_program_id}`" class="md:sr-only">Female amount</Label>
+                                            <Input
+                                                :id="`funding_female_amount_${row.funding_program_id}`"
+                                                v-model="row.female_amount"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                inputmode="decimal"
+                                                placeholder="0.00"
+                                                :class="inputClass"
+                                            />
+                                        </div>
 
-                                <div class="grid gap-2">
-                                    <Label :for="`funding_male_projects_${row.funding_program_id}`">Male projects</Label>
-                                    <Input
-                                        :id="`funding_male_projects_${row.funding_program_id}`"
-                                        v-model="row.male_projects"
-                                        type="number"
-                                        min="0"
-                                        :class="inputClass"
-                                    />
-                                </div>
+                                        <div class="grid gap-2">
+                                            <Label :for="`funding_male_projects_${row.funding_program_id}`" class="md:sr-only">Male projects</Label>
+                                            <Input
+                                                :id="`funding_male_projects_${row.funding_program_id}`"
+                                                v-model="row.male_projects"
+                                                type="number"
+                                                min="0"
+                                                inputmode="numeric"
+                                                :class="inputClass"
+                                            />
+                                        </div>
 
-                                <div class="grid gap-2">
-                                    <Label :for="`funding_male_amount_${row.funding_program_id}`">Male amount</Label>
-                                    <Input
-                                        :id="`funding_male_amount_${row.funding_program_id}`"
-                                        v-model="row.male_amount"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        :class="inputClass"
-                                    />
+                                        <div class="grid gap-2">
+                                            <Label :for="`funding_male_amount_${row.funding_program_id}`" class="md:sr-only">Male amount</Label>
+                                            <Input
+                                                :id="`funding_male_amount_${row.funding_program_id}`"
+                                                v-model="row.male_amount"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                inputmode="decimal"
+                                                placeholder="0.00"
+                                                :class="inputClass"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <InputError :message="fundingForm.errors.summaries" />
 
-                        <div class="flex items-center gap-4">
-                            <Button type="submit" variant="outline" class="report-btn-primary h-9 px-5" :disabled="fundingForm.processing">
-                                SAVE FUNDING
+                        <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+                            <Button type="submit" class="report-save-btn" :disabled="fundingForm.processing">
+                                <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
+                                Save program funding
                             </Button>
-                            <p v-show="fundingForm.recentlySuccessful" class="text-sm text-zinc-500 dark:text-zinc-400">Saved.</p>
+                            <p v-show="fundingForm.recentlySuccessful" class="report-save-hint">
+                                <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
+                                Saved
+                            </p>
                         </div>
                     </form>
                 </section>

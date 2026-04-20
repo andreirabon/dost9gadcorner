@@ -9,17 +9,24 @@ interface Props {
     breadcrumbs?: BreadcrumbItemType[];
     showFooter?: boolean;
     contentClass?: string;
+    compactMainColumn?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
     showFooter: true,
     contentClass: '',
+    compactMainColumn: false,
 });
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs" :show-footer="showFooter" :content-class="contentClass">
+    <AppLayout
+        :breadcrumbs="breadcrumbs"
+        :show-footer="showFooter"
+        :content-class="contentClass"
+        :compact-main-column="compactMainColumn"
+    >
         <slot />
     </AppLayout>
 </template>

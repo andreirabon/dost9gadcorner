@@ -99,7 +99,7 @@ class ReportYearTransformer
         return $reportYear->rstlMonthlyBreakdowns
             ->sortBy(fn ($breakdown) => $breakdown->reportMonth?->month_number)
             ->map(fn ($breakdown): array => [
-                'label' => (string) $breakdown->reportMonth?->short_name,
+                'label' => (string) $breakdown->reportMonth?->name,
                 'female' => (int) $breakdown->female_count,
                 'femaleLed' => (int) $breakdown->female_led_count,
                 'male' => (int) $breakdown->male_count,

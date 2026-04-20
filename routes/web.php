@@ -29,6 +29,7 @@ Route::middleware('auth')
         Route::post('/', [ReportYearManagementController::class, 'store'])->name('store');
         Route::get('/{reportYear}/edit', [ReportYearManagementController::class, 'edit'])->name('edit');
         Route::patch('/{reportYear}', [ReportYearManagementController::class, 'update'])->name('update');
+        Route::delete('/{reportYear}', [ReportYearManagementController::class, 'destroy'])->name('destroy');
         Route::patch('/{reportYear}/gfps-membership', [ReportYearManagementController::class, 'updateGfpsMembership'])->name('gfps-membership.update');
         Route::patch('/{reportYear}/gfps-assemblies', [ReportYearManagementController::class, 'updateGfpsAssemblies'])->name('gfps-assemblies.update');
         Route::patch('/{reportYear}/employee-statuses', [ReportYearManagementController::class, 'updateEmployeeStatuses'])->name('employee-statuses.update');

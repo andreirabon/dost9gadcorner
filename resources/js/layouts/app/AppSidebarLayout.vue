@@ -11,12 +11,18 @@ interface Props {
     showFooter?: boolean;
     /** Main column (below breadcrumb bar): flex + background for full-height pages */
     contentClass?: string;
+    /**
+     * When true, the block below the header does not use flex-1, so it only spans page content
+     * (avoids a tall empty flex shell on short forms). Lists/editor pages keep default false.
+     */
+    compactMainColumn?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
     breadcrumbs: () => [],
     showFooter: true,
     contentClass: '',
+    compactMainColumn: false,
 });
 </script>
 
@@ -25,8 +31,11 @@ withDefaults(defineProps<Props>(), {
         <AppSidebar />
         <AppContent variant="sidebar" class="flex min-h-0 flex-1 flex-col overflow-x-hidden">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
-            <div class="flex min-h-0 flex-1 flex-col">
-                <div class="min-h-0 flex-1" :class="contentClass">
+            <div class="flex min-h-0 flex-col" :class="compactMainColumn ? 'flex-none' : 'flex-1'">
+                <div
+                    class="min-h-0"
+                    :class="[contentClass, compactMainColumn ? false : 'flex-1']"
+                >
                     <slot />
                 </div>
                 <AppFooter v-if="showFooter" />

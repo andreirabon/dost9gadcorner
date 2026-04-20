@@ -13,6 +13,7 @@ use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\RstlMonthlyBreakdown;
 use App\Models\ScholarshipSummary;
+use App\Models\SchoolYear;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -75,7 +76,7 @@ class ReportYear2025Seeder extends Seeder
                 );
             }
 
-            $schoolYear = \App\Models\SchoolYear::query()->where('name', '2025-2026')->first();
+            $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
 
             ScholarshipSummary::query()->updateOrCreate(
                 ['report_year_id' => $reportYear->id],
@@ -114,18 +115,20 @@ class ReportYear2025Seeder extends Seeder
 
             $fundingPrograms = FundingProgram::query()->pluck('id', 'slug');
 
+            // Amounts are in PHP. Values below are rounded demo totals so seed data is easy to read
+            // in admin forms (plain number inputs do not show thousands separators).
             foreach ([
                 'setup' => [
                     'male_projects' => 12,
-                    'male_amount' => 33181684.88,
+                    'male_amount' => 33_200_000.00,
                     'female_projects' => 8,
-                    'female_amount' => 16959729.04,
+                    'female_amount' => 16_950_000.00,
                 ],
                 'cest' => [
                     'male_projects' => 9,
-                    'male_amount' => 14749920.98,
+                    'male_amount' => 14_750_000.00,
                     'female_projects' => 5,
-                    'female_amount' => 14673427.29,
+                    'female_amount' => 14_700_000.00,
                 ],
             ] as $slug => $values) {
                 ProgramFundingSummary::query()->updateOrCreate(

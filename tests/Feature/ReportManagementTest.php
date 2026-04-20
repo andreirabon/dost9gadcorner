@@ -5,6 +5,7 @@ use App\Models\FundingProgram;
 use App\Models\GfpsAssemblyPeriod;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
+use App\Models\SchoolYear;
 use App\Models\User;
 use Database\Seeders\ReportLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,6 +73,35 @@ test('authenticated user can create a report year shell', function () {
     ]);
 });
 
+test('guest cannot delete a report year', function () {
+    $reportYear = ReportYear::factory()->create();
+
+    $this->delete("/report-years/{$reportYear->id}")
+        ->assertRedirect(route('login'));
+});
+
+test('non-admin user cannot delete a report year', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+    $reportYear = ReportYear::factory()->create();
+
+    $this->actingAs($user)
+        ->delete("/report-years/{$reportYear->id}")
+        ->assertForbidden();
+});
+
+test('admin can delete a report year', function () {
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2030]);
+
+    $this->actingAs($user)
+        ->delete("/report-years/{$reportYear->id}")
+        ->assertRedirect(route('report-years.index'));
+
+    $this->assertDatabaseMissing('report_years', [
+        'id' => $reportYear->id,
+    ]);
+});
+
 test('authenticated user can view and update normalized report sections', function () {
     $this->seed(ReportLookupSeeder::class);
 
@@ -124,7 +154,7 @@ test('authenticated user can view and update normalized report sections', functi
         ])
         ->assertRedirect();
 
-    $schoolYear = \App\Models\SchoolYear::query()->where('name', '2025-2026')->first();
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
 
     $this->actingAs($user)
         ->patch("/report-years/{$reportYear->id}/scholarship", [
