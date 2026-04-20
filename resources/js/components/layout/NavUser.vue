@@ -1,17 +1,14 @@
 <script setup lang="ts">
+import AppearanceTabs from '@/components/settings/AppearanceTabs.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
-import UserMenuContent from '@/components/user/UserMenuContent.vue';
 import { useInitials } from '@/composables/useInitials';
 import { type User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { ChevronsUpDown } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 
 const user = usePage().props.auth.user! as User;
 
-const menuOpen = ref(false);
 const { getInitials } = useInitials();
 const showAvatar = computed(() => Boolean(user.avatar && user.avatar !== ''));
 
@@ -23,27 +20,17 @@ function handleLogout(): void {
 <template>
     <SidebarMenu>
         <SidebarMenuItem>
-            <Collapsible v-model:open="menuOpen" class="w-full">
+            <div class="flex w-full flex-col gap-3">
+                <div class="px-1.5 group-data-[collapsible=icon]:hidden">
+                    <AppearanceTabs compact />
+                </div>
+
                 <div
                     class="flex w-full items-center gap-2 rounded-lg px-0.5 py-1.5 transition-colors group-data-[collapsible=icon]:hidden"
                 >
-                    <CollapsibleTrigger as-child>
-                        <button
-                            type="button"
-                            class="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md text-[#8a99c0] transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
-                            :aria-expanded="menuOpen"
-                            :aria-label="menuOpen ? 'Collapse account options' : 'Expand account options'"
-                        >
-                            <ChevronsUpDown
-                                class="size-4 transition-transform duration-200"
-                                :class="menuOpen ? 'rotate-180' : ''"
-                                aria-hidden="true"
-                            />
-                        </button>
-                    </CollapsibleTrigger>
                     <span class="min-w-0 flex-1 truncate text-left text-sm font-medium text-sidebar-foreground">{{ user.name }}</span>
                     <Link
-                        class="shrink-0 cursor-pointer rounded-md px-2 py-1.5 text-xs font-medium text-sidebar-foreground transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:outline-none"
+                        class="shrink-0 cursor-pointer rounded-md border border-red-400/45 bg-red-950/55 px-3 py-1.5 text-sm font-semibold text-red-100 shadow-[inset_0_1px_0_0_rgba(254,202,202,0.12)] transition-colors hover:border-red-300/55 hover:bg-red-900/65 hover:text-white focus-visible:ring-2 focus-visible:ring-red-400/55 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent focus-visible:outline-none"
                         method="post"
                         :href="route('logout')"
                         as="button"
@@ -61,11 +48,7 @@ function handleLogout(): void {
                         </AvatarFallback>
                     </Avatar>
                 </div>
-
-                <CollapsibleContent class="overflow-hidden">
-                    <UserMenuContent :user="user" plain hide-logout />
-                </CollapsibleContent>
-            </Collapsible>
+            </div>
         </SidebarMenuItem>
     </SidebarMenu>
 </template>

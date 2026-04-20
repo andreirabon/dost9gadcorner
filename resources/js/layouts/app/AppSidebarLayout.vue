@@ -4,6 +4,7 @@ import AppFooter from '@/components/layout/AppFooter.vue';
 import AppShell from '@/components/layout/AppShell.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppSidebarHeader from '@/components/layout/AppSidebarHeader.vue';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
@@ -30,6 +31,15 @@ withDefaults(defineProps<Props>(), {
     <AppShell variant="sidebar">
         <AppSidebar />
         <AppContent variant="sidebar" class="flex min-h-0 flex-1 flex-col overflow-x-hidden">
+            <div
+                v-if="breadcrumbs.length === 0"
+                class="flex h-12 shrink-0 items-center border-b border-sidebar-border/70 bg-background px-3 md:hidden"
+            >
+                <SidebarTrigger
+                    class="rounded-md border border-sidebar-border/80 bg-background shadow-sm"
+                    aria-label="Open sidebar"
+                />
+            </div>
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
             <div class="flex min-h-0 flex-col" :class="compactMainColumn ? 'flex-none' : 'flex-1'">
                 <div

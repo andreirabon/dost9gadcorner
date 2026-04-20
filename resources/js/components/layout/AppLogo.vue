@@ -10,7 +10,7 @@ defineOptions({
             <img
                 src="/svg/dost.svg"
                 alt=""
-                class="h-10 w-auto max-w-11 object-contain object-left"
+                class="h-10 w-auto max-w-11 object-contain object-left group-data-[collapsible=icon]:object-center"
                 loading="eager"
                 decoding="async"
                 width="44"

@@ -48,7 +48,7 @@ function iconClass(value: 'light' | 'dark', selected: boolean): string {
         return 'h-4 w-4 shrink-0 text-current';
     }
     if (value === 'light') {
-        return 'h-4 w-4 shrink-0 text-yellow-400';
+        return 'h-4 w-4 shrink-0 text-black';
     }
     return 'h-4 w-4 shrink-0 text-zinc-600';
 }
