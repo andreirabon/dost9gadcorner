@@ -29,6 +29,7 @@ Route::middleware('auth')
         Route::post('/', [ReportYearManagementController::class, 'store'])->name('store');
         Route::get('/{reportYear}/edit', [ReportYearManagementController::class, 'edit'])->name('edit');
         Route::patch('/{reportYear}', [ReportYearManagementController::class, 'update'])->name('update');
+        Route::patch('/{reportYear}/metadata', [ReportYearManagementController::class, 'updateMetadata'])->name('metadata.update');
         Route::delete('/{reportYear}', [ReportYearManagementController::class, 'destroy'])->name('destroy');
         Route::patch('/{reportYear}/gfps-membership', [ReportYearManagementController::class, 'updateGfpsMembership'])->name('gfps-membership.update');
         Route::patch('/{reportYear}/gfps-assemblies', [ReportYearManagementController::class, 'updateGfpsAssemblies'])->name('gfps-assemblies.update');
@@ -47,7 +48,6 @@ Route::middleware('auth')
         Route::get('/appearance', fn () => Inertia::render('settings/Appearance'))->name('appearance');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
         Route::get('/password', [PasswordController::class, 'edit'])->name('password.edit');

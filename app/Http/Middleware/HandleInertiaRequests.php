@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ReportYear;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -39,18 +40,25 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $user = $request->user();
+        $authUser = $user === null
+            ? null
+            : [
+                ...$user->only(['id', 'username']),
+                'role' => $user->role?->value,
+                'can' => [
+                    'accessReportYears' => $user->can('viewAny', ReportYear::class),
+                    'createReportYears' => $user->can('create', ReportYear::class),
+                    'deleteReportYears' => $user->canDeleteReportYears(),
+                ],
+            ];
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user()?->only([
-                    'id',
-                    'name',
-                    'email',
-                    'email_verified_at',
-                    'is_admin',
-                ]),
+                'user' => $authUser,
             ],
             'ziggy' => [
                 ...(new Ziggy)->toArray(),

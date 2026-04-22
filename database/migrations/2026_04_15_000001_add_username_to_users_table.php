@@ -14,13 +14,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table): void {
-            $table->string('username')->nullable()->unique()->after('name');
+            $table->string('username')->nullable()->unique()->after('id');
         });
 
         foreach (DB::table('users')->orderBy('id')->get() as $row) {
-            $email = (string) $row->email;
-            $local = Str::before($email, '@');
-            $base = $local !== '' ? Str::slug($local) : 'user';
+            $email = property_exists($row, 'email') ? (string) $row->email : '';
+            if ($email !== '') {
+                $local = Str::before($email, '@');
+                $base = $local !== '' ? Str::slug($local) : 'user';
+            } else {
+                $base = 'user'.$row->id;
+            }
             if ($base === '') {
                 $base = 'user';
             }

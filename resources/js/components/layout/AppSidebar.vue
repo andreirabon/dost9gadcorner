@@ -17,7 +17,7 @@ const isIconOnly = computed(() => !isMobile.value && !open.value);
 
 const mainNavItems = computed((): NavItem[] => {
     const items: NavItem[] = [];
-    if (page.props.auth.user?.is_admin) {
+    if (page.props.auth.user?.can?.accessReportYears) {
         items.push({
             title: 'Reports',
             href: '/report-years',
@@ -85,7 +85,7 @@ const mainNavItems = computed((): NavItem[] => {
         </SidebarHeader>
 
         <SidebarContent class="px-3 py-5">
-            <NavMain section-label="Reports" :items="mainNavItems" />
+            <NavMain :items="mainNavItems" />
         </SidebarContent>
 
         <SidebarFooter class="border-t border-white/10 p-2">

@@ -14,7 +14,7 @@ class UpdateRstlMonthlyBreakdownsRequest extends FormRequest
         /** @var ReportYear $reportYear */
         $reportYear = $this->route('reportYear');
 
-        return $this->user()?->can('update', $reportYear) ?? false;
+        return $this->user()?->can('updateRstlMonthly', $reportYear) ?? false;
     }
 
     /**

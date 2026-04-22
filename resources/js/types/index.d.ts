@@ -44,13 +44,18 @@ export type AppPageProps<T extends Record<string, unknown> = Record<string, unkn
     sidebarOpen: boolean;
 };
 
+export type UserRoleSlug = 'none' | 'administrator' | 'gad' | 'scholarship' | 'hr' | 'rstl' | 'tos';
+
 export interface User {
     id: number;
-    name: string;
-    email: string;
+    username: string | null;
     avatar?: string;
-    email_verified_at: string | null;
-    is_admin: boolean;
+    role?: UserRoleSlug;
+    can?: {
+        accessReportYears?: boolean;
+        createReportYears?: boolean;
+        deleteReportYears?: boolean;
+    };
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

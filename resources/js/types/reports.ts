@@ -92,6 +92,17 @@ export interface EditableProgramFundingRow {
     maleAmount: number;
 }
 
+export interface ReportYearEditAbilities {
+    updateFullReport: boolean;
+    updateMetadata: boolean;
+    updateGfpsMembership: boolean;
+    updateGfpsAssemblies: boolean;
+    updateScholarship: boolean;
+    updateEmployeeStatuses: boolean;
+    updateRstlMonthly: boolean;
+    updateProgramFunding: boolean;
+}
+
 export interface EditableReportYear {
     id: number;
     year: number;

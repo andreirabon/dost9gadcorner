@@ -32,6 +32,8 @@ const createReportYearUrl = computed(() => route('report-years.create'));
 const flushLogout = (): void => {
     router.flushAll();
 };
+
+const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
 </script>
 
 <template>
@@ -57,7 +59,7 @@ const flushLogout = (): void => {
                 </Link>
 
                 <template v-else>
-                    <DropdownMenu v-if="user.is_admin">
+                    <DropdownMenu v-if="user?.can?.accessReportYears">
                         <DropdownMenuTrigger :as-child="true">
                             <Button
                                 type="button"
@@ -82,7 +84,7 @@ const flushLogout = (): void => {
                                         All report years
                                     </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem :as-child="true">
+                                <DropdownMenuItem v-if="user?.can?.createReportYears" :as-child="true">
                                     <Link
                                         class="flex w-full cursor-pointer items-center gap-2"
                                         :href="createReportYearUrl"
@@ -116,9 +118,9 @@ const flushLogout = (): void => {
                                 class="touch-target relative h-10 w-10 cursor-pointer rounded-full p-1 text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 sm:h-9 sm:w-9"
                             >
                                 <Avatar class="size-8 overflow-hidden rounded-full border border-white/15">
-                                    <AvatarImage v-if="user.avatar" :src="user.avatar" :alt="user.name" />
+                                    <AvatarImage v-if="user.avatar" :src="user.avatar" :alt="userMenuLabel" />
                                     <AvatarFallback class="rounded-full bg-purple-800/90 font-semibold text-white">
-                                        {{ getInitials(user.name) }}
+                                        {{ getInitials(userMenuLabel) }}
                                     </AvatarFallback>
                                 </Avatar>
                                 <span class="sr-only">Open account menu</span>

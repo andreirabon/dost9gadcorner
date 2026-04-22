@@ -26,9 +26,6 @@ class AuthenticatedSessionController extends Controller
         return $response;
     }
 
-    /**
-     * Session flash `status` is rendered as text on the login page; keep plain string and bounded length.
-     */
     private function safeLoginStatus(mixed $status): ?string
     {
         if (! is_string($status) || $status === '') {
@@ -44,7 +41,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
-        $default = $user !== null && $user->is_admin
+        $default = $user !== null && $user->shouldDefaultLoginToReportYears()
             ? route('report-years.index')
             : route('index');
 
@@ -95,6 +92,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('index');
+        return redirect()->route('login');
     }
 }

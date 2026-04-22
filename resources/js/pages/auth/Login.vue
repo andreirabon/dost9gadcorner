@@ -47,7 +47,7 @@ const submit = (): void => {
                         <div class="flex items-center gap-2.5 sm:gap-3">
                             <img
                                 src="/svg/dost.svg"
-                                alt=""
+                                alt="DOST Region IX"
                                 class="h-10 w-auto shrink-0 sm:h-12"
                                 width="56"
                                 height="56"
@@ -91,7 +91,7 @@ const submit = (): void => {
 
                     <form class="space-y-3.5 px-4 py-4 sm:px-5 sm:py-5" @submit.prevent="submit">
                         <div class="grid gap-1.5">
-                            <Label for="username" class="text-sm font-medium text-slate-600">Username</Label>
+                            <Label for="username" class="text-sm font-medium text-slate-700">Username</Label>
                             <div class="relative">
                                 <UserRound
                                     class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
@@ -108,7 +108,7 @@ const submit = (): void => {
                                     autocapitalize="none"
                                     autocorrect="off"
                                     spellcheck="false"
-                                    class="h-10 border-slate-200 bg-white pr-3 pl-10 shadow-xs transition-colors focus-visible:border-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-500/20"
+                                    class="h-10 border-slate-200 bg-white pr-3 pl-10 shadow-xs transition-colors duration-200 focus-visible:border-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-500/20"
                                     placeholder="Enter your username"
                                 />
                             </div>
@@ -130,7 +130,7 @@ const submit = (): void => {
                                     name="password"
                                     required
                                     autocomplete="current-password"
-                                    class="h-10 border-slate-200 bg-white pr-10 pl-10 shadow-xs transition-colors focus-visible:border-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-500/20"
+                                    class="h-10 border-slate-200 bg-white pr-10 pl-10 shadow-xs transition-colors duration-200 focus-visible:border-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-500/20"
                                     placeholder="Enter your password"
                                 />
                                 <button
@@ -169,12 +169,6 @@ const submit = (): void => {
                         </Button>
                     </form>
 
-                    <!-- <div class="border-slate-100 border-t bg-slate-50/40 px-4 py-2.5 sm:px-5">
-                        <p class="text-center text-sm leading-snug font-bold">
-                            <span class="text-red-400">Forgot your password?</span><br />
-                            <span class="text-red-400">Please contact Administrator right away.</span>
-                        </p>
-                    </div> -->
                     <div class="border-white/15 border-t bg-[#003d7a] px-4 py-2.5 sm:px-5">
                         <div class="text-center">
                             <Link

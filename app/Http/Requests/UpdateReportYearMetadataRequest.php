@@ -7,14 +7,14 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateGfpsAssemblyAttendancesRequest extends FormRequest
+class UpdateReportYearMetadataRequest extends FormRequest
 {
     public function authorize(): bool
     {
         /** @var ReportYear $reportYear */
         $reportYear = $this->route('reportYear');
 
-        return $this->user()?->can('updateGfpsAssemblies', $reportYear) ?? false;
+        return $this->user()?->can('updateMetadata', $reportYear) ?? false;
     }
 
     /**
@@ -22,11 +22,13 @@ class UpdateGfpsAssemblyAttendancesRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var ReportYear $reportYear */
+        $reportYear = $this->route('reportYear');
+
         return [
-            'attendances' => ['required', 'array', 'min:1'],
-            'attendances.*.period_id' => ['required', 'integer', Rule::exists('gfps_assembly_periods', 'id')],
-            'attendances.*.female_count' => ['required', 'integer', 'min:0'],
-            'attendances.*.male_count' => ['required', 'integer', 'min:0'],
+            'year' => ['required', 'integer', 'min:2000', 'max:2100', Rule::unique('report_years', 'year')->ignore($reportYear->id)],
+            'title' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:4000'],
         ];
     }
 }

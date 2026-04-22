@@ -6,32 +6,31 @@ import { computed } from 'vue';
 
 interface Props {
     user: User;
-    showEmail?: boolean;
-    /** Text only (no avatar) — e.g. sidebar user row */
+    /** Text only (no avatar) */
     hideAvatar?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    showEmail: false,
     hideAvatar: false,
 });
 
 const { getInitials } = useInitials();
 
-// Compute whether we should show the avatar image
 const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '');
+
+const displayHandle = computed(() => props.user.username?.trim() || '—');
 </script>
 
 <template>
     <Avatar v-if="!hideAvatar" class="h-8 w-8 overflow-hidden rounded-lg">
-        <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="user.name" />
+        <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="displayHandle" />
         <AvatarFallback class="rounded-lg text-black dark:text-white">
-            {{ getInitials(user.name) }}
+            {{ getInitials(displayHandle) }}
         </AvatarFallback>
     </Avatar>
 
-    <div class="grid min-w-0 flex-1 text-left text-sm leading-tight">
-        <span class="truncate font-medium">{{ user.name }}</span>
-        <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{ user.email }}</span>
+    <div class="grid min-w-0 flex-1 text-left leading-tight">
+        <span class="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Username</span>
+        <span class="mt-0.5 truncate font-sans text-sm font-semibold tracking-tight text-foreground tabular-nums">{{ displayHandle }}</span>
     </div>
 </template>

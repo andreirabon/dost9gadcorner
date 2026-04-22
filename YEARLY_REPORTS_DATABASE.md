@@ -64,7 +64,7 @@ The database was created in this order:
 5. create lookup seeders,
 6. create a dedicated seeder for the old 2025 hard-coded values,
 7. wire the public app to read from MySQL (homepage + report detail via `ReportYearTransformer`, **published-only** on public routes),
-8. add session login/logout and policy-protected management routes for admins.
+8. add session login/logout and policy-protected management routes (role-based editors + administrators).
 
 ## Migrations That Created The Tables
 
@@ -74,9 +74,11 @@ These migration files created the database structure:
 - `database/migrations/2026_04_07_012657_create_report_lookup_tables.php`
 - `database/migrations/2026_04_07_012658_create_report_fact_tables.php`
 
-A later migration adds **who may manage** yearly reports at the account level:
+Later migrations define **login identity** and **who may manage** yearly reports at the account level:
 
-- `database/migrations/2026_04_14_000001_add_is_admin_to_users_table.php` — adds `users.is_admin` (boolean, default `true` so existing accounts keep access until you flip the flag).
+- `database/migrations/2026_04_14_000001_add_is_admin_to_users_table.php` (historical) — originally added `users.is_admin` (boolean).
+- `database/migrations/2026_04_15_000001_add_username_to_users_table.php` — adds `users.username` (unique) for session sign-in; existing rows get a backfilled value.
+- `database/migrations/2026_04_22_000001_add_role_to_users_and_drop_is_admin.php` — replaces `is_admin` with `users.role` (string, matches `App\Enums\UserRole`), migrates `is_admin = 1` → `administrator`, `is_admin = 0` → `none`, then drops `is_admin`.
 
 ## Parent Table
 
@@ -104,23 +106,47 @@ Why it exists:
 Important rules:
 
 - `year` is unique, so only one `2025` report can exist.
-- **Public site** (`/` and `/reports/{reportYear}`) only exposes rows where `status` is **published**. Rows with `status` **pending** stay in MySQL for admin use (`/report-years` and edit flows) until they are published.
+- **Public site** (`/` and `/reports/{reportYear}`) only exposes rows where `status` is **published**. Rows with `status` **pending** stay in MySQL for management use (`/report-years` and edit flows) until they are **published** (a capability reserved to **administrator** accounts; see below).
 
 ## Users table and who can edit reports
 
-Report-year **data** lives in the tables above, but **editing** that data is restricted in the application to **admin users**.
+Report-year **data** lives in the tables above, but **editing** is restricted by `users.role` and `App\Policies\ReportYearPolicy` (enforced in form request `authorize()` methods).
 
-The `users` table (from `0001_01_01_000000_create_users_table.php`) gained:
+The `users` table has (among standard Laravel columns):
 
-- `is_admin` — `boolean`; when `true`, the user may list, create, and update `report_years` and related fact rows (enforced by `App\Policies\ReportYearPolicy` and form requests). When `false`, those routes return **403**.
+- `username` — unique string used for **web session login** (with `password`). Sign-in is **not** by email. Validation allows letters, numbers, and `._-` (see `App\Http\Requests\Auth\LoginRequest`).
+- `role` — one of: `none`, `administrator`, `gad`, `scholarship`, `hr`, `rstl`, `tos` (`App\Enums\UserRole`). This is application authorization, not a foreign key on `report_years`. There is no `created_by` on yearly report rows; access is “whoever the policy allows, by section, for any year they can open.”
 
-This flag is application authorization, not a foreign key on `report_years`. There is no `created_by` on yearly report rows in the current schema; access is “any admin can edit any year.”
+**Rough mapping (all subject to the policy in code):**
 
-For local/testing, `database/factories/UserFactory.php` defaults `is_admin` to `true`, and `database/seeders/DatabaseSeeder.php` sets `is_admin` on the seeded demo user so migrations + seed still allow report management out of the box.
+| Role            | List/open edit UI | Create/delete year, publish | Section updates                                                                          |
+| --------------- | ----------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
+| `none`          | no (403)          | no                          | no                                                                                       |
+| `administrator` | yes               | yes                         | all                                                                                      |
+| `gad`           | yes               | no                          | metadata (year/title/description via `metadata` route), GFPS membership, GFPS assemblies |
+| `scholarship`   | yes               | no                          | scholarship                                                                              |
+| `hr`            | yes               | no                          | employee status                                                                          |
+| `rstl`          | yes               | no                          | RSTL by month                                                                            |
+| `tos`           | yes               | no                          | program funding                                                                          |
+
+**Full** `PATCH /report-years/{id}` (including **status** / publish) is **administrator** only. **Gad** and other non-admin roles that may edit **metadata** use `PATCH /report-years/{id}/metadata` (year, title, description) so `published_at` / `status` stay under administrator control.
+
+`database/seeders/DatabaseSeeder.php` calls `UserSeeder` after report seeders. **`UserSeeder`** (see below) always seeds the primary administrator. When `APP_ENV=local`, it also seeds **five** report-editor users (`gad` through `tos`); it does **not** seed `UserRole::Administrator` again (that is the primary admin) or `UserRole::None` (use `User::factory()` or a manual row to test `none`). For tests and ad-hoc records, `database/factories/UserFactory.php` defaults `role` to `administrator` and generates a unique `username`.
+
+### `UserSeeder` and seed passwords
+
+`database/seeders/UserSeeder.php` uses `Model::unguarded()` when writing `role` (not mass-assignable on `User` in normal app code). All seeded emails share one domain: private const `EMAIL_DOMAIN` in that class is `r9.dost` (e.g. `gad@r9.dost`). **Upsert key is always `username`** so changing an email in the seeder does not try to insert a second row and violate the unique index.
+
+- **Primary administrator** — `updateOrCreate` on `username` `ARR`, sets `email` to `dost9arrgad@r9.dost` and `UserRole::Administrator`. Password: `PRIMARY_ADMIN_PASSWORD` in `.env`, or the seeder’s default if unset (set the env var in production).
+- **Local-only** (`APP_ENV=local`) — one row per report-editor role, usernames: `GADStaff`, `ScholarshipStaff`, `HRStaff`, `RSTLStaff`, `TOSStaff` (emails `gad@` … `tos@` + domain). Shared password: `LOCAL_SAMPLE_PASSWORD` in `.env`, or the seeder’s default (see `UserSeeder`).
+
+`.env.example` lists `PRIMARY_ADMIN_PASSWORD` and `LOCAL_SAMPLE_PASSWORD` as optional overrides.
 
 ### Session authentication (login / logout)
 
-Report management and settings routes live behind Laravel’s `auth` middleware. Unauthenticated visitors are redirected to **`/login`** (`login` route); signing out uses **`POST /logout`** (`logout` route). This is **not** stored in the yearly-report tables—it only controls who can reach the management UI that edits `report_years` and related fact rows.
+Report management and settings routes live behind Laravel’s `auth` middleware. Unauthenticated visitors are redirected to **`/login`** (`login` route); signing out uses **`POST /logout`** (`logout` route). Credentials are posted to **`store`** on the login form: **`username` + `password`** (handled by `App\Http\Requests\Auth\LoginRequest` and `App\Http\Controllers\Auth\AuthenticatedSessionController`).
+
+**Default redirect after login:** if `url.intended` in the session is a safe in-app target, that wins; otherwise users whose role is not `none` go to `/report-years` (route name `report-years.index` — the report year list) via `User::shouldDefaultLoginToReportYears()` / `UserRole::canAccessReportManagement()`. Users with `role = none` go to the public home. This is **not** stored in the yearly-report tables; it only controls who reaches the management UI and where they land first.
 
 ## Lookup Tables
 
@@ -341,7 +367,7 @@ flowchart TD
 
 ## Laravel Models Created
 
-The following Eloquent models were created:
+The following Eloquent models were created for report data (plus `app/Models/User.php` for session auth, `users.role`, and `users.username`):
 
 - `app/Models/ReportYear.php`
 - `app/Models/EmploymentStatus.php`
@@ -369,7 +395,7 @@ Public Inertia payloads are shaped by **`App\Support\ReportYearTransformer`** (`
 
 ## Seeders Created
 
-Two important seeders were created:
+Important seeders include:
 
 ### `database/seeders/ReportLookupSeeder.php`
 
@@ -399,6 +425,10 @@ It includes:
 It also uses `updateOrCreate`, so it is idempotent.
 
 That means you can run it again without creating duplicate 2025 rows.
+
+### `database/seeders/UserSeeder.php`
+
+Creates the primary administrator and, in local, five report-editor accounts (`gad`…`tos`). Does not create a `none` role user. Details: [Users table and who can edit reports](#users-table-and-who-can-edit-reports) → **`UserSeeder` and seed passwords**.
 
 ## The Old 2025 Data
 
@@ -458,10 +488,11 @@ Charts and sections use **props from Laravel**, not hard-coded JSON in the front
 
 The project also includes report maintenance scaffolding for manual entry:
 
-- `app/Http/Controllers/ReportYearManagementController.php` — `index` / `edit` call `$this->authorize(...)`; mutations go through form requests below.
-- `app/Policies/ReportYearPolicy.php` — `viewAny`, `view`, `create`, `update`, `delete` require `auth` user with `is_admin === true`.
+- `app/Http/Controllers/ReportYearManagementController.php` — `index` / `edit` call `$this->authorize(...)`; mutations go through form requests below; `updateMetadata` serves the non-admin metadata route.
+- `app/Policies/ReportYearPolicy.php` — `viewAny` / `view`: any role except `none` (so editors can open the list and a year’s edit page). `create` / `delete` / full `update` (incl. publish): `administrator` only. Per-section: `updateMetadata`, `updateGfpsMembership`, `updateGfpsAssemblies`, `updateScholarship`, `updateEmployeeStatuses`, `updateRstlMonthly`, `updateProgramFunding` (see table above).
 - `app/Http/Requests/StoreReportYearRequest.php`
-- `app/Http/Requests/UpdateReportYearRequest.php`
+- `app/Http/Requests/UpdateReportYearRequest.php` (full year + status; administrators)
+- `app/Http/Requests/UpdateReportYearMetadataRequest.php` (year, title, description; `updateMetadata` on the policy—used when the UI saves metadata without changing publish `status`, e.g. **Gad** on `PATCH /report-years/{id}/metadata`)
 - `app/Http/Requests/UpdateGfpsMembershipSummaryRequest.php`
 - `app/Http/Requests/UpdateGfpsAssemblyAttendancesRequest.php`
 - `app/Http/Requests/UpdateEmployeeStatusBreakdownsRequest.php`
@@ -471,23 +502,29 @@ The project also includes report maintenance scaffolding for manual entry:
 
 Each update request’s `authorize()` checks the policy against the route’s `reportYear` (or `create` for new years).
 
-Routes live in `routes/web.php` under `Route::middleware('auth')->prefix('report-years')->...` so only signed-in users hit the controller; the policy then enforces admin. Guest access to protected routes redirects to **`/login`**.
+Routes live in `routes/web.php` under `Route::middleware('auth')->prefix('report-years')->...` so only signed-in users hit the controller; the policy then enforces the right role for each action. Guest access to protected routes redirects to **`/login`**.
+
+Shaped Inertia data:
+
+- `HandleInertiaRequests` shares `auth.user.role` and `auth.user.can` (`accessReportYears`, `createReportYears`, `deleteReportYears`) for nav and list UI.
+- `ReportYearManagementController@edit` passes an `abilities` object per section (which tabs and save actions are available).
 
 Frontend maintenance pages:
 
-- `resources/js/pages/reports/Index.vue` — create a new year shell (`POST report-years`) and list existing years; the create form is linkable via `#create-report-year` on the same URL.
-- `resources/js/pages/reports/Edit.vue` — section-by-section updates for normalized data.
+- `resources/js/pages/reports/Index.vue` — list years; create shell / delete year shown only when `can.createReportYears` / `can.deleteReportYears` (administrators). Editors without create still open **Edit** for allowed sections.
+- `resources/js/pages/reports/Edit.vue` — section-by-section updates; tabs hidden when the user has no ability for that section; metadata status control only for administrators.
 
-On the **public home** layout, admins see a **Reports** dropdown (all report years, new report year) plus **Log out** and avatar in `resources/js/components/home/HomeTopNav.vue` when `auth.user.is_admin` is true; non-admins still need `auth` for settings but do not manage report years. The server always enforces policy (403 if not admin).
+On the **public home** layout, users with `can.accessReportYears` see a **Reports** dropdown (`resources/js/components/home/HomeTopNav.vue`); **New report year** appears only if `can.createReportYears` is true. App shell sidebars/headers use the same flags. The server always enforces policy (403 if the user’s role does not allow that mutation).
 
 These pages were designed so users can update one section at a time.
 
-### Quick admin access (sign in → manage reports)
+### Quick access (sign in → manage reports)
 
 1. **URL:** `/login` (guest-only; after login you are redirected away from this route).
-2. **Who can manage report years:** users with `users.is_admin = true`. The migration defaults new users to admin; turn off per account in the database if someone should not manage reports.
-3. **After login:** admins are sent to `/report-years` by default (unless the session had another “intended” URL, for example you tried to open a protected page while logged out).
-4. **Workflow:** `/report-years` → create a year or open **Edit** on an existing row → fill sections → set **status** to **published** when ready (pending years stay off the public site).
+2. **Credentials:** **username** + password (the `users.username` value, not email). Seeded accounts: primary `ARR`, local samples `GADStaff`, `ScholarshipStaff`, `HRStaff`, `RSTLStaff`, `TOSStaff` (local only; see `UserSeeder`).
+3. **Who can open report management:** any user whose `users.role` is not `none` (editors and administrators). Set `role` in the database to match each account’s responsibilities (`gad`, `scholarship`, `hr`, `rstl`, `tos`, or `administrator` for full control).
+4. **After login:** users who may access report years are sent to `/report-years` by default (unless the session had another safe “intended” URL). Users with `role = none` go to the public home.
+5. **Workflow:** `/report-years` → (if allowed) create a year or open **Edit** → fill the sections your role can change → an **administrator** sets **status** to **published** when the public site should show that year.
 
 ## Commands Used
 
@@ -513,6 +550,12 @@ php artisan db:seed --class=ReportYear2025Seeder
 
 ```bash
 php artisan db:seed
+```
+
+### To re-run user seeding only (idempotent `updateOrCreate`)
+
+```bash
+php artisan db:seed --class=UserSeeder
 ```
 
 ## What `php artisan migrate` Actually Does
@@ -617,4 +660,4 @@ As a result:
 - 2025 lives in MySQL instead of Vue constants,
 - the app is ready for future manual yearly report entry,
 - **published** years are listed on the public homepage and viewable at `/reports/{id}`; **pending** years remain in the database only until published,
-- admin users (`users.is_admin`) can manage report data through the policy-protected routes after signing in; non-admins cannot change yearly report tables via the app.
+- session sign-in uses **`users.username`** + password; after signing in, users with a non-`none` `users.role` can use the report management UI within their allowed sections; `users.role = none` has no access; **administrators** can create/delete years and control publish status. All changes are enforced by `ReportYearPolicy` and form requests, not only the UI.

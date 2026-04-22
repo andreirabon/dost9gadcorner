@@ -9,7 +9,7 @@ withDefaults(
         sectionLabel?: string;
     }>(),
     {
-        sectionLabel: 'Menu',
+        sectionLabel: '',
     },
 );
 
@@ -31,6 +31,7 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
 <template>
     <SidebarGroup class="p-0">
         <SidebarGroupLabel
+            v-if="sectionLabel"
             class="mb-2 px-2 pt-0.5 pb-2 text-[10px] font-semibold tracking-[0.2em] text-[#8a99c0] uppercase group-data-[collapsible=icon]:hidden"
         >
             {{ sectionLabel }}

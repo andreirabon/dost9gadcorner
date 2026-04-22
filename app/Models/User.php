@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,14 +15,12 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * The attributes that are mass assignable (`role` is not — set only in trusted code).
      *
      * @var list<string>
      */
     protected $fillable = [
-        'name',
         'username',
-        'email',
         'password',
     ];
 
@@ -43,9 +42,18 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean',
+            'role' => UserRole::class,
         ];
+    }
+
+    public function shouldDefaultLoginToReportYears(): bool
+    {
+        return $this->role?->canAccessReportManagement() ?? false;
+    }
+
+    public function canDeleteReportYears(): bool
+    {
+        return $this->role === UserRole::ADMINISTRATOR;
     }
 }

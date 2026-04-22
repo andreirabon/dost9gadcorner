@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateEmployeeStatusBreakdownsRequest;
 use App\Http\Requests\UpdateGfpsAssemblyAttendancesRequest;
 use App\Http\Requests\UpdateGfpsMembershipSummaryRequest;
 use App\Http\Requests\UpdateProgramFundingSummariesRequest;
+use App\Http\Requests\UpdateReportYearMetadataRequest;
 use App\Http\Requests\UpdateReportYearRequest;
 use App\Http\Requests\UpdateRstlMonthlyBreakdownsRequest;
 use App\Http\Requests\UpdateScholarshipSummaryRequest;
@@ -21,6 +22,7 @@ use App\Models\ReportYear;
 use App\Models\RstlMonthlyBreakdown;
 use App\Models\SchoolYear;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -64,9 +66,10 @@ class ReportYearManagementController extends Controller
         return to_route('report-years.edit', $reportYear);
     }
 
-    public function edit(ReportYear $reportYear): Response
+    public function edit(Request $request, ReportYear $reportYear): Response
     {
         $this->authorize('view', $reportYear);
+        $user = $request->user();
 
         $reportYear->load([
             'gfpsMembershipSummary',
@@ -77,7 +80,19 @@ class ReportYearManagementController extends Controller
             'programFundingSummaries',
         ]);
 
+        $abilities = [
+            'updateFullReport' => $user->can('update', $reportYear),
+            'updateMetadata' => $user->can('updateMetadata', $reportYear),
+            'updateGfpsMembership' => $user->can('updateGfpsMembership', $reportYear),
+            'updateGfpsAssemblies' => $user->can('updateGfpsAssemblies', $reportYear),
+            'updateScholarship' => $user->can('updateScholarship', $reportYear),
+            'updateEmployeeStatuses' => $user->can('updateEmployeeStatuses', $reportYear),
+            'updateRstlMonthly' => $user->can('updateRstlMonthly', $reportYear),
+            'updateProgramFunding' => $user->can('updateProgramFunding', $reportYear),
+        ];
+
         return Inertia::render('reports/Edit', [
+            'abilities' => $abilities,
             'schoolYears' => SchoolYear::query()->orderBy('sort_order')->get()->map(fn (SchoolYear $sy) => [
                 'id' => $sy->id,
                 'label' => $sy->name,
@@ -116,6 +131,13 @@ class ReportYearManagementController extends Controller
             : null;
 
         $reportYear->update($validated);
+
+        return back();
+    }
+
+    public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear): RedirectResponse
+    {
+        $reportYear->update($request->validated());
 
         return back();
     }

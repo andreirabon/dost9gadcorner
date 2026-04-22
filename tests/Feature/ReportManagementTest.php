@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
 use App\Models\GfpsAssemblyPeriod;
@@ -19,7 +20,7 @@ test('guest user is redirected to login when opening report management', functio
 });
 
 test('non-admin user cannot access report management', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create(['role' => UserRole::None]);
 
     $this->actingAs($user)
         ->get('/report-years')
@@ -32,7 +33,7 @@ test('guest is redirected to login when opening new report year form', function 
 });
 
 test('non-admin user cannot open new report year form', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create(['role' => UserRole::None]);
 
     $this->actingAs($user)
         ->get('/report-years/create')
@@ -81,7 +82,7 @@ test('guest cannot delete a report year', function () {
 });
 
 test('non-admin user cannot delete a report year', function () {
-    $user = User::factory()->create(['is_admin' => false]);
+    $user = User::factory()->create(['role' => UserRole::None]);
     $reportYear = ReportYear::factory()->create();
 
     $this->actingAs($user)
@@ -205,4 +206,57 @@ test('authenticated user can view and update normalized report sections', functi
         'female_count' => 64,
         'male_count' => 114,
     ]);
+});
+
+test('scholarship user can list report years and edit scholarship but not other sections', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::SCHOLARSHIP]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $this->actingAs($user)
+        ->get('/report-years')
+        ->assertOk();
+
+    $this->actingAs($user)
+        ->get("/report-years/{$reportYear->id}/edit")
+        ->assertOk()
+        ->assertInertia(
+            fn (Assert $page) => $page
+                ->where('abilities.updateScholarship', true)
+                ->where('abilities.updateGfpsMembership', false),
+        );
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/gfps-membership", [
+            'female_count' => 1,
+            'male_count' => 1,
+        ])
+        ->assertForbidden();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/scholarship", [
+            'school_year_id' => $schoolYear->id,
+            'as_of_date' => '2025-01-13',
+            'female_count' => 10,
+            'male_count' => 20,
+        ])
+        ->assertRedirect();
+});
+
+test('gad user cannot change publication status on full report update route', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::GAD]);
+    $reportYear = ReportYear::factory()->create(['year' => 2024, 'status' => ReportYear::STATUS_PENDING]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}", [
+            'year' => 2024,
+            'title' => 'x',
+            'description' => 'y',
+            'status' => ReportYear::STATUS_PUBLISHED,
+        ])
+        ->assertForbidden();
 });

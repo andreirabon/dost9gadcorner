@@ -1,13 +1,24 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('admin is redirected to report years after login', function () {
+test('logout redirects to login', function () {
     $user = User::factory()->create([
-        'is_admin' => true,
+        'password' => 'password',
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('logout'))
+        ->assertRedirect(route('login'));
+});
+
+test('user with report access is redirected to report years after login', function (UserRole $role) {
+    $user = User::factory()->create([
+        'role' => $role,
         'password' => 'password',
     ]);
 
@@ -15,11 +26,14 @@ test('admin is redirected to report years after login', function () {
         'username' => $user->username,
         'password' => 'password',
     ])->assertRedirect(route('report-years.index'));
-});
+})->with([
+    UserRole::ADMINISTRATOR,
+    UserRole::SCHOLARSHIP,
+]);
 
 test('non-admin is redirected to home after login', function () {
     $user = User::factory()->create([
-        'is_admin' => false,
+        'role' => UserRole::None,
         'password' => 'password',
     ]);
 
@@ -52,7 +66,7 @@ test('login rejects password longer than 255 characters', function () {
 
 test('login ignores off-site url intended in session', function () {
     $user = User::factory()->create([
-        'is_admin' => false,
+        'role' => UserRole::None,
         'password' => 'password',
     ]);
 
@@ -66,7 +80,7 @@ test('login ignores off-site url intended in session', function () {
 
 test('login redirects to safe relative url intended', function () {
     $user = User::factory()->create([
-        'is_admin' => false,
+        'role' => UserRole::None,
         'password' => 'password',
     ]);
 
@@ -82,7 +96,7 @@ test('login redirects to safe same-host url intended', function () {
     config(['app.url' => 'http://localhost']);
 
     $user = User::factory()->create([
-        'is_admin' => false,
+        'role' => UserRole::None,
         'password' => 'password',
     ]);
 

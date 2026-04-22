@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { ManagedReportYearListItem } from '@/types/reports';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     ChevronLeft,
     ChevronRight,
@@ -32,6 +32,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const page = usePage();
+const canCreate = computed(() => page.props.auth.user?.can?.createReportYears === true);
+const canDelete = computed(() => page.props.auth.user?.can?.deleteReportYears === true);
 
 const searchQuery = ref('');
 const statusTab = ref<'all' | 'published' | 'pending'>('all');
@@ -157,16 +161,19 @@ function confirmDeleteReportYear(): void {
                         <FileChartColumnIncreasing class="mb-3 size-10 text-slate-400 dark:text-zinc-500" :stroke-width="1.5" aria-hidden="true" />
                         <p class="text-sm font-medium text-slate-800 dark:text-zinc-200">No years yet</p>
                         <p class="mt-1 max-w-sm text-sm text-slate-600 dark:text-zinc-400">
-                            Open
-                            <Link
-                                class="cursor-pointer font-medium text-teal-700 underline-offset-2 transition-colors hover:text-teal-800 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
-                                :href="route('report-years.create')"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                Create
-                            </Link>
-                            in a new tab to add the first report year.
+                            <template v-if="canCreate">
+                                Open
+                                <Link
+                                    class="cursor-pointer font-medium text-teal-700 underline-offset-2 transition-colors hover:text-teal-800 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+                                    :href="route('report-years.create')"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Create
+                                </Link>
+                                in a new tab to add the first report year.
+                            </template>
+                            <template v-else> Ask an administrator to add a year. </template>
                         </p>
                     </div>
                 </div>
@@ -188,7 +195,10 @@ function confirmDeleteReportYear(): void {
                                     List of report years
                                 </h1>
                                 <p class="mt-1 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-zinc-400">
-                                    Add a year in a separate tab, edit data by section, publish when the public site should show it.
+                                    <span v-if="canCreate"
+                                        >Add a year in a separate tab, edit data by section, publish when the public site should show it.</span
+                                    >
+                                    <span v-else> Open a year to edit the sections you are responsible for. </span>
                                 </p>
                             </div>
                         </div>
@@ -257,7 +267,7 @@ function confirmDeleteReportYear(): void {
                             >
                                 <RefreshCw class="size-4 text-slate-600 dark:text-zinc-400" :stroke-width="2" />
                             </Button>
-                            <Button as-child class="report-save-btn">
+                            <Button v-if="canCreate" as-child class="report-save-btn">
                                 <Link
                                     class="inline-flex cursor-pointer items-center gap-2"
                                     :href="route('report-years.create')"
@@ -377,7 +387,7 @@ function confirmDeleteReportYear(): void {
                                                     </TooltipTrigger>
                                                     <TooltipContent side="top">Edit</TooltipContent>
                                                 </Tooltip>
-                                                <Tooltip>
+                                                <Tooltip v-if="canDelete">
                                                     <TooltipTrigger as-child>
                                                         <Button
                                                             type="button"

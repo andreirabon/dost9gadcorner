@@ -47,7 +47,8 @@ const submit = () => {
                                     New year
                                 </h1>
                                 <p class="mt-0.5 max-w-2xl text-sm leading-snug text-slate-600 dark:text-zinc-400">
-                                    Creates the shell; open the editor next to fill GFPS, RSTL, funding, and other sections.
+                                    Administrators only. Creates a shell; open the editor to fill GFPS, RSTL, funding, and
+                                    other sections.
                                 </p>
                             </div>
                         </div>

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { REPORT_YEAR_FIELD_LIMITS } from '@/constants/reportYearFields';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { EditableReportYear, LookupSchoolYear } from '@/types/reports';
+import type { EditableReportYear, LookupSchoolYear, ReportYearEditAbilities } from '@/types/reports';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
@@ -22,14 +22,49 @@ import {
     Save,
     Users,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface Props {
     reportYear: EditableReportYear;
     schoolYears: LookupSchoolYear[];
+    abilities: ReportYearEditAbilities;
 }
 
 const props = defineProps<Props>();
+
+const tabDefs = [
+    { id: 'metadata', name: 'Metadata' },
+    { id: 'gfps_membership', name: 'GFPS Membership' },
+    { id: 'scholarship', name: 'Scholarship' },
+    { id: 'gfps_assemblies', name: 'GFPS Assemblies' },
+    { id: 'employee_status', name: 'Employee Status' },
+    { id: 'rstl_monthly', name: 'RSTL by Month' },
+    { id: 'program_funding', name: 'Program Funding' },
+] as const;
+
+function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
+    const a = props.abilities;
+    switch (id) {
+        case 'metadata':
+            return a.updateMetadata || a.updateFullReport;
+        case 'gfps_membership':
+            return a.updateGfpsMembership;
+        case 'scholarship':
+            return a.updateScholarship;
+        case 'gfps_assemblies':
+            return a.updateGfpsAssemblies;
+        case 'employee_status':
+            return a.updateEmployeeStatuses;
+        case 'rstl_monthly':
+            return a.updateRstlMonthly;
+        case 'program_funding':
+            return a.updateProgramFunding;
+        default:
+            return false;
+    }
+}
+
+const visibleTabs = computed(() => tabDefs.filter((t) => tabIsVisible(t.id)));
 
 const metadataForm = useForm({
     year: props.reportYear.year,
@@ -87,9 +122,10 @@ const fundingForm = useForm({
 });
 
 const updateMetadata = () => {
-    metadataForm.patch(route('report-years.update', props.reportYear.id), {
-        preserveScroll: true,
-    });
+    const url = props.abilities.updateFullReport
+        ? route('report-years.update', props.reportYear.id)
+        : route('report-years.metadata.update', props.reportYear.id);
+    metadataForm.patch(url, { preserveScroll: true });
 };
 
 const updateGfpsMembership = () => {
@@ -172,15 +208,18 @@ const scholarshipTotal = computed(() =>
 
 const activeTab = ref('metadata');
 
-const tabs = [
-    { id: 'metadata', name: 'Metadata' },
-    { id: 'gfps_membership', name: 'GFPS Membership' },
-    { id: 'scholarship', name: 'Scholarship' },
-    { id: 'gfps_assemblies', name: 'GFPS Assemblies' },
-    { id: 'employee_status', name: 'Employee Status' },
-    { id: 'rstl_monthly', name: 'RSTL by Month' },
-    { id: 'program_funding', name: 'Program Funding' },
-];
+watch(
+    visibleTabs,
+    (vis) => {
+        if (vis.length === 0) {
+            return;
+        }
+        if (!vis.some((t) => t.id === activeTab.value)) {
+            activeTab.value = vis[0].id;
+        }
+    },
+    { immediate: true },
+);
 </script>
 
 <template>
@@ -235,7 +274,8 @@ const tabs = [
                                 {{ displayReportTitle }}
                                 </h1>
                                 <p class="mt-1 max-w-xl text-xs text-slate-500 dark:text-zinc-400">
-                                    You can work in any order. Use each tab’s save button when that section’s data is complete.
+                                    Work in any order; use each tab’s save when that section is complete. Tabs reflect what
+                                    your account can edit.
                                 </p>
                             </div>
                         </div>
@@ -250,7 +290,7 @@ const tabs = [
                     <div class="overflow-x-auto overflow-y-hidden border-slate-200 border-b [scrollbar-width:none] dark:border-zinc-800 [&::-webkit-scrollbar]:hidden">
                         <nav class="-mb-px flex min-w-max space-x-8 px-1" aria-label="Report sections" role="tablist">
                             <button
-                                v-for="tab in tabs"
+                                v-for="tab in visibleTabs"
                                 :key="tab.id"
                                 type="button"
                                 role="tab"
@@ -311,13 +351,26 @@ const tabs = [
                                 <InputError :message="metadataForm.errors.year" />
                             </div>
 
-                            <div class="grid gap-2">
+                            <div v-if="abilities.updateFullReport" class="grid gap-2">
                                 <Label for="status">Status</Label>
                                 <select id="status" v-model="metadataForm.status" name="status" class="report-select">
                                     <option value="pending">Pending</option>
                                     <option value="published">Published</option>
                                 </select>
                                 <InputError :message="metadataForm.errors.status" />
+                            </div>
+                            <div v-else class="grid gap-2">
+                                <span class="text-sm font-medium text-slate-700 dark:text-zinc-200">Status</span>
+                                <p
+                                    class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                                >
+                                    <span
+                                        v-if="metadataForm.status === 'published'"
+                                        class="font-medium text-emerald-800 dark:text-emerald-300"
+                                        >Published</span
+                                    >
+                                    <span v-else class="font-medium text-amber-800 dark:text-amber-200">Pending</span>
+                                </p>
                             </div>
                         </div>
 

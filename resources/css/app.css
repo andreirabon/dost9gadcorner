@@ -340,6 +340,7 @@
 
     html {
         @apply font-sans antialiased;
+        font-optical-sizing: auto;
     }
 
     body {

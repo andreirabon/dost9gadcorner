@@ -24,6 +24,8 @@ const props = withDefaults(defineProps<Props>(), {
 const page = usePage();
 const auth = computed(() => page.props.auth);
 
+const userMenuLabel = computed(() => auth.value.user?.username?.trim() || '—');
+
 const isCurrentRoute = computed(() => (url: string) => page.url === url);
 
 const activeItemStyles = computed(
@@ -32,7 +34,7 @@ const activeItemStyles = computed(
 
 const mainNavItems = computed((): NavItem[] => {
     const items: NavItem[] = [];
-    if (page.props.auth.user?.is_admin) {
+    if (page.props.auth.user?.can?.accessReportYears) {
         items.push({
             title: 'Reports',
             href: '/report-years',
@@ -121,9 +123,9 @@ const mainNavItems = computed((): NavItem[] => {
                                 class="touch-target relative h-10 w-10 rounded-full p-1 focus-within:ring-2 focus-within:ring-primary sm:size-10"
                             >
                                 <Avatar class="size-8 overflow-hidden rounded-full">
-                                    <AvatarImage v-if="auth.user.avatar" :src="auth.user.avatar" :alt="auth.user.name" />
+                                    <AvatarImage v-if="auth.user.avatar" :src="auth.user.avatar" :alt="userMenuLabel" />
                                     <AvatarFallback class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white">
-                                        {{ getInitials(auth.user.name) }}
+                                        {{ getInitials(userMenuLabel) }}
                                     </AvatarFallback>
                                 </Avatar>
                                 <span class="sr-only">Open user menu</span>

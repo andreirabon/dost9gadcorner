@@ -35,17 +35,17 @@ withDefaults(defineProps<Props>(), {
 
     <template v-else>
         <DropdownMenuLabel class="p-0 font-normal">
-            <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <UserInfo :user="user" :show-email="true" />
+            <div class="flex items-center gap-3 px-2 py-2 text-left">
+                <UserInfo :user="user" />
             </div>
         </DropdownMenuLabel>
         <div class="px-2 pb-2">
             <AppearanceTabs compact />
         </div>
         <DropdownMenuSeparator v-if="!hideLogout" />
-        <DropdownMenuItem v-if="!hideLogout" :as-child="true">
-            <Link class="block w-full" method="post" :href="route('logout')" @click="handleLogout" as="button">
-                <LogOut class="mr-2 h-4 w-4" />
+        <DropdownMenuItem v-if="!hideLogout" variant="destructive" :as-child="true" class="cursor-pointer">
+            <Link class="flex w-full items-center gap-2" method="post" :href="route('logout')" @click="handleLogout" as="button">
+                <LogOut class="size-4 shrink-0" />
                 Log out
             </Link>
         </DropdownMenuItem>
