@@ -17,7 +17,7 @@ defineEmits<{
 <template>
     <section
         aria-labelledby="hero-heading"
-        class="min-h-screen min-h-screen-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 pt-6 text-center sm:pb-64 md:pt-10 md:pb-72 lg:pb-80"
+        class="min-h-dvh min-h-screen-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 pt-6 text-center sm:pb-64 md:pt-10 md:pb-72 lg:pb-80"
     >
         <!-- Left side decorative illustrations -->
         <div
@@ -121,20 +121,29 @@ defineEmits<{
 </template>
 <style scoped>
 .glow-text {
-    filter: drop-shadow(0 0 25px rgba(232, 121, 249, 0.5)) drop-shadow(0 0 50px rgba(168, 85, 247, 0.3)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.2));
-    animation: glow-pulse 4s ease-in-out infinite;
+    position: relative;
+    filter: drop-shadow(0 0 20px rgba(232, 121, 249, 0.4)) drop-shadow(0 0 40px rgba(168, 85, 247, 0.25));
 }
 
-@keyframes glow-pulse {
+.glow-text::after {
+    content: '';
+    position: absolute;
+    inset: -16px -24px;
+    border-radius: 12px;
+    background: radial-gradient(ellipse at center, rgba(232, 121, 249, 0.18) 0%, transparent 70%);
+    opacity: 0.6;
+    animation: glow-opacity-pulse 4s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes glow-opacity-pulse {
     0%,
     100% {
-        filter: drop-shadow(0 0 20px rgba(232, 121, 249, 0.4)) drop-shadow(0 0 40px rgba(168, 85, 247, 0.25)) drop-shadow(0 0 70px rgba(139, 92, 246, 0.15));
+        opacity: 0.5;
     }
-    33% {
-        filter: drop-shadow(0 0 28px rgba(232, 121, 249, 0.55)) drop-shadow(0 0 55px rgba(168, 85, 247, 0.4)) drop-shadow(0 0 90px rgba(139, 92, 246, 0.25));
-    }
-    66% {
-        filter: drop-shadow(0 0 24px rgba(232, 121, 249, 0.5)) drop-shadow(0 0 48px rgba(168, 85, 247, 0.35)) drop-shadow(0 0 80px rgba(139, 92, 246, 0.2));
+    50% {
+        opacity: 0.85;
     }
 }
 </style>

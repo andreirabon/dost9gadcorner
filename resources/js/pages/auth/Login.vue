@@ -37,7 +37,7 @@ const submit = (): void => {
 <template>
     <Head title="Sign in" />
 
-    <div class="theme-light-isolate inter-font flex min-h-dvh flex-col bg-white text-foreground">
+    <div class="theme-light-isolate flex min-h-dvh flex-col bg-white text-foreground">
         <div class="px-safe pt-safe flex w-full flex-1 flex-col items-center justify-center px-4 py-6 sm:px-6 sm:py-8">
             <div class="w-full max-w-[440px]">
                 <div

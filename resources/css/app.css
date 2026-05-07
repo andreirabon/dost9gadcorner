@@ -88,112 +88,7 @@
     }
 }
 
-@layer utilities {
-    /* Improved mobile readability */
-    .mobile-readable {
-        font-size: 16px;
-        line-height: 1.6;
-        -webkit-text-size-adjust: 100%;
-    }
 
-    /* Prevent text overflow on mobile */
-    .text-wrap-balance {
-        text-wrap: balance;
-    }
-
-    .text-wrap-pretty {
-        text-wrap: pretty;
-    }
-
-    /* Mobile-friendly flex utilities */
-    .flex-mobile-col {
-        display: flex;
-        flex-direction: column;
-    }
-
-    @media (min-width: 640px) {
-        .flex-mobile-col {
-            flex-direction: row;
-        }
-    }
-
-    /* Responsive spacing utilities */
-    .gap-mobile {
-        gap: 0.75rem;
-    }
-
-    @media (min-width: 640px) {
-        .gap-mobile {
-            gap: 1rem;
-        }
-    }
-
-    @media (min-width: 768px) {
-        .gap-mobile {
-            gap: 1.5rem;
-        }
-    }
-
-    /* Mobile-first padding */
-    .p-mobile {
-        padding: 0.75rem;
-    }
-
-    @media (min-width: 640px) {
-        .p-mobile {
-            padding: 1rem;
-        }
-    }
-
-    @media (min-width: 768px) {
-        .p-mobile {
-            padding: 1.5rem;
-        }
-    }
-
-    /* Line clamp utilities */
-    .line-clamp-1 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 1;
-    }
-
-    .line-clamp-2 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-    }
-
-    .line-clamp-3 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
-    }
-
-    .line-clamp-4 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 4;
-    }
-
-    .line-clamp-5 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 5;
-    }
-
-    .line-clamp-6 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 6;
-    }
-}
 
 :root {
     --background: #fafafa;
@@ -348,11 +243,7 @@
     }
 }
 
-.inter-font {
-    font-family: var(--font-sans);
-    font-optical-sizing: auto;
-    font-style: normal;
-}
+
 
 /* Project Card Styles - Mobile-optimized (transform-only transition for perf) */
 .project-card {
@@ -635,56 +526,16 @@
     .scroll-smooth {
         scroll-behavior: smooth;
     }
-
-    /* Optimized for mobile viewport */
-    .mobile-optimized {
-        -webkit-text-size-adjust: 100%;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
 }
 
 /* Enhanced Mobile Responsive Design */
 @layer utilities {
-    /* Mobile-first grid improvements */
-    @media (max-width: 640px) {
-        .grid-cols-auto-fit-mobile {
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        }
-
-        /* Better mobile grid for cards */
-        .mobile-grid-1 {
-            grid-template-columns: 1fr;
-        }
-
-        /* Mobile-friendly spacing */
-        .mobile-gap-tight {
-            gap: 0.75rem;
-        }
-    }
-
-    /* Tablet optimizations */
-    @media (min-width: 641px) and (max-width: 1024px) {
-        .tablet-grid-2 {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
 
     /* Improved text scaling for mobile */
     @media (max-width: 768px) {
         .text-responsive {
             font-size: clamp(0.875rem, 3vw, 1rem);
             line-height: 1.6;
-        }
-
-        .text-heading-responsive {
-            font-size: clamp(1.5rem, 5.5vw, 2.25rem);
-            line-height: 1.3;
-        }
-
-        .text-hero-responsive {
-            font-size: clamp(2rem, 8vw, 4rem);
-            line-height: 1.1;
         }
     }
 
@@ -694,30 +545,10 @@
             font-size: clamp(0.813rem, 3.5vw, 0.938rem);
             line-height: 1.6;
         }
-
-        .text-heading-responsive {
-            font-size: clamp(1.25rem, 6vw, 1.875rem);
-            line-height: 1.3;
-        }
-
-        .text-hero-responsive {
-            font-size: clamp(1.75rem, 9vw, 3rem);
-            line-height: 1.1;
-        }
     }
 
     /* Mobile modal optimizations */
     @media (max-width: 768px) {
-        .modal-mobile {
-            position: fixed;
-            inset: 0;
-            margin: 0;
-            border-radius: 0;
-            max-width: 100vw;
-            max-height: 100vh;
-            height: 100vh;
-        }
-
         .modal-content-mobile {
             height: 100%;
             overflow-y: auto;
@@ -733,43 +564,14 @@
             z-index: 10;
             border-bottom: 1px solid rgba(250, 250, 250, 0.1);
         }
-
-        /* Better modal body spacing */
-        .modal-body-mobile {
-            padding: 1rem;
-        }
-
-        /* Sticky modal footer on mobile */
-        .modal-footer-mobile {
-            padding: 1rem;
-            position: sticky;
-            bottom: 0;
-            background: inherit;
-            border-top: 1px solid rgba(250, 250, 250, 0.1);
-        }
     }
 
-    /* Mobile performance optimizations */
-    .mobile-perf {
-        transform: translateZ(0);
-        backface-visibility: hidden;
-    }
 
-    /* Mobile-specific animations (reduced motion preference) */
-    @media (prefers-reduced-motion: reduce) {
-        * {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-        }
-    }
+
+
 
     /* Landscape orientation optimizations */
     @media (max-height: 500px) and (orientation: landscape) {
-        .modal-mobile {
-            padding: 0.5rem;
-        }
-
         .chart-container {
             height: 200px;
         }
@@ -777,50 +579,12 @@
         .chart-container canvas {
             max-height: 200px;
         }
-
-        .text-hero-responsive {
-            font-size: clamp(1.5rem, 6vw, 2.5rem);
-        }
-
-        .text-heading-responsive {
-            font-size: clamp(1.25rem, 4vw, 1.75rem);
-        }
-
-        /* Reduce header height in landscape */
-        header {
-            min-height: 3rem;
-        }
-
-        /* Compact navigation in landscape */
-        nav {
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-        }
     }
 
     /* Very small screens (iPhone SE, etc.) */
     @media (max-width: 375px) {
         .text-responsive {
             font-size: clamp(0.75rem, 3.5vw, 0.875rem);
-        }
-
-        .text-heading-responsive {
-            font-size: clamp(1.125rem, 6vw, 1.5rem);
-        }
-
-        /* Tighter grid spacing */
-        .grid {
-            gap: 0.5rem;
-        }
-
-        /* Smaller padding for very small screens */
-        .p-4 {
-            padding: 0.75rem;
-        }
-
-        .px-4 {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
         }
     }
 
@@ -896,58 +660,6 @@
         }
     }
 
-    /* Additional mobile utilities */
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* Sticky positioning support */
-    .sticky-top-safe {
-        position: sticky;
-        top: env(safe-area-inset-top, 0);
-        z-index: 10;
-    }
-
-    /* Better mobile container */
-    .container-mobile {
-        width: 100%;
-        max-width: 100%;
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    @media (min-width: 640px) {
-        .container-mobile {
-            max-width: 640px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-    }
-
-    @media (min-width: 768px) {
-        .container-mobile {
-            max-width: 768px;
-        }
-    }
-
-    @media (min-width: 1024px) {
-        .container-mobile {
-            max-width: 1024px;
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
-        }
-    }
-
-    @media (min-width: 1280px) {
-        .container-mobile {
-            max-width: 1280px;
-        }
-    }
 }
 
 @layer components {

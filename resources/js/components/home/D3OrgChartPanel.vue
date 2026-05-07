@@ -4,6 +4,7 @@ import type { OrgChartHierarchyNode } from 'd3-org-chart';
 import { OrgChart } from 'd3-org-chart';
 import { select } from 'd3-selection';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 
 defineOptions({
     name: 'D3OrgChartPanel',
@@ -177,12 +178,17 @@ function scheduleResizeRender(): void {
     chart.fit({ animate: false, scale: true });
 }
 
+const debouncedResizeRender = useDebounceFn(scheduleResizeRender, 150);
+
 onMounted(() => {
+    if (typeof globalThis.window !== 'undefined') {
+        globalThis.window.addEventListener('resize', syncWindowWidth);
+    }
     void nextTick(() => {
         mountChart();
         if (typeof ResizeObserver !== 'undefined' && rootEl.value) {
             resizeObserver = new ResizeObserver(() => {
-                scheduleResizeRender();
+                debouncedResizeRender();
             });
             resizeObserver.observe(rootEl.value);
         }
@@ -190,22 +196,11 @@ onMounted(() => {
 });
 
 watch(
-    () => props.nodes,
+    () => [props.nodes, props.chartHeight, props.initialExpandLevel] as const,
     () => {
         void nextTick(() => mountChart());
     },
 );
-
-watch(
-    () => [props.chartHeight, props.initialExpandLevel] as const,
-    () => {
-        void nextTick(() => mountChart());
-    },
-);
-
-watch(effectiveChartHeight, () => {
-    void nextTick(() => mountChart());
-});
 
 onBeforeUnmount(() => {
     if (typeof globalThis.window !== 'undefined') {

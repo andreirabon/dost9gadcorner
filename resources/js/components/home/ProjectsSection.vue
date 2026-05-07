@@ -3,7 +3,7 @@ import ProjectCard from '@/components/home/ProjectCard.vue';
 import ProjectModal from '@/components/home/ProjectModal.vue';
 import { projects } from '@/data/projects';
 import type { ProjectItem } from '@/types';
-import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
+import { ref, shallowRef } from 'vue';
 
 defineOptions({
     name: 'ProjectsSection',
@@ -24,20 +24,6 @@ const closeProjectModal = (): void => {
         selectedProject.value = null;
     }, 300);
 };
-
-const handleKeydown = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && isModalOpen.value) {
-        closeProjectModal();
-    }
-};
-
-onMounted(() => {
-    document.addEventListener('keydown', handleKeydown);
-});
-
-onUnmounted(() => {
-    document.removeEventListener('keydown', handleKeydown);
-});
 </script>
 
 <template>

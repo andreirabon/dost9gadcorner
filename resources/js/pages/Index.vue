@@ -42,7 +42,7 @@ const scrollToOrgChart = (): void => {
 <template>
     <Head title="GAD Corner" />
 
-    <div class="inter-font mobile-optimized flex min-h-screen min-w-0 flex-col">
+    <div class="flex min-h-screen min-w-0 flex-col">
         <div
             class="pb-safe min-w-0 flex-1 bg-linear-to-b from-purple-950 via-violet-950/45 to-purple-950 text-white [color-scheme:dark]"
         >

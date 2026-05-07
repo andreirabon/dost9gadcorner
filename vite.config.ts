@@ -8,6 +8,14 @@ export default defineConfig({
     build: {
         // ApexCharts minifies to ~520 kB; default 500 kB warning is noisy for legitimate heavy vendors.
         chunkSizeWarningLimit: 640,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor-gsap': ['gsap', 'gsap/ScrollTrigger'],
+                    'vendor-d3': ['d3-org-chart', 'd3-selection'],
+                },
+            },
+        },
     },
     // d3-org-chart ships ESM from `src/`; skipping the pre-bundle avoids occasional broken/empty
     // `.vite/deps` responses over HTTPS dev servers (Herd), which surface as MIME/CORS errors in the browser.

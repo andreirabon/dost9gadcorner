@@ -109,5 +109,5 @@ const chartOptions = computed<ApexOptions>(() => ({
 </script>
 
 <template>
-    <VueApexCharts :type="chartType" width="100%" height="100%" :options="chartOptions" :series="series" class="mobile-perf h-full w-full" />
+    <VueApexCharts :type="chartType" width="100%" height="100%" :options="chartOptions" :series="series" class="h-full w-full [contain:layout_style_paint]" />
 </template>

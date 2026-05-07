@@ -1,0 +1,712 @@
+﻿---
+name: vue-patterns
+description: Apply when building or reviewing Vue 3 Options API components, props, events, lifecycle, or Vue–Inertia integration patterns.
+---
+
+# Vue 3 Development Patterns
+
+Comprehensive patterns for Vue 3 with Options API and Inertia.js integration.
+
+**Last Updated**: 2026-04-27
+
+## Version Snapshot (Verified Apr 27, 2026)
+
+- Vue 3.5.x
+- @inertiajs/vue3 3.0.3
+- Inertia Laravel 3.0.6
+- Laravel 13.6.0
+- Tailwind CSS 4.2.4
+
+## Documentation-First Workflow (Required)
+
+1. Use Laravel Boost `search-docs` first for Inertia/Laravel behavior questions.
+2. Use Context7 for current Vue framework guidance and examples.
+3. Follow touched-module conventions when docs and local patterns diverge.
+
+## Project Reality Overrides (Highest Priority)
+
+- **Vue 3 Options API only** for app-authored Vue SFCs: `data` / `computed` / `methods` / lifecycle, or `defineComponent({ ... })` with the same. Do not use `<script setup>` or a root `setup()` option in `resources/js` except where ESLint ignore lists third-party-style paths (e.g. generated UI). ESLint `vue/component-api-style` is set to `['options']`.
+- Frontend uses Inertia + axios coexistence; use the local module convention for data mutations.
+- Security-first templates: avoid `v-html` unless content is trusted and sanitized.
+
+## Component Patterns (Options API)
+
+### Basic Component Structure
+
+```vue
+<script>
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    name: 'MarketCard',
+
+    props: {
+        market: {
+            type: Object,
+            required: true,
+        },
+        showActions: {
+            type: Boolean,
+            default: false,
+        },
+    },
+
+    emits: ['update', 'delete'],
+
+    data() {
+        return {
+            isExpanded: false,
+            localStatus: this.market.status,
+        };
+    },
+
+    computed: {
+        isActive() {
+            return this.localStatus === 'active' && new Date(this.market.end_date) > new Date();
+        },
+
+        formattedEndDate() {
+            return new Date(this.market.end_date).toLocaleDateString();
+        },
+    },
+
+    watch: {
+        'market.status'(newStatus) {
+            this.localStatus = newStatus;
+        },
+    },
+
+    methods: {
+        toggleExpand() {
+            this.isExpanded = !this.isExpanded;
+        },
+
+        handleUpdate() {
+            this.$emit('update', this.market.id);
+        },
+
+        handleDelete() {
+            if (confirm('Are you sure?')) {
+                this.$emit('delete', this.market.id);
+            }
+        },
+    },
+
+    beforeUnmount() {
+        // Cleanup if needed
+    },
+});
+</script>
+
+<template>
+    <div class="market-card" :class="{ 'is-active': isActive }">
+        <h3>{{ market.name }}</h3>
+        <p>{{ market.description }}</p>
+        <span>Ends: {{ formattedEndDate }}</span>
+
+        <div v-if="isExpanded" class="details">
+            <!-- Expanded content -->
+        </div>
+
+        <button @click="toggleExpand">
+            {{ isExpanded ? 'Show Less' : 'Show More' }}
+        </button>
+
+        <div v-if="showActions" class="actions">
+            <button @click="handleUpdate">Update</button>
+            <button @click="handleDelete">Delete</button>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.market-card {
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.market-card.is-active {
+    border-color: #4caf50;
+}
+</style>
+Component with TypeScript
+vue
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+
+interface Market {
+    id: number;
+    name: string;
+    description: string;
+    status: 'active' | 'resolved' | 'closed';
+    end_date: string;
+    created_at: string;
+}
+
+export default defineComponent({
+    name: 'MarketCard',
+
+    props: {
+        market: {
+            type: Object as PropType<Market>,
+            required: true,
+        },
+        showActions: {
+            type: Boolean,
+            default: false,
+        },
+    },
+
+    emits: {
+        update: (id: number) => true,
+        delete: (id: number) => true,
+    },
+
+    data() {
+        return {
+            isExpanded: false as boolean,
+            localStatus: this.market.status as Market['status'],
+        };
+    },
+
+    computed: {
+        isActive(): boolean {
+            return this.localStatus === 'active' && new Date(this.market.end_date) > new Date();
+        },
+
+        formattedEndDate(): string {
+            return new Date(this.market.end_date).toLocaleDateString();
+        },
+    },
+
+    methods: {
+        toggleExpand(): void {
+            this.isExpanded = !this.isExpanded;
+        },
+
+        handleUpdate(): void {
+            this.$emit('update', this.market.id);
+        },
+
+        handleDelete(): void {
+            if (confirm('Are you sure?')) {
+                this.$emit('delete', this.market.id);
+            }
+        },
+    },
+});
+</script>
+Inertia.js Page Components
+Inertia Page with Options API
+vue
+<script>
+import { defineComponent } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
+
+// Simple debounce helper (no external dependency)
+function useDebounce(fn, delay) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+export default defineComponent({
+    name: 'MarketsIndex',
+
+    components: {
+        Head,
+        Link,
+        AppLayout,
+    },
+
+    props: {
+        markets: {
+            type: Object,
+            required: true,
+        },
+        filters: {
+            type: Object,
+            default: () => ({}),
+        },
+    },
+
+    data() {
+        return {
+            searchQuery: this.filters.search || '',
+            selectedStatus: this.filters.status || 'all',
+            debouncedSearch: null,
+        };
+    },
+
+    computed: {
+        hasMarkets() {
+            return this.markets.data && this.markets.data.length > 0;
+        },
+    },
+
+    created() {
+        this.debouncedSearch = useDebounce(this.search, 300);
+    },
+
+    watch: {
+        searchQuery() {
+            this.debouncedSearch();
+        },
+    },
+
+    methods: {
+        search() {
+            router.get(
+                '/markets',
+                {
+                    search: this.searchQuery,
+                    status: this.selectedStatus,
+                },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
+        },
+
+        deleteMarket(id) {
+            if (!confirm('Are you sure?')) return;
+
+            router.delete(`/markets/${id}`, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Optionally show success message
+                },
+            });
+        },
+    },
+});
+</script>
+
+<template>
+    <AppLayout>
+        <Head title="Markets" />
+
+        <div class="markets-index">
+            <div class="header">
+                <h1>Markets</h1>
+                <Link href="/markets/create" class="btn btn-primary"> Create Market </Link>
+            </div>
+
+            <div class="filters">
+                <input v-model="searchQuery" type="text" placeholder="Search markets..." />
+
+                <select v-model="selectedStatus" @change="search">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </div>
+
+            <div v-if="hasMarkets" class="markets-grid">
+                <MarketCard v-for="market in markets.data" :key="market.id" :market="market" show-actions @delete="deleteMarket" />
+            </div>
+
+            <div v-else class="empty-state">
+                <p>No markets found.</p>
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="markets.links" class="pagination">
+                <Link v-for="link in markets.links" :key="link.label" :href="link.url" :class="{ active: link.active }" v-text="link.label" />
+            </div>
+        </div>
+    </AppLayout>
+</template>
+Inertia.js Form Handling
+Form with Options API
+vue
+<script>
+import { defineComponent } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+
+export default defineComponent({
+    components: {
+        Head,
+        Link,
+    },
+
+    props: {
+        market: {
+            type: Object,
+            default: null,
+        },
+    },
+
+    data() {
+        return {
+            form: useForm({
+                name: this.market?.name || '',
+                description: this.market?.description || '',
+                category: this.market?.category || 'politics',
+                end_date: this.market?.end_date || '',
+            }),
+        };
+    },
+
+    methods: {
+        submit() {
+            if (this.market) {
+                this.form.put(`/markets/${this.market.id}`, {
+                    preserveScroll: true,
+                });
+            } else {
+                this.form.post('/markets', {
+                    preserveScroll: true,
+                    onSuccess: () => this.form.reset(),
+                });
+            }
+        },
+    },
+});
+</script>
+Shared Data Access
+Accessing Inertia Shared Data (Options API)
+vue
+<script>
+import { defineComponent } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+
+export default defineComponent({
+    setup() {
+        const page = usePage();
+        return { page };
+    },
+
+    computed: {
+        user() {
+            return this.page.props.auth.user;
+        },
+
+        flash() {
+            return this.page.props.flash;
+        },
+
+        canCreateMarkets() {
+            return this.page.props.permissions?.canCreateMarkets;
+        },
+    },
+});
+</script>
+
+<template>
+    <div>
+        <!-- Flash messages -->
+        <div v-if="flash.message" class="alert alert-success">
+            {{ flash.message }}
+        </div>
+
+        <div v-if="flash.error" class="alert alert-error">
+            {{ flash.error }}
+        </div>
+
+        <!-- User info -->
+        <header v-if="user">
+            <img :src="user.avatar" :alt="user.name" />
+            <span>{{ user.name }}</span>
+        </header>
+
+        <!-- Conditional rendering based on permissions -->
+        <Link v-if="canCreateMarkets" href="/markets/create"> Create Market </Link>
+    </div>
+</template>
+State Management Patterns
+Simple Store Pattern (Options API)
+javascript
+// stores/marketStore.js
+import { reactive } from 'vue';
+
+const state = reactive({
+    markets: [],
+    selectedMarket: null,
+    loading: false,
+});
+
+export const marketStore = {
+    state,
+
+    getActiveMarkets() {
+        return state.markets.filter((m) => m.status === 'active');
+    },
+
+    setMarkets(markets) {
+        state.markets = markets;
+    },
+
+    selectMarket(market) {
+        state.selectedMarket = market;
+    },
+
+    clearSelection() {
+        state.selectedMarket = null;
+    },
+};
+Using Store in Options API Component
+vue
+<script>
+import { defineComponent } from 'vue';
+import { marketStore } from '@/stores/marketStore';
+
+export default defineComponent({
+    data() {
+        return {
+            store: marketStore,
+        };
+    },
+
+    computed: {
+        markets() {
+            return this.store.state.markets;
+        },
+
+        activeMarkets() {
+            return this.store.getActiveMarkets();
+        },
+
+        selectedMarket() {
+            return this.store.state.selectedMarket;
+        },
+    },
+
+    methods: {
+        loadMarkets() {
+            // Fetch and set markets
+            this.store.setMarkets(fetchedMarkets);
+        },
+
+        selectMarket(market) {
+            this.store.selectMarket(market);
+        },
+    },
+});
+</script>
+Lifecycle Hooks
+Common Lifecycle Patterns
+vue
+<script>
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+    data() {
+        return {
+            intervalId: null,
+            subscription: null,
+        };
+    },
+
+    mounted() {
+        // Component is mounted to DOM
+        // Can access $refs
+        this.startPolling();
+        this.subscribeToUpdates();
+    },
+
+    beforeUnmount() {
+        // Cleanup before component is destroyed
+        this.stopPolling();
+        this.unsubscribeFromUpdates();
+    },
+
+    methods: {
+        startPolling() {
+            this.intervalId = setInterval(() => {
+                this.fetchUpdates();
+            }, 5000);
+        },
+
+        stopPolling() {
+            if (this.intervalId) {
+                clearInterval(this.intervalId);
+                this.intervalId = null;
+            }
+        },
+
+        subscribeToUpdates() {
+            // Subscribe to real-time updates
+            this.subscription = window.Echo.channel('markets').listen('MarketUpdated', (e) => {
+                this.handleMarketUpdate(e.market);
+            });
+        },
+
+        unsubscribeFromUpdates() {
+            if (this.subscription) {
+                this.subscription.stopListening('MarketUpdated');
+                window.Echo.leave('markets');
+            }
+        },
+
+        fetchUpdates() {
+            // Fetch data
+        },
+
+        handleMarketUpdate(market) {
+            // Handle update
+        },
+    },
+});
+</script>
+Performance Optimization
+Computed Properties vs Methods
+vue
+<script>
+export default {
+    data() {
+        return {
+            markets: [],
+        };
+    },
+
+    computed: {
+        // ✅ GOOD: Cached, only recalculates when markets change
+        activeMarkets() {
+            return this.markets.filter((m) => m.status === 'active');
+        },
+    },
+
+    methods: {
+        // ❌ BAD: Recalculates on every render
+        getActiveMarkets() {
+            return this.markets.filter((m) => m.status === 'active');
+        },
+    },
+};
+</script>
+
+<template>
+    <!-- ✅ Uses computed property (cached) -->
+    <div v-for="market in activeMarkets" :key="market.id">
+        {{ market.name }}
+    </div>
+
+    <!-- ❌ Uses method (recalculates every render) -->
+    <div v-for="market in getActiveMarkets()" :key="market.id">
+        {{ market.name }}
+    </div>
+</template>
+v-show vs v-if
+vue
+<template>
+    <!-- ✅ Use v-show for frequently toggled content -->
+    <div v-show="isExpanded" class="details">
+        {{ expensiveComputation }}
+    </div>
+
+    <!-- ✅ Use v-if for rarely shown content -->
+    <div v-if="user.isAdmin" class="admin-panel">
+        {{ adminData }}
+    </div>
+</template>
+Key Attribute for Lists
+vue
+<template>
+    <!-- ✅ GOOD: Use unique ID as key -->
+    <MarketCard v-for="market in markets" :key="market.id" :market="market" />
+
+    <!-- ❌ BAD: Using index as key -->
+    <MarketCard v-for="(market, index) in markets" :key="index" :market="market" />
+</template>
+Component Communication
+Props Down, Events Up
+vue
+<!-- Parent Component -->
+<script>
+export default {
+    data() {
+        return {
+            markets: [],
+        };
+    },
+
+    methods: {
+        handleMarketUpdate(id, data) {
+            const market = this.markets.find((m) => m.id === id);
+            if (market) {
+                Object.assign(market, data);
+            }
+        },
+
+        handleMarketDelete(id) {
+            this.markets = this.markets.filter((m) => m.id !== id);
+        },
+    },
+};
+</script>
+
+<template>
+    <MarketCard v-for="market in markets" :key="market.id" :market="market" @update="handleMarketUpdate" @delete="handleMarketDelete" />
+</template>
+
+<!-- Child Component -->
+<script>
+export default {
+    props: {
+        market: {
+            type: Object,
+            required: true,
+        },
+    },
+
+    emits: ['update', 'delete'],
+
+    methods: {
+        updateMarket(data) {
+            this.$emit('update', this.market.id, data);
+        },
+
+        deleteMarket() {
+            this.$emit('delete', this.market.id);
+        },
+    },
+};
+</script>
+Provide/Inject for Deep Props
+vue
+<!-- App.vue -->
+<script>
+export default {
+    provide() {
+        return {
+            theme: 'dark',
+            updateTheme: this.updateTheme,
+        };
+    },
+
+    data() {
+        return {
+            currentTheme: 'dark',
+        };
+    },
+
+    methods: {
+        updateTheme(theme) {
+            this.currentTheme = theme;
+        },
+    },
+};
+</script>
+
+<!-- Deeply nested component -->
+<script>
+export default {
+    inject: ['theme', 'updateTheme'],
+
+    methods: {
+        toggleTheme() {
+            const newTheme = this.theme === 'dark' ? 'light' : 'dark';
+            this.updateTheme(newTheme);
+        },
+    },
+};
+</script>
+Remember: Vue 3 Options API patterns enable reactive, maintainable, and performant frontend applications. Prefer Options API for new work, preserve existing <script setup> components when touched, and align Inertia usage with local module conventions.
+```
