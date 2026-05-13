@@ -46,8 +46,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     @routes(null, $cspNonce)
-     @vite(['resources/js/app.js'])
-        @inertiaHead
+    @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
+    @inertiaHead
 </head>
 
 <body class="font-sans antialiased">
