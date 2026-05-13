@@ -28,3 +28,10 @@ yarn-error.log
 .cursor/
 AGENTS.md
 skills-lock.json
+
+# Agent/AI related files (with @ prefix)
+@.agent
+@.agents
+@.cursor
+@AGENTS.md
+@boost.json
