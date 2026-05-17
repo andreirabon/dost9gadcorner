@@ -9,17 +9,17 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { EditableReportYear, LookupSchoolYear, ReportYearEditAbilities } from '@/types/reports';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
- ArrowLeft,
- Briefcase,
- Calendar,
- CheckCircle2,
- FileChartColumnIncreasing,
- FlaskConical,
- GraduationCap,
- PieChart,
- Presentation,
- Save,
- Users,
+    ArrowLeft,
+    Briefcase,
+    Calendar,
+    CheckCircle2,
+    FileChartColumnIncreasing,
+    FlaskConical,
+    GraduationCap,
+    PieChart,
+    Presentation,
+    Save,
+    Users,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -227,6 +227,9 @@ watch(
  content-class="flex min-h-0 flex-1 flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30"
  >
  <Head :title="`Manage ${reportYear.year} report`" />
+ <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+ <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-70" />
+ </div>
 
  <div class="w-full px-2 py-6 sm:px-4">
  <header class="mb-2">

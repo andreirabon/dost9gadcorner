@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
-Route::middleware('guest')->group(function (): void {
+Route::middleware([\App\Http\Middleware\NoCacheHeaders::class, 'guest'])->group(function (): void {
     Route::get('open', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('open', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 });

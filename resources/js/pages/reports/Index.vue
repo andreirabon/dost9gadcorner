@@ -330,7 +330,7 @@ function confirmDeleteReportYear(): void {
  </Link>
  </Button>
  </TooltipTrigger>
- <TooltipContent side="top" class="bg-[#0e0716] text-purple-50 border-white/10">Edit</TooltipContent>
+ <TooltipContent side="top" hide-arrow class="bg-[#0e0716] text-purple-50 border-white/10">Edit</TooltipContent>
  </Tooltip>
  <Tooltip v-if="canDelete">
  <TooltipTrigger as-child>
@@ -345,7 +345,7 @@ function confirmDeleteReportYear(): void {
  <Trash2 class="size-4" :stroke-width="2" aria-hidden="true" />
  </Button>
  </TooltipTrigger>
- <TooltipContent side="top" class="bg-[#0e0716] text-purple-50 border-white/10">Delete</TooltipContent>
+ <TooltipContent side="top" hide-arrow class="bg-[#0e0716] text-purple-50 border-white/10">Delete</TooltipContent>
  </Tooltip>
  </div>
  </td>

@@ -41,6 +41,10 @@ const submit = (): void => {
         <div class="pointer-events-none absolute inset-0 overflow-hidden">
             <div class="absolute -left-[10%] top-0 h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[120px] mix-blend-screen"></div>
             <div class="absolute -right-[10%] bottom-0 h-[600px] w-[600px] rounded-full bg-purple-600/10 blur-[150px] mix-blend-screen"></div>
+            <div
+                aria-hidden="true"
+                class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-70"
+            />
         </div>
 
         <div class="relative z-10 px-safe pt-safe flex w-full flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6">

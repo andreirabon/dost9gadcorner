@@ -37,7 +37,7 @@ defineEmits<{
         </div>
 
         <div class="px-page-gutter relative z-10 mx-auto w-full max-w-5xl text-center">
-            <div class="flex flex-col items-center gap-10 pb-32 pt-20">
+            <div class="flex flex-col items-center gap-8 py-12 md:gap-10 md:py-16">
                 <img
                     src="/dostlogo.png"
                     alt="Department of Science and Technology"
@@ -47,17 +47,17 @@ defineEmits<{
                     fetchpriority="high"
                 />
 
-                <div class="space-y-6 flex flex-col items-center">
-                    <p class="text-sm font-semibold tracking-widest text-violet-400 uppercase">
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold tracking-widest text-violet-400 uppercase mb-3 md:mb-4">
                         Department of Science and Technology Region IX
                     </p>
                     <h1
                         id="hero-heading"
-                        class="m-0 text-5xl font-semibold leading-none tracking-tighter text-purple-50 sm:text-6xl md:text-7xl lg:text-8xl"
+                        class="m-0 text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold leading-tight tracking-tighter text-purple-50 whitespace-nowrap"
                     >
-                        Gender &<br />Development.
+                        Gender & Development Corner
                     </h1>
-                    <p class="max-w-[55ch] text-lg leading-relaxed text-purple-200/80 sm:text-xl">
+                    <p class="max-w-[55ch] text-lg leading-relaxed text-purple-200/80 sm:text-xl mt-6 sm:mt-8 md:mt-10">
                         Discover how our projects drive gender equality, women's empowerment, and inclusive development through science and technology.
                     </p>
                 </div>
@@ -68,7 +68,7 @@ defineEmits<{
                         @click="$emit('scrollToYears')"
                         class="group touch-target inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-violet-500/50 bg-violet-600 px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 transition-all duration-300 hover:bg-violet-500 hover:shadow-violet-900/50 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] focus-visible:outline-none"
                     >
-                        Explore Years
+                        Sex Disaggregated Data Reports
                         <ArrowRight class="size-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true" :stroke-width="2.5" />
                     </button>
                     <!-- <button

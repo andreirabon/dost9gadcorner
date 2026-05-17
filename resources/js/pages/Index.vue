@@ -39,6 +39,9 @@ const scrollToOrgChart = (): void => {
 
 <template>
     <Head title="Home" />
+    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-70" />
+    </div>
 
     <div class="flex min-h-screen min-w-0 flex-col">
         <div
@@ -46,11 +49,11 @@ const scrollToOrgChart = (): void => {
         >
             <!-- <HomeTopNav /> -->
             <HeroSection @scroll-to-years="scrollToYears" @scroll-to-org-chart="scrollToOrgChart" />
-            <div
-                class="h-[12vh] min-h-14 shrink-0 sm:h-[15vh] sm:min-h-16 md:h-[18vh]"
+            <!-- <div
+                class="h-[6vh] min-h-10 shrink-0 sm:h-[8vh] sm:min-h-12 md:h-[10vh]"
                 aria-hidden="true"
-            />
-            <GadStrategicFrameworkSection />
+            /> -->
+            <GadStrategicFrameworkSection />    
             <!-- <OrganizationalChartSection /> -->
             <YearlySection :years="years" />
         </div>

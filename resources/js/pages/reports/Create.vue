@@ -31,7 +31,12 @@ const submit = () => {
  <Head title="New Report Year" />
 
  <!-- Background glows -->
- 
+ <div class="pointer-events-none absolute inset-0 overflow-hidden">
+ <div
+ aria-hidden="true"
+ class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-70"
+ />
+ </div>
 
  <div class="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 relative z-10">
  <!-- Header -->
