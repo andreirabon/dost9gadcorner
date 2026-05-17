@@ -16,7 +16,7 @@ defineOptions({
             />
         </div>
         <div class="group-data-[collapsible=icon]:hidden min-w-0 flex-1 text-left leading-tight mt-0.5">
-            <span class="block text-[15px] font-semibold tracking-tight text-purple-50">Admin Panel</span>
+            <span class="block text-[15px] font-semibold tracking-tight text-purple-50">GAD Database</span>
         </div>
     </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDown, ArrowRight } from 'lucide-vue-next';
+import { ArrowRight } from 'lucide-vue-next';
 
 defineOptions({
     name: 'HeroSection',
@@ -46,7 +46,7 @@ defineEmits<{
                     decoding="async"
                     fetchpriority="high"
                 />
-                
+
                 <div class="space-y-6 flex flex-col items-center">
                     <p class="text-sm font-semibold tracking-widest text-violet-400 uppercase">
                         Department of Science and Technology Region IX
@@ -71,14 +71,14 @@ defineEmits<{
                         Explore Years
                         <ArrowRight class="size-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true" :stroke-width="2.5" />
                     </button>
-                    <button
+                    <!-- <button
                         type="button"
                         @click="$emit('scrollToOrgChart')"
                         class="group touch-target inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-purple-100 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:text-white active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] focus-visible:outline-none"
                     >
                         Organizational Chart
                         <ChevronDown class="size-4 shrink-0 transition-transform group-hover:translate-y-1" aria-hidden="true" :stroke-width="2.5" />
-                    </button>
+                    </button> -->
                 </div>
             </div>
         </div>

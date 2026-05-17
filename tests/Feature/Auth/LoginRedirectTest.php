@@ -84,12 +84,12 @@ test('login redirects to safe relative url intended', function () {
         'password' => 'password',
     ]);
 
-    $this->withSession(['url.intended' => '/settings/appearance'])
+    $this->withSession(['url.intended' => '/settings/profile'])
         ->post(route('login.store'), [
             'username' => $user->username,
             'password' => 'password',
         ])
-        ->assertRedirect(route('settings.appearance'));
+        ->assertRedirect(route('settings.profile.edit'));
 });
 
 test('login redirects to safe same-host url intended', function () {
@@ -100,10 +100,10 @@ test('login redirects to safe same-host url intended', function () {
         'password' => 'password',
     ]);
 
-    $this->withSession(['url.intended' => 'http://localhost/settings/appearance'])
+    $this->withSession(['url.intended' => 'http://localhost/settings/profile'])
         ->post(route('login.store'), [
             'username' => $user->username,
             'password' => 'password',
         ])
-        ->assertRedirect('http://localhost/settings/appearance');
+        ->assertRedirect('http://localhost/settings/profile');
 });

@@ -20,7 +20,6 @@ defineOptions({
 const form = useForm({
     username: '',
     password: '',
-    remember: false,
 });
 
 const statusMessage = computed(() => props.status ?? null);
@@ -35,7 +34,7 @@ const submit = (): void => {
 </script>
 
 <template>
-    <Head title="Sign in" />
+    <Head title="Sign In" />
 
     <div class="flex min-h-dvh flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30">
         <!-- Background glows -->
@@ -45,7 +44,7 @@ const submit = (): void => {
         </div>
 
         <div class="relative z-10 px-safe pt-safe flex w-full flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6">
-            
+
             <div class="w-full max-w-[420px] space-y-8">
                 <!-- Branding -->
                 <div class="flex flex-col items-center text-center">
@@ -57,7 +56,7 @@ const submit = (): void => {
                         decoding="async"
                     />
                     <h1 class="text-2xl font-semibold tracking-tighter text-purple-50">
-                        GAD Corner
+                        Gender and Development Corner
                     </h1>
                     <p class="mt-2 text-sm font-light text-purple-200/70">
                         Department of Science and Technology Region IX
@@ -66,7 +65,7 @@ const submit = (): void => {
 
                 <!-- Form Card -->
                 <div class="rounded-[2rem] border border-white/10 bg-purple-900/20 p-6 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] sm:p-8">
-                    
+
                     <div class="mb-6 flex items-start gap-2">
                         <ShieldCheck class="mt-0.5 size-4 shrink-0 text-violet-400/70" stroke-width="2" aria-hidden="true" />
                         <p class="text-xs leading-relaxed font-light text-purple-200/60">
@@ -141,25 +140,14 @@ const submit = (): void => {
                             <InputError :message="form.errors.password" />
                         </div>
 
-                        <div class="flex items-center gap-2 pt-1">
-                            <input
-                                id="remember"
-                                v-model="form.remember"
-                                type="checkbox"
-                                name="remember"
-                                class="size-4 cursor-pointer rounded border-white/20 bg-black/20 text-violet-500 focus:ring-2 focus:ring-violet-500/50 focus:ring-offset-1 focus:ring-offset-[#0e0716]"
-                            />
-                            <Label for="remember" class="cursor-pointer text-[13px] font-medium text-purple-200/70">
-                                Remember me for 30 days
-                            </Label>
-                        </div>
+
 
                         <Button
                             type="submit"
                             class="h-11 w-full cursor-pointer rounded-xl bg-violet-600 text-[14px] font-semibold text-white shadow-lg shadow-violet-900/30 transition-all duration-300 hover:bg-violet-500 hover:shadow-violet-900/50 active:scale-[0.97] disabled:opacity-50"
                             :disabled="form.processing"
                         >
-                            Sign in to dashboard
+                            Sign In
                         </Button>
                     </form>
                 </div>

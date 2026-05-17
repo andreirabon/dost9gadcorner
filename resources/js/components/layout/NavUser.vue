@@ -4,7 +4,7 @@ import { SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
 import { useInitials } from '@/composables/useInitials';
 import { type User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { LogOut } from 'lucide-vue-next';
+
 import { computed } from 'vue';
 
 const user = usePage().props.auth.user! as User;
@@ -24,7 +24,7 @@ function handleLogout(): void {
             <div class="flex w-full flex-col gap-3">
 
                 <div
-                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-white/10 bg-purple-900/20 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-md transition-colors duration-300 hover:bg-[#0e0716]/60"
+                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-white/10 bg-purple-900/20 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-md"
                 >
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0 flex-1 text-left">
@@ -37,14 +37,13 @@ function handleLogout(): void {
                             </p>
                         </div>
                         <Link
-                            class="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 text-purple-200/70 shadow-sm transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 hover:shadow-red-900/20 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
+                            class="inline-flex h-8 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 text-xs font-semibold text-red-400 shadow-sm transition-all duration-300 hover:border-red-500/40 hover:bg-red-500/20 hover:text-red-300 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
                             method="post"
                             :href="route('logout')"
                             as="button"
                             @click="handleLogout"
-                            title="Log out"
                         >
-                            <LogOut class="size-4 shrink-0" stroke-width="2" aria-hidden="true" />
+                            Log out
                         </Link>
                     </div>
                 </div>

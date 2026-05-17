@@ -380,9 +380,9 @@ class ReportYearManagementController extends Controller
                     'label' => $program->name,
                     'slug' => $program->slug,
                     'femaleProjects' => (int) ($summary?->female_projects ?? 0),
-                    'femaleAmount' => (float) ($summary?->female_amount ?? 0),
+                    'femaleAmount' => number_format((float) ($summary?->female_amount ?? 0), 2, '.', ''),
                     'maleProjects' => (int) ($summary?->male_projects ?? 0),
-                    'maleAmount' => (float) ($summary?->male_amount ?? 0),
+                    'maleAmount' => number_format((float) ($summary?->male_amount ?? 0), 2, '.', ''),
                 ];
             })
             ->all();

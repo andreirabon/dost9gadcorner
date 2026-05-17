@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogFooter,
- DialogHeader,
- DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -14,16 +14,16 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { ManagedReportYearListItem } from '@/types/reports';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
- ChevronLeft,
- ChevronRight,
- ChevronsLeft,
- ChevronsRight,
- FileChartColumnIncreasing,
- Pencil,
- Plus,
- RefreshCw,
- Search,
- Trash2,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    FileChartColumnIncreasing,
+    Pencil,
+    Plus,
+    RefreshCw,
+    Search,
+    Trash2,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -141,17 +141,20 @@ function confirmDeleteReportYear(): void {
  :show-footer="false"
  content-class="flex min-h-0 flex-1 flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30"
  >
- <Head title="Report years" />
+ <Head title="GAD Database" />
 
  <div class="relative w-full max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
  <!-- Background glows -->
- 
+
 
  <div class="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
  <div>
  <h1 class="text-3xl font-semibold tracking-tighter text-purple-50">
- Yearly Reports
+ Sex Disaggregated Data Reports
  </h1>
+ <p class="mt-2 text-sm text-purple-200/60 font-light max-w-2xl">
+ Track, analyze, and manage region-wide gender-disaggregated datasets, human resource demographics, and institutional GAD program statistics.
+ </p>
  </div>
  <div v-if="canCreate">
  <Button

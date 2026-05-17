@@ -19,7 +19,7 @@ const mainNavItems = computed((): NavItem[] => {
     const items: NavItem[] = [];
     if (page.props.auth.user?.can?.accessReportYears) {
         items.push({
-            title: 'Reports',
+            title: 'Sex Disaggregated Data Report',
             href: '/report-years',
             icon: FileChartColumnIncreasing,
         });

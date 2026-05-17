@@ -3,7 +3,7 @@ import { DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/co
 import UserInfo from '@/components/user/UserInfo.vue';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
-import { LogOut } from 'lucide-vue-next';
+
 
 interface Props {
     user: User;
@@ -28,8 +28,7 @@ withDefaults(defineProps<Props>(), {
     </DropdownMenuLabel>
         <DropdownMenuSeparator v-if="!hideLogout" />
         <DropdownMenuItem v-if="!hideLogout" variant="destructive" :as-child="true" class="cursor-pointer">
-            <Link class="flex w-full items-center gap-2" method="post" :href="route('logout')" @click="handleLogout" as="button">
-                <LogOut class="size-4 shrink-0" />
+            <Link class="flex w-full items-center" method="post" :href="route('logout')" @click="handleLogout" as="button">
                 Log out
             </Link>
         </DropdownMenuItem>

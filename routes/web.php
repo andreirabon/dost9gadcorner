@@ -7,16 +7,16 @@ use App\Http\Controllers\ReportYearPublicController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
 Route::middleware('guest')->group(function (): void {
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::get('open', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('open', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 });
 
-Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
+Route::get('close', fn () => redirect('/'))->name('logout.fallback');
+Route::post('close', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
 
 Route::get('/reports/{reportYear}', [ReportYearPublicController::class, 'show'])->name('reports.show');
 

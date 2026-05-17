@@ -273,8 +273,7 @@ watch(
  {{ displayReportTitle }}
  </h1>
  <p class="mt-1 max-w-xl text-xs text-purple-200/70 font-light">
- Work in any order; use each tab’s save when that section is complete. Tabs reflect what
- your account can edit.
+ Sections may be updated in any order. Save your changes within each tab upon completing that section. Visible tabs are determined by your account's access privileges.
  </p>
  </div>
  </div>

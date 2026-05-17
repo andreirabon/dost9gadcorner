@@ -38,7 +38,7 @@ const scrollToOrgChart = (): void => {
 </script>
 
 <template>
-    <Head title="GAD Corner" />
+    <Head title="Home" />
 
     <div class="flex min-h-screen min-w-0 flex-col">
         <div

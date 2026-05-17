@@ -103,7 +103,7 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                         :href="route('logout')"
                         method="post"
                         as="button"
-                        class="cursor-pointer rounded-full border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-purple-200 transition-all duration-200 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
+                        class="cursor-pointer rounded-full border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-red-400 transition-all duration-200 hover:text-red-300 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
                         @click="flushLogout"
                     >
                         Log out

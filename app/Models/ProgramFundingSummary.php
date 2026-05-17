@@ -28,8 +28,7 @@ class ProgramFundingSummary extends Model
     protected function casts(): array
     {
         return [
-            'female_amount' => 'decimal:2',
-            'male_amount' => 'decimal:2',
+            // Removed decimal:2 cast to prevent rounding. Kept as strings/floats by default.
         ];
     }
 
