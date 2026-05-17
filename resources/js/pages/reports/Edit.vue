@@ -163,7 +163,7 @@ const updateProgramFunding = () => {
  });
 };
 
-const inputClass = 'h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 transition-colors focus-visible:border-blue-500 focus-visible:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 w-full placeholder:text-slate-400';
+const inputClass = 'h-11 rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 w-full placeholder:text-purple-300/50';
 
 const publishedAtLabel = computed(() => {
  const raw = props.reportYear.publishedAt;
@@ -224,7 +224,7 @@ watch(
 <template>
  <AppLayout
  :show-footer="false"
- content-class="flex min-h-0 flex-1 flex-col bg-white text-slate-900"
+ content-class="flex min-h-0 flex-1 flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30"
  >
  <Head :title="`Manage ${reportYear.year} report`" />
 
@@ -233,14 +233,14 @@ watch(
  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
  <div class="flex min-w-0 flex-1 items-start gap-3">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
  aria-hidden="true"
  >
  <FileChartColumnIncreasing class="size-5" :stroke-width="2" />
  </div>
  <div class="min-w-0 flex flex-col justify-center">
  <div class="mb-0.5 flex flex-wrap items-center gap-x-4 gap-y-2">
- <p class="text-[10px] font-bold tracking-[0.15em] text-slate-500 uppercase dark:text-zinc-400">
+ <p class="text-[10px] font-bold tracking-[0.15em] text-purple-200/70 uppercase dark:text-zinc-400">
  Editing year
  </p>
  <span
@@ -269,10 +269,10 @@ watch(
  </span>
  </span>
  </div>
- <h1 class="text-2xl font-bold leading-none tracking-tight text-slate-900 tabular-nums">
+ <h1 class="text-2xl font-bold leading-none tracking-tight text-purple-50 tabular-nums">
  {{ displayReportTitle }}
  </h1>
- <p class="mt-1 max-w-xl text-xs text-slate-500 font-light">
+ <p class="mt-1 max-w-xl text-xs text-purple-200/70 font-light">
  Work in any order; use each tab’s save when that section is complete. Tabs reflect what
  your account can edit.
  </p>
@@ -286,7 +286,7 @@ watch(
  </Button>
  </div>
 
- <div class="overflow-x-auto overflow-y-hidden border-slate-200 border-b [scrollbar-width:none] dark:border-zinc-800 [&::-webkit-scrollbar]:hidden">
+ <div class="overflow-x-auto overflow-y-hidden border-white/10 border-b [scrollbar-width:none] dark:border-zinc-800 [&::-webkit-scrollbar]:hidden">
  <nav class="-mb-px flex min-w-max space-x-8 px-1" aria-label="Report sections" role="tablist">
  <button
  v-for="tab in visibleTabs"
@@ -297,8 +297,8 @@ watch(
  @click="activeTab = tab.id"
  :class="[
  activeTab === tab.id
- ? 'border-blue-500 text-slate-900 shadow-[0_1px_0_0_#2563eb]'
- : 'border-transparent border-transparent text-slate-500 hover:border-slate-200 hover:text-slate-800',
+ ? 'border-blue-500 text-purple-50 shadow-[0_1px_0_0_#2563eb]'
+ : 'border-transparent border-transparent text-purple-200/70 hover:border-white/10 hover:text-purple-100',
  'cursor-pointer whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors duration-200',
  ]"
  >
@@ -313,7 +313,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
  aria-hidden="true"
  >
  <Calendar class="size-5" :stroke-width="2" />
@@ -350,16 +350,16 @@ watch(
 
  <div v-if="abilities.updateFullReport" class="grid gap-2">
  <Label for="status">Status</Label>
- <select id="status" v-model="metadataForm.status" name="status" class="report-select bg-white border-slate-200 text-slate-900">
+ <select id="status" v-model="metadataForm.status" name="status" class="report-select bg-[#0e0716] border-white/10 text-purple-50">
  <option value="pending">Pending</option>
  <option value="published">Published</option>
  </select>
  <InputError :message="metadataForm.errors.status" />
  </div>
  <div v-else class="grid gap-2">
- <span class="text-sm font-medium text-slate-800">Status</span>
+ <span class="text-sm font-medium text-purple-100">Status</span>
  <p
- class="rounded-md border border-slate-200 bg-slate-50 border-slate-200 px-3 py-2 text-sm text-slate-900"
+ class="rounded-md border border-white/10 bg-black/20 border-white/10 px-3 py-2 text-sm text-purple-50"
  >
  <span
  v-if="metadataForm.status === 'published'"
@@ -382,7 +382,7 @@ watch(
  :maxlength="REPORT_YEAR_FIELD_LIMITS.title"
  :class="inputClass"
  />
- <p class="text-xs text-slate-500">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
+ <p class="text-xs text-purple-200/70">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
  <InputError :message="metadataForm.errors.title" />
  </div>
 
@@ -393,10 +393,10 @@ watch(
  v-model="metadataForm.description"
  name="description"
  rows="4"
- class="report-textarea bg-white border-slate-200 text-slate-900"
+ class="report-textarea bg-[#0e0716] border-white/10 text-purple-50"
  :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
  />
- <p class="text-xs text-slate-500">
+ <p class="text-xs text-purple-200/70">
  {{ descriptionLength }} / {{ REPORT_YEAR_FIELD_LIMITS.description }}
  </p>
  <InputError :message="metadataForm.errors.description" />
@@ -419,7 +419,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
  aria-hidden="true"
  >
  <Users class="size-5" :stroke-width="2" />
@@ -437,7 +437,7 @@ watch(
  class="report-form mt-6 max-w-3xl space-y-6"
  @submit.prevent="updateGfpsMembership"
  >
- <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 ">
+ <div class="rounded-xl border border-white/10 bg-black/20 p-4 ">
  <div class="grid gap-5 sm:grid-cols-2">
  <div class="grid gap-2 border-l-2 border-rose-500/50 pl-3 ">
  <Label for="gfps_female_count">Female count</Label>
@@ -465,8 +465,8 @@ watch(
  <InputError :message="gfpsMembershipForm.errors.male_count" />
  </div>
  </div>
- <p class="mt-1 max-w-md text-xs text-slate-500">
- Total members: <span class="font-medium text-slate-800 tabular-nums">{{ gfpsMembershipTotal }}</span>
+ <p class="mt-1 max-w-md text-xs text-purple-200/70">
+ Total members: <span class="font-medium text-purple-100 tabular-nums">{{ gfpsMembershipTotal }}</span>
  </p>
  </div>
 
@@ -487,7 +487,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
  aria-hidden="true"
  >
  <GraduationCap class="size-5" :stroke-width="2" />
@@ -511,7 +511,7 @@ watch(
  <select
  id="school_year_id"
  v-model="scholarshipForm.school_year_id"
- class="report-select bg-white border-slate-200 text-slate-900"
+ class="report-select bg-[#0e0716] border-white/10 text-purple-50"
  >
  <option value="" disabled>Select school year…</option>
  <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
@@ -528,7 +528,7 @@ watch(
  </div>
  </div>
 
- <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 ">
+ <div class="rounded-xl border border-white/10 bg-black/20 p-4 ">
  <div class="grid gap-5 sm:grid-cols-2">
  <div class="grid gap-2 border-l-2 border-rose-500/50 pl-3 ">
  <Label for="scholarship_female_count">Female count</Label>
@@ -556,8 +556,8 @@ watch(
  <InputError :message="scholarshipForm.errors.male_count" />
  </div>
  </div>
- <p class="mt-1 max-w-md text-xs text-slate-500">
- Total scholars: <span class="font-medium text-slate-800 tabular-nums">{{ scholarshipTotal }}</span>
+ <p class="mt-1 max-w-md text-xs text-purple-200/70">
+ Total scholars: <span class="font-medium text-purple-100 tabular-nums">{{ scholarshipTotal }}</span>
  </p>
  </div>
 
@@ -578,7 +578,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
  aria-hidden="true"
  >
  <Presentation class="size-5" :stroke-width="2" />
@@ -604,7 +604,7 @@ watch(
  :key="row.period_id"
  class="report-data-row md:grid-cols-[minmax(0,1fr)_9rem_9rem]"
  >
- <div class="mb-3 text-sm font-semibold text-slate-900 md:mb-0">
+ <div class="mb-3 text-sm font-semibold text-purple-50 md:mb-0">
  {{ reportYear.gfpsAssemblies[index]?.label }}
  </div>
 
@@ -653,7 +653,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
  aria-hidden="true"
  >
  <Briefcase class="size-5" :stroke-width="2" />
@@ -679,7 +679,7 @@ watch(
  :key="row.employment_status_id"
  class="report-data-row md:grid-cols-[minmax(0,1fr)_9rem_9rem]"
  >
- <div class="mb-3 text-sm font-semibold text-slate-900 md:mb-0">
+ <div class="mb-3 text-sm font-semibold text-purple-50 md:mb-0">
  {{ reportYear.employeeStatuses[index]?.label }}
  </div>
 
@@ -728,7 +728,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
  aria-hidden="true"
  >
  <FlaskConical class="size-5" :stroke-width="2" />
@@ -760,7 +760,7 @@ watch(
  :key="row.report_month_id"
  class="report-data-row md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(5.5rem,8rem))]"
  >
- <div class="mb-3 text-sm font-semibold text-slate-900 md:mb-0">
+ <div class="mb-3 text-sm font-semibold text-purple-50 md:mb-0">
  {{ reportYear.rstlMonthly[index]?.label }}
  </div>
 
@@ -834,7 +834,7 @@ watch(
  <section v-show="activeTab === 'program_funding'" class="report-panel" role="tabpanel">
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-800 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
  aria-hidden="true"
  >
  <PieChart class="size-5" :stroke-width="2" />
@@ -864,7 +864,7 @@ watch(
  :key="row.funding_program_id"
  class="report-data-row md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(6.5rem,9rem))]"
  >
- <div class="mb-3 text-sm font-semibold text-slate-900 md:mb-0">
+ <div class="mb-3 text-sm font-semibold text-purple-50 md:mb-0">
  {{ reportYear.programFunding[index]?.label }}
  </div>
 

@@ -15,8 +15,8 @@ defineOptions({
                 decoding="async"
             />
         </div>
-        <div class="group-data-[collapsible=icon]:hidden min-w-0 flex-1 text-left leading-tight">
-            <span class="block text-base font-bold tracking-wide text-slate-900 uppercase">Admin Panel</span>
+        <div class="group-data-[collapsible=icon]:hidden min-w-0 flex-1 text-left leading-tight mt-0.5">
+            <span class="block text-[15px] font-semibold tracking-tight text-purple-50">Admin Panel</span>
         </div>
     </div>
 </template>

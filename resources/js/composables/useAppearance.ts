@@ -9,11 +9,12 @@ export function updateTheme(value: Appearance) {
 
     if (value === 'system') {
         const mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
-        const systemTheme = mediaQueryList.matches ? 'dark' : 'light';
+        const systemTheme = mediaQueryList.matches ? 'dark' : 'dark'; // Force dark
 
         document.documentElement.classList.toggle('dark', systemTheme === 'dark');
     } else {
-        document.documentElement.classList.toggle('dark', value === 'dark');
+        // We always want to enforce dark mode now that Bento 2.0 is the main theme
+        document.documentElement.classList.toggle('dark', true);
     }
 }
 
@@ -54,46 +55,36 @@ export function initializeTheme() {
         return;
     }
 
-    // Initialize theme from saved preference or default to light (requested behavior)...
-    const savedAppearance = getStoredAppearance();
-    updateTheme(savedAppearance || 'light');
-
-    // Set up system theme change listener only if user selected 'system' explicitly...
-    if ((savedAppearance || 'light') === 'system') {
-        mediaQuery()?.addEventListener('change', handleSystemThemeChange);
-    }
+    // Force dark mode
+    updateTheme('dark');
 }
 
-// Default reactive state now 'light' instead of 'system'...
-const appearance = ref<Appearance>('light');
+// Default reactive state now 'dark'
+const appearance = ref<Appearance>('dark');
 
 export function useAppearance() {
     onMounted(() => {
         const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
 
         if (savedAppearance) {
-            appearance.value = savedAppearance;
+            appearance.value = 'dark'; // Override any saved 'light' state
+            localStorage.setItem('appearance', 'dark');
+            setCookie('appearance', 'dark');
         } else {
-            appearance.value = 'light';
+            appearance.value = 'dark';
         }
     });
 
     function updateAppearance(value: Appearance) {
-        appearance.value = value;
+        appearance.value = 'dark'; // Always dark
 
         // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', value);
+        localStorage.setItem('appearance', 'dark');
 
         // Store in cookie for SSR...
-        setCookie('appearance', value);
+        setCookie('appearance', 'dark');
 
-        updateTheme(value);
-        // Attach or detach system listener depending on choice
-        if (value === 'system') {
-            mediaQuery()?.addEventListener('change', handleSystemThemeChange);
-        } else {
-            mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
-        }
+        updateTheme('dark');
     }
 
     return {

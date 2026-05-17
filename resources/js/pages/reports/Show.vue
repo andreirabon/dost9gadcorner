@@ -19,7 +19,7 @@ const { mode } = provideReportPageTheme();
 <template>
  <Head :title="`${year.year} Sex Disaggregated Data Report`" />
  <div :class="mode === 'light' ? 'report-theme-light' : ''">
- <div class="flex min-h-screen flex-col bg-white report-light:bg-zinc-50">
+ <div class="flex min-h-screen flex-col bg-[#0e0716] report-light:bg-zinc-50">
  <div class="min-h-0 flex-1">
  <YearReportContent :year="year" />
  </div>

@@ -70,7 +70,7 @@ const yearTheme = computed(() => {
 
         <!-- Solid black card on hover -->
         <div
-            class="pointer-events-none absolute inset-0 z-0 rounded-lg bg-zinc-950 opacity-0 transition-opacity duration-300 group-hover:opacity-100 sm:rounded-xl"
+            class="pointer-events-none absolute inset-0 z-0 rounded-lg bg-[#0e0716] opacity-0 transition-opacity duration-300 group-hover:opacity-100 sm:rounded-xl"
             aria-hidden="true"
         />
     </Link>

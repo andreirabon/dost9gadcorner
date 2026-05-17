@@ -32,7 +32,7 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
     <SidebarGroup class="p-0">
         <SidebarGroupLabel
             v-if="sectionLabel"
-            class="mb-2 px-2 pt-0.5 pb-2 text-[10px] font-semibold tracking-[0.2em] text-[#8a99c0] uppercase group-data-[collapsible=icon]:hidden"
+            class="mb-2 px-2 pt-0.5 pb-2 text-[10px] font-semibold tracking-widest text-purple-300/50 uppercase group-data-[collapsible=icon]:hidden"
         >
             {{ sectionLabel }}
         </SidebarGroupLabel>
@@ -42,7 +42,7 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
                     as-child
                     :is-active="navItemIsActive(page.url, item.href)"
                     :tooltip="item.title"
-                    class="h-auto min-h-11 rounded-lg border border-transparent py-2 text-[15px] text-sidebar-foreground transition-colors duration-200 hover:bg-white/10 hover:text-white data-[active=true]:border-transparent data-[active=true]:bg-transparent data-[active=true]:font-bold data-[active=true]:text-white data-[active=true]:[&_svg]:text-white"
+                    class="h-auto min-h-11 rounded-xl border border-transparent py-2.5 text-[14px] font-medium text-purple-200/70 transition-all duration-300 hover:bg-white/5 hover:text-purple-50 active:scale-[0.97] data-[active=true]:border-transparent data-[active=true]:bg-violet-500/10 data-[active=true]:font-semibold data-[active=true]:text-violet-300 data-[active=true]:[&_svg]:text-violet-300"
                 >
                     <Link
                         :href="item.href"

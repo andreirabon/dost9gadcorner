@@ -24,27 +24,27 @@ function handleLogout(): void {
             <div class="flex w-full flex-col gap-3">
 
                 <div
-                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-blue-500/20 bg-purple-900/20 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-md"
+                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-white/10 bg-purple-900/20 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-md transition-colors duration-300 hover:bg-[#0e0716]/60"
                 >
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0 flex-1 text-left">
-                            <p class="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-500">Username</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-widest text-purple-300/50">Username</p>
                             <p
-                                class="mt-1 truncate font-sans text-[13px] font-semibold leading-snug tracking-tight text-slate-900 tabular-nums"
+                                class="mt-0.5 truncate text-[13.5px] font-medium leading-snug tracking-tight text-purple-50"
                                 :title="displayHandle"
                             >
                                 {{ displayHandle }}
                             </p>
                         </div>
                         <Link
-                            class="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-blue-500/20 bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-blue-500/20 transition-all duration-300 hover:bg-blue-700 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                            class="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 text-purple-200/70 shadow-sm transition-all duration-300 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 hover:shadow-red-900/20 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
                             method="post"
                             :href="route('logout')"
                             as="button"
                             @click="handleLogout"
+                            title="Log out"
                         >
-                            <LogOut class="size-3.5 shrink-0 opacity-95" aria-hidden="true" />
-                            <span>Log out</span>
+                            <LogOut class="size-4 shrink-0" stroke-width="2" aria-hidden="true" />
                         </Link>
                     </div>
                 </div>

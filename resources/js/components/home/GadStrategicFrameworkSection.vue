@@ -73,7 +73,7 @@ onBeforeUnmount(() => {
     <section
         id="gad-strategic-framework"
         ref="sectionRef"
-        class="relative isolate scroll-mt-24 overflow-x-clip border-t border-white/5 bg-white sm:scroll-mt-28"
+        class="relative isolate scroll-mt-24 overflow-x-clip border-t border-white/5 bg-[#0e0716] sm:scroll-mt-28"
         aria-label="GAD Strategic Framework"
         data-focus-anchor="true"
         tabindex="-1"
@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
         <div class="relative z-10 mx-auto w-full max-w-7xl px-page-gutter pb-20 pt-16 sm:pb-28 sm:pt-24 md:pb-32">
             
             <div class="mb-12 md:mb-16 text-center lg:text-left">
-                <h2 class="text-4xl font-semibold tracking-tighter text-slate-900 sm:text-5xl md:text-5xl">
+                <h2 class="text-4xl font-semibold tracking-tighter text-purple-50 sm:text-5xl md:text-5xl">
                     Strategic <span class="text-violet-400">Framework</span>
                 </h2>
                 <p class="mt-4 max-w-2xl text-lg text-purple-200/70 mx-auto lg:mx-0">
@@ -99,57 +99,57 @@ onBeforeUnmount(() => {
             <div ref="gridRef" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
                 
                 <!-- 1. Mandate (Full Width) -->
-                <article class="bento-card group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-slate-200 bg-purple-900/20 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-500 hover:border-blue-500/40 hover:bg-purple-900/30 md:col-span-2 lg:p-10">
+                <article class="bento-card group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-white/10 bg-purple-900/20 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-500 hover:border-violet-500/40 hover:bg-purple-900/30 md:col-span-2 lg:p-10">
                     <div class="relative z-10 mb-6 md:mb-8">
                         <h3 class="font-sans text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-violet-400">Mandate.</h3>
                     </div>
                     <div class="relative z-10 lg:max-w-[85%]">
-                        <p class="text-base sm:text-lg font-light leading-relaxed text-slate-800/90 tracking-tight">
+                        <p class="text-base sm:text-lg font-light leading-relaxed text-purple-100/90 tracking-tight">
                             {{ MANDATE_TEXT }}
                         </p>
                     </div>
                 </article>
 
                 <!-- 2. Vision (Half Width) -->
-                <article class="bento-card group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-slate-200 bg-purple-900/20 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-500 hover:border-blue-500/40 hover:bg-purple-900/30 lg:p-10">
+                <article class="bento-card group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-white/10 bg-purple-900/20 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-500 hover:border-violet-500/40 hover:bg-purple-900/30 lg:p-10">
                     <div class="relative z-10 mb-6 md:mb-8 flex flex-col items-start gap-6">
                         <h3 class="font-sans text-4xl sm:text-5xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-violet-400">Vision.</h3>
                     </div>
                     <div class="relative z-10">
-                        <p class="text-base sm:text-lg font-light leading-relaxed text-slate-800/90 tracking-tight">
+                        <p class="text-base sm:text-lg font-light leading-relaxed text-purple-100/90 tracking-tight">
                             Gender-responsive science, technology, and innovation that empowers people and drives inclusive, sustainable development.
                         </p>
                     </div>
                 </article>
 
                 <!-- 3. Mission (Half Width) -->
-                <article class="bento-card group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-slate-200 bg-purple-900/20 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-500 hover:border-blue-500/40 hover:bg-purple-900/30 lg:p-10">
+                <article class="bento-card group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-white/10 bg-purple-900/20 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-500 hover:border-violet-500/40 hover:bg-purple-900/30 lg:p-10">
                     <div class="relative z-10 mb-6 md:mb-8 flex flex-col items-start gap-6">
                         <h3 class="font-sans text-4xl sm:text-5xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-violet-400">Mission.</h3>
                     </div>
                     <div class="relative z-10">
-                        <p class="text-base sm:text-lg font-light leading-relaxed text-slate-800/90 tracking-tight">
+                        <p class="text-base sm:text-lg font-light leading-relaxed text-purple-100/90 tracking-tight">
                             Advances gender-responsive science, technology and innovation that empowers people and drives inclusive, sustainable development.
                         </p>
                     </div>
                 </article>
 
                 <!-- 4. Goals (Full Width) -->
-                <article class="bento-card group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-slate-200 bg-purple-900/20 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-500 hover:border-blue-500/40 hover:bg-purple-900/30 md:col-span-2 lg:p-10">
+                <article class="bento-card group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-white/10 bg-purple-900/20 p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-500 hover:border-violet-500/40 hover:bg-purple-900/30 md:col-span-2 lg:p-10">
                     <div class="relative z-10 mb-8 md:mb-10">
                         <h3 class="font-sans text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-violet-400">Goals.</h3>
                     </div>
                     <div class="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-2">
                         <div>
-                            <h4 class="font-sans text-sm font-semibold tracking-wide text-slate-900">Organization-Focused</h4>
-                            <ol class="mt-4 list-decimal space-y-3 pl-4 text-base sm:text-lg font-light leading-relaxed text-slate-800/90 marker:text-violet-400/60">
+                            <h4 class="font-sans text-sm font-semibold tracking-wide text-purple-50">Organization-Focused</h4>
+                            <ol class="mt-4 list-decimal space-y-3 pl-4 text-base sm:text-lg font-light leading-relaxed text-purple-100/90 marker:text-violet-400/60">
                                 <li>To build robust gender-responsive institutional policies.</li>
                                 <li>To capacitate all DOST-IX employees on Gender and Development through continuous training and learning initiatives.</li>
                             </ol>
                         </div>
                         <div>
-                            <h4 class="font-sans text-sm font-semibold tracking-wide text-slate-900">Client-Focused</h4>
-                            <ol class="mt-4 list-decimal space-y-3 pl-4 text-base sm:text-lg font-light leading-relaxed text-slate-800/90 marker:text-violet-400/60" start="3">
+                            <h4 class="font-sans text-sm font-semibold tracking-wide text-purple-50">Client-Focused</h4>
+                            <ol class="mt-4 list-decimal space-y-3 pl-4 text-base sm:text-lg font-light leading-relaxed text-purple-100/90 marker:text-violet-400/60" start="3">
                                 <li>Establish and maintain strategic partnerships with LGUs, academe, private sector, and civil society.</li>
                                 <li>To mainstream gender and development in all programs, activities, and projects, ensuring equitable outcomes.</li>
                             </ol>

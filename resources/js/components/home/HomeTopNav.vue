@@ -46,7 +46,7 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                 :href="route('index')"
                 class="cursor-pointer text-lg font-semibold tracking-tighter text-purple-50 transition-all duration-200 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
             >
-                GAD Corner
+               Gender and Development Corner
             </Link>
 
             <nav class="flex items-center gap-2 sm:gap-3" aria-label="Site">

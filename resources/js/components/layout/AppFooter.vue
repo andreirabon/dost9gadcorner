@@ -14,8 +14,8 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
         :class="[
             'relative isolate shrink-0 overflow-hidden border-t',
             isReportLight
-                ? 'scheme-light border-slate-200 bg-white text-slate-900'
-                : 'scheme-dark border-slate-200 bg-white text-slate-900',
+                ? 'scheme-light border-white/10 bg-[#0e0716] text-purple-50'
+                : 'scheme-dark border-white/10 bg-[#0e0716] text-purple-50',
         ]"
         role="contentinfo"
     >
@@ -31,16 +31,16 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
         <div
             class="relative mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:py-8"
         >
-            <p :class="['text-sm leading-relaxed', isReportLight ? 'text-slate-600' : 'text-slate-600']">
+            <p :class="['text-sm leading-relaxed', isReportLight ? 'text-purple-200/70' : 'text-purple-200/70']">
                 © {{ year }}
-                <span :class="['font-medium', isReportLight ? 'text-slate-900' : 'text-slate-900']"
+                <span :class="['font-medium', isReportLight ? 'text-purple-100' : 'text-purple-100']"
                     >Department of Science and Technology Region IX</span
                 >
             </p>
             <p
                 :class="[
                     'flex flex-wrap items-center gap-x-1.5 text-sm leading-normal',
-                    isReportLight ? 'text-slate-600' : 'text-slate-600',
+                    isReportLight ? 'text-purple-200/70' : 'text-purple-200/70',
                 ]"
             >
                 <span class="shrink-0">Connect with us on</span>
@@ -52,8 +52,8 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
                     :class="[
                         'inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 transition-colors duration-200 hover:underline focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2',
                         isReportLight
-                            ? 'text-slate-900 hover:text-blue-700 focus-visible:ring-offset-white'
-                            : 'text-slate-900 hover:text-blue-700 focus-visible:ring-offset-[#0e0716]',
+                            ? 'text-purple-100 hover:text-violet-400 focus-visible:ring-offset-[#0e0716]'
+                            : 'text-purple-100 hover:text-violet-400 focus-visible:ring-offset-[#0e0716]',
                     ]"
                 >
                     <svg

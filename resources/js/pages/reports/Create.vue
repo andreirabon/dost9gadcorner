@@ -26,7 +26,7 @@ const submit = () => {
  <AppLayout
  :show-footer="false"
  compact-main-column
- content-class="flex w-full flex-col bg-white text-slate-900"
+ content-class="flex min-h-0 flex-1 flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30"
  >
  <Head title="New Report Year" />
 
@@ -41,14 +41,14 @@ const submit = () => {
  as-child
  variant="ghost"
  size="icon"
- class="size-10 rounded-full border border-slate-200 bg-white transition-all duration-300 hover:bg-slate-100 active:scale-[0.97]"
+ class="size-10 rounded-full border border-white/10 bg-[#0e0716] transition-all duration-300 hover:bg-[#0e0716]/5 active:scale-[0.97]"
  >
  <Link :href="route('report-years.index')" aria-label="Back to all years" prefetch>
- <ArrowLeft class="size-4 text-slate-500" />
+ <ArrowLeft class="size-4 text-purple-200/70" />
  </Link>
  </Button>
  <div>
- <h1 class="text-2xl font-semibold tracking-tighter text-slate-900">
+ <h1 class="text-2xl font-semibold tracking-tighter text-purple-50">
  Create Report Year
  </h1>
  </div>
@@ -56,10 +56,10 @@ const submit = () => {
  </div>
 
  <!-- Form Container -->
- <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+ <div class="rounded-[2rem] border border-white/10 bg-[#0e0716] p-6 shadow-sm sm:p-8">
  <div class="mb-6">
- <h2 class="text-lg font-medium tracking-tight text-slate-900">Details</h2>
- <p class="mt-1 text-sm font-light text-slate-500">
+ <h2 class="text-lg font-medium tracking-tight text-purple-50">Details</h2>
+ <p class="mt-1 text-sm font-light text-purple-200/70">
  Set the reporting year, an optional custom title, and the initial status.
  </p>
  </div>
@@ -68,7 +68,7 @@ const submit = () => {
  <!-- Grid Layout for Inputs -->
  <div class="grid gap-6 sm:grid-cols-2">
  <div class="space-y-2">
- <Label for="year" class="text-[13px] font-medium text-slate-800">Reporting Year</Label>
+ <Label for="year" class="text-[13px] font-medium text-purple-100">Reporting Year</Label>
  <Input
  id="year"
  v-model="form.year"
@@ -77,25 +77,25 @@ const submit = () => {
  :min="REPORT_YEAR_FIELD_LIMITS.yearMin"
  :max="REPORT_YEAR_FIELD_LIMITS.yearMax"
  inputmode="numeric"
- class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 transition-colors focus-visible:border-blue-500 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="h-11 rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:ring-4 focus-visible:ring-blue-500/20"
  />
  <InputError :message="form.errors.year" />
  </div>
 
  <div class="space-y-2">
- <Label for="status" class="text-[13px] font-medium text-slate-800">Initial Status</Label>
+ <Label for="status" class="text-[13px] font-medium text-purple-100">Initial Status</Label>
  <div class="relative">
  <select
  id="status"
  v-model="form.status"
  name="status"
- class="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 transition-colors focus-visible:border-blue-500 focus-visible:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="h-11 w-full appearance-none rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
  >
- <option value="pending" class="bg-white text-slate-900">Pending (Draft)</option>
- <option value="published" class="bg-white text-slate-900">Published (Public)</option>
+ <option value="pending" class="bg-[#0e0716] text-purple-50">Pending (Draft)</option>
+ <option value="published" class="bg-[#0e0716] text-purple-50">Published (Public)</option>
  </select>
  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
- <svg class="size-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+ <svg class="size-4 text-purple-300/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
  </div>
  </div>
  <InputError :message="form.errors.status" />
@@ -103,7 +103,7 @@ const submit = () => {
  </div>
 
  <div class="space-y-2">
- <Label for="title" class="text-[13px] font-medium text-slate-800">Custom Title <span class="text-slate-400 font-normal">(Optional)</span></Label>
+ <Label for="title" class="text-[13px] font-medium text-purple-100">Custom Title <span class="text-purple-300/50 font-normal">(Optional)</span></Label>
  <Input
  id="title"
  v-model="form.title"
@@ -111,18 +111,18 @@ const submit = () => {
  type="text"
  placeholder="e.g., Annual Regional Review"
  :maxlength="REPORT_YEAR_FIELD_LIMITS.title"
- class="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus-visible:border-blue-500 focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="h-11 rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors placeholder:text-purple-300/50 focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:ring-4 focus-visible:ring-blue-500/20"
  />
  <div class="flex justify-between">
  <InputError :message="form.errors.title" />
- <span class="text-xs text-slate-400 ml-auto">
+ <span class="text-xs text-purple-300/50 ml-auto">
  {{ form.title?.length || 0 }} / {{ REPORT_YEAR_FIELD_LIMITS.title }}
  </span>
  </div>
  </div>
 
  <div class="space-y-2">
- <Label for="description" class="text-[13px] font-medium text-slate-800">Description <span class="text-slate-400 font-normal">(Optional)</span></Label>
+ <Label for="description" class="text-[13px] font-medium text-purple-100">Description <span class="text-purple-300/50 font-normal">(Optional)</span></Label>
  <textarea
  id="description"
  v-model="form.description"
@@ -130,22 +130,22 @@ const submit = () => {
  rows="3"
  placeholder="Brief summary of this reporting period..."
  :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
- class="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus-visible:border-blue-500 focus-visible:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="w-full resize-y rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-purple-50 transition-colors placeholder:text-purple-300/50 focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
  />
  <div class="flex justify-between">
  <InputError :message="form.errors.description" />
- <span class="text-xs text-slate-400 ml-auto">
+ <span class="text-xs text-purple-300/50 ml-auto">
  {{ form.description?.length || 0 }} / {{ REPORT_YEAR_FIELD_LIMITS.description }}
  </span>
  </div>
  </div>
 
- <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-200 mt-6">
+ <div class="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-6">
  <p v-show="form.recentlySuccessful" class="text-sm font-medium text-emerald-400">Saved successfully.</p>
  <Button
  type="button"
  variant="ghost"
- class="h-11 rounded-xl px-4 text-sm font-medium text-slate-500 hover:bg-white hover:text-slate-900 transition-all duration-300 active:scale-[0.97]"
+ class="h-11 rounded-xl px-4 text-sm font-medium text-purple-200/70 hover:bg-[#0e0716] hover:text-purple-50 transition-all duration-300 active:scale-[0.97]"
  @click="() => form.reset()"
  >
  Reset
