@@ -30,9 +30,9 @@ const mainNavItems = computed((): NavItem[] => {
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="sidebar" class="border-r border-white/10 shadow-none">
+    <Sidebar collapsible="icon" variant="sidebar" class="border-r border-slate-200 shadow-none">
         <SidebarHeader
-            class="border-b border-white/10 px-3 pt-4 pb-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3 group-data-[collapsible=icon]:pb-2"
+            class="border-b border-slate-200 px-3 pt-4 pb-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3 group-data-[collapsible=icon]:pb-2"
         >
             <div
                 class="flex items-start justify-between gap-2 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3"
@@ -49,7 +49,7 @@ const mainNavItems = computed((): NavItem[] => {
                         >
                             <Link
                                 :href="route('index')"
-                                class="flex min-w-0 cursor-pointer rounded-lg py-0.5 pr-1 text-left transition-colors hover:bg-white/5 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:pr-0"
+                                class="flex min-w-0 cursor-pointer rounded-lg py-0.5 pr-1 text-left transition-colors hover:bg-slate-50 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:pr-0"
                             >
                                 <AppLogo />
                             </Link>
@@ -60,7 +60,7 @@ const mainNavItems = computed((): NavItem[] => {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    class="h-9 w-9 shrink-0 rounded-md border border-white/20 bg-white/10 text-white shadow-sm hover:bg-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-white/35 focus-visible:outline-none group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
+                    class="h-9 w-9 shrink-0 rounded-md border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-900 shadow-sm hover:bg-slate-100 hover:text-slate-500 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:outline-none group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
                     :aria-label="
                         isMobile
                             ? 'Close sidebar'
@@ -88,7 +88,7 @@ const mainNavItems = computed((): NavItem[] => {
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter class="border-t border-white/10 p-2">
+        <SidebarFooter class="border-t border-slate-200 p-2">
             <NavUser />
         </SidebarFooter>
         <SidebarRail />

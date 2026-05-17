@@ -236,12 +236,12 @@ onBeforeUnmount(() => {
     padding: 0;
     margin: 0;
     border-radius: 14px;
-    background: linear-gradient(145deg, rgba(30, 16, 51, 0.98) 0%, rgba(24, 12, 42, 0.99) 100%);
-    border: 1px solid rgba(167, 139, 250, 0.38);
+    background: #0e0716;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow:
-        0 1px 0 rgba(250, 250, 250, 0.06) inset,
-        0 8px 24px rgba(0, 0, 0, 0.35);
-    color: #f5f3ff;
+        0 1px 0 rgba(250, 250, 250, 0.02) inset,
+        0 8px 24px rgba(0, 0, 0, 0.4);
+    color: #f4f4f5;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
 }
@@ -249,13 +249,13 @@ onBeforeUnmount(() => {
 .d3-org-chart-panel .org-chart-node__accent {
     flex-shrink: 0;
     width: 5px;
-    background: linear-gradient(180deg, #e9d5ff 0%, #a78bfa 50%, #7c3aed 100%);
+    background: #3f3f46;
     opacity: 0.95;
 }
 
 .d3-org-chart-panel .org-chart-node--tier-0 .org-chart-node__accent {
     width: 6px;
-    background: linear-gradient(180deg, #faf5ff 0%, #d8b4fe 40%, #a855f7 100%);
+    background: #71717a;
 }
 
 .d3-org-chart-panel .org-chart-node--tier-1 .org-chart-node__accent {
@@ -266,7 +266,7 @@ onBeforeUnmount(() => {
 .d3-org-chart-panel .org-chart-node--tier-3 .org-chart-node__accent {
     width: 4px;
     opacity: 0.72;
-    background: linear-gradient(180deg, #ddd6fe 0%, #8b5cf6 100%);
+    background: #27272a;
 }
 
 .d3-org-chart-panel .org-chart-node__body {
@@ -286,7 +286,7 @@ onBeforeUnmount(() => {
     font-weight: 650;
     letter-spacing: -0.02em;
     line-height: 1.28;
-    color: #faf5ff;
+    color: #fafafa;
 }
 
 .d3-org-chart-panel .org-chart-node--tier-0 .org-chart-node__name {
@@ -305,10 +305,10 @@ onBeforeUnmount(() => {
 .d3-org-chart-panel .node-button-div {
     box-sizing: border-box;
     border-radius: 10px;
-    border: 1px solid rgba(233, 213, 255, 0.55);
-    background: linear-gradient(180deg, #7c3aed 0%, #5b21b6 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #18181b;
     box-shadow:
-        0 1px 0 rgba(250, 250, 250, 0.12) inset,
+        0 1px 0 rgba(250, 250, 250, 0.05) inset,
         0 3px 10px rgba(0, 0, 0, 0.35);
 }
 
@@ -321,7 +321,7 @@ onBeforeUnmount(() => {
     font-weight: 700;
     font-size: 22px;
     line-height: 1;
-    color: #faf5ff;
+    color: #fafafa;
 }
 
 .d3-org-chart-panel .org-chart-node__title {
@@ -330,12 +330,12 @@ onBeforeUnmount(() => {
     font-weight: 450;
     line-height: 1.42;
     letter-spacing: 0.01em;
-    color: rgba(237, 233, 254, 0.88);
+    color: rgba(244, 244, 245, 0.7);
 }
 
 .d3-org-chart-panel .org-chart-node--tier-2 .org-chart-node__title,
 .d3-org-chart-panel .org-chart-node--tier-3 .org-chart-node__title {
     font-size: 10px;
-    color: rgba(221, 214, 254, 0.78);
+    color: rgba(228, 228, 231, 0.6);
 }
 </style>

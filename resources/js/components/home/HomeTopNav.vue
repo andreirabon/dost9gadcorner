@@ -38,13 +38,13 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
 
 <template>
     <header
-        class="pt-safe sticky top-0 z-40 border-b border-white/10 bg-purple-950/80 backdrop-blur-md supports-[backdrop-filter]:bg-purple-950/65"
+        class="pt-safe sticky top-0 z-40 border-b border-white/5 bg-[#0e0716]/80 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] supports-[backdrop-filter]:bg-[#0e0716]/65 transition-all duration-300"
         role="banner"
     >
         <div class="px-safe mx-auto flex min-h-14 max-w-7xl items-center justify-between gap-3 sm:min-h-16 sm:gap-4">
             <Link
                 :href="route('index')"
-                class="cursor-pointer font-semibold tracking-tight text-white transition-colors duration-200 hover:text-purple-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950"
+                class="cursor-pointer text-lg font-semibold tracking-tighter text-purple-50 transition-all duration-200 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
             >
                 GAD Corner
             </Link>
@@ -53,7 +53,7 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                 <Link
                     v-if="!user"
                     :href="route('login')"
-                    class="cursor-pointer rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100 transition-colors duration-200 hover:border-white/25 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950"
+                    class="cursor-pointer rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-purple-100 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
                 >
                     Log in
                 </Link>
@@ -64,10 +64,10 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                             <Button
                                 type="button"
                                 variant="outline"
-                                class="cursor-pointer border-purple-400/45 bg-purple-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 sm:px-4"
+                                class="group cursor-pointer rounded-full border border-violet-500/30 bg-violet-600/90 px-4 py-2 text-sm font-medium text-white shadow-md shadow-violet-900/20 transition-all duration-200 hover:bg-violet-500 hover:border-violet-400/50 hover:shadow-violet-900/40 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] sm:px-5"
                             >
                                 Reports
-                                <ChevronDown class="size-4 opacity-90" aria-hidden="true" />
+                                <ChevronDown class="ml-1 size-4 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180" aria-hidden="true" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-56" :side-offset="8">
@@ -103,7 +103,7 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                         :href="route('logout')"
                         method="post"
                         as="button"
-                        class="cursor-pointer rounded-full border border-white/10 bg-transparent px-3 py-2 text-sm font-medium text-purple-100 transition-colors duration-200 hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 sm:px-4"
+                        class="cursor-pointer rounded-full border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-purple-200 transition-all duration-200 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
                         @click="flushLogout"
                     >
                         Log out
@@ -115,11 +115,11 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                class="touch-target relative h-10 w-10 cursor-pointer rounded-full p-1 text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 sm:h-9 sm:w-9"
+                                class="touch-target relative h-10 w-10 cursor-pointer rounded-full p-1 text-white transition-transform duration-200 hover:bg-white/10 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] sm:h-9 sm:w-9"
                             >
                                 <Avatar class="size-8 overflow-hidden rounded-full border border-white/15">
                                     <AvatarImage v-if="user.avatar" :src="user.avatar" :alt="userMenuLabel" />
-                                    <AvatarFallback class="rounded-full bg-purple-800/90 font-semibold text-white">
+                                    <AvatarFallback class="rounded-full bg-violet-800/90 font-semibold text-white">
                                         {{ getInitials(userMenuLabel) }}
                                     </AvatarFallback>
                                 </Avatar>

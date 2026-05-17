@@ -14,8 +14,8 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
         :class="[
             'relative isolate shrink-0 overflow-hidden border-t',
             isReportLight
-                ? 'scheme-light border-slate-200 bg-slate-50 text-slate-900'
-                : 'scheme-dark border-white/10 bg-slate-950 text-white',
+                ? 'scheme-light border-slate-200 bg-white text-slate-900'
+                : 'scheme-dark border-slate-200 bg-white text-slate-900',
         ]"
         role="contentinfo"
     >
@@ -24,23 +24,23 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
             :class="[
                 'pointer-events-none absolute inset-0',
                 isReportLight
-                    ? 'bg-[radial-gradient(100%_90%_at_50%_0%,rgba(45,212,191,0.06),transparent_55%),radial-gradient(80%_60%_at_100%_100%,rgba(99,102,241,0.05),transparent_50%)]'
-                    : 'bg-[radial-gradient(100%_90%_at_50%_0%,rgba(45,212,191,0.07),transparent_55%),radial-gradient(80%_60%_at_100%_100%,rgba(99,102,241,0.06),transparent_50%)]',
+                    ? 'bg-[radial-gradient(100%_90%_at_50%_0%,rgba(139,92,246,0.06),transparent_55%),radial-gradient(80%_60%_at_100%_100%,rgba(168,85,247,0.05),transparent_50%)]'
+                    : 'bg-[radial-gradient(100%_90%_at_50%_0%,rgba(139,92,246,0.08),transparent_55%),radial-gradient(80%_60%_at_100%_100%,rgba(168,85,247,0.06),transparent_50%)]',
             ]"
         />
         <div
             class="relative mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:py-8"
         >
-            <p :class="['text-sm leading-relaxed', isReportLight ? 'text-slate-600' : 'text-slate-400']">
+            <p :class="['text-sm leading-relaxed', isReportLight ? 'text-slate-600' : 'text-slate-600']">
                 © {{ year }}
-                <span :class="['font-medium', isReportLight ? 'text-slate-900' : 'text-white']"
+                <span :class="['font-medium', isReportLight ? 'text-slate-900' : 'text-slate-900']"
                     >Department of Science and Technology Region IX</span
                 >
             </p>
             <p
                 :class="[
                     'flex flex-wrap items-center gap-x-1.5 text-sm leading-normal',
-                    isReportLight ? 'text-slate-600' : 'text-slate-400',
+                    isReportLight ? 'text-slate-600' : 'text-slate-600',
                 ]"
             >
                 <span class="shrink-0">Connect with us on</span>
@@ -50,14 +50,14 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
                     rel="noopener noreferrer"
                     aria-label="DOST-IX GAD on Facebook (opens in new tab)"
                     :class="[
-                        'inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 transition-colors duration-200 hover:underline focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/80 focus-visible:ring-offset-2',
+                        'inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 transition-colors duration-200 hover:underline focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2',
                         isReportLight
-                            ? 'text-slate-800 hover:text-slate-950 focus-visible:ring-offset-slate-50'
-                            : 'text-slate-200 hover:text-white focus-visible:ring-offset-slate-950',
+                            ? 'text-slate-900 hover:text-blue-700 focus-visible:ring-offset-white'
+                            : 'text-slate-900 hover:text-blue-700 focus-visible:ring-offset-[#0e0716]',
                     ]"
                 >
                     <svg
-                        class="block size-4.5 shrink-0 text-[#1877F2]"
+                        class="block size-4.5 shrink-0 text-[#1877F2] transition-transform duration-200 group-hover:scale-110"
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"

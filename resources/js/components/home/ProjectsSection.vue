@@ -33,17 +33,7 @@ const closeProjectModal = (): void => {
         aria-labelledby="projects-heading"
     >
         <div class="mx-auto w-full max-w-6xl">
-            <div class="mb-5 flex flex-col items-center gap-2 text-center sm:mb-6 md:mb-8">
-                <div class="mb-2 flex justify-center sm:mb-3">
-                    <img
-                        src="/svg/reports.svg"
-                        alt="Reports"
-                        class="h-24 w-auto opacity-90 sm:h-28 md:h-32 lg:h-36"
-                        loading="lazy"
-                        decoding="async"
-                        fetchpriority="low"
-                    />
-                </div>
+            <div class="mb-12 flex flex-col items-center gap-4 text-center md:mb-16">
                 <h2
                     id="projects-heading"
                     data-focus-anchor="true"

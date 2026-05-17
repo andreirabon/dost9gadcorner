@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -8,7 +7,7 @@
 @custom-variant report-light (&:is(.report-theme-light *));
 
 @theme inline {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* App off-white: replaces default #fff for all `*-white` utilities */
     --color-white: #fafafa;
@@ -154,78 +153,78 @@
     --sidebar: hsl(210 20% 98%);
 }
 
-/* DOST HR-style admin sidebar (expanded #4a5d96, collapsed #404e82) */
+/* Admin sidebar (Bento 2.0 deep purple) */
 @layer components {
     .sidebar-dost-shell .group[data-state='expanded'] [data-sidebar='sidebar'] {
-        background-color: #4a5d96;
-        color: #b8c2de;
-        border-color: rgb(255 255 255 / 0.12);
-        --sidebar: #4a5d96;
-        --sidebar-background: #4a5d96;
-        --sidebar-foreground: #b8c2de;
-        --sidebar-primary: #ffffff;
-        --sidebar-primary-foreground: #4a5d96;
-        --sidebar-accent: rgb(255 255 255 / 0.12);
+        background-color: #0e0716;
+        color: rgba(216, 180, 254, 0.6);
+        border-color: rgba(255, 255, 255, 0.1);
+        --sidebar: #0e0716;
+        --sidebar-background: #0e0716;
+        --sidebar-foreground: rgba(250, 250, 250, 0.9);
+        --sidebar-primary: #8b5cf6;
+        --sidebar-primary-foreground: #ffffff;
+        --sidebar-accent: rgba(88, 28, 135, 0.4);
         --sidebar-accent-foreground: #ffffff;
-        --sidebar-border: rgb(255 255 255 / 0.12);
-        --sidebar-ring: rgb(255 255 255 / 0.35);
+        --sidebar-border: rgba(255, 255, 255, 0.1);
+        --sidebar-ring: rgba(139, 92, 246, 0.5);
     }
 
     .sidebar-dost-shell .group[data-state='collapsed'] [data-sidebar='sidebar'] {
-        background-color: #404e82;
-        color: #a8b2d1;
-        border-color: rgb(255 255 255 / 0.1);
-        --sidebar: #404e82;
-        --sidebar-background: #404e82;
-        --sidebar-foreground: #a8b2d1;
-        --sidebar-accent: rgb(255 255 255 / 0.1);
+        background-color: #0e0716;
+        color: rgba(216, 180, 254, 0.6);
+        border-color: rgba(255, 255, 255, 0.1);
+        --sidebar: #0e0716;
+        --sidebar-background: #0e0716;
+        --sidebar-foreground: rgba(250, 250, 250, 0.9);
+        --sidebar-accent: rgba(88, 28, 135, 0.4);
         --sidebar-accent-foreground: #ffffff;
-        --sidebar-border: rgb(255 255 255 / 0.1);
-        --sidebar-ring: rgb(255 255 255 / 0.3);
+        --sidebar-border: rgba(255, 255, 255, 0.1);
+        --sidebar-ring: rgba(139, 92, 246, 0.5);
     }
 
     [data-sidebar='sidebar'][data-mobile='true'] {
-        background-color: #4a5d96;
-        color: #b8c2de;
-        --sidebar: #4a5d96;
-        --sidebar-background: #4a5d96;
-        --sidebar-foreground: #b8c2de;
-        --sidebar-accent: rgb(255 255 255 / 0.12);
+        background-color: #0e0716;
+        color: rgba(216, 180, 254, 0.6);
+        --sidebar: #0e0716;
+        --sidebar-background: #0e0716;
+        --sidebar-foreground: rgba(250, 250, 250, 0.9);
+        --sidebar-accent: rgba(88, 28, 135, 0.4);
         --sidebar-accent-foreground: #ffffff;
-        --sidebar-border: rgb(255 255 255 / 0.12);
-        --sidebar-ring: rgb(255 255 255 / 0.35);
+        --sidebar-border: rgba(255, 255, 255, 0.1);
+        --sidebar-ring: rgba(139, 92, 246, 0.5);
     }
 }
 
 .dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
+    --background: #0e0716;
+    --foreground: #fafafa;
+    --card: rgba(88, 28, 135, 0.2); /* purple-900/20 */
+    --card-foreground: #fafafa;
+    --popover: #0e0716;
+    --popover-foreground: #fafafa;
+    --primary: #8b5cf6; /* violet-500 */
+    --primary-foreground: #ffffff;
+    --secondary: rgba(255, 255, 255, 0.05);
+    --secondary-foreground: #fafafa;
+    --muted: rgba(255, 255, 255, 0.1);
+    --muted-foreground: rgba(216, 180, 254, 0.6); /* purple-300/60 */
+    --accent: rgba(255, 255, 255, 0.1);
+    --accent-foreground: #fafafa;
     --destructive: hsl(0 84% 60%);
     --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
-    --sidebar-background: hsl(222 47% 6%);
-    --sidebar-foreground: hsl(210 40% 96%);
-    --sidebar-primary: hsl(234 89% 74%);
-    --sidebar-primary-foreground: hsl(222 47% 8%);
-    --sidebar-accent: hsl(217 33% 14%);
-    --sidebar-accent-foreground: hsl(210 40% 96%);
-    --sidebar-border: hsl(217 33% 16%);
-    --sidebar-ring: hsl(239 84% 67%);
-    --sidebar: hsl(222 47% 6%);
+    --border: rgba(255, 255, 255, 0.1);
+    --input: rgba(255, 255, 255, 0.1);
+    --ring: rgba(139, 92, 246, 0.5); /* violet-500/50 */
+    --sidebar-background: #0e0716;
+    --sidebar-foreground: #fafafa;
+    --sidebar-primary: #8b5cf6;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgba(88, 28, 135, 0.4);
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    --sidebar-ring: rgba(139, 92, 246, 0.5);
+    --sidebar: #0e0716;
 }
 
 @layer base {
@@ -664,7 +663,7 @@
 
 @layer components {
     .report-panel {
-        @apply relative isolate overflow-hidden rounded-2xl border border-zinc-200/90 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-zinc-800 dark:bg-zinc-900/80 dark:shadow-none;
+        @apply relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-purple-900/20 backdrop-blur-xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)];
     }
 
     /* Lucide watermark lives in ReportPanelWatermark.vue; keep content above */
@@ -672,71 +671,75 @@
         @apply relative z-10;
     }
 
+    .report-panel-watermark {
+        @apply opacity-[0.15] text-violet-400;
+        filter: brightness(1.25);
+    }
+
     .dark .report-panel-watermark {
-        @apply opacity-[0.45];
+        @apply opacity-[0.15] text-violet-400;
         filter: brightness(1.25);
     }
 
     /* Outline→fill: light slate-blue; dark matches report panels (teal) so it doesn’t read as a loud blue chip. */
     .report-btn-primary {
-        @apply rounded-lg border border-zinc-200 !bg-zinc-100 !text-zinc-900 shadow-sm transition-colors duration-200 hover:!border-[#4a5d96] hover:!bg-[#4a5d96] hover:!text-white focus-visible:ring-2 focus-visible:ring-[#4a5d96]/35 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-600 dark:!bg-zinc-800 dark:!text-zinc-100 dark:hover:!border-teal-700/70 dark:hover:!bg-teal-900 dark:hover:!text-teal-50 dark:focus-visible:ring-teal-500/40;
+        @apply rounded-xl border border-white/10 bg-white/5 text-purple-100 shadow-sm transition-colors duration-300 hover:border-white/20 hover:bg-white/10 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
     }
 
     /* Primary actions (save / create). Light: rgb(74,93,150). Dark: teal (same family as section icons / tabs) — !bg beats shadcn bg-primary. */
     .report-save-btn {
-        @apply inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-transparent px-4 text-sm font-semibold text-white shadow-sm transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
-        @apply !bg-[rgb(74,93,150)] hover:!bg-[rgb(55,71,118)] focus-visible:!ring-[rgb(74,93,150)]/50;
-        @apply dark:!border-teal-800/80 dark:!bg-teal-950 dark:!text-teal-50 dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.07)] dark:hover:!border-teal-600/55 dark:hover:!bg-teal-900 dark:hover:!text-white dark:focus-visible:!ring-teal-500/45 dark:focus-visible:ring-offset-zinc-950;
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-6 text-sm font-semibold shadow-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
+        @apply !bg-violet-600 hover:!bg-violet-500 text-white shadow-lg shadow-violet-900/30 active:scale-[0.97] focus-visible:!ring-violet-500/50;
     }
 
     .report-btn-secondary {
-        @apply rounded-lg border border-zinc-200 bg-white text-zinc-800 shadow-sm transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400/30 focus-visible:outline-none dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800/80;
+        @apply rounded-xl border border-white/10 bg-white/5 text-purple-300/70 shadow-sm transition-all duration-300 hover:bg-white/10 hover:text-purple-100 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-500/30 focus-visible:outline-none;
     }
 
     /* Form field names vs values: labels are caption-style; values stay body (overrides ui/Label defaults) */
     .report-form :is([data-slot='label'], label) {
-        @apply text-[11px]! font-semibold! tracking-[0.12em]! text-slate-500 uppercase! antialiased dark:text-zinc-500;
+        @apply text-[13px]! font-medium! normal-case! tracking-normal! text-purple-100! antialiased;
     }
 
     .report-field {
-        @apply h-8 border-zinc-200/90 bg-white px-2.5 py-1 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50;
+        @apply h-11 rounded-xl border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors focus-visible:border-violet-500 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-violet-500/20 placeholder:text-purple-300/30;
     }
 
     .report-row {
-        @apply rounded-xl border border-zinc-200/80 bg-zinc-50/90 dark:border-zinc-800 dark:bg-zinc-950/60;
+        @apply rounded-[2rem] border border-white/10 bg-purple-900/20 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)];
     }
 
     .report-list-item {
-        @apply rounded-xl border border-zinc-200/90 bg-white transition-colors duration-200 hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700;
+        @apply rounded-xl border border-white/10 bg-purple-900/20 transition-all duration-300 hover:bg-purple-900/40 hover:border-white/20;
     }
 
     .report-textarea {
-        @apply min-h-24 w-full rounded-md border border-zinc-200/90 bg-white px-2.5 py-2 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:ring-2 focus:ring-teal-500/25 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:ring-teal-400/20;
+        @apply min-h-24 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-purple-50 shadow-sm transition-colors placeholder:text-purple-300/30 focus:border-violet-500 focus:bg-black/40 focus:ring-4 focus:ring-violet-500/20 focus:outline-none;
     }
 
     .report-select {
-        @apply relative h-8 w-full rounded-md border border-zinc-200/90 bg-white py-1 pr-8 pl-2.5 text-sm text-zinc-900 shadow-sm focus:ring-2 focus:ring-teal-500/25 focus:outline-none dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:ring-teal-400/20;
+        @apply relative h-11 w-full rounded-xl border border-white/10 bg-black/20 py-1 pr-8 pl-3 text-sm text-purple-50 shadow-sm transition-colors focus:border-violet-500 focus:bg-black/40 focus:ring-4 focus:ring-violet-500/20 focus:outline-none;
     }
 
     .report-form .report-field,
     .report-form .report-textarea,
     .report-form .report-select {
-        @apply font-normal text-zinc-950 dark:text-zinc-100;
+        @apply font-normal text-purple-50;
     }
 
     .report-data-shell {
-        @apply overflow-hidden rounded-xl border border-zinc-200/80 bg-white dark:border-zinc-800 dark:bg-zinc-950/40;
+        @apply overflow-hidden rounded-2xl border border-white/10 bg-black/20;
     }
 
     .report-data-head {
-        @apply hidden bg-zinc-50/95 px-4 py-2.5 text-[11px] font-semibold tracking-[0.12em] text-slate-500 uppercase md:grid md:gap-4 dark:bg-zinc-900/80 dark:text-zinc-500;
+        @apply hidden border-b border-white/10 bg-purple-900/30 px-4 py-3 text-[11px] font-semibold tracking-widest text-violet-400 uppercase md:grid md:gap-4;
     }
 
     .report-data-row {
-        @apply border-t border-zinc-200/70 p-4 md:grid md:gap-4 md:py-3.5 dark:border-zinc-800;
+        @apply border-t border-white/10 p-4 transition-colors hover:bg-white/5 md:grid md:gap-4 md:py-3.5;
     }
 
     .report-save-hint {
-        @apply inline-flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-400/90;
+        @apply inline-flex items-center gap-1.5 text-sm font-medium text-emerald-400;
     }
 }

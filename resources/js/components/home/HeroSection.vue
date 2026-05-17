@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown, ArrowRight } from 'lucide-vue-next';
 
 defineOptions({
     name: 'HeroSection',
@@ -17,133 +17,70 @@ defineEmits<{
 <template>
     <section
         aria-labelledby="hero-heading"
-        class="min-h-dvh min-h-screen-safe relative isolate flex flex-col justify-center overflow-hidden px-0 pb-56 pt-6 text-center sm:pb-64 md:pt-10 md:pb-72 lg:pb-80"
+        class="min-h-dvh min-h-screen-safe relative isolate flex flex-col justify-center overflow-hidden px-0 md:pt-10 bg-[#0e0716]"
     >
-        <!-- Left side decorative illustrations -->
-        <div
-            aria-hidden="true"
-            class="pointer-events-none absolute top-[12%] left-[2%] flex w-20 items-center justify-center sm:w-28 md:w-32 lg:w-40"
-        >
-            <img src="/svg/gendericon.svg" alt="" class="block h-auto w-full opacity-70 sm:opacity-90" loading="lazy" decoding="async" />
-        </div>
-
-        <!-- Right side decorative illustration -->
-        <div
-            aria-hidden="true"
-            class="pointer-events-none absolute top-[30%] right-[2%] flex w-20 items-center justify-center sm:w-28 md:w-32 lg:w-40"
-        >
-            <img src="/svg/development1.svg" alt="" class="block h-auto w-full opacity-70 sm:opacity-90" loading="lazy" decoding="async" />
-        </div>
+        <!-- Noise Overlay -->
         <div class="absolute inset-0 -z-10 overflow-hidden">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,var(--color-purple-400)/22%,transparent_68%)]" />
             <div
                 aria-hidden="true"
-                class="absolute inset-0 bg-[linear-gradient(to_right,rgba(250,250,250,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(250,250,250,0.045)_1px,transparent_1px)] bg-size-[40px_40px] opacity-80"
-            />
-            <div
-                aria-hidden="true"
-                class="absolute inset-0 mix-blend-soft-light opacity-[0.04]"
+                class="absolute inset-0 mix-blend-soft-light opacity-10"
                 :style="{ backgroundImage: heroNoiseDataUrl }"
             />
             <div
                 aria-hidden="true"
-                class="absolute top-[20%] -left-[20%] h-[28rem] w-[28rem] rounded-full bg-violet-500/14 blur-3xl sm:-left-[10%]"
+                class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.15),transparent_70%)]"
             />
             <div
                 aria-hidden="true"
-                class="absolute top-[35%] -right-[18%] h-[26rem] w-[26rem] rounded-full bg-purple-500/12 blur-3xl sm:-right-[8%]"
-            />
-            <div
-                aria-hidden="true"
-                class="absolute bottom-[-5%] left-[25%] h-[22rem] w-[22rem] rounded-full bg-violet-400/10 blur-3xl"
+                class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-70"
             />
         </div>
 
-        <!-- Hero textual content -->
-        <div class="px-safe relative z-10 mx-auto w-full max-w-6xl space-y-6">
-            <!-- DOST Logo -->
-            <div class="flex justify-center">
+        <div class="px-page-gutter relative z-10 mx-auto w-full max-w-5xl text-center">
+            <div class="flex flex-col items-center gap-10 pb-32 pt-20">
                 <img
-                    src="/svg/dost.svg"
+                    src="/dostlogo.png"
                     alt="Department of Science and Technology"
-                    class="h-16 w-auto opacity-95 sm:h-20 md:h-24"
+                    class="h-20 w-auto opacity-95 sm:h-24 md:h-28 drop-shadow-2xl"
                     loading="eager"
                     decoding="async"
                     fetchpriority="high"
                 />
+                
+                <div class="space-y-6 flex flex-col items-center">
+                    <p class="text-sm font-semibold tracking-widest text-violet-400 uppercase">
+                        Department of Science and Technology Region IX
+                    </p>
+                    <h1
+                        id="hero-heading"
+                        class="m-0 text-5xl font-semibold leading-none tracking-tighter text-purple-50 sm:text-6xl md:text-7xl lg:text-8xl"
+                    >
+                        Gender &<br />Development.
+                    </h1>
+                    <p class="max-w-[55ch] text-lg leading-relaxed text-purple-200/80 sm:text-xl">
+                        Discover how our projects drive gender equality, women's empowerment, and inclusive development through science and technology.
+                    </p>
+                </div>
+
+                <div class="flex flex-col items-center gap-4 sm:flex-row justify-center mt-4">
+                    <button
+                        type="button"
+                        @click="$emit('scrollToYears')"
+                        class="group touch-target inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-violet-500/50 bg-violet-600 px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 transition-all duration-300 hover:bg-violet-500 hover:shadow-violet-900/50 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] focus-visible:outline-none"
+                    >
+                        Explore Years
+                        <ArrowRight class="size-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true" :stroke-width="2.5" />
+                    </button>
+                    <button
+                        type="button"
+                        @click="$emit('scrollToOrgChart')"
+                        class="group touch-target inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-purple-100 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:text-white active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] focus-visible:outline-none"
+                    >
+                        Organizational Chart
+                        <ChevronDown class="size-4 shrink-0 transition-transform group-hover:translate-y-1" aria-hidden="true" :stroke-width="2.5" />
+                    </button>
+                </div>
             </div>
-            <p
-                class="inline-block rounded-full border border-purple-300/40 bg-purple-950/35 px-3 py-1 text-sm font-normal tracking-wide text-purple-100/95 shadow-sm sm:px-4 sm:text-base"
-            >
-                Department of Science and Technology Region IX
-            </p>
-            <h1
-                id="hero-heading"
-                class="glow-text m-0 bg-linear-to-r from-purple-100 via-fuchsia-300 to-pink-200 bg-clip-text px-4 text-3xl leading-tight font-semibold tracking-tight text-transparent sm:px-0 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
-            >
-                Gender and Development
-            </h1>
-            <p class="text-responsive mx-auto max-w-2xl px-4 leading-relaxed text-pretty text-purple-100 sm:px-6">
-                Discover how our projects drive gender equality, women's empowerment, and inclusive development through science and technology.
-            </p>
-            <div class="flex flex-col items-center justify-center gap-3 px-4 pt-2 sm:flex-row sm:flex-wrap sm:gap-4">
-                <button
-                    type="button"
-                    @click="$emit('scrollToYears')"
-                    aria-label="Scroll to yearly reports section"
-                    class="group touch-target tap-highlight-none inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-purple-950/25 hover:bg-purple-500 focus-visible:ring-2 focus-visible:ring-purple-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none sm:w-auto sm:text-base"
-                >
-                    Years
-                    <ChevronDown class="size-4 shrink-0 opacity-90" aria-hidden="true" :stroke-width="2.5" />
-                </button>
-                <button
-                    type="button"
-                    @click="$emit('scrollToOrgChart')"
-                    aria-label="Scroll to organizational chart section"
-                    class="group touch-target tap-highlight-none inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-violet-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-purple-950/25 hover:bg-violet-500 focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none sm:w-auto sm:text-base"
-                >
-                    Organizational Chart
-                    <ChevronDown class="size-4 shrink-0 opacity-90" aria-hidden="true" :stroke-width="2.5" />
-                </button>
-            </div>
-        </div>
-        <!-- Center bottom layered illustration -->
-        <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 z-0 flex w-full justify-center select-none">
-            <img
-                src="/svg/huddletogether_layered.svg"
-                alt=""
-                class="h-32 w-auto opacity-95 sm:h-44 md:h-52 lg:h-60 xl:h-72"
-                loading="lazy"
-                decoding="async"
-            />
         </div>
     </section>
 </template>
-<style scoped>
-.glow-text {
-    position: relative;
-    filter: drop-shadow(0 0 20px rgba(232, 121, 249, 0.4)) drop-shadow(0 0 40px rgba(168, 85, 247, 0.25));
-}
-
-.glow-text::after {
-    content: '';
-    position: absolute;
-    inset: -16px -24px;
-    border-radius: 12px;
-    background: radial-gradient(ellipse at center, rgba(232, 121, 249, 0.18) 0%, transparent 70%);
-    opacity: 0.6;
-    animation: glow-opacity-pulse 4s ease-in-out infinite;
-    pointer-events: none;
-    z-index: -1;
-}
-
-@keyframes glow-opacity-pulse {
-    0%,
-    100% {
-        opacity: 0.5;
-    }
-    50% {
-        opacity: 0.85;
-    }
-}
-</style>

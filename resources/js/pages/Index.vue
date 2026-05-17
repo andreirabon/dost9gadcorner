@@ -2,7 +2,6 @@
 import GadStrategicFrameworkSection from '@/components/home/GadStrategicFrameworkSection.vue';
 import HeroSection from '@/components/home/HeroSection.vue';
 import HomeTopNav from '@/components/home/HomeTopNav.vue';
-import OrganizationalChartSection from '@/components/home/OrganizationalChartSection.vue';
 import YearlySection from '@/components/home/YearlySection.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import type { YearItem } from '@/types';
@@ -44,16 +43,16 @@ const scrollToOrgChart = (): void => {
 
     <div class="flex min-h-screen min-w-0 flex-col">
         <div
-            class="pb-safe min-w-0 flex-1 bg-linear-to-b from-purple-950 via-violet-950/45 to-purple-950 text-white [color-scheme:dark]"
+            class="pb-safe min-w-0 flex-1 bg-[#0e0716] text-white [color-scheme:dark]"
         >
             <HomeTopNav />
             <HeroSection @scroll-to-years="scrollToYears" @scroll-to-org-chart="scrollToOrgChart" />
             <div
-                class="h-[12vh] min-h-14 shrink-0 bg-linear-to-b from-transparent via-violet-950/35 to-purple-950 sm:h-[15vh] sm:min-h-16 md:h-[18vh]"
+                class="h-[12vh] min-h-14 shrink-0 sm:h-[15vh] sm:min-h-16 md:h-[18vh]"
                 aria-hidden="true"
             />
             <GadStrategicFrameworkSection />
-            <OrganizationalChartSection />
+            <!-- <OrganizationalChartSection /> -->
             <YearlySection :years="years" />
         </div>
         <AppFooter />

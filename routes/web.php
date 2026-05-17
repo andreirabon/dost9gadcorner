@@ -43,9 +43,7 @@ Route::middleware('auth')
     ->prefix('settings')
     ->name('settings.')
     ->group(function (): void {
-        Route::redirect('/', '/settings/appearance');
-
-        Route::get('/appearance', fn () => Inertia::render('settings/Appearance'))->name('appearance');
+        Route::redirect('/', '/settings/profile');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

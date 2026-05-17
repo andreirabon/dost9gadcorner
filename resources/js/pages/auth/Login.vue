@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { AlertTriangle, ArrowLeft, Eye, EyeOff, Lock, UserRound } from 'lucide-vue-next';
+import { ArrowLeft, Eye, EyeOff, Lock, ShieldCheck, UserRound } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Props {
@@ -37,64 +37,58 @@ const submit = (): void => {
 <template>
     <Head title="Sign in" />
 
-    <div class="theme-light-isolate flex min-h-dvh flex-col bg-white text-foreground">
-        <div class="px-safe pt-safe flex w-full flex-1 flex-col items-center justify-center px-4 py-6 sm:px-6 sm:py-8">
-            <div class="w-full max-w-[440px]">
-                <div
-                    class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)]"
-                >
-                    <div class="bg-[#003d7a] px-3.5 py-3 sm:px-4 sm:py-3.5">
-                        <div class="flex items-center gap-2.5 sm:gap-3">
-                            <img
-                                src="/svg/dost.svg"
-                                alt="DOST Region IX"
-                                class="h-10 w-auto shrink-0 sm:h-12"
-                                width="56"
-                                height="56"
-                                loading="eager"
-                                decoding="async"
-                            />
-                            <div class="min-w-0 text-white">
-                                <p
-                                    class="text-[11px] leading-snug font-bold tracking-wide uppercase sm:text-xs sm:leading-tight"
-                                >
-                                    Department of Science and Technology Region IX
-                                </p>
-                                <p class="mt-1 text-[10px] leading-snug text-white/95 sm:text-[11px]">
-                                    <span class="font-semibold">GAD Corner</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+    <div class="flex min-h-dvh flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30">
+        <!-- Background glows -->
+        <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div class="absolute -left-[10%] top-0 h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[120px] mix-blend-screen"></div>
+            <div class="absolute -right-[10%] bottom-0 h-[600px] w-[600px] rounded-full bg-purple-600/10 blur-[150px] mix-blend-screen"></div>
+        </div>
 
-                    <div class="px-4 pt-3 sm:px-5">
-                        <div
-                            class="flex gap-2 rounded-lg border border-amber-200/90 border-l-4 border-l-amber-400 bg-amber-50/80 px-3 py-2.5 text-amber-900"
-                            role="note"
-                        >
-                            <AlertTriangle class="mt-0.5 size-4 shrink-0 text-amber-600" stroke-width="2" aria-hidden="true" />
-                            <p class="text-xs leading-snug sm:text-[13px]">
-                                <span class="font-semibold">Security notice:</span>
-                                This system is restricted to authorized government personnel only.
-                            </p>
-                        </div>
+        <div class="relative z-10 px-safe pt-safe flex w-full flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6">
+            
+            <div class="w-full max-w-[420px] space-y-8">
+                <!-- Branding -->
+                <div class="flex flex-col items-center text-center">
+                    <img
+                        src="/dostlogo.png"
+                        alt="DOST Region IX"
+                        class="h-16 w-auto mb-6 drop-shadow-2xl"
+                        loading="eager"
+                        decoding="async"
+                    />
+                    <h1 class="text-2xl font-semibold tracking-tighter text-purple-50">
+                        GAD Corner
+                    </h1>
+                    <p class="mt-2 text-sm font-light text-purple-200/70">
+                        Department of Science and Technology Region IX
+                    </p>
+                </div>
+
+                <!-- Form Card -->
+                <div class="rounded-[2rem] border border-white/10 bg-purple-900/20 p-6 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] sm:p-8">
+                    
+                    <div class="mb-6 flex items-start gap-2">
+                        <ShieldCheck class="mt-0.5 size-4 shrink-0 text-violet-400/70" stroke-width="2" aria-hidden="true" />
+                        <p class="text-xs leading-relaxed font-light text-purple-200/60">
+                            System restricted to authorized government personnel. Access is logged.
+                        </p>
                     </div>
 
                     <div
                         v-if="statusMessage"
-                        class="mx-4 mt-3 rounded-lg border border-emerald-200/90 bg-emerald-50/90 px-3 py-2 text-center text-sm text-emerald-800 sm:mx-5"
+                        class="mb-6 rounded-xl bg-violet-500/10 px-4 py-3 text-sm text-violet-200 border border-violet-500/20 backdrop-blur-md"
                         role="status"
                         aria-live="polite"
                     >
                         {{ statusMessage }}
                     </div>
 
-                    <form class="space-y-3.5 px-4 py-4 sm:px-5 sm:py-5" @submit.prevent="submit">
-                        <div class="grid gap-1.5">
-                            <Label for="username" class="text-sm font-medium text-slate-700">Username</Label>
+                    <form class="space-y-5" @submit.prevent="submit">
+                        <div class="space-y-2">
+                            <Label for="username" class="text-[13px] font-medium text-purple-100">Username</Label>
                             <div class="relative">
                                 <UserRound
-                                    class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
+                                    class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-purple-300/40"
                                     stroke-width="2"
                                     aria-hidden="true"
                                 />
@@ -108,18 +102,18 @@ const submit = (): void => {
                                     autocapitalize="none"
                                     autocorrect="off"
                                     spellcheck="false"
-                                    class="h-10 border-slate-200 bg-white pr-3 pl-10 shadow-xs transition-colors duration-200 focus-visible:border-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-500/20"
+                                    class="h-11 border-white/10 bg-black/20 text-purple-50 pr-3 pl-10 text-sm transition-colors duration-300 placeholder:text-purple-300/30 focus-visible:border-violet-500 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-violet-500/20"
                                     placeholder="Enter your username"
                                 />
                             </div>
                             <InputError :message="form.errors.username" />
                         </div>
 
-                        <div class="grid gap-1.5">
-                            <Label for="password" class="text-sm font-medium text-slate-600">Password</Label>
+                        <div class="space-y-2">
+                            <Label for="password" class="text-[13px] font-medium text-purple-100">Password</Label>
                             <div class="relative">
                                 <Lock
-                                    class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
+                                    class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-purple-300/40"
                                     stroke-width="2"
                                     aria-hidden="true"
                                 />
@@ -130,12 +124,12 @@ const submit = (): void => {
                                     name="password"
                                     required
                                     autocomplete="current-password"
-                                    class="h-10 border-slate-200 bg-white pr-10 pl-10 shadow-xs transition-colors duration-200 focus-visible:border-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-500/20"
+                                    class="h-11 border-white/10 bg-black/20 text-purple-50 pr-10 pl-10 text-sm transition-colors duration-300 placeholder:text-purple-300/30 focus-visible:border-violet-500 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-violet-500/20"
                                     placeholder="Enter your password"
                                 />
                                 <button
                                     type="button"
-                                    class="absolute top-1/2 right-2 inline-flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-slate-500 transition-colors duration-200 hover:bg-slate-50 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/25"
+                                    class="absolute top-1/2 right-2 inline-flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-purple-300/50 transition-colors duration-200 hover:bg-white/10 hover:text-purple-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                                     :aria-pressed="showPassword"
                                     :aria-label="showPassword ? 'Hide password' : 'Show password'"
                                     @click="showPassword = !showPassword"
@@ -147,39 +141,37 @@ const submit = (): void => {
                             <InputError :message="form.errors.password" />
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 pt-1">
                             <input
                                 id="remember"
                                 v-model="form.remember"
                                 type="checkbox"
                                 name="remember"
-                                class="size-4 cursor-pointer rounded border-slate-300 bg-white text-indigo-600 focus:ring-2 focus:ring-indigo-500/30 focus:ring-offset-0 focus:ring-offset-white"
+                                class="size-4 cursor-pointer rounded border-white/20 bg-black/20 text-violet-500 focus:ring-2 focus:ring-violet-500/50 focus:ring-offset-1 focus:ring-offset-[#0e0716]"
                             />
-                            <Label for="remember" class="cursor-pointer text-sm font-normal text-slate-600">
-                                Remember me
+                            <Label for="remember" class="cursor-pointer text-[13px] font-medium text-purple-200/70">
+                                Remember me for 30 days
                             </Label>
                         </div>
 
                         <Button
                             type="submit"
-                            class="h-11 w-full cursor-pointer rounded-full bg-[#003d7a] font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#002d5c]"
+                            class="h-11 w-full cursor-pointer rounded-xl bg-violet-600 text-[14px] font-semibold text-white shadow-lg shadow-violet-900/30 transition-all duration-300 hover:bg-violet-500 hover:shadow-violet-900/50 active:scale-[0.97] disabled:opacity-50"
                             :disabled="form.processing"
                         >
-                            Sign in
+                            Sign in to dashboard
                         </Button>
                     </form>
+                </div>
 
-                    <div class="border-white/15 border-t bg-[#003d7a] px-4 py-2.5 sm:px-5">
-                        <div class="text-center">
-                            <Link
-                                :href="route('index')"
-                                class="inline-flex cursor-pointer items-center justify-center gap-1.5 text-sm font-medium text-slate-200 transition-colors duration-200 hover:text-white focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
-                            >
-                                <ArrowLeft class="size-3.5 shrink-0 text-current" stroke-width="2" aria-hidden="true" />
-                                Back to home
-                            </Link>
-                        </div>
-                    </div>
+                <div class="text-center">
+                    <Link
+                        :href="route('index')"
+                        class="inline-flex cursor-pointer items-center justify-center gap-1.5 text-[13px] font-medium text-purple-300/50 transition-colors duration-200 hover:text-purple-100"
+                    >
+                        <ArrowLeft class="size-3.5 shrink-0 text-current" stroke-width="2" aria-hidden="true" />
+                        Return to public site
+                    </Link>
                 </div>
             </div>
         </div>

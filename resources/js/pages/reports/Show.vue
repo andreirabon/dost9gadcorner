@@ -6,24 +6,24 @@ import type { YearItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 
 defineProps<{
-    year: YearItem;
+ year: YearItem;
 }>();
 
 defineOptions({
-    name: 'ReportYearShowPage',
+ name: 'ReportYearShowPage',
 });
 
 const { mode } = provideReportPageTheme();
 </script>
 
 <template>
-    <Head :title="`${year.year} Sex Disaggregated Data Report`" />
-    <div :class="mode === 'light' ? 'report-theme-light' : ''">
-        <div class="flex min-h-screen flex-col bg-zinc-950 report-light:bg-slate-100">
-            <div class="min-h-0 flex-1">
-                <YearReportContent :year="year" />
-            </div>
-            <AppFooter />
-        </div>
-    </div>
+ <Head :title="`${year.year} Sex Disaggregated Data Report`" />
+ <div :class="mode === 'light' ? 'report-theme-light' : ''">
+ <div class="flex min-h-screen flex-col bg-white report-light:bg-zinc-50">
+ <div class="min-h-0 flex-1">
+ <YearReportContent :year="year" />
+ </div>
+ <AppFooter />
+ </div>
+ </div>
 </template>
