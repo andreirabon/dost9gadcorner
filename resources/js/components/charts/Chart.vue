@@ -37,6 +37,7 @@ const chartOptions = computed<ApexOptions>(() => ({
         foreColor: '#334155',
         toolbar: { show: false },
         animations: { enabled: false },
+        nonce: document.querySelector('meta[property="csp-nonce"]')?.getAttribute('content') || undefined,
     },
     labels: isPieChart.value ? props.chartData.labels : undefined,
     xaxis: !isPieChart.value

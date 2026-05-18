@@ -65,6 +65,7 @@ const chartOptions = computed<ApexOptions>(() => {
             type: 'bar',
             fontFamily: chartFontFamily,
             foreColor: ui.foreColor,
+            nonce: document.querySelector('meta[property="csp-nonce"]')?.getAttribute('content') || undefined,
             toolbar: { show: false },
             offsetY: 0,
             parentHeightOffset: 0,

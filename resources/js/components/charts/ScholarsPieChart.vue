@@ -30,6 +30,7 @@ const chartOptions = computed<ApexOptions>(() => {
             type: 'pie',
             fontFamily: chartFontFamily,
             foreColor: ui.foreColor,
+            nonce: document.querySelector('meta[property="csp-nonce"]')?.getAttribute('content') || undefined,
             animations: {
                 enabled: true,
                 speed: 500,

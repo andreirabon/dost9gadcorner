@@ -9,6 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#581c87">
     <meta name="msapplication-TileColor" content="#581c87">
+    <meta property="csp-nonce" content="{{ $cspNonce }}">
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script nonce="{{ $cspNonce }}">
