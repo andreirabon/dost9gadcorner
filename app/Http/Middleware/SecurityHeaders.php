@@ -25,9 +25,7 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-        if ($request->secure()) {
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-        }
+        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 
         if ($this->shouldSendContentSecurityPolicy()) {
             $response->headers->set('Content-Security-Policy', $this->contentSecurityPolicy($nonce));
@@ -42,7 +40,7 @@ class SecurityHeaders
             return false;
         }
 
-        return app()->isProduction();
+        return !app()->isLocal();
     }
 
     private function contentSecurityPolicy(string $nonce): string
@@ -54,7 +52,7 @@ class SecurityHeaders
             $directive('script-src', "'self' 'nonce-{$nonce}' https://fonts.googleapis.com"),
             $directive('style-src', "'self' 'nonce-{$nonce}' https://fonts.googleapis.com"),
             $directive('font-src', "'self' https://fonts.gstatic.com data:"),
-            $directive('img-src', "'self' data: https: blob:"),
+            $directive('img-src', "'self' data: blob:"),
             $directive('connect-src', "'self'"),
             $directive('frame-ancestors', "'none'"),
             $directive('base-uri', "'self'"),
