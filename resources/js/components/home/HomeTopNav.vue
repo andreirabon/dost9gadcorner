@@ -14,7 +14,7 @@ import UserMenuContent from '@/components/user/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import type { User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { ChevronDown, FileChartColumnIncreasing, PlusCircle } from 'lucide-vue-next';
+import { ChevronDown, FileChartColumnIncreasing, PlusCircle } from '@lucide/vue';
 import { computed } from 'vue';
 
 defineOptions({

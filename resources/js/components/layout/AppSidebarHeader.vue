@@ -3,7 +3,7 @@ import Breadcrumbs from '@/components/layout/Breadcrumbs.vue';
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
-import { ChevronsLeft, ChevronsRight } from 'lucide-vue-next';
+import { ChevronsLeft, ChevronsRight } from '@lucide/vue';
 import { computed } from 'vue';
 
 withDefaults(

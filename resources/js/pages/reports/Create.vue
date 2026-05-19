@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { REPORT_YEAR_FIELD_LIMITS } from '@/constants/reportYearFields';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Loader2 } from 'lucide-vue-next';
+import { ArrowLeft, Loader2 } from '@lucide/vue';
 
 const currentYear = new Date().getFullYear();
 

@@ -24,7 +24,7 @@ import {
     RefreshCw,
     Search,
     Trash2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 interface Props {

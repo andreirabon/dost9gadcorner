@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { ChevronsLeft, ChevronsRight, FileChartColumnIncreasing } from 'lucide-vue-next';
+import { ChevronsLeft, ChevronsRight, FileChartColumnIncreasing } from '@lucide/vue';
 import { computed } from 'vue';
 
 const page = usePage();

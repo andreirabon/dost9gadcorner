@@ -10,7 +10,7 @@ import UserMenuContent from '@/components/user/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { FileChartColumnIncreasing, Menu, Search } from 'lucide-vue-next';
+import { FileChartColumnIncreasing, Menu, Search } from '@lucide/vue';
 import { computed } from 'vue';
 
 interface Props {

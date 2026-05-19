@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Eye, EyeOff, Lock, ShieldCheck, UserRound } from 'lucide-vue-next';
+import { ArrowLeft, Eye, EyeOff, Lock, ShieldCheck, UserRound } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 interface Props {
