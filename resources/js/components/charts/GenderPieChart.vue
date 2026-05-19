@@ -1,5 +1,13 @@
 <script setup lang="ts">
+import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
 import { useReportChartAppearance } from '@/composables/useReportPageTheme';
+import {
+    REPORT_CHART_FONT_FAMILY,
+    REPORT_CHART_SEX_COLORS,
+    REPORT_CHART_STROKE_COLORS,
+    reportChartCspNonce,
+    useReportChartMotion,
+} from '@/lib/reportChartConstants';
 import { reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
@@ -11,9 +19,9 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const chartFontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
 const appearance = useReportChartAppearance();
+const chartAnimations = useReportChartMotion();
 
 const totalCount = computed(() => props.femaleCount + props.maleCount);
 
@@ -28,49 +36,44 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         chart: {
             type: 'pie',
-            fontFamily: chartFontFamily,
+            fontFamily: REPORT_CHART_FONT_FAMILY,
             foreColor: ui.foreColor,
-            nonce: document.querySelector('meta[property="csp-nonce"]')?.getAttribute('content') || undefined,
-            animations: {
-                enabled: true,
-                speed: 500,
-                easing: 'easeout',
-            },
+            nonce: reportChartCspNonce(),
+            animations: chartAnimations.value,
         },
         labels: ['Female', 'Male'],
-        colors: ['#F87171', '#60A5FA'],
+        colors: [REPORT_CHART_SEX_COLORS.female, REPORT_CHART_SEX_COLORS.male],
         legend: {
             position: 'bottom',
             horizontalAlign: 'center',
-            fontSize: '11px',
-            fontFamily: chartFontFamily,
-            offsetY: 0,
+            fontSize: '12px',
+            fontFamily: REPORT_CHART_FONT_FAMILY,
+            offsetY: 4,
             labels: {
                 colors: ui.legendColor,
             },
             markers: {
-                size: 8,
+                size: 7,
+                strokeWidth: 0,
             },
             itemMargin: {
-                horizontal: 12,
-                vertical: 2,
+                horizontal: 14,
+                vertical: 4,
             },
         },
         tooltip: {
             theme: ui.tooltipTheme,
             y: {
-                formatter: (value: number) => {
-                    return `${value}`;
-                },
+                formatter: (value: number) => `${value}`,
             },
         },
         dataLabels: {
             enabled: totalCount.value > 0,
             formatter: (value: number) => `${Math.round(value)}%`,
             style: {
-                fontFamily: chartFontFamily,
+                fontFamily: REPORT_CHART_FONT_FAMILY,
                 fontSize: '13px',
-                fontWeight: 700,
+                fontWeight: 600,
                 colors: [ui.dataLabelColor],
             },
             dropShadow: {
@@ -79,7 +82,7 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         stroke: {
             width: 2,
-            colors: ['#EF4444', '#3B82F6'],
+            colors: [...REPORT_CHART_STROKE_COLORS],
         },
         plotOptions: {
             pie: {
@@ -92,7 +95,8 @@ const chartOptions = computed<ApexOptions>(() => {
         states: {
             hover: {
                 filter: {
-                    type: 'none',
+                    type: 'lighten',
+                    value: 0.04,
                 },
             },
         },
@@ -101,7 +105,7 @@ const chartOptions = computed<ApexOptions>(() => {
             align: 'center',
             verticalAlign: 'middle',
             style: {
-                fontFamily: chartFontFamily,
+                fontFamily: REPORT_CHART_FONT_FAMILY,
                 color: ui.foreColor,
             },
         },
@@ -110,7 +114,7 @@ const chartOptions = computed<ApexOptions>(() => {
 </script>
 
 <template>
-    <div class="relative h-56 w-full sm:h-64">
+    <ReportChartFrame variant="pie">
         <VueApexCharts type="pie" width="100%" height="100%" :options="chartOptions" :series="series" />
-    </div>
+    </ReportChartFrame>
 </template>

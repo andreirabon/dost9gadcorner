@@ -87,8 +87,6 @@
     }
 }
 
-
-
 :root {
     --background: #fafafa;
     --foreground: hsl(0 0% 3.9%);
@@ -241,8 +239,6 @@
         @apply bg-background font-sans text-foreground antialiased;
     }
 }
-
-
 
 /* Project Card Styles - Mobile-optimized (transform-only transition for perf) */
 .project-card {
@@ -529,7 +525,6 @@
 
 /* Enhanced Mobile Responsive Design */
 @layer utilities {
-
     /* Improved text scaling for mobile */
     @media (max-width: 768px) {
         .text-responsive {
@@ -564,10 +559,6 @@
             border-bottom: 1px solid rgba(250, 250, 250, 0.1);
         }
     }
-
-
-
-
 
     /* Landscape orientation optimizations */
     @media (max-height: 500px) and (orientation: landscape) {
@@ -658,12 +649,11 @@
             font-size: 16px; /* Prevent iOS zoom on focus */
         }
     }
-
 }
 
 @layer components {
     .report-panel {
-        @apply relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-purple-900/20 backdrop-blur-xl p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)];
+        @apply relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-purple-900/20 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-xl;
     }
 
     /* Lucide watermark lives in ReportPanelWatermark.vue; keep content above */
@@ -672,45 +662,45 @@
     }
 
     .report-panel-watermark {
-        @apply opacity-[0.15] text-violet-400;
+        @apply text-violet-400 opacity-[0.15];
         filter: brightness(1.25);
     }
 
     .dark .report-panel-watermark {
-        @apply opacity-[0.15] text-violet-400;
+        @apply text-violet-400 opacity-[0.15];
         filter: brightness(1.25);
     }
 
     /* Outline→fill: light slate-blue; dark matches report panels (teal) so it doesn’t read as a loud blue chip. */
     .report-btn-primary {
-        @apply rounded-xl border border-white/10 bg-white/5 text-purple-100 shadow-sm transition-colors duration-300 hover:border-white/20 hover:bg-white/10 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
+        @apply rounded-xl border border-white/10 bg-white/5 text-purple-100 shadow-sm transition-colors duration-300 hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
     }
 
     /* Primary actions (save / create). Light: rgb(74,93,150). Dark: teal (same family as section icons / tabs) — !bg beats shadcn bg-primary. */
     .report-save-btn {
         @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-6 text-sm font-semibold shadow-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
-        @apply !bg-violet-600 hover:!bg-violet-500 text-white shadow-lg shadow-violet-900/30 active:scale-[0.97] focus-visible:!ring-violet-500/50;
+        @apply !bg-violet-600 text-white shadow-lg shadow-violet-900/30 hover:!bg-violet-500 focus-visible:!ring-violet-500/50 active:scale-[0.97];
     }
 
     .report-btn-secondary {
-        @apply rounded-xl border border-white/10 bg-white/5 text-purple-300/70 shadow-sm transition-all duration-300 hover:bg-white/10 hover:text-purple-100 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-500/30 focus-visible:outline-none;
+        @apply rounded-xl border border-white/10 bg-white/5 text-purple-300/70 shadow-sm transition-all duration-300 hover:bg-white/10 hover:text-purple-100 focus-visible:ring-2 focus-visible:ring-violet-500/30 focus-visible:outline-none active:scale-[0.97];
     }
 
     /* Form field names vs values: labels are caption-style; values stay body (overrides ui/Label defaults) */
     .report-form :is([data-slot='label'], label) {
-        @apply text-[13px]! font-medium! normal-case! tracking-normal! text-purple-100! antialiased;
+        @apply text-[13px]! font-medium! tracking-normal! text-purple-100! normal-case! antialiased;
     }
 
     .report-field {
-        @apply h-11 rounded-xl border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors focus-visible:border-violet-500 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-violet-500/20 placeholder:text-purple-300/30;
+        @apply h-11 rounded-xl border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors placeholder:text-purple-300/30 focus-visible:border-violet-500 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-violet-500/20;
     }
 
     .report-row {
-        @apply rounded-[2rem] border border-white/10 bg-purple-900/20 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)];
+        @apply rounded-[2rem] border border-white/10 bg-purple-900/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-xl;
     }
 
     .report-list-item {
-        @apply rounded-xl border border-white/10 bg-purple-900/20 transition-all duration-300 hover:bg-purple-900/40 hover:border-white/20;
+        @apply rounded-xl border border-white/10 bg-purple-900/20 transition-all duration-300 hover:border-white/20 hover:bg-purple-900/40;
     }
 
     .report-textarea {
@@ -741,5 +731,175 @@
 
     .report-save-hint {
         @apply inline-flex items-center gap-1.5 text-sm font-medium text-emerald-400;
+    }
+
+    .report-chart-panel {
+        @apply w-full min-w-0 rounded-lg border border-white/10 bg-white/[0.02] p-3 md:p-4 report-light:border-slate-200/80 report-light:bg-slate-50/80;
+    }
+
+    .report-chart-frame {
+        contain: paint;
+        width: 100%;
+        transition: height 200ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .report-chart-frame {
+            transition: none;
+        }
+    }
+
+    .report-chart-frame :deep(.apexcharts-canvas),
+    .report-chart-frame :deep(svg.apexcharts-svg) {
+        max-width: 100%;
+    }
+
+    /* Public year report (/reports/{year}) — flat surfaces, tight rhythm, no gradients */
+    .report-view-page {
+        @apply flex min-h-screen w-full min-w-0 flex-col bg-[#0f0d14] report-light:bg-slate-100;
+    }
+
+    .report-view {
+        @apply flex min-h-0 w-full min-w-0 flex-1 flex-col;
+    }
+
+    .report-view-shell {
+        @apply flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden border-y border-white/10 bg-[#14121c] report-light:border-slate-200 report-light:bg-white;
+    }
+
+    .report-view-header {
+        @apply flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-2.5 sm:px-5 md:px-6 md:py-3 lg:px-8 report-light:border-slate-200;
+    }
+
+    .report-view-heading {
+        @apply flex min-w-0 items-center gap-2.5;
+    }
+
+    .report-view-icon {
+        @apply flex size-8 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5 text-zinc-300 report-light:border-slate-200 report-light:bg-slate-100 report-light:text-slate-600;
+    }
+
+    .report-view-title {
+        @apply text-sm font-semibold tracking-tight text-zinc-100 md:text-base report-light:text-slate-900;
+    }
+
+    .report-view-subtitle {
+        @apply text-xs text-zinc-400 report-light:text-slate-500;
+    }
+
+    .report-view-actions {
+        @apply flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto;
+    }
+
+    .report-view-btn {
+        @apply inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-3 text-xs font-medium text-zinc-200 transition-[transform,border-color,background-color,color] duration-150 ease-out hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-violet-500/40 focus-visible:outline-none active:scale-[0.97] report-light:border-slate-300 report-light:bg-white report-light:text-slate-700 report-light:hover:bg-slate-50;
+    }
+
+    .report-view-btn-icon {
+        @apply inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/5 text-zinc-200 transition-[transform,border-color,background-color] duration-150 ease-out hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-violet-500/40 focus-visible:outline-none active:scale-[0.97] report-light:border-slate-300 report-light:bg-white report-light:text-slate-700 report-light:hover:bg-slate-50;
+    }
+
+    .report-view-nav {
+        @apply border-b border-white/10 px-4 py-2 sm:px-5 md:px-6 lg:px-8 report-light:border-slate-200 report-light:bg-slate-50;
+    }
+
+    .report-view-select {
+        @apply w-full rounded-md border border-white/10 bg-white/5 px-2.5 py-2 text-sm font-medium text-zinc-100 focus:border-white/25 focus:ring-2 focus:ring-violet-500/30 focus:outline-none md:hidden report-light:border-slate-300 report-light:bg-white report-light:text-slate-800;
+    }
+
+    .report-view-tabs {
+        @apply hidden gap-0.5 overflow-x-auto md:flex;
+    }
+
+    .report-view-tab {
+        @apply cursor-pointer touch-manipulation rounded-md px-3 py-1.5 text-xs font-medium text-zinc-400 transition-[color,background-color] duration-150 ease-out hover:text-zinc-100 focus-visible:ring-2 focus-visible:ring-violet-500/40 focus-visible:outline-none md:text-sm report-light:text-slate-600 report-light:hover:text-slate-900;
+    }
+
+    .report-view-tab.is-active {
+        @apply bg-white/10 text-zinc-50 report-light:bg-slate-900 report-light:text-white;
+    }
+
+    .report-view-body {
+        @apply min-w-0 flex-1 px-4 py-3 sm:px-5 md:px-6 md:py-4 lg:px-8;
+    }
+
+    .report-view-stack {
+        @apply flex flex-col gap-3 md:gap-4;
+    }
+
+    .report-view-metrics {
+        @apply grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3;
+    }
+
+    .report-view-metric {
+        @apply rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2 md:px-3 md:py-2.5 report-light:border-slate-200 report-light:bg-slate-50;
+    }
+
+    .report-view-metric-label {
+        @apply text-[11px] leading-snug font-medium text-zinc-400 report-light:text-slate-500;
+    }
+
+    .report-view-metric-value {
+        @apply mt-0.5 text-base font-semibold tracking-tight text-zinc-100 tabular-nums md:text-lg report-light:text-slate-900;
+    }
+
+    .report-view-metric-value--female {
+        @apply text-red-400 report-light:text-red-600;
+    }
+
+    .report-view-metric-value--male {
+        @apply text-blue-400 report-light:text-blue-600;
+    }
+
+    .report-view-metric-meta {
+        @apply mt-0.5 text-[11px] text-zinc-500 report-light:text-slate-500;
+    }
+
+    .report-view-block {
+        @apply overflow-hidden rounded-lg border border-white/10 bg-white/[0.02] report-light:border-slate-200 report-light:bg-white;
+    }
+
+    .report-view-block-header {
+        @apply border-b border-white/10 px-2.5 py-2 md:px-3 report-light:border-slate-200;
+    }
+
+    .report-view-block-title {
+        @apply text-sm font-semibold text-zinc-100 report-light:text-slate-900;
+    }
+
+    .report-view-block-desc {
+        @apply text-xs text-zinc-400 report-light:text-slate-500;
+    }
+
+    .report-view-quick-grid {
+        @apply grid gap-2 p-2 sm:grid-cols-2 md:p-3 lg:grid-cols-3 2xl:grid-cols-6;
+    }
+
+    .report-view-quick-item {
+        @apply cursor-pointer rounded-md border border-white/10 px-2.5 py-2 text-left transition-[transform,border-color,background-color] duration-150 ease-out hover:border-white/20 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-violet-500/40 focus-visible:outline-none active:scale-[0.97] report-light:border-slate-200 report-light:hover:bg-slate-50;
+    }
+
+    .report-view-charts {
+        @apply grid gap-3 lg:grid-cols-2;
+    }
+
+    .report-view-chart-head {
+        @apply mb-2 border-b border-white/10 pb-2 report-light:border-slate-200;
+    }
+
+    .report-view-empty {
+        @apply flex min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-white/10 px-4 py-6 text-center report-light:border-slate-200 report-light:bg-white;
+    }
+
+    .report-view-empty-icon {
+        @apply flex size-10 items-center justify-center rounded-full border border-white/10 text-zinc-500 report-light:border-slate-200 report-light:bg-slate-100 report-light:text-slate-500;
+    }
+
+    .report-view-loading {
+        @apply flex h-28 items-center justify-center;
+    }
+
+    .report-view-spinner {
+        @apply size-7 animate-spin rounded-full border-2 border-white/15 border-t-violet-400 report-light:border-slate-200 report-light:border-t-slate-700;
     }
 }

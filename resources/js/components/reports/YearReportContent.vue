@@ -531,21 +531,25 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <div class="grid gap-4 md:grid-cols-2 md:gap-6">
+                    <div class="report-view-charts">
                         <div class="rounded-xl border border-white/10 bg-purple-900/20 backdrop-blur-xl p-4 shadow-sm md:p-5 report-light:border-slate-200 report-light:bg-white/90">
-                            <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
+                            <div class="report-view-chart-head">
                                 <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">GFPS Membership by Sex</h3>
                                 <p class="text-xs text-purple-300/60 font-light report-light:text-slate-600">Distribution of GFPS members</p>
                             </div>
-                            <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
+                            <div class="report-chart-panel">
+                                <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
+                            </div>
                         </div>
 
                         <div class="rounded-xl border border-white/10 bg-purple-900/20 backdrop-blur-xl p-4 shadow-sm md:p-5 report-light:border-slate-200 report-light:bg-white/90">
-                            <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
+                            <div class="report-view-chart-head">
                                 <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">GFPS Assembly Participation</h3>
                                 <p class="text-xs text-purple-300/60 font-light report-light:text-slate-600">Quarterly assembly attendance by sex</p>
                             </div>
-                            <AssemblyStackedBarChart :data="assemblyData" />
+                            <div class="report-chart-panel">
+                                <AssemblyStackedBarChart :data="assemblyData" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -572,11 +576,13 @@ onUnmounted(() => {
                     </div>
 
                     <div class="rounded-xl border border-white/10 bg-purple-900/20 backdrop-blur-xl p-4 shadow-sm md:p-5 report-light:border-slate-200 report-light:bg-white/90">
-                        <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
+                        <div class="report-view-chart-head">
                             <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Employees by Employment Status</h3>
                             <p class="text-xs text-purple-300/60 font-light report-light:text-slate-600">Sex-disaggregated data as of December 31, {{ year.year }}</p>
                         </div>
-                        <EmployeesGroupedBarChart :data="employeesData" />
+                        <div class="report-chart-panel">
+                            <EmployeesGroupedBarChart :data="employeesData" />
+                        </div>
                     </div>
                 </div>
 
@@ -604,14 +610,14 @@ onUnmounted(() => {
                     </div>
 
                     <div class="rounded-xl border border-white/10 bg-purple-900/20 backdrop-blur-xl p-4 shadow-sm md:p-5 report-light:border-slate-200 report-light:bg-white/90">
-                        <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
+                        <div class="report-view-chart-head">
                             <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Distribution of On-Going Scholars by Sex</h3>
                             <p class="text-xs text-purple-300/60 font-light report-light:text-slate-600">
                                 {{ scholarsStats.schoolYearLabel || `School Year ${year.year}` }}
                                 <span v-if="scholarsStats.asOfDate"> • Data as of {{ scholarsStats.asOfDate }}</span>
                             </p>
                         </div>
-                        <div class="mx-auto w-full max-w-md lg:max-w-lg">
+                        <div class="report-chart-panel">
                             <ScholarsPieChart :female-count="scholarsStats.femaleCount" :male-count="scholarsStats.maleCount" />
                         </div>
                     </div>
@@ -639,11 +645,13 @@ onUnmounted(() => {
                     </div>
 
                     <div class="rounded-xl border border-white/10 bg-purple-900/20 backdrop-blur-xl p-4 shadow-sm md:p-5 report-light:border-slate-200 report-light:bg-white/90">
-                        <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
+                        <div class="report-view-chart-head">
                             <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Testing and Calibration Services</h3>
                             <p class="text-xs text-purple-300/60 font-light report-light:text-slate-600">Customers by sex (warm bodies) - Monthly breakdown for {{ year.year }}</p>
                         </div>
-                        <RstlWarmBodiesStackedChart :data="rstlWarmBodiesData" />
+                        <div class="report-chart-panel">
+                            <RstlWarmBodiesStackedChart :data="rstlWarmBodiesData" />
+                        </div>
                     </div>
                 </div>
 
@@ -668,11 +676,13 @@ onUnmounted(() => {
                     </div>
 
                     <div class="rounded-xl border border-white/10 bg-purple-900/20 backdrop-blur-xl p-4 shadow-sm md:p-5 report-light:border-slate-200 report-light:bg-white/90">
-                        <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
+                        <div class="report-view-chart-head">
                             <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Small Enterprise Technology Upgrading Program (SETUP)</h3>
                             <p class="text-xs text-purple-300/60 font-light report-light:text-slate-600">Projects funded by sex • {{ year.year }}</p>
                         </div>
-                        <SetupFundingChart :data="setupFundingData" />
+                        <div class="report-chart-panel">
+                            <SetupFundingChart :data="setupFundingData" />
+                        </div>
                     </div>
                 </div>
 
@@ -697,11 +707,13 @@ onUnmounted(() => {
                     </div>
 
                     <div class="rounded-xl border border-white/10 bg-purple-900/20 backdrop-blur-xl p-4 shadow-sm md:p-5 report-light:border-slate-200 report-light:bg-white/90">
-                        <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
+                        <div class="report-view-chart-head">
                             <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Community Empowerment thru Science and Technology (CEST)</h3>
                             <p class="text-xs text-purple-300/60 font-light report-light:text-slate-600">Projects funded by sex • {{ year.year }}</p>
                         </div>
-                        <CestFundingChart :data="cestFundingData" />
+                        <div class="report-chart-panel">
+                            <CestFundingChart :data="cestFundingData" />
+                        </div>
                     </div>
                 </div>
             </div>

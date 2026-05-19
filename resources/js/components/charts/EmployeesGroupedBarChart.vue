@@ -1,5 +1,12 @@
 <script setup lang="ts">
+import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
 import { useReportChartAppearance } from '@/composables/useReportPageTheme';
+import {
+    REPORT_CHART_FONT_FAMILY,
+    REPORT_CHART_SEX_COLORS,
+    reportChartCspNonce,
+    useReportChartMotion,
+} from '@/lib/reportChartConstants';
 import { reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
@@ -19,9 +26,9 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
     title: '',
 });
-const chartFontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
 const appearance = useReportChartAppearance();
+const chartAnimations = useReportChartMotion();
 
 const series = computed(() => [
     {
@@ -36,6 +43,8 @@ const series = computed(() => [
 
 const chartOptions = computed<ApexOptions>(() => {
     const ui = reportChartUi(appearance.value);
+    const maxValue = Math.max(5, ...props.data.flatMap((entry) => [entry.female, entry.male]));
+    const yMax = Math.ceil(maxValue / 5) * 5;
 
     return {
         theme: {
@@ -43,24 +52,20 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         chart: {
             type: 'bar',
-            fontFamily: chartFontFamily,
+            fontFamily: REPORT_CHART_FONT_FAMILY,
             foreColor: ui.foreColor,
-            nonce: document.querySelector('meta[property="csp-nonce"]')?.getAttribute('content') || undefined,
+            nonce: reportChartCspNonce(),
             toolbar: { show: false },
             offsetY: 0,
             parentHeightOffset: 0,
-            animations: {
-                enabled: true,
-                speed: 500,
-                easing: 'easeout',
-            },
+            animations: chartAnimations.value,
         },
         ...(props.title
             ? {
                   title: {
                       text: props.title,
                       style: {
-                          fontFamily: chartFontFamily,
+                          fontFamily: REPORT_CHART_FONT_FAMILY,
                           fontSize: '14px',
                           fontWeight: '600',
                           color: ui.titleColor,
@@ -68,12 +73,12 @@ const chartOptions = computed<ApexOptions>(() => {
                   },
               }
             : {}),
-        colors: ['#F87171', '#60A5FA'],
+        colors: [REPORT_CHART_SEX_COLORS.female, REPORT_CHART_SEX_COLORS.male],
         xaxis: {
             categories: props.data.map((entry) => entry.label),
             labels: {
                 style: {
-                    fontFamily: chartFontFamily,
+                    fontFamily: REPORT_CHART_FONT_FAMILY,
                     fontSize: '12px',
                     colors: ui.labelMuted,
                 },
@@ -81,11 +86,11 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         yaxis: {
             min: 0,
-            max: 45,
-            tickAmount: 9,
+            max: yMax,
+            tickAmount: Math.min(8, Math.max(4, Math.floor(yMax / 5))),
             labels: {
                 style: {
-                    fontFamily: chartFontFamily,
+                    fontFamily: REPORT_CHART_FONT_FAMILY,
                     fontSize: '12px',
                     colors: [ui.labelMuted],
                 },
@@ -94,18 +99,19 @@ const chartOptions = computed<ApexOptions>(() => {
         legend: {
             position: 'top',
             horizontalAlign: 'center',
-            offsetY: -4,
-            fontSize: '11px',
-            fontFamily: chartFontFamily,
+            offsetY: 0,
+            fontSize: '12px',
+            fontFamily: REPORT_CHART_FONT_FAMILY,
             itemMargin: {
-                horizontal: 10,
+                horizontal: 12,
                 vertical: 0,
             },
             labels: {
                 colors: ui.legendColor,
             },
             markers: {
-                size: 8,
+                size: 7,
+                strokeWidth: 0,
             },
         },
         dataLabels: {
@@ -114,9 +120,9 @@ const chartOptions = computed<ApexOptions>(() => {
             offsetY: -4,
             style: {
                 colors: [ui.dataLabelColor],
-                fontFamily: chartFontFamily,
+                fontFamily: REPORT_CHART_FONT_FAMILY,
                 fontSize: '12px',
-                fontWeight: 700,
+                fontWeight: 600,
             },
         },
         tooltip: {
@@ -128,11 +134,12 @@ const chartOptions = computed<ApexOptions>(() => {
         grid: {
             xaxis: { lines: { show: false } },
             borderColor: ui.gridBorder,
+            strokeDashArray: 4,
             padding: {
-                top: -8,
-                right: 4,
+                top: 0,
+                right: 8,
                 bottom: 0,
-                left: 4,
+                left: 8,
             },
         },
         stroke: {
@@ -140,8 +147,8 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         plotOptions: {
             bar: {
-                borderRadius: 2,
-                columnWidth: '60%',
+                borderRadius: 3,
+                columnWidth: '58%',
             },
         },
     };
@@ -149,7 +156,7 @@ const chartOptions = computed<ApexOptions>(() => {
 </script>
 
 <template>
-    <div class="relative h-64 w-full sm:h-72">
+    <ReportChartFrame variant="bar" :row-count="data.length">
         <VueApexCharts type="bar" width="100%" height="100%" :options="chartOptions" :series="series" />
-    </div>
+    </ReportChartFrame>
 </template>

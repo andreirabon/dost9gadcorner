@@ -1,3 +1,5 @@
+import type { ApexOptions } from 'apexcharts';
+
 export type ReportChartUi = {
     themeMode: 'light' | 'dark';
     foreColor: string;
