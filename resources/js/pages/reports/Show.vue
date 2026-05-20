@@ -14,15 +14,12 @@ defineOptions({
     name: 'ReportYearShowPage',
 });
 
-const { mode } = provideReportPageTheme();
+provideReportPageTheme();
 </script>
 
 <template>
     <Head :title="`${year.year} Sex Disaggregated Data Report`" />
-    <div
-        class="report-view-page flex flex-col"
-        :class="mode === 'light' ? 'report-theme-light [color-scheme:light]' : '[color-scheme:dark]'"
-    >
+    <div class="report-view-page report-theme-light flex flex-col [color-scheme:light]">
         <section class="report-view-section" :aria-label="`${year.year} annual report`">
             <IndexSectionDecor variant="yearly" />
             <div class="report-view-main">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { REPORT_CHART_FONT_FAMILY } from '@/lib/reportChartConstants';
+import { reportChartPieTooltip, reportChartTooltip, reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
@@ -31,11 +32,18 @@ const series = computed(() => {
     }));
 });
 
-const chartOptions = computed<ApexOptions>(() => ({
+const chartOptions = computed<ApexOptions>(() => {
+    const ui = reportChartUi('light');
+
+    return {
+    theme: {
+        mode: ui.themeMode,
+    },
     chart: {
         type: props.chartType,
         fontFamily: chartFontFamily,
-        foreColor: '#334155',
+        foreColor: ui.foreColor,
+        background: ui.chartBackground,
         toolbar: { show: false },
         animations: { enabled: false },
         nonce: document.querySelector('meta[property="csp-nonce"]')?.getAttribute('content') || undefined,
@@ -73,7 +81,9 @@ const chartOptions = computed<ApexOptions>(() => ({
         style: { fontSize: '14px', fontWeight: '700', color: '#374151' },
     },
     legend: {
-        position: isPieChart.value ? 'right' : 'top',
+        position: 'bottom',
+        horizontalAlign: 'center',
+        offsetY: 4,
         fontSize: isPieChart.value ? '11px' : '12px',
         fontFamily: chartFontFamily,
         labels: { colors: '#334155' },
@@ -83,22 +93,25 @@ const chartOptions = computed<ApexOptions>(() => ({
         enabled: isPieChart.value,
         formatter: (value: number) => `${value.toFixed(1)}%`,
     },
-    tooltip: {
-        theme: 'light',
-        y: {
-            formatter: (value: number) => {
-                if (props.chartType === 'bar') {
-                    return `${value} businesses`;
-                }
+    tooltip: isPieChart.value
+        ? reportChartPieTooltip(props.chartData.labels, {
+              formatValue: (value, _label, _index) => `${value.toFixed(1)}%`,
+          })
+        : reportChartTooltip({
+              y: {
+                  formatter: (value: number) => {
+                      if (props.chartType === 'bar') {
+                          return `${value} businesses`;
+                      }
 
-                if (props.chartType === 'line') {
-                    return `${value}%`;
-                }
+                      if (props.chartType === 'line') {
+                          return `${value}%`;
+                      }
 
-                return `${value}`;
-            },
-        },
-    },
+                      return `${value}`;
+                  },
+              },
+          }),
     stroke: {
         width: 1,
     },
@@ -107,7 +120,8 @@ const chartOptions = computed<ApexOptions>(() => ({
               borderColor: '#e5e7eb',
           }
         : undefined,
-}));
+};
+});
 </script>
 
 <template>

@@ -3,11 +3,11 @@ import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
 import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import {
     REPORT_CHART_FONT_FAMILY,
-    REPORT_CHART_SEX_COLORS,
     reportChartCspNonce,
+    reportDisaggPalette,
     useReportChartMotion,
 } from '@/lib/reportChartConstants';
-import { reportChartUi } from '@/lib/reportChartUi';
+import { reportChartTooltip, reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
@@ -41,8 +41,11 @@ const series = computed(() => [
     },
 ]);
 
+const palette = computed(() => reportDisaggPalette(appearance.value));
+
 const chartOptions = computed<ApexOptions>(() => {
     const ui = reportChartUi(appearance.value);
+    const colors = palette.value;
     const maxValue = Math.max(5, ...props.data.flatMap((entry) => [entry.female, entry.male]));
     const yMax = Math.ceil(maxValue / 5) * 5;
 
@@ -54,6 +57,7 @@ const chartOptions = computed<ApexOptions>(() => {
             type: 'bar',
             fontFamily: REPORT_CHART_FONT_FAMILY,
             foreColor: ui.foreColor,
+            background: ui.chartBackground,
             nonce: reportChartCspNonce(),
             toolbar: { show: false },
             offsetY: 0,
@@ -73,7 +77,7 @@ const chartOptions = computed<ApexOptions>(() => {
                   },
               }
             : {}),
-        colors: [REPORT_CHART_SEX_COLORS.female, REPORT_CHART_SEX_COLORS.male],
+        colors: [colors.female, colors.male],
         xaxis: {
             categories: props.data.map((entry) => entry.label),
             labels: {
@@ -97,9 +101,9 @@ const chartOptions = computed<ApexOptions>(() => {
             },
         },
         legend: {
-            position: 'top',
+            position: 'bottom',
             horizontalAlign: 'center',
-            offsetY: 0,
+            offsetY: 4,
             fontSize: '12px',
             fontFamily: REPORT_CHART_FONT_FAMILY,
             itemMargin: {
@@ -125,12 +129,11 @@ const chartOptions = computed<ApexOptions>(() => {
                 fontWeight: 600,
             },
         },
-        tooltip: {
-            theme: ui.tooltipTheme,
+        tooltip: reportChartTooltip({
             y: {
                 formatter: (value: number) => `${value}`,
             },
-        },
+        }),
         grid: {
             xaxis: { lines: { show: false } },
             borderColor: ui.gridBorder,

@@ -3,11 +3,11 @@ import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
 import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import {
     REPORT_CHART_FONT_FAMILY,
-    REPORT_CHART_SEX_COLORS,
     reportChartCspNonce,
+    reportDisaggPalette,
     useReportChartMotion,
 } from '@/lib/reportChartConstants';
-import { reportChartUi } from '@/lib/reportChartUi';
+import { reportChartTooltip, reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
@@ -61,8 +61,11 @@ const series = computed(() => [
     },
 ]);
 
+const palette = computed(() => reportDisaggPalette(appearance.value));
+
 const chartOptions = computed<ApexOptions>(() => {
     const ui = reportChartUi(appearance.value);
+    const colors = palette.value;
 
     return {
         theme: {
@@ -72,6 +75,7 @@ const chartOptions = computed<ApexOptions>(() => {
             type: 'bar',
             fontFamily: REPORT_CHART_FONT_FAMILY,
             foreColor: ui.foreColor,
+            background: ui.chartBackground,
             nonce: reportChartCspNonce(),
             toolbar: { show: false },
             offsetY: 0,
@@ -91,7 +95,7 @@ const chartOptions = computed<ApexOptions>(() => {
                   },
               }
             : {}),
-        colors: [REPORT_CHART_SEX_COLORS.female, REPORT_CHART_SEX_COLORS.male],
+        colors: [colors.female, colors.male],
         xaxis: {
             categories: ['Male', 'Female'],
             labels: {
@@ -112,7 +116,7 @@ const chartOptions = computed<ApexOptions>(() => {
                         fontFamily: REPORT_CHART_FONT_FAMILY,
                         fontSize: '12px',
                         fontWeight: 600,
-                        color: REPORT_CHART_SEX_COLORS.female,
+                        color: ui.titleColor,
                     },
                 },
                 labels: {
@@ -132,7 +136,7 @@ const chartOptions = computed<ApexOptions>(() => {
                         fontFamily: REPORT_CHART_FONT_FAMILY,
                         fontSize: '12px',
                         fontWeight: 600,
-                        color: REPORT_CHART_SEX_COLORS.male,
+                        color: ui.titleColor,
                     },
                 },
                 labels: {
@@ -163,9 +167,9 @@ const chartOptions = computed<ApexOptions>(() => {
             },
         },
         legend: {
-            position: 'top',
+            position: 'bottom',
             horizontalAlign: 'center',
-            offsetY: 0,
+            offsetY: 4,
             fontSize: '12px',
             fontFamily: REPORT_CHART_FONT_FAMILY,
             itemMargin: {
@@ -180,10 +184,9 @@ const chartOptions = computed<ApexOptions>(() => {
                 strokeWidth: 0,
             },
         },
-        tooltip: {
+        tooltip: reportChartTooltip({
             shared: true,
             intersect: false,
-            theme: ui.tooltipTheme,
             y: {
                 formatter: (value: number, options?: { seriesIndex?: number }) => {
                     if (options?.seriesIndex === 1) {
@@ -193,7 +196,7 @@ const chartOptions = computed<ApexOptions>(() => {
                     return `${value}`;
                 },
             },
-        },
+        }),
         plotOptions: {
             bar: {
                 borderRadius: 4,

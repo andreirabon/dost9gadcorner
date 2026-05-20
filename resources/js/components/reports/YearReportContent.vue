@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { REPORT_PAGE_THEME_KEY } from '@/composables/useReportPageTheme';
 import type { YearItem } from '@/types';
 import type { FundingSummaryData, GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow } from '@/types/reports';
 import { Link } from '@inertiajs/vue3';
-import { computed, defineAsyncComponent, inject, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const AssemblyStackedBarChart = defineAsyncComponent(() => import('@/components/charts/AssemblyStackedBarChart.vue'));
 const CestFundingChart = defineAsyncComponent(() => import('@/components/charts/CestFundingChart.vue'));
@@ -127,16 +126,6 @@ let openLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
 let tabLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
 const tabStorageKey = 'year-report-last-tab';
 
-const reportTheme = inject(REPORT_PAGE_THEME_KEY, null);
-
-const isReportLight = computed(() => reportTheme?.value === 'light');
-
-function toggleReportTheme(): void {
-    if (reportTheme) {
-        reportTheme.value = reportTheme.value === 'dark' ? 'light' : 'dark';
-    }
-}
-
 const isValidTab = (value: string): value is TabType => tabs.includes(value as TabType);
 
 const formatCompactNumber = (value: number): string => {
@@ -185,13 +174,6 @@ const handleTabKeydown = (event: KeyboardEvent) => {
     if (event.key === 'End') {
         event.preventDefault();
         selectTab(tabs[tabs.length - 1]);
-    }
-};
-
-const handleMobileTabChange = (event: Event) => {
-    const target = event.target as HTMLSelectElement | null;
-    if (target !== null && isValidTab(target.value)) {
-        selectTab(target.value);
     }
 };
 
@@ -308,9 +290,9 @@ onUnmounted(() => {
     <article class="report-view-shell" :aria-labelledby="`report-title-${year.id}`">
         <header class="report-view-hero px-page-gutter">
             <div class="report-view-heading">
-                <p class="report-view-kicker">Annual report</p>
-                <div class="space-y-2">
-                    <h1
+                    <p class="report-view-kicker">Annual report</p>
+                    <div class="space-y-2">
+                        <h1
                             :id="`report-title-${year.id}`"
                             data-focus-anchor="true"
                             tabindex="-1"
@@ -322,49 +304,10 @@ onUnmounted(() => {
                         <p class="report-view-subtitle">
                             Department of Science and Technology Regional Office No. IX — validated figures across GFPS,
                             employment, scholarship, RSTL, SETUP, and CEST programs.
-                    </p>
-                </div>
+                        </p>
+                    </div>
             </div>
             <div class="report-view-actions">
-                    <button
-                        v-if="reportTheme"
-                        type="button"
-                        class="report-view-btn-icon"
-                        :aria-pressed="isReportLight"
-                        :aria-label="isReportLight ? 'Switch report to dark theme' : 'Switch report to light theme'"
-                        @click="toggleReportTheme"
-                    >
-                        <svg
-                            v-if="isReportLight"
-                            class="size-5 shrink-0 text-amber-600"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            aria-hidden="true"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                            />
-                        </svg>
-                        <svg
-                            v-else
-                            class="size-5 shrink-0 text-fuchsia-300/90"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            aria-hidden="true"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-                            />
-                        </svg>
-                    </button>
                     <Link
                         :href="`${route('index')}#yearly`"
                         prefetch
@@ -377,75 +320,64 @@ onUnmounted(() => {
                         <span class="sm:hidden">Back</span>
                     </Link>
             </div>
+            <div v-if="!isYearDataPending" class="report-view-tabs" role="tablist" aria-label="Report sections">
+                <button
+                    v-for="tab in tabs"
+                    :key="tab"
+                    @click="selectTab(tab)"
+                    @keydown="handleTabKeydown"
+                    :class="['report-view-tab', { 'is-active': activeTab === tab }]"
+                    role="tab"
+                    :aria-selected="activeTab === tab"
+                    type="button"
+                >
+                    {{ tab }}
+                </button>
+            </div>
         </header>
 
-        <nav v-if="!isYearDataPending" class="report-view-nav px-page-gutter" aria-label="Report sections">
-                <div class="md:hidden">
-                    <label class="sr-only" for="year-report-tab-select">Select data section</label>
-                    <select
-                        id="year-report-tab-select"
-                        :value="activeTab"
-                        class="report-view-select"
-                        @change="handleMobileTabChange"
-                    >
-                        <option v-for="tab in tabs" :key="tab" :value="tab">{{ tab }}</option>
-                    </select>
-                </div>
-                <div class="report-view-tabs" role="tablist">
-                    <button
-                        v-for="tab in tabs"
-                        :key="tab"
-                        @click="selectTab(tab)"
-                        @keydown="handleTabKeydown"
-                        :class="['report-view-tab', { 'is-active': activeTab === tab }]"
-                        role="tab"
-                        :aria-selected="activeTab === tab"
-                        type="button"
-                    >
-                        {{ tab }}
-                    </button>
-                </div>
-        </nav>
-
         <div class="report-view-body px-page-gutter">
-                <div
-                    v-if="isYearDataPending"
-                    class="report-view-empty"
-                >
-                    <div class="report-view-empty-icon" aria-hidden="true">
-                        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                    </div>
-                    <div class="max-w-md space-y-4">
-                        <p class="report-view-empty-title">Data not yet available</p>
-                        <p class="report-view-empty-desc">
-                            {{ year.year }} figures are not available yet. This page will be updated as soon as
-                            validated annual data is ready.
-                        </p>
-                    </div>
+            <div v-if="isYearDataPending" class="report-view-empty">
+                <div class="report-view-empty-icon" aria-hidden="true">
+                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
                 </div>
-
-                <div v-else-if="isChartLoading" class="report-view-loading">
-                    <div class="flex flex-col items-center gap-4">
-                        <div class="report-view-spinner" aria-hidden="true" />
-                        <p class="report-view-loading-label">Loading charts...</p>
-                    </div>
+                <div class="max-w-md space-y-4">
+                    <p class="report-view-empty-title">Data not yet available</p>
+                    <p class="report-view-empty-desc">
+                        {{ year.year }} figures are not available yet. This page will be updated as soon as validated
+                        annual data is ready.
+                    </p>
                 </div>
+            </div>
 
-                <div v-else-if="activeTab === 'Overview'" class="space-y-4 md:space-y-6">
+            <div v-else-if="isChartLoading" class="report-view-loading">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="report-view-spinner" aria-hidden="true" />
+                    <p class="report-view-loading-label">Loading charts...</p>
+                </div>
+            </div>
+
+            <div v-else-if="activeTab === 'Overview'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
-                            <p class="text-xs font-medium text-purple-200/80 font-light report-light:text-slate-600">Total Female (all sections)</p>
-                            <p class="text-lg font-semibold text-red-300 report-light:text-red-700 md:text-xl">{{ formatCompactNumber(totalFemaleAcrossPrograms) }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
+                                <span>Total Female (all sections)</span>
+                            </p>
+                            <p class="text-lg font-semibold report-view-metric-value--disagg-a md:text-xl">{{ formatCompactNumber(totalFemaleAcrossPrograms) }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs font-medium text-purple-200/80 font-light report-light:text-slate-600">Total Male (all sections)</p>
-                            <p class="text-lg font-semibold text-blue-300 report-light:text-blue-700 md:text-xl">{{ formatCompactNumber(totalMaleAcrossPrograms) }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
+                                <span>Total Male (all sections)</span>
+                            </p>
+                            <p class="text-lg font-semibold report-view-metric-value--disagg-b md:text-xl">{{ formatCompactNumber(totalMaleAcrossPrograms) }}</p>
                         </div>
                         <div class="report-view-metric">
                             <p class="text-xs font-medium text-purple-200/80 font-light report-light:text-slate-600">Combined Projects</p>
@@ -463,7 +395,9 @@ onUnmounted(() => {
                         <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
                             <h3 class="text-xs font-semibold tracking-tight text-purple-50 report-light:text-slate-900 md:text-sm">Quick Access</h3>
                         </div>
-                        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        <div
+                            class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                        >
                             <button
                                 v-for="program in overviewPrograms"
                                 :key="program.tab"
@@ -488,13 +422,19 @@ onUnmounted(() => {
                             <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ gfpsStats.totalMembers }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Female Members</p>
-                            <p class="text-lg font-bold text-red-300 report-light:text-red-700 md:text-xl">{{ gfpsStats.femaleCount }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
+                                <span>Female Members</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ gfpsStats.femaleCount }}</p>
                             <p class="text-xs text-slate-500 report-light:text-slate-600">{{ gfpsStats.femalePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Male Members</p>
-                            <p class="text-lg font-bold text-blue-300 report-light:text-blue-700 md:text-xl">{{ gfpsStats.maleCount }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
+                                <span>Male Members</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ gfpsStats.maleCount }}</p>
                             <p class="text-xs text-slate-500 report-light:text-slate-600">{{ gfpsStats.malePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
@@ -534,12 +474,18 @@ onUnmounted(() => {
                             <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ employeesStats.totalEmployees }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Female Employees</p>
-                            <p class="text-lg font-bold text-red-300 report-light:text-red-700 md:text-xl">{{ employeesStats.femaleCount }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
+                                <span>Female Employees</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ employeesStats.femaleCount }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Male Employees</p>
-                            <p class="text-lg font-bold text-blue-300 report-light:text-blue-700 md:text-xl">{{ employeesStats.maleCount }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
+                                <span>Male Employees</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ employeesStats.maleCount }}</p>
                         </div>
                         <div class="report-view-metric">
                             <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Employment Types</p>
@@ -566,13 +512,19 @@ onUnmounted(() => {
                             <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ scholarsStats.totalScholars }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Female Scholars</p>
-                            <p class="text-lg font-bold text-red-300 report-light:text-red-700 md:text-xl">{{ scholarsStats.femaleCount }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
+                                <span>Female Scholars</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ scholarsStats.femaleCount }}</p>
                             <p class="text-xs text-slate-500 report-light:text-slate-600">{{ scholarsStats.femalePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Male Scholars</p>
-                            <p class="text-lg font-bold text-blue-300 report-light:text-blue-700 md:text-xl">{{ scholarsStats.maleCount }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
+                                <span>Male Scholars</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ scholarsStats.maleCount }}</p>
                             <p class="text-xs text-slate-500 report-light:text-slate-600">{{ scholarsStats.malePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
@@ -603,12 +555,18 @@ onUnmounted(() => {
                             <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ rstlStats.totalCustomers }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Female</p>
-                            <p class="text-lg font-bold text-red-300 report-light:text-red-700 md:text-xl">{{ rstlStats.femaleCount }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
+                                <span>Female</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ rstlStats.femaleCount }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Male</p>
-                            <p class="text-lg font-bold text-blue-300 report-light:text-blue-700 md:text-xl">{{ rstlStats.maleCount }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
+                                <span>Male</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ rstlStats.maleCount }}</p>
                         </div>
                         <div class="report-view-metric">
                             <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Period</p>
@@ -639,12 +597,18 @@ onUnmounted(() => {
                             <p class="text-sm font-bold text-purple-50 report-light:text-slate-900 md:text-base">{{ formatCurrency(setupStats.totalAmount) }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Male-led Projects</p>
-                            <p class="text-lg font-bold text-blue-300 report-light:text-blue-700 md:text-xl">{{ setupStats.maleProjects }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
+                                <span>Male-led Projects</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ setupStats.maleProjects }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Female-led Projects</p>
-                            <p class="text-lg font-bold text-red-300 report-light:text-red-700 md:text-xl">{{ setupStats.femaleProjects }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
+                                <span>Female-led Projects</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ setupStats.femaleProjects }}</p>
                         </div>
                     </div>
 
@@ -670,12 +634,18 @@ onUnmounted(() => {
                             <p class="text-sm font-bold text-purple-50 report-light:text-slate-900 md:text-base">{{ formatCurrency(cestStats.totalAmount) }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Male-led Projects</p>
-                            <p class="text-lg font-bold text-blue-300 report-light:text-blue-700 md:text-xl">{{ cestStats.maleProjects }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
+                                <span>Male-led Projects</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ cestStats.maleProjects }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Female-led Projects</p>
-                            <p class="text-lg font-bold text-red-300 report-light:text-red-700 md:text-xl">{{ cestStats.femaleProjects }}</p>
+                            <p class="report-view-metric-label inline-flex items-center gap-2">
+                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
+                                <span>Female-led Projects</span>
+                            </p>
+                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ cestStats.femaleProjects }}</p>
                         </div>
                     </div>
 
@@ -689,7 +659,7 @@ onUnmounted(() => {
                         </div>
                     </div>
                 </div>
-            </div>
+        </div>
     </article>
 </template>
 

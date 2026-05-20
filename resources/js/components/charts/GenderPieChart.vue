@@ -3,12 +3,11 @@ import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
 import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import {
     REPORT_CHART_FONT_FAMILY,
-    REPORT_CHART_SEX_COLORS,
-    REPORT_CHART_STROKE_COLORS,
     reportChartCspNonce,
+    reportDisaggPalette,
     useReportChartMotion,
 } from '@/lib/reportChartConstants';
-import { reportChartUi } from '@/lib/reportChartUi';
+import { reportChartPieTooltip, reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
@@ -27,8 +26,11 @@ const totalCount = computed(() => props.femaleCount + props.maleCount);
 
 const series = computed(() => [props.femaleCount, props.maleCount]);
 
+const palette = computed(() => reportDisaggPalette(appearance.value));
+
 const chartOptions = computed<ApexOptions>(() => {
     const ui = reportChartUi(appearance.value);
+    const colors = palette.value;
 
     return {
         theme: {
@@ -38,11 +40,12 @@ const chartOptions = computed<ApexOptions>(() => {
             type: 'pie',
             fontFamily: REPORT_CHART_FONT_FAMILY,
             foreColor: ui.foreColor,
+            background: ui.chartBackground,
             nonce: reportChartCspNonce(),
             animations: chartAnimations.value,
         },
         labels: ['Female', 'Male'],
-        colors: [REPORT_CHART_SEX_COLORS.female, REPORT_CHART_SEX_COLORS.male],
+        colors: [colors.female, colors.male],
         legend: {
             position: 'bottom',
             horizontalAlign: 'center',
@@ -61,12 +64,7 @@ const chartOptions = computed<ApexOptions>(() => {
                 vertical: 4,
             },
         },
-        tooltip: {
-            theme: ui.tooltipTheme,
-            y: {
-                formatter: (value: number) => `${value}`,
-            },
-        },
+        tooltip: reportChartPieTooltip(['Female', 'Male']),
         dataLabels: {
             enabled: totalCount.value > 0,
             formatter: (value: number) => `${Math.round(value)}%`,
@@ -82,7 +80,7 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         stroke: {
             width: 2,
-            colors: [...REPORT_CHART_STROKE_COLORS],
+            colors: [...colors.stroke],
         },
         plotOptions: {
             pie: {
