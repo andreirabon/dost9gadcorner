@@ -19,9 +19,9 @@ const blobTopClass = computed((): string => {
         return 'absolute -top-28 right-[-18%] h-[22rem] w-[22rem] rounded-full bg-fuchsia-500/18 blur-3xl sm:right-[-10%]';
     }
     if (props.variant === 'yearly') {
-        return 'absolute -top-24 left-[-12%] h-[20rem] w-[20rem] rounded-full bg-cyan-400/14 blur-3xl sm:left-[-6%]';
+        return 'absolute -top-24 left-[-12%] h-[20rem] w-[20rem] rounded-full bg-fuchsia-500/16 blur-3xl sm:left-[-6%]';
     }
-    return 'absolute -top-32 right-[-15%] h-[24rem] w-[24rem] rounded-full bg-violet-400/16 blur-3xl sm:right-[-8%]';
+    return 'absolute -top-32 right-[-15%] h-[24rem] w-[24rem] rounded-full bg-fuchsia-500/16 blur-3xl sm:right-[-8%]';
 });
 
 const blobBottomClass = computed((): string => {
@@ -29,7 +29,7 @@ const blobBottomClass = computed((): string => {
         return 'absolute bottom-[-18%] left-[-14%] h-[19rem] w-[19rem] rounded-full bg-indigo-500/14 blur-3xl sm:left-[-8%]';
     }
     if (props.variant === 'yearly') {
-        return 'absolute bottom-[-16%] right-[-12%] h-[21rem] w-[21rem] rounded-full bg-fuchsia-500/15 blur-3xl sm:right-[-6%]';
+        return 'absolute bottom-[-16%] right-[-12%] h-[21rem] w-[21rem] rounded-full bg-purple-500/14 blur-3xl sm:right-[-6%]';
     }
     return 'absolute bottom-[-20%] left-[-12%] h-[22rem] w-[22rem] rounded-full bg-fuchsia-500/12 blur-3xl sm:left-[-6%]';
 });

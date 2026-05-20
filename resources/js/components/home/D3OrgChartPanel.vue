@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { type OrgChartNode, toD3OrgChartFlat } from '@/data/organizationalChartData';
+import { REPORT_CHART_FONT_FAMILY } from '@/lib/reportChartConstants';
+import { useDebounceFn } from '@vueuse/core';
 import type { OrgChartHierarchyNode } from 'd3-org-chart';
 import { OrgChart } from 'd3-org-chart';
 import { select } from 'd3-selection';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
 
 defineOptions({
     name: 'D3OrgChartPanel',
@@ -19,12 +20,20 @@ const props = withDefaults(
         initialExpandLevel?: number;
         /** Accessible label for the figure. */
         ariaLabel: string;
+        /**
+         * fit-zoom: scale to fit + pan/zoom (default).
+         * scroll-only: natural chart size inside a scrollable panel; zoom/pan disabled.
+         */
+        interactionMode?: 'fit-zoom' | 'scroll-only';
     }>(),
     {
         chartHeight: 560,
         initialExpandLevel: 3,
+        interactionMode: 'fit-zoom',
     },
 );
+
+const isScrollOnly = computed(() => props.interactionMode === 'scroll-only');
 
 const rootEl = ref<HTMLElement | null>(null);
 let chart: OrgChart | null = null;
@@ -87,7 +96,7 @@ function preserveOrgChartTitleLineBreaks(text: string): string {
     return t;
 }
 
-const FONT_STACK = 'Inter, ui-sans-serif, system-ui, sans-serif';
+const FONT_STACK = REPORT_CHART_FONT_FAMILY;
 
 type OrgChartHierarchyBundle = OrgChartHierarchyNode & {
     children?: OrgChartHierarchyNode[] | null;
@@ -156,6 +165,12 @@ function buildChartInstance(): OrgChart {
         });
 }
 
+function disableChartZoom(instance: OrgChart): void {
+    const state = instance.getChartState();
+    state.svg?.on('.zoom', null);
+    state.svg?.on('wheel.zoom', null);
+}
+
 function mountChart(): void {
     if (!rootEl.value) {
         return;
@@ -166,7 +181,14 @@ function mountChart(): void {
 
     const instance = buildChartInstance();
     instance.container(rootEl.value).data(toD3OrgChartFlat(props.nodes)).render();
-    instance.fit({ animate: false, scale: true });
+
+    if (props.interactionMode === 'scroll-only') {
+        disableChartZoom(instance);
+        instance.fit({ animate: false, scale: false });
+    } else {
+        instance.fit({ animate: false, scale: true });
+    }
+
     chart = instance;
 }
 
@@ -175,7 +197,12 @@ function scheduleResizeRender(): void {
         return;
     }
     chart.render();
-    chart.fit({ animate: false, scale: true });
+    if (props.interactionMode === 'scroll-only') {
+        disableChartZoom(chart);
+        chart.fit({ animate: false, scale: false });
+    } else {
+        chart.fit({ animate: false, scale: true });
+    }
 }
 
 const debouncedResizeRender = useDebounceFn(scheduleResizeRender, 150);
@@ -196,7 +223,7 @@ onMounted(() => {
 });
 
 watch(
-    () => [props.nodes, props.chartHeight, props.initialExpandLevel] as const,
+    () => [props.nodes, props.chartHeight, props.initialExpandLevel, props.interactionMode] as const,
     () => {
         void nextTick(() => mountChart());
     },
@@ -217,7 +244,12 @@ onBeforeUnmount(() => {
     <figure class="d3-org-chart-figure m-0 min-w-0 p-0">
         <div
             ref="rootEl"
-            class="d3-org-chart-panel min-h-[280px] w-full min-w-0 touch-pan-x touch-pan-y sm:min-h-[320px]"
+            :class="[
+                'd3-org-chart-panel min-h-[280px] w-full min-w-0 sm:min-h-[320px]',
+                isScrollOnly
+                    ? 'max-h-[min(70vh,880px)] overflow-auto overscroll-contain'
+                    : 'touch-pan-x touch-pan-y',
+            ]"
             role="img"
             :aria-label="ariaLabel"
         />

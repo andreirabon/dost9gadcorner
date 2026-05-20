@@ -14,8 +14,8 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
         :class="[
             'relative isolate shrink-0 overflow-hidden border-t',
             isReportLight
-                ? 'scheme-light border-white/10 bg-[#0e0716] text-purple-50'
-                : 'scheme-dark border-white/10 bg-[#0e0716] text-purple-50',
+                ? 'scheme-light border-purple-500/45 bg-purple-950 text-purple-50'
+                : 'scheme-dark border-purple-500/45 bg-purple-950 text-purple-50',
         ]"
         role="contentinfo"
     >
@@ -24,8 +24,8 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
             :class="[
                 'pointer-events-none absolute inset-0',
                 isReportLight
-                    ? 'bg-[radial-gradient(100%_90%_at_50%_0%,rgba(139,92,246,0.06),transparent_55%),radial-gradient(80%_60%_at_100%_100%,rgba(168,85,247,0.05),transparent_50%)]'
-                    : 'bg-[radial-gradient(100%_90%_at_50%_0%,rgba(139,92,246,0.08),transparent_55%),radial-gradient(80%_60%_at_100%_100%,rgba(168,85,247,0.06),transparent_50%)]',
+                    ? 'bg-[radial-gradient(100%_90%_at_50%_0%,rgba(192,38,211,0.06),transparent_55%),radial-gradient(80%_60%_at_100%_100%,rgba(147,51,234,0.05),transparent_50%)]'
+                    : 'bg-[radial-gradient(100%_90%_at_50%_0%,rgba(192,38,211,0.08),transparent_55%),radial-gradient(80%_60%_at_100%_100%,rgba(147,51,234,0.06),transparent_50%)]',
             ]"
         />
         <div
@@ -50,10 +50,10 @@ const isReportLight = computed(() => reportTheme?.value === 'light');
                     rel="noopener noreferrer"
                     aria-label="DOST-IX GAD on Facebook (opens in new tab)"
                     :class="[
-                        'inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 transition-colors duration-200 hover:underline focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2',
+                        'inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 transition-colors duration-200 hover:underline focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2',
                         isReportLight
-                            ? 'text-purple-100 hover:text-violet-400 focus-visible:ring-offset-[#0e0716]'
-                            : 'text-purple-100 hover:text-violet-400 focus-visible:ring-offset-[#0e0716]',
+                            ? 'text-purple-100 hover:text-fuchsia-300/90 focus-visible:ring-offset-purple-950'
+                            : 'text-purple-100 hover:text-fuchsia-300/90 focus-visible:ring-offset-purple-950',
                     ]"
                 >
                     <svg

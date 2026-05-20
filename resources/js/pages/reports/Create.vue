@@ -26,15 +26,15 @@ const submit = () => {
  <AppLayout
  :show-footer="false"
  compact-main-column
- content-class="flex min-h-0 flex-1 flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30"
+ content-class="flex min-h-0 flex-1 flex-col bg-linear-to-b from-purple-950 via-fuchsia-950/28 to-purple-950 text-purple-50 selection:bg-purple-500/30"
  >
  <Head title="New Report Year" />
 
  <!-- Background glows -->
- <div class="pointer-events-none absolute inset-0 overflow-hidden">
+ <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+ <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(192,38,211,0.12),transparent_55%)]" />
  <div
- aria-hidden="true"
- class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-70"
+ class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-50"
  />
  </div>
 
@@ -46,14 +46,14 @@ const submit = () => {
  as-child
  variant="ghost"
  size="icon"
- class="size-10 rounded-full border border-white/10 bg-[#0e0716] transition-all duration-300 hover:bg-[#0e0716]/5 active:scale-[0.97]"
+ class="size-10 rounded-full border border-purple-400/35 bg-purple-900/55 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:bg-purple-950/5 active:scale-[0.97]"
  >
  <Link :href="route('report-years.index')" aria-label="Back to all years" prefetch>
  <ArrowLeft class="size-4 text-purple-200/70" />
  </Link>
  </Button>
  <div>
- <h1 class="text-2xl font-semibold tracking-tighter text-purple-50">
+ <h1 class="text-2xl font-semibold tracking-tight text-purple-100">
  Create Report Year
  </h1>
  </div>
@@ -61,9 +61,9 @@ const submit = () => {
  </div>
 
  <!-- Form Container -->
- <div class="rounded-[2rem] border border-white/10 bg-[#0e0716] p-6 shadow-sm sm:p-8">
+ <div class="rounded-2xl border border-purple-400/35 bg-purple-900/55 p-6 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 sm:p-8">
  <div class="mb-6">
- <h2 class="text-lg font-medium tracking-tight text-purple-50">Details</h2>
+ <h2 class="text-lg font-medium tracking-tight text-purple-100">Details</h2>
  <p class="mt-1 text-sm font-light text-purple-200/70">
  Set the reporting year, an optional custom title, and the initial status.
  </p>
@@ -82,7 +82,7 @@ const submit = () => {
  :min="REPORT_YEAR_FIELD_LIMITS.yearMin"
  :max="REPORT_YEAR_FIELD_LIMITS.yearMax"
  inputmode="numeric"
- class="h-11 rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="h-11 rounded-xl border border-purple-400/35 bg-purple-950/60 px-3 text-sm text-purple-50 transition-colors focus-visible:border-purple-400 focus-visible:bg-purple-950 focus-visible:ring-4 focus-visible:ring-purple-500/20"
  />
  <InputError :message="form.errors.year" />
  </div>
@@ -94,10 +94,10 @@ const submit = () => {
  id="status"
  v-model="form.status"
  name="status"
- class="h-11 w-full appearance-none rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="h-11 w-full appearance-none rounded-xl border border-purple-400/35 bg-purple-950/60 px-3 text-sm text-purple-50 transition-colors focus-visible:border-purple-400 focus-visible:bg-purple-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-500/20"
  >
- <option value="pending" class="bg-[#0e0716] text-purple-50">Pending (Draft)</option>
- <option value="published" class="bg-[#0e0716] text-purple-50">Published (Public)</option>
+ <option value="pending" class="bg-purple-950 text-purple-50">Pending (Draft)</option>
+ <option value="published" class="bg-purple-950 text-purple-50">Published (Public)</option>
  </select>
  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
  <svg class="size-4 text-purple-300/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -116,7 +116,7 @@ const submit = () => {
  type="text"
  placeholder="e.g., Annual Regional Review"
  :maxlength="REPORT_YEAR_FIELD_LIMITS.title"
- class="h-11 rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors placeholder:text-purple-300/50 focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="h-11 rounded-xl border border-purple-400/35 bg-purple-950/60 px-3 text-sm text-purple-50 transition-colors placeholder:text-purple-300/50 focus-visible:border-purple-400 focus-visible:bg-purple-950 focus-visible:ring-4 focus-visible:ring-purple-500/20"
  />
  <div class="flex justify-between">
  <InputError :message="form.errors.title" />
@@ -135,7 +135,7 @@ const submit = () => {
  rows="3"
  placeholder="Brief summary of this reporting period..."
  :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
- class="w-full resize-y rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-purple-50 transition-colors placeholder:text-purple-300/50 focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="w-full resize-y rounded-xl border border-purple-400/35 bg-purple-950/60 p-3 text-sm text-purple-50 transition-colors placeholder:text-purple-300/50 focus-visible:border-purple-400 focus-visible:bg-purple-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-500/20"
  />
  <div class="flex justify-between">
  <InputError :message="form.errors.description" />
@@ -145,19 +145,19 @@ const submit = () => {
  </div>
  </div>
 
- <div class="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-6">
+ <div class="flex items-center justify-end gap-3 pt-6 border-t border-purple-400/35 mt-6">
  <p v-show="form.recentlySuccessful" class="text-sm font-medium text-emerald-400">Saved successfully.</p>
  <Button
  type="button"
  variant="ghost"
- class="h-11 rounded-xl px-4 text-sm font-medium text-purple-200/70 hover:bg-[#0e0716] hover:text-purple-50 transition-all duration-300 active:scale-[0.97]"
+ class="h-11 rounded-xl px-4 text-sm font-medium text-purple-200/70 hover:bg-purple-950 hover:text-purple-50 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out active:scale-[0.97]"
  @click="() => form.reset()"
  >
  Reset
  </Button>
  <Button
  type="submit"
- class="h-11 rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-all duration-300 hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-[0.97] disabled:opacity-50"
+ class="h-11 rounded-xl bg-purple-600 px-6 text-sm font-semibold text-white shadow-lg shadow-purple-950/30 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:bg-purple-500 hover:shadow-purple-950/40 active:scale-[0.97] disabled:opacity-50"
  :disabled="form.processing"
  >
  <Loader2 v-if="form.processing" class="mr-2 size-4 animate-spin" />

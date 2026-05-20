@@ -64,6 +64,12 @@ declare module 'd3-org-chart' {
         /* Removes resize listener and SVG content; call before destroying the container. */
         clear(): void;
 
-        getChartState(): Record<string, unknown>;
+        getChartState(): {
+            svg?: {
+                on: (typenames: string, listener?: null) => unknown;
+            };
+        };
+
+        zoomBehavior?(): unknown;
     }
 }

@@ -42,7 +42,7 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
                     as-child
                     :is-active="navItemIsActive(page.url, item.href)"
                     :tooltip="item.title"
-                    class="h-auto min-h-11 rounded-xl border border-transparent py-2.5 text-[14px] font-medium text-purple-200/70 transition-all duration-300 hover:bg-white/5 hover:text-purple-50 active:scale-[0.97] data-[active=true]:border-transparent data-[active=true]:bg-violet-500/10 data-[active=true]:font-semibold data-[active=true]:text-violet-300 data-[active=true]:[&_svg]:text-violet-300"
+                    class="h-auto min-h-11 rounded-xl border border-transparent py-2.5 text-[14px] font-medium text-purple-200/70 transition-[background-color,color,transform] duration-300 hover:bg-white/5 hover:text-purple-50 active:scale-[0.97] data-[active=true]:border-transparent data-[active=true]:bg-purple-600/15 data-[active=true]:font-semibold data-[active=true]:text-fuchsia-300/90 data-[active=true]:[&_svg]:text-fuchsia-300/90"
                 >
                     <Link
                         :href="item.href"

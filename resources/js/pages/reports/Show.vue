@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import IndexSectionDecor from '@/components/home/IndexSectionDecor.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import YearReportContent from '@/components/reports/YearReportContent.vue';
 import { provideReportPageTheme } from '@/composables/useReportPageTheme';
@@ -19,12 +20,15 @@ const { mode } = provideReportPageTheme();
 <template>
     <Head :title="`${year.year} Sex Disaggregated Data Report`" />
     <div
-        class="report-view-page"
-        :class="mode === 'light' ? 'report-theme-light' : ''"
+        class="report-view-page flex flex-col"
+        :class="mode === 'light' ? 'report-theme-light [color-scheme:light]' : '[color-scheme:dark]'"
     >
-        <div class="flex min-h-0 w-full min-w-0 flex-1 flex-col">
-            <YearReportContent :year="year" />
-        </div>
+        <section class="report-view-section" :aria-label="`${year.year} annual report`">
+            <IndexSectionDecor variant="yearly" />
+            <div class="report-view-main">
+                <YearReportContent :year="year" />
+            </div>
+        </section>
         <AppFooter />
     </div>
 </template>

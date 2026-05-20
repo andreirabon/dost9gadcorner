@@ -60,7 +60,7 @@ const mainNavItems = computed((): NavItem[] => {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    class="h-9 w-9 shrink-0 rounded-md border border-white/10 bg-white/5 text-purple-300/50 hover:bg-white/10 hover:text-purple-100 shadow-sm transition-all duration-300 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:outline-none group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
+                    class="h-9 w-9 shrink-0 rounded-md border border-white/10 bg-white/5 text-purple-300/50 shadow-sm transition-[background-color,color,transform] duration-300 hover:bg-white/10 hover:text-purple-100 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-purple-500/50 focus-visible:outline-none group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
                     :aria-label="
                         isMobile
                             ? 'Close sidebar'

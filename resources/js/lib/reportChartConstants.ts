@@ -3,7 +3,8 @@ import type { ApexOptions } from 'apexcharts';
 import { computed, type ComputedRef } from 'vue';
 
 /** Matches `--font-sans` in resources/css/app.css */
-export const REPORT_CHART_FONT_FAMILY = 'Geist, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"';
+export const REPORT_CHART_FONT_FAMILY =
+    'Inter, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
 
 export const REPORT_CHART_SEX_COLORS = {
     female: '#f87171',

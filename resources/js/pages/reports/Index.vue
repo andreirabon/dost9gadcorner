@@ -139,27 +139,29 @@ function confirmDeleteReportYear(): void {
 <template>
  <AppLayout
  :show-footer="false"
- content-class="flex min-h-0 flex-1 flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30"
+ content-class="flex min-h-0 flex-1 flex-col bg-linear-to-b from-purple-950 via-fuchsia-950/28 to-purple-950 text-purple-50 selection:bg-purple-500/30"
  >
  <Head title="GAD Database" />
 
- <div class="relative w-full max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
- <!-- Background glows -->
+ <div class="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+ <div
+ aria-hidden="true"
+ class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(192,38,211,0.12),transparent_55%)]"
+ />
 
-
- <div class="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+ <div class="relative z-10 mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
  <div>
- <h1 class="text-3xl font-semibold tracking-tighter text-purple-50">
+ <h1 class="text-2xl font-semibold tracking-tight text-purple-100 sm:text-3xl md:text-4xl">
  Sex Disaggregated Data Reports
  </h1>
- <p class="mt-2 text-sm text-purple-200/60 font-light max-w-2xl">
+ <p class="mt-2 text-sm text-purple-200/80 font-light max-w-2xl">
  Track, analyze, and manage region-wide gender-disaggregated datasets, human resource demographics, and institutional GAD program statistics.
  </p>
  </div>
  <div v-if="canCreate">
  <Button
  as-child
- class="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-all duration-300 hover:bg-blue-700 hover:shadow-blue-500/30 active:scale-[0.97]"
+ class="inline-flex h-11 items-center gap-2 rounded-xl bg-purple-600 px-6 text-sm font-semibold text-white shadow-lg shadow-purple-950/30 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:bg-purple-500 hover:shadow-purple-950/40 active:scale-[0.97]"
  >
  <Link :href="route('report-years.create')">
  <Plus class="size-4" :stroke-width="2.5" aria-hidden="true" />
@@ -172,7 +174,7 @@ function confirmDeleteReportYear(): void {
  <!-- Empty State -->
  <div
  v-if="reportYears.length === 0"
- class="flex flex-col items-center justify-center rounded-[2rem] border border-white/10 bg-purple-900/20 px-4 py-20 text-center shadow-sm"
+ class="flex flex-col items-center justify-center rounded-[2rem] border border-purple-400/35 bg-purple-900/55 ring-1 ring-white/10 px-4 py-20 text-center shadow-sm"
  >
  <FileChartColumnIncreasing class="mb-4 size-10 text-purple-300/50" :stroke-width="1.5" aria-hidden="true" />
  <h3 class="text-lg font-medium text-purple-50">No reports found</h3>
@@ -188,7 +190,7 @@ function confirmDeleteReportYear(): void {
  <Button
  as-child
  variant="outline"
- class="h-11 rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 transition-all duration-300 hover:border-white/20 hover:bg-[#0e0716]/5 hover:text-purple-50 active:scale-[0.97]"
+ class="h-11 rounded-xl border border-purple-500/45 bg-purple-950 text-purple-100 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:border-white/20 hover:bg-purple-950/5 hover:text-purple-50 active:scale-[0.97]"
  >
  <Link :href="route('report-years.create')">
  <Plus class="size-4 mr-2" :stroke-width="2" />
@@ -201,10 +203,10 @@ function confirmDeleteReportYear(): void {
  <!-- Main Data Shell -->
  <div
  v-else
- class="flex flex-col rounded-[2rem] border border-white/10 bg-purple-900/20 shadow-sm overflow-hidden"
+ class="flex flex-col rounded-[2rem] border border-purple-400/35 bg-purple-900/55 ring-1 ring-white/10 shadow-sm overflow-hidden"
  >
  <!-- Controls -->
- <div class="flex flex-col gap-4 border-b border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+ <div class="flex flex-col gap-4 border-b border-purple-500/45 p-4 sm:flex-row sm:items-center sm:justify-between">
  <div class="flex items-center gap-1 rounded-xl bg-black/20 p-1">
  <button
  v-for="tab in tabs"
@@ -212,11 +214,11 @@ function confirmDeleteReportYear(): void {
  type="button"
  role="tab"
  :aria-selected="statusTab === tab.id"
- class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-300"
+ class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out"
  :class="
  statusTab === tab.id
- ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
- : 'text-purple-200/70 hover:text-purple-100 hover:bg-[#0e0716]'
+ ? 'bg-purple-600 text-white shadow-md shadow-purple-950/30'
+ : 'text-purple-200/70 hover:text-purple-100 hover:bg-purple-950'
  "
  @click="statusTab = tab.id"
  >
@@ -225,8 +227,8 @@ function confirmDeleteReportYear(): void {
  class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums"
  :class="
  statusTab === tab.id
- ? 'bg-[#0e0716]/20 text-white'
- : 'bg-[#0e0716] text-purple-200/70'
+ ? 'bg-purple-950/20 text-white'
+ : 'bg-purple-950 text-purple-200/70'
  "
  >
  {{ tab.count }}
@@ -244,14 +246,14 @@ function confirmDeleteReportYear(): void {
  v-model="searchQuery"
  type="search"
  placeholder="Search reports..."
- class="h-10 w-full rounded-xl border border-white/10 bg-black/20 pl-9 text-sm text-purple-50 transition-colors duration-300 placeholder:text-purple-300/50 focus-visible:border-blue-500 focus-visible:bg-[#0e0716]/5 focus-visible:ring-4 focus-visible:ring-blue-500/20"
+ class="h-10 w-full rounded-xl border border-purple-500/45 bg-black/20 pl-9 text-sm text-purple-50 transition-colors duration-300 placeholder:text-purple-300/50 focus-visible:border-purple-400 focus-visible:bg-purple-950/5 focus-visible:ring-4 focus-visible:ring-purple-500/20"
  />
  </div>
  <Button
  type="button"
  variant="outline"
  size="icon"
- class="size-10 shrink-0 rounded-xl border border-white/10 bg-[#0e0716] transition-all duration-300 hover:border-white/20 hover:bg-[#0e0716]/5 active:scale-[0.97]"
+ class="size-10 shrink-0 rounded-xl border border-purple-500/45 bg-purple-950 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:border-white/20 hover:bg-purple-950/5 active:scale-[0.97]"
  aria-label="Reset filters"
  @click="resetFilters"
  >
@@ -264,12 +266,12 @@ function confirmDeleteReportYear(): void {
  <div class="overflow-x-auto">
  <table class="w-full min-w-[720px] text-left text-sm">
  <thead>
- <tr class="border-b border-white/10 bg-[#0e0716]/[0.02]">
- <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-violet-400 uppercase w-24">Year</th>
- <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-violet-400 uppercase">Title</th>
- <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-violet-400 uppercase w-40">Published</th>
- <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-violet-400 uppercase w-32">Status</th>
- <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-violet-400 uppercase w-32">Actions</th>
+ <tr class="border-b border-purple-500/45 bg-purple-950/[0.02]">
+ <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-fuchsia-300/90 uppercase w-24">Year</th>
+ <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-fuchsia-300/90 uppercase">Title</th>
+ <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-fuchsia-300/90 uppercase w-40">Published</th>
+ <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-fuchsia-300/90 uppercase w-32">Status</th>
+ <th scope="col" class="px-6 py-4 text-xs font-semibold tracking-widest text-fuchsia-300/90 uppercase w-32">Actions</th>
  </tr>
  </thead>
  <tbody class="divide-y divide-white/5">
@@ -278,7 +280,7 @@ function confirmDeleteReportYear(): void {
  No reports found matching your criteria.
  <button
  type="button"
- class="ml-1 font-medium text-violet-400 underline underline-offset-4 hover:text-violet-300"
+ class="ml-1 font-medium text-fuchsia-300/90 underline underline-offset-4 hover:text-fuchsia-200"
  @click="resetFilters"
  >
  Clear filters
@@ -319,7 +321,7 @@ function confirmDeleteReportYear(): void {
  as-child
  variant="ghost"
  size="icon"
- class="size-9 rounded-lg text-purple-200/70 hover:bg-[#0e0716]/5 hover:text-purple-50 transition-all duration-300"
+ class="size-9 rounded-lg text-purple-200/70 hover:bg-purple-950/5 hover:text-purple-50 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out"
  >
  <Link
  :href="route('report-years.edit', reportYear.id)"
@@ -330,7 +332,7 @@ function confirmDeleteReportYear(): void {
  </Link>
  </Button>
  </TooltipTrigger>
- <TooltipContent side="top" hide-arrow class="bg-[#0e0716] text-purple-50 border-white/10">Edit</TooltipContent>
+ <TooltipContent side="top" hide-arrow class="bg-purple-950 text-purple-50 border-purple-500/45">Edit</TooltipContent>
  </Tooltip>
  <Tooltip v-if="canDelete">
  <TooltipTrigger as-child>
@@ -338,14 +340,14 @@ function confirmDeleteReportYear(): void {
  type="button"
  variant="ghost"
  size="icon"
- class="size-9 rounded-lg text-purple-200/70 hover:bg-red-500/20 hover:text-red-400 transition-all duration-300"
+ class="size-9 rounded-lg text-purple-200/70 hover:bg-red-500/20 hover:text-red-400 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out"
  :aria-label="`Delete report year ${reportYear.year}`"
  @click="openDeleteDialog(reportYear)"
  >
  <Trash2 class="size-4" :stroke-width="2" aria-hidden="true" />
  </Button>
  </TooltipTrigger>
- <TooltipContent side="top" hide-arrow class="bg-[#0e0716] text-purple-50 border-white/10">Delete</TooltipContent>
+ <TooltipContent side="top" hide-arrow class="bg-purple-950 text-purple-50 border-purple-500/45">Delete</TooltipContent>
  </Tooltip>
  </div>
  </td>
@@ -356,7 +358,7 @@ function confirmDeleteReportYear(): void {
  </div>
 
  <!-- Pagination -->
- <div class="flex items-center justify-between border-t border-white/10 p-4">
+ <div class="flex items-center justify-between border-t border-purple-500/45 p-4">
  <p class="text-sm font-light text-purple-200/70 tabular-nums">
  <template v-if="filteredYears.length === 0">0 of 0</template>
  <template v-else>Showing {{ showingFrom }}–{{ showingTo }} of {{ filteredYears.length }}</template>
@@ -366,7 +368,7 @@ function confirmDeleteReportYear(): void {
  type="button"
  variant="outline"
  size="icon"
- class="size-9 rounded-lg border border-white/10 bg-transparent text-purple-200/70 transition-all duration-300 hover:bg-[#0e0716]/5 disabled:opacity-30 disabled:hover:bg-transparent"
+ class="size-9 rounded-lg border border-purple-500/45 bg-transparent text-purple-200/70 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:bg-purple-950/5 disabled:opacity-30 disabled:hover:bg-transparent"
  :disabled="currentPage <= 1"
  @click="goPage(1)"
  >
@@ -376,7 +378,7 @@ function confirmDeleteReportYear(): void {
  type="button"
  variant="outline"
  size="icon"
- class="size-9 rounded-lg border border-white/10 bg-transparent text-purple-200/70 transition-all duration-300 hover:bg-[#0e0716]/5 disabled:opacity-30 disabled:hover:bg-transparent"
+ class="size-9 rounded-lg border border-purple-500/45 bg-transparent text-purple-200/70 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:bg-purple-950/5 disabled:opacity-30 disabled:hover:bg-transparent"
  :disabled="currentPage <= 1"
  @click="goPage(currentPage - 1)"
  >
@@ -389,7 +391,7 @@ function confirmDeleteReportYear(): void {
  type="button"
  variant="outline"
  size="icon"
- class="size-9 rounded-lg border border-white/10 bg-transparent text-purple-200/70 transition-all duration-300 hover:bg-[#0e0716]/5 disabled:opacity-30 disabled:hover:bg-transparent"
+ class="size-9 rounded-lg border border-purple-500/45 bg-transparent text-purple-200/70 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:bg-purple-950/5 disabled:opacity-30 disabled:hover:bg-transparent"
  :disabled="currentPage >= totalPages"
  @click="goPage(currentPage + 1)"
  >
@@ -399,7 +401,7 @@ function confirmDeleteReportYear(): void {
  type="button"
  variant="outline"
  size="icon"
- class="size-9 rounded-lg border border-white/10 bg-transparent text-purple-200/70 transition-all duration-300 hover:bg-[#0e0716]/5 disabled:opacity-30 disabled:hover:bg-transparent"
+ class="size-9 rounded-lg border border-purple-500/45 bg-transparent text-purple-200/70 transition-[transform,background-color,border-color,box-shadow,opacity,color] duration-200 ease-out hover:bg-purple-950/5 disabled:opacity-30 disabled:hover:bg-transparent"
  :disabled="currentPage >= totalPages"
  @click="goPage(totalPages)"
  >
@@ -413,14 +415,14 @@ function confirmDeleteReportYear(): void {
  <!-- Delete Dialog -->
  <Dialog :open="deleteTarget !== null" @update:open="onDeleteDialogOpenChange">
  <DialogContent
- class="sm:max-w-md bg-purple-900/20 border-white/10 text-purple-50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]"
+ class="sm:max-w-md border border-purple-400/35 bg-purple-900/55 text-purple-100 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10"
  @pointer-down-outside="(e: Event) => deleteProcessing && e.preventDefault()"
  >
  <DialogHeader>
  <DialogTitle class="text-purple-50">Delete report year</DialogTitle>
  <DialogDescription v-if="deleteTarget" class="text-purple-200/70/70">
  This will permanently delete the report for
- <span class="font-medium text-violet-400">{{ deleteTarget.year }}</span>.
+ <span class="font-medium text-fuchsia-300/90">{{ deleteTarget.year }}</span>.
  All associated data will be removed. This action cannot be undone.
  </DialogDescription>
  </DialogHeader>
@@ -428,7 +430,7 @@ function confirmDeleteReportYear(): void {
  <Button
  type="button"
  variant="outline"
- class="rounded-xl border border-white/10 bg-transparent text-purple-200/70 hover:bg-[#0e0716] active:scale-[0.97]"
+ class="rounded-xl border border-purple-500/45 bg-transparent text-purple-200/70 hover:bg-purple-950 active:scale-[0.97]"
  :disabled="deleteProcessing"
  @click="onDeleteDialogOpenChange(false)"
  >

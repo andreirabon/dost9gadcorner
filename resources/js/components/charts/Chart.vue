@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { REPORT_CHART_FONT_FAMILY } from '@/lib/reportChartConstants';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
@@ -15,7 +16,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const chartFontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+const chartFontFamily = REPORT_CHART_FONT_FAMILY;
 
 const isPieChart = computed(() => props.chartType === 'pie');
 

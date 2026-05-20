@@ -163,7 +163,7 @@ const updateProgramFunding = () => {
  });
 };
 
-const inputClass = 'h-11 rounded-xl border border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors focus-visible:border-blue-500 focus-visible:bg-[#0e0716] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/20 w-full placeholder:text-purple-300/50';
+const inputClass = 'h-11 rounded-xl border border-purple-400/35 bg-purple-950/60 px-3 text-sm text-purple-50 transition-colors focus-visible:border-purple-400 focus-visible:bg-purple-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-500/20 w-full placeholder:text-purple-300/50';
 
 const publishedAtLabel = computed(() => {
  const raw = props.reportYear.publishedAt;
@@ -224,11 +224,14 @@ watch(
 <template>
  <AppLayout
  :show-footer="false"
- content-class="flex min-h-0 flex-1 flex-col bg-[#0e0716] text-purple-50 selection:bg-violet-500/30"
+ content-class="flex min-h-0 flex-1 flex-col bg-linear-to-b from-purple-950 via-fuchsia-950/28 to-purple-950 text-purple-50 selection:bg-purple-500/30"
  >
  <Head :title="`Manage ${reportYear.year} report`" />
- <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
- <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-70" />
+ <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+ <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(192,38,211,0.12),transparent_55%)]" />
+ <div
+ class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-50"
+ />
  </div>
 
  <div class="w-full px-2 py-6 sm:px-4">
@@ -236,7 +239,7 @@ watch(
  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
  <div class="flex min-w-0 flex-1 items-start gap-3">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
  aria-hidden="true"
  >
  <FileChartColumnIncreasing class="size-5" :stroke-width="2" />
@@ -288,7 +291,7 @@ watch(
  </Button>
  </div>
 
- <div class="overflow-x-auto overflow-y-hidden border-white/10 border-b [scrollbar-width:none] dark:border-zinc-800 [&::-webkit-scrollbar]:hidden">
+ <div class="overflow-x-auto overflow-y-hidden border-purple-400/35 border-b [scrollbar-width:none] dark:border-zinc-800 [&::-webkit-scrollbar]:hidden">
  <nav class="-mb-px flex min-w-max space-x-8 px-1" aria-label="Report sections" role="tablist">
  <button
  v-for="tab in visibleTabs"
@@ -299,8 +302,8 @@ watch(
  @click="activeTab = tab.id"
  :class="[
  activeTab === tab.id
- ? 'border-blue-500 text-purple-50 shadow-[0_1px_0_0_#2563eb]'
- : 'border-transparent border-transparent text-purple-200/70 hover:border-white/10 hover:text-purple-100',
+ ? 'border-purple-400 text-purple-50 shadow-[0_1px_0_0_#2563eb]'
+ : 'border-transparent border-transparent text-purple-200/70 hover:border-purple-400/35 hover:text-purple-100',
  'cursor-pointer whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors duration-200',
  ]"
  >
@@ -315,7 +318,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
  aria-hidden="true"
  >
  <Calendar class="size-5" :stroke-width="2" />
@@ -352,7 +355,7 @@ watch(
 
  <div v-if="abilities.updateFullReport" class="grid gap-2">
  <Label for="status">Status</Label>
- <select id="status" v-model="metadataForm.status" name="status" class="report-select bg-[#0e0716] border-white/10 text-purple-50">
+ <select id="status" v-model="metadataForm.status" name="status" class="report-select bg-purple-950 border-purple-400/35 text-purple-50">
  <option value="pending">Pending</option>
  <option value="published">Published</option>
  </select>
@@ -361,7 +364,7 @@ watch(
  <div v-else class="grid gap-2">
  <span class="text-sm font-medium text-purple-100">Status</span>
  <p
- class="rounded-md border border-white/10 bg-black/20 border-white/10 px-3 py-2 text-sm text-purple-50"
+ class="rounded-md border border-purple-400/35 bg-purple-950/60 border-purple-400/35 px-3 py-2 text-sm text-purple-50"
  >
  <span
  v-if="metadataForm.status === 'published'"
@@ -395,7 +398,7 @@ watch(
  v-model="metadataForm.description"
  name="description"
  rows="4"
- class="report-textarea bg-[#0e0716] border-white/10 text-purple-50"
+ class="report-textarea bg-purple-950 border-purple-400/35 text-purple-50"
  :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
  />
  <p class="text-xs text-purple-200/70">
@@ -421,7 +424,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
  aria-hidden="true"
  >
  <Users class="size-5" :stroke-width="2" />
@@ -439,7 +442,7 @@ watch(
  class="report-form mt-6 max-w-3xl space-y-6"
  @submit.prevent="updateGfpsMembership"
  >
- <div class="rounded-xl border border-white/10 bg-black/20 p-4 ">
+ <div class="rounded-xl border border-purple-400/35 bg-purple-950/60 p-4 ">
  <div class="grid gap-5 sm:grid-cols-2">
  <div class="grid gap-2 border-l-2 border-rose-500/50 pl-3 ">
  <Label for="gfps_female_count">Female count</Label>
@@ -489,7 +492,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
  aria-hidden="true"
  >
  <GraduationCap class="size-5" :stroke-width="2" />
@@ -513,7 +516,7 @@ watch(
  <select
  id="school_year_id"
  v-model="scholarshipForm.school_year_id"
- class="report-select bg-[#0e0716] border-white/10 text-purple-50"
+ class="report-select bg-purple-950 border-purple-400/35 text-purple-50"
  >
  <option value="" disabled>Select school year…</option>
  <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
@@ -530,7 +533,7 @@ watch(
  </div>
  </div>
 
- <div class="rounded-xl border border-white/10 bg-black/20 p-4 ">
+ <div class="rounded-xl border border-purple-400/35 bg-purple-950/60 p-4 ">
  <div class="grid gap-5 sm:grid-cols-2">
  <div class="grid gap-2 border-l-2 border-rose-500/50 pl-3 ">
  <Label for="scholarship_female_count">Female count</Label>
@@ -580,7 +583,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
  aria-hidden="true"
  >
  <Presentation class="size-5" :stroke-width="2" />
@@ -655,7 +658,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
  aria-hidden="true"
  >
  <Briefcase class="size-5" :stroke-width="2" />
@@ -730,7 +733,7 @@ watch(
 
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
  aria-hidden="true"
  >
  <FlaskConical class="size-5" :stroke-width="2" />
@@ -836,7 +839,7 @@ watch(
  <section v-show="activeTab === 'program_funding'" class="report-panel" role="tabpanel">
  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
  <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#0e0716] text-purple-100 "
+ class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
  aria-hidden="true"
  >
  <PieChart class="size-5" :stroke-width="2" />
