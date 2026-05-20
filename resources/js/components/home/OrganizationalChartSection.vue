@@ -13,21 +13,21 @@ const gfpsTree = computed(() => buildOrgTree(getGfpsNodes()));
 const moveTree = computed(() => buildOrgTree(getMoveNodes()));
 
 const headerIntroCardClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] sm:p-10';
+    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-10';
 
 const chartPanelClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10';
+    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint]';
 </script>
 
 <template>
     <section
         id="org-chart"
-        class="relative isolate scroll-mt-24 overflow-x-clip border-t border-purple-500/45 bg-linear-to-b from-purple-950/95 via-fuchsia-950/38 to-purple-950 px-page-gutter pt-12 pb-12 sm:scroll-mt-28 sm:pt-16 sm:pb-16 md:pt-20 md:pb-20 lg:pt-24"
+        class="home-index-section bg-linear-to-b from-purple-950/95 via-fuchsia-950/38 to-purple-950 px-page-gutter"
         aria-labelledby="org-chart-heading"
     >
         <IndexSectionDecor variant="org" />
 
-        <div class="relative z-10 mx-auto w-full max-w-7xl">
+        <div class="home-index-section__inner max-w-7xl">
             <article :class="headerIntroCardClass">
                 <div
                     class="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fuchsia-300/35 to-transparent"

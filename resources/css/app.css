@@ -3,7 +3,6 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
-@custom-variant dark (&:is(.dark *));
 @custom-variant report-light (&:is(.report-theme-light *));
 
 @theme inline {
@@ -108,123 +107,33 @@
     --input: hsl(0 0% 89.8%);
     --ring: hsl(0 0% 3.9%);
     --radius: 0.5rem;
-    --sidebar-background: hsl(210 20% 98%);
-    --sidebar-foreground: hsl(222 47% 11%);
-    --sidebar-primary: hsl(243 75% 42%);
-    --sidebar-primary-foreground: #fafafa;
-    --sidebar-accent: hsl(226 100% 97%);
-    --sidebar-accent-foreground: hsl(243 75% 30%);
-    --sidebar-border: hsl(214 32% 91%);
-    --sidebar-ring: hsl(239 84% 67%);
-    --sidebar: hsl(210 20% 98%);
-}
-
-/* Reset to :root light tokens when global html.dark is active (e.g. auth pages). */
-.theme-light-isolate {
-    --background: #fafafa;
-    --foreground: hsl(0 0% 3.9%);
-    --card: #fafafa;
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: #fafafa;
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 92.1%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
-    --accent: hsl(0 0% 96.1%);
-    --accent-foreground: hsl(0 0% 9%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
-    --sidebar-background: hsl(210 20% 98%);
-    --sidebar-foreground: hsl(222 47% 11%);
-    --sidebar-primary: hsl(243 75% 42%);
-    --sidebar-primary-foreground: #fafafa;
-    --sidebar-accent: hsl(226 100% 97%);
-    --sidebar-accent-foreground: hsl(243 75% 30%);
-    --sidebar-border: hsl(214 32% 91%);
-    --sidebar-ring: hsl(239 84% 67%);
-    --sidebar: hsl(210 20% 98%);
-}
-
-/* Admin sidebar (org-chart purple palette) */
-@layer components {
-    .sidebar-dost-shell .group[data-state='expanded'] [data-sidebar='sidebar'] {
-        background-color: #3b0764; /* purple-950 */
-        color: rgba(216, 180, 254, 0.6);
-        border-color: rgba(168, 85, 247, 0.45);
-        --sidebar: #3b0764;
-        --sidebar-background: #3b0764;
-        --sidebar-foreground: rgba(250, 250, 250, 0.9);
-        --sidebar-primary: #9333ea; /* purple-600 */
-        --sidebar-primary-foreground: #ffffff;
-        --sidebar-accent: rgba(88, 28, 135, 0.55);
-        --sidebar-accent-foreground: #ffffff;
-        --sidebar-border: rgba(168, 85, 247, 0.35);
-        --sidebar-ring: rgba(147, 51, 234, 0.5);
-    }
-
-    .sidebar-dost-shell .group[data-state='collapsed'] [data-sidebar='sidebar'] {
-        background-color: #3b0764;
-        color: rgba(216, 180, 254, 0.6);
-        border-color: rgba(168, 85, 247, 0.45);
-        --sidebar: #3b0764;
-        --sidebar-background: #3b0764;
-        --sidebar-foreground: rgba(250, 250, 250, 0.9);
-        --sidebar-primary: #9333ea;
-        --sidebar-primary-foreground: #ffffff;
-        --sidebar-accent: rgba(88, 28, 135, 0.55);
-        --sidebar-accent-foreground: #ffffff;
-        --sidebar-border: rgba(168, 85, 247, 0.35);
-        --sidebar-ring: rgba(147, 51, 234, 0.5);
-    }
-
-    [data-sidebar='sidebar'][data-mobile='true'] {
-        background-color: #3b0764;
-        color: rgba(216, 180, 254, 0.6);
-        --sidebar: #3b0764;
-        --sidebar-background: #3b0764;
-        --sidebar-foreground: rgba(250, 250, 250, 0.9);
-        --sidebar-accent: rgba(88, 28, 135, 0.55);
-        --sidebar-accent-foreground: #ffffff;
-        --sidebar-border: rgba(168, 85, 247, 0.35);
-        --sidebar-ring: rgba(147, 51, 234, 0.5);
-    }
-}
-
-.dark {
-    --background: #3b0764; /* purple-950 */
-    --foreground: #fafafa;
-    --card: rgba(88, 28, 135, 0.55);
-    --card-foreground: #fafafa;
-    --popover: #3b0764;
-    --popover-foreground: #fafafa;
-    --primary: #9333ea; /* purple-600 */
-    --primary-foreground: #ffffff;
-    --secondary: rgba(255, 255, 255, 0.05);
-    --secondary-foreground: #fafafa;
-    --muted: rgba(255, 255, 255, 0.1);
-    --muted-foreground: rgba(216, 180, 254, 0.6);
-    --accent: rgba(255, 255, 255, 0.1);
-    --accent-foreground: #fafafa;
-    --destructive: hsl(0 84% 60%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: rgba(168, 85, 247, 0.35);
-    --input: rgba(168, 85, 247, 0.35);
-    --ring: rgba(147, 51, 234, 0.5);
-    --sidebar-background: #3b0764;
-    --sidebar-foreground: #fafafa;
-    --sidebar-primary: #9333ea;
+    --sidebar-background: #172554;
+    --sidebar-foreground: rgba(250, 250, 250, 0.9);
+    --sidebar-primary: #1d4ed8;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: rgba(88, 28, 135, 0.55);
+    --sidebar-accent: rgba(30, 58, 138, 0.55);
     --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: rgba(168, 85, 247, 0.35);
-    --sidebar-ring: rgba(147, 51, 234, 0.5);
-    --sidebar: #3b0764;
+    --sidebar-border: rgba(37, 99, 235, 0.35);
+    --sidebar-ring: rgba(37, 99, 235, 0.5);
+    --sidebar: #172554;
+}
+
+/* Admin sidebar (blue palette) */
+@layer components {
+    [data-sidebar='sidebar'] {
+        background-color: #172554;
+        color: rgba(191, 219, 254, 0.65);
+        border-color: rgba(37, 99, 235, 0.4);
+        --sidebar: #172554;
+        --sidebar-background: #172554;
+        --sidebar-foreground: rgba(250, 250, 250, 0.9);
+        --sidebar-primary: #1d4ed8;
+        --sidebar-primary-foreground: #ffffff;
+        --sidebar-accent: rgba(30, 58, 138, 0.55);
+        --sidebar-accent-foreground: #ffffff;
+        --sidebar-border: rgba(37, 99, 235, 0.35);
+        --sidebar-ring: rgba(37, 99, 235, 0.5);
+    }
 }
 
 @layer base {
@@ -654,6 +563,63 @@
 }
 
 @layer components {
+    /**
+     * Home index: hero fills the viewport; content sections use natural height + fluid padding.
+     * content-visibility skips paint for off-screen sections (disabled when reduced motion).
+     */
+    .home-index-section {
+        @apply relative isolate flex flex-col overflow-x-clip border-t border-purple-500/45;
+        contain: layout paint style;
+        padding-top: clamp(2.5rem, 4vh + 1.25rem, 6rem);
+        padding-bottom: clamp(2.5rem, 4vh + 1.25rem, 6rem);
+        scroll-margin-top: clamp(4.5rem, 8vh, 7rem);
+        content-visibility: auto;
+        contain-intrinsic-size: auto 40rem;
+    }
+
+    .home-index-section--hero {
+        @apply flex flex-col justify-center overflow-hidden border-t-0 px-0;
+        min-height: 100dvh;
+        min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        padding-top: clamp(0px, 2vh, 2.5rem);
+        padding-bottom: clamp(2rem, 4vh, 3rem);
+        scroll-margin-top: 0;
+        content-visibility: visible;
+        contain-intrinsic-size: auto;
+    }
+
+    .home-index-section__inner {
+        @apply relative z-10 mx-auto min-h-0 w-full;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .home-index-section {
+            content-visibility: visible;
+            contain-intrinsic-size: auto;
+        }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .hero-cta:hover {
+            border-color: rgb(216 180 254 / 0.55);
+            background-color: rgb(147 51 234);
+        }
+
+        .hero-cta:hover .hero-cta-icon {
+            transform: translateX(0.25rem);
+        }
+    }
+
+    .hero-cta-icon {
+        transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero-cta-icon {
+            transition: none;
+        }
+    }
+
     .report-panel {
         @apply relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-purple-900/20 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-xl;
     }
@@ -668,12 +634,7 @@
         filter: brightness(1.25);
     }
 
-    .dark .report-panel-watermark {
-        @apply text-violet-400 opacity-[0.15];
-        filter: brightness(1.25);
-    }
-
-    /* Outline→fill: light slate-blue; dark matches report panels (teal) so it doesn’t read as a loud blue chip. */
+    /* Outline→fill: light slate-blue on public report panels */
     .report-btn-primary {
         @apply rounded-xl border border-white/10 bg-white/5 text-purple-100 shadow-sm transition-colors duration-300 hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
     }
@@ -756,6 +717,734 @@
         max-width: 100%;
     }
 
+    /* GAD report years admin (/report-years) — restrained light workspace */
+    .report-years-page {
+        @apply flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 selection:bg-blue-200/60;
+    }
+
+    .report-years-inner {
+        @apply relative z-10 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8;
+    }
+
+    .report-years-inner--narrow {
+        @apply max-w-3xl;
+    }
+
+    .report-years-inner--create {
+        @apply max-w-none px-3 py-4 sm:px-4 sm:py-4;
+    }
+
+    .report-years-create-header {
+        @apply mb-3 flex flex-col gap-2;
+    }
+
+    .report-years-create-hero {
+        @apply w-full rounded-2xl border border-slate-200/90 bg-white p-3 shadow-sm sm:p-3.5;
+    }
+
+    .report-years-create-hero-top {
+        @apply mb-2 flex flex-col gap-2 sm:mb-2.5 sm:flex-row sm:items-start sm:justify-between;
+    }
+
+    .report-years-inner--create .report-years-title {
+        @apply text-xl sm:text-2xl;
+    }
+
+    .report-years-inner--create .report-years-form-card {
+        @apply p-4 sm:p-5;
+    }
+
+    .report-years-create-form-intro {
+        @apply mb-4;
+    }
+
+    .report-years-create-form {
+        @apply flex w-full flex-col gap-4;
+    }
+
+    .report-years-create-form .report-years-create-form-grid {
+        @apply grid gap-4 sm:grid-cols-2;
+    }
+
+    .report-years-create-actions {
+        @apply mt-2 flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 pt-4;
+    }
+
+    .report-years-inner--edit {
+        @apply max-w-none px-3 py-4 sm:px-4 sm:py-4;
+    }
+
+    .report-years-edit-header {
+        @apply mb-3 flex flex-col gap-2;
+    }
+
+    .report-years-inner--edit .report-years-edit-hero {
+        @apply p-3 sm:p-3.5;
+    }
+
+    .report-years-edit-hero-top {
+        @apply mb-2 flex flex-col gap-2 sm:mb-2.5 sm:flex-row sm:items-start sm:justify-between;
+    }
+
+    .report-years-inner--edit .report-years-edit-hero-badges {
+        @apply mb-0;
+    }
+
+    .report-years-inner--edit .report-years-edit-hero-title {
+        @apply text-xl sm:text-2xl;
+    }
+
+    .report-years-inner--edit .report-years-edit-hero .report-years-lede {
+        @apply mt-1.5 text-[11px] leading-snug;
+    }
+
+    .report-years-inner--edit .report-years-tab-bar {
+        @apply mt-2 pb-0;
+    }
+
+    .report-years-page .report-years-inner--edit .report-panel {
+        @apply rounded-xl p-4;
+    }
+
+    .report-years-page .report-years-inner--edit .report-form--edit {
+        @apply mt-3 flex w-full flex-col gap-4;
+    }
+
+    .report-years-inner--edit .report-years-data-row {
+        @apply py-3 md:py-0;
+    }
+
+    .report-years-inner--edit .report-years-form-actions {
+        @apply pt-3;
+    }
+
+    .report-years-inner--edit .report-form--edit .grid {
+        @apply gap-4;
+    }
+
+    .report-years-header {
+        @apply mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end;
+    }
+
+    .report-years-kicker {
+        @apply text-[0.6875rem] font-semibold tracking-[0.2em] text-blue-700 uppercase;
+    }
+
+    .report-years-title {
+        @apply text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl;
+    }
+
+    .report-years-lede {
+        @apply mt-2 max-w-2xl text-sm leading-relaxed text-slate-600;
+    }
+
+    .report-years-btn-primary {
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-blue-900/20 focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
+        background-color: var(--color-blue-700);
+    }
+
+    .report-years-btn-primary:hover {
+        background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
+    }
+
+    .report-years-btn-secondary {
+        @apply inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-slate-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
+    }
+
+    .report-years-btn-secondary:hover {
+        @apply border-slate-400 text-slate-800;
+        background-color: rgb(241 245 249);
+    }
+
+    .report-years-btn-danger {
+        @apply inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-800/15 px-6 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-red-900/20 focus-visible:ring-2 focus-visible:ring-red-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:opacity-50;
+        background-color: var(--color-red-600);
+    }
+
+    .report-years-btn-danger:hover {
+        border-color: rgb(153 27 27 / 0.2);
+        background-color: color-mix(in oklab, var(--color-red-600) 88%, black);
+        color: rgb(255 255 255);
+    }
+
+    /* Dialog/footer portals sit outside .report-years-page — keep label + hover colors */
+    .report-years-dialog-footer .report-years-btn-secondary:hover,
+    button.report-years-btn-secondary:hover {
+        border-color: rgb(148 163 184);
+        background-color: rgb(241 245 249);
+        color: rgb(30 41 59);
+    }
+
+    .report-years-dialog-footer .report-years-btn-danger:hover,
+    button.report-years-btn-danger:hover {
+        border-color: rgb(153 27 27 / 0.2);
+        background-color: color-mix(in oklab, var(--color-red-600) 88%, black);
+        color: rgb(255 255 255);
+    }
+
+    .report-years-btn-icon {
+        @apply inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-slate-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
+    }
+
+    .report-years-btn-icon:hover {
+        @apply border-slate-400 text-slate-700;
+        background-color: rgb(241 245 249);
+    }
+
+    .report-years-shell {
+        @apply flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white;
+    }
+
+    .report-years-empty {
+        @apply flex flex-col items-center justify-center rounded-2xl border border-slate-200/90 bg-white px-4 py-20 text-center;
+    }
+
+    .report-years-toolbar {
+        @apply flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .report-years-filter-tabs {
+        @apply flex flex-wrap items-center gap-1 rounded-xl bg-slate-100/90 p-1;
+    }
+
+    .report-years-filter-tab {
+        @apply flex cursor-pointer touch-manipulation items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 transition-[background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-slate-900;
+    }
+
+    .report-years-filter-tab.is-active {
+        @apply text-white shadow-none;
+        background-color: var(--color-blue-700);
+    }
+
+    .report-years-filter-tab.is-active .report-years-filter-count {
+        @apply bg-white/20 text-white;
+    }
+
+    .report-years-filter-count {
+        @apply rounded-full bg-slate-200/90 px-1.5 py-0.5 text-[10px] font-semibold text-black tabular-nums;
+    }
+
+    .report-years-search-wrap {
+        @apply relative w-full sm:w-64;
+        color-scheme: light;
+    }
+
+    .report-years-search-icon {
+        @apply pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400;
+    }
+
+    /* Neutral search — overrides shared Input defaults */
+    .report-years-page .report-years-search-wrap [data-slot='input'].report-years-search,
+    .report-years-page .report-years-search {
+        @apply h-10 w-full rounded-xl border-slate-300! bg-white! pl-9 text-sm text-slate-900! shadow-none! transition-[border-color,box-shadow] duration-200 ease-out selection:bg-slate-200! selection:text-slate-900! placeholder:text-slate-400!;
+    }
+
+    .report-years-page .report-years-search-wrap [data-slot='input'].report-years-search:focus-visible,
+    .report-years-page .report-years-search:focus-visible {
+        @apply border-slate-400! bg-white! ring-2! ring-slate-300! ring-offset-0! outline-none!;
+    }
+
+    .report-years-table-wrap {
+        @apply overflow-x-auto;
+    }
+
+    .report-years-table {
+        @apply w-full min-w-[720px] text-left text-sm;
+    }
+
+    .report-years-table thead tr {
+        @apply border-b border-slate-200 bg-slate-50/80;
+    }
+
+    .report-years-table th {
+        @apply px-6 py-4 text-xs font-semibold tracking-widest text-slate-500 uppercase;
+    }
+
+    .report-years-table tbody {
+        @apply divide-y divide-slate-100;
+    }
+
+    .report-years-table tbody tr {
+        @apply transition-colors duration-200 hover:bg-slate-50/80;
+    }
+
+    .report-years-table td {
+        @apply px-6 py-5 align-middle text-slate-600;
+    }
+
+    .report-years-table-year {
+        @apply font-medium text-slate-900 tabular-nums;
+    }
+
+    .report-years-status {
+        @apply inline-flex items-center gap-2 text-[13px] font-medium text-black capitalize;
+    }
+
+    .report-years-status-dot {
+        @apply size-1.5 shrink-0 rounded-full;
+    }
+
+    .report-years-status-dot--published {
+        @apply bg-emerald-500;
+    }
+
+    .report-years-status-dot--pending {
+        @apply bg-amber-500;
+    }
+
+    .report-years-row-actions {
+        @apply flex items-center gap-1;
+    }
+
+    .report-years-row-action {
+        @apply size-9 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition-[transform,background-color,color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97];
+    }
+
+    .report-years-row-action:hover {
+        @apply border-blue-300 bg-blue-100 text-blue-800;
+    }
+
+    .report-years-row-action--danger {
+        @apply border-red-200 bg-red-50 text-red-600;
+    }
+
+    .report-years-row-action--danger:hover {
+        @apply border-red-300 bg-red-100 text-red-700;
+    }
+
+    .report-years-footer {
+        @apply flex flex-col gap-3 border-t border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .report-years-footer-meta {
+        @apply text-sm text-slate-500 tabular-nums;
+    }
+
+    .report-years-pagination {
+        @apply flex items-center gap-1;
+    }
+
+    .report-years-page-btn {
+        @apply size-9 rounded-lg border border-slate-300 bg-white text-black transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40;
+    }
+
+    .report-years-page-btn:hover:not(:disabled) {
+        @apply border-slate-400 text-black;
+        background-color: rgb(241 245 249);
+    }
+
+    .report-years-page-indicator {
+        @apply inline-flex min-w-9 items-center justify-center text-sm font-medium text-black tabular-nums;
+    }
+
+    .report-years-form-card {
+        @apply rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8;
+    }
+
+    .report-years-form-title {
+        @apply text-lg font-medium tracking-tight text-black;
+    }
+
+    .report-years-form-lede {
+        @apply mt-1 text-sm text-black;
+    }
+
+    .report-years-edit-intro {
+        @apply w-full min-w-0;
+    }
+
+    .report-years-edit-hero {
+        @apply w-full rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm sm:p-5;
+    }
+
+    .report-years-edit-hero-badges {
+        @apply mb-3 flex flex-wrap items-center gap-2 sm:gap-2.5;
+    }
+
+    .report-years-edit-meta-chip {
+        @apply inline-flex items-center rounded-lg border border-orange-200/80 bg-orange-50/60 px-3 py-1.5 text-[0.6875rem] font-semibold tracking-[0.2em] text-orange-800 uppercase;
+    }
+
+    .report-years-edit-hero-title {
+        @apply text-2xl font-semibold tracking-tight text-slate-900 tabular-nums sm:text-3xl;
+    }
+
+    .report-years-edit-hero .report-years-lede {
+        @apply mt-2;
+    }
+
+    .report-years-status-badge {
+        @apply inline-flex max-w-full items-center gap-2 rounded-lg border px-2.5 py-1;
+    }
+
+    .report-years-status-badge--published {
+        @apply border-emerald-200 bg-emerald-50;
+    }
+
+    .report-years-status-badge--pending {
+        @apply border-amber-200 bg-amber-50;
+    }
+
+    .report-years-status-badge-label {
+        @apply text-[10px] font-semibold tracking-wide uppercase;
+    }
+
+    .report-years-status-badge-label--published {
+        @apply text-emerald-800;
+    }
+
+    .report-years-status-badge-label--pending {
+        @apply text-amber-800;
+    }
+
+    .report-years-status-badge-detail {
+        @apply text-xs font-medium normal-case tabular-nums;
+    }
+
+    .report-years-status-badge-detail--published {
+        @apply text-emerald-900;
+    }
+
+    .report-years-status-badge-detail--pending {
+        @apply text-amber-900/90;
+    }
+
+    .report-years-tab-bar {
+        @apply mt-4 w-full [scrollbar-width:none] overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden;
+    }
+
+    .report-years-tab-nav {
+        @apply flex w-full min-w-max gap-1 rounded-full border border-slate-200 bg-slate-100/90 p-1;
+    }
+
+    .report-years-tab {
+        @apply cursor-pointer touch-manipulation rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap text-slate-600 transition-[background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-white hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-blue-600/25 focus-visible:outline-none;
+    }
+
+    .report-years-tab.is-active {
+        @apply text-white shadow-none;
+        background-color: var(--color-blue-700);
+    }
+
+    .report-years-tab.is-active:hover {
+        background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
+        @apply text-white;
+    }
+
+    .report-years-page .report-panel {
+        @apply rounded-2xl border border-slate-200/90 bg-white p-6 text-black shadow-none ring-0 backdrop-blur-none;
+    }
+
+    .report-years-page .report-save-btn {
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-sm font-semibold text-white shadow-none transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+        background-color: var(--color-blue-700) !important;
+    }
+
+    .report-years-page .report-save-btn:hover {
+        background-color: color-mix(in oklab, var(--color-blue-700) 88%, black) !important;
+    }
+
+    .report-years-page .report-btn-secondary {
+        @apply h-9 rounded-xl border border-slate-300 bg-white text-black shadow-none transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97];
+    }
+
+    .report-years-page .report-btn-secondary:hover {
+        @apply border-slate-400 text-black;
+        background-color: rgb(241 245 249);
+    }
+
+    /* Icons inherit currentColor — keep strokes visible on hover */
+    .report-years-page
+        :is(
+            .report-years-btn-icon,
+            .report-years-page-btn,
+            .report-years-row-action,
+            [data-slot='button'].report-years-btn-secondary,
+            [data-slot='button'].report-years-btn-icon,
+            [data-slot='button'].report-years-page-btn,
+            [data-slot='button'].report-btn-secondary,
+            [data-slot='button'].report-years-row-action,
+            [data-slot='button'].report-years-row-action--danger,
+            [data-slot='button'].report-years-btn-danger
+        )
+        svg {
+        color: currentColor;
+        stroke: currentColor;
+        opacity: 1;
+    }
+
+    /* shadcn ghost hover overrides on light admin UI */
+    .report-years-page [data-slot='button'].report-years-btn-secondary:hover {
+        background-color: rgb(241 245 249) !important;
+        color: rgb(30 41 59) !important;
+        border-color: rgb(148 163 184) !important;
+    }
+
+    .report-years-page [data-slot='button'].report-years-btn-secondary:hover svg {
+        color: rgb(30 41 59) !important;
+        stroke: rgb(30 41 59) !important;
+    }
+
+    .report-years-page .report-years-btn-icon:hover,
+    .report-years-page [data-slot='button'].report-years-btn-icon:hover {
+        background-color: rgb(241 245 249) !important;
+        color: rgb(51 65 85) !important;
+        border-color: rgb(148 163 184) !important;
+    }
+
+    .report-years-page .report-years-btn-icon:hover svg,
+    .report-years-page [data-slot='button'].report-years-btn-icon:hover svg {
+        color: rgb(51 65 85) !important;
+        stroke: rgb(51 65 85) !important;
+    }
+
+    .report-years-page .report-years-page-btn:hover:not(:disabled) {
+        background-color: rgb(241 245 249) !important;
+        color: rgb(15 23 42) !important;
+        border-color: rgb(148 163 184) !important;
+    }
+
+    .report-years-page .report-years-page-btn:hover:not(:disabled) svg {
+        color: rgb(15 23 42) !important;
+        stroke: rgb(15 23 42) !important;
+    }
+
+    .report-years-page [data-slot='button'].report-btn-secondary:hover {
+        background-color: rgb(241 245 249) !important;
+        color: rgb(15 23 42) !important;
+        border-color: rgb(148 163 184) !important;
+    }
+
+    .report-years-page [data-slot='button'].report-btn-secondary:hover svg {
+        color: rgb(15 23 42) !important;
+        stroke: rgb(15 23 42) !important;
+    }
+
+    .report-years-page .report-years-row-action:hover,
+    .report-years-page a.report-years-row-action:hover,
+    .report-years-page [data-slot='button'].report-years-row-action:hover {
+        background-color: rgb(219 234 254) !important;
+        color: rgb(30 64 175) !important;
+        border-color: rgb(147 197 253) !important;
+    }
+
+    .report-years-page .report-years-row-action:hover svg,
+    .report-years-page a.report-years-row-action:hover svg,
+    .report-years-page [data-slot='button'].report-years-row-action:hover svg {
+        color: rgb(30 64 175) !important;
+        stroke: rgb(30 64 175) !important;
+    }
+
+    .report-years-page .report-years-row-action--danger:hover,
+    .report-years-page button.report-years-row-action--danger:hover,
+    .report-years-page [data-slot='button'].report-years-row-action--danger:hover {
+        background-color: rgb(254 226 226) !important;
+        color: rgb(185 28 28) !important;
+        border-color: rgb(252 165 165) !important;
+    }
+
+    .report-years-page .report-years-row-action--danger:hover svg,
+    .report-years-page button.report-years-row-action--danger:hover svg,
+    .report-years-page [data-slot='button'].report-years-row-action--danger:hover svg {
+        color: rgb(185 28 28) !important;
+        stroke: rgb(185 28 28) !important;
+    }
+
+    .report-years-page [data-slot='button'].report-years-btn-danger:hover {
+        background-color: color-mix(in oklab, var(--color-red-600) 88%, black) !important;
+        color: rgb(255 255 255) !important;
+        border-color: rgb(153 27 27 / 0.2) !important;
+    }
+
+    .report-years-page [data-slot='button'].report-years-btn-danger:hover svg {
+        color: rgb(255 255 255) !important;
+        stroke: rgb(255 255 255) !important;
+    }
+
+    .report-years-page .report-form :is([data-slot='label'], label) {
+        @apply text-[13px]! font-medium! tracking-normal! text-black! normal-case!;
+    }
+
+    .report-years-page .report-field,
+    .report-years-page .report-textarea,
+    .report-years-page .report-select,
+    .report-years-page .report-form .report-field,
+    .report-years-page .report-form .report-textarea,
+    .report-years-page .report-form .report-select,
+    .report-years-page [data-slot='input'].report-field {
+        @apply rounded-xl border-slate-300! bg-white! text-slate-900! shadow-none placeholder:text-slate-400! focus-visible:border-slate-400! focus-visible:bg-white! focus-visible:ring-2 focus-visible:ring-slate-300/80! focus-visible:ring-offset-0!;
+    }
+
+    .report-years-page :is(.report-field, .report-textarea, [data-slot='input'].report-field)::placeholder {
+        color: rgb(148 163 184) !important;
+        opacity: 1;
+    }
+
+    .report-years-page .report-list-item {
+        @apply rounded-xl border border-slate-200 bg-slate-50/60 transition-[border-color,background-color] duration-200 hover:border-slate-300 hover:bg-slate-50;
+    }
+
+    .report-years-page .report-row {
+        @apply rounded-2xl border border-slate-200/90 bg-white shadow-none ring-0 backdrop-blur-none;
+    }
+
+    .report-years-page .report-data-shell {
+        @apply overflow-hidden rounded-2xl border border-slate-200 bg-white;
+    }
+
+    .report-years-data-table-scroll {
+        @apply -mx-1 [scrollbar-width:thin] overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0;
+    }
+
+    .report-years-data-table {
+        @apply min-w-0 overflow-hidden rounded-2xl border border-slate-400 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)];
+    }
+
+    .report-years-data-table--wide {
+        @apply min-w-full;
+    }
+
+    .report-years-data-table-scroll .report-years-data-table--rstl {
+        min-width: 44rem;
+    }
+
+    .report-years-data-table-scroll .report-years-data-table--funding {
+        min-width: 52rem;
+    }
+
+    .report-years-data-head {
+        @apply hidden border-b border-slate-400 bg-slate-100 md:grid md:gap-px md:bg-slate-300;
+    }
+
+    .report-years-data-table-scroll .report-years-data-head {
+        @apply sticky top-0 z-10;
+    }
+
+    .report-years-data-head--3col {
+        @apply md:grid-cols-[minmax(0,1.35fr)_minmax(7rem,9rem)_minmax(7rem,9rem)];
+    }
+
+    .report-years-data-head--5col {
+        @apply md:grid-cols-[minmax(0,1.25fr)_repeat(4,minmax(5.75rem,8rem))];
+    }
+
+    .report-years-data-head--funding {
+        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,9rem))];
+    }
+
+    .report-years-data-head-label {
+        @apply bg-slate-100 px-4 py-3 text-[11px] font-semibold tracking-[0.14em] text-black uppercase;
+    }
+
+    .report-years-data-head-label--center {
+        @apply text-center;
+    }
+
+    .report-years-data-row {
+        @apply grid gap-3 border-b border-slate-300 px-4 py-4 transition-[background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] last:border-b-0 md:items-stretch md:gap-px md:bg-slate-300 md:px-0 md:py-0;
+    }
+
+    .report-years-data-row-label,
+    .report-years-data-cell {
+        @apply transition-[background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)];
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-data-row:hover .report-years-data-row-label,
+        .report-years-data-row:hover .report-years-data-cell {
+            @apply bg-slate-200;
+        }
+    }
+
+    .report-years-data-row:focus-within .report-years-data-row-label,
+    .report-years-data-row:focus-within .report-years-data-cell {
+        @apply bg-slate-200;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-data-row:focus-within:hover .report-years-data-row-label,
+        .report-years-data-row:focus-within:hover .report-years-data-cell {
+            @apply bg-slate-200;
+        }
+    }
+
+    .report-years-data-row--3col {
+        @apply md:grid-cols-[minmax(0,1.35fr)_minmax(7rem,9rem)_minmax(7rem,9rem)];
+    }
+
+    .report-years-data-row--5col {
+        @apply md:grid-cols-[minmax(0,1.25fr)_repeat(4,minmax(5.75rem,8rem))];
+    }
+
+    .report-years-data-row--funding {
+        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,9rem))];
+    }
+
+    .report-years-data-row-label {
+        @apply flex items-center bg-white text-sm font-semibold text-black md:px-4 md:py-3.5;
+    }
+
+    .report-years-data-cell {
+        @apply grid gap-1.5 bg-white md:px-3 md:py-2.5;
+    }
+
+    .report-years-data-cell-label {
+        @apply text-xs font-medium text-black;
+    }
+
+    .report-years-page .report-years-data-input {
+        @apply h-10 rounded-lg border-slate-400! bg-white! text-right tabular-nums shadow-none focus-visible:border-blue-600/40! focus-visible:ring-2 focus-visible:ring-blue-600/15!;
+    }
+
+    .report-years-form-actions {
+        @apply flex flex-wrap items-center gap-4 border-t border-slate-400 pt-4;
+    }
+
+    .report-years-page .report-data-head {
+        @apply border-slate-200 bg-slate-50 text-black;
+    }
+
+    .report-years-page .report-data-row {
+        @apply border-slate-100 hover:bg-slate-50/80;
+    }
+
+    .report-years-page .report-save-hint {
+        @apply text-emerald-700;
+    }
+
+    .report-years-page .report-panel-watermark {
+        @apply text-slate-300 opacity-[0.12];
+        filter: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .report-years-filter-tab,
+        .report-years-btn-primary,
+        .report-years-btn-secondary,
+        .report-years-btn-danger,
+        .report-years-btn-icon,
+        .report-years-page-btn,
+        .report-years-row-action,
+        .report-years-tab,
+        .report-years-page .report-save-btn,
+        .report-years-data-row,
+        .report-years-data-row-label,
+        .report-years-data-cell {
+            transition-duration: 0ms;
+        }
+
+        .report-years-filter-tab:active,
+        .report-years-btn-primary:active,
+        .report-years-btn-secondary:active,
+        .report-years-btn-danger:active,
+        .report-years-btn-icon:active,
+        .report-years-page-btn:active,
+        .report-years-row-action:active,
+        .report-years-page .report-save-btn:active {
+            transform: none;
+        }
+    }
+
     /* Public year report (/reports/{year}) — aligned with homepage bento, dual theme */
     .report-view-page {
         /* Sex-disaggregated series: light slate (A) + slate gray (B) */
@@ -794,7 +1483,7 @@
     }
 
     .report-view-title {
-        @apply text-2xl font-semibold tracking-tight text-purple-100 sm:text-3xl md:text-4xl report-light:text-slate-900;
+        @apply text-2xl font-semibold tracking-tight text-purple-100 sm:text-3xl md:text-4xl report-light:text-black;
     }
 
     .report-view-title-accent {
@@ -802,7 +1491,7 @@
     }
 
     .report-view-subtitle {
-        @apply max-w-5xl text-sm leading-relaxed font-light text-purple-200/85 sm:text-base md:text-lg lg:max-w-none report-light:text-slate-600;
+        @apply max-w-5xl text-sm leading-relaxed font-light text-purple-200/85 sm:text-base md:text-lg lg:max-w-none report-light:text-black;
     }
 
     .report-view-actions {
@@ -814,7 +1503,12 @@
     }
 
     .report-view-btn {
-        @apply inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-purple-400/35 bg-purple-900/55 px-4 py-2.5 text-xs font-medium text-purple-100 ring-1 ring-white/10 transition-[transform,border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-purple-400/50 hover:bg-purple-900/65 focus-visible:ring-2 focus-visible:ring-purple-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none active:scale-[0.97] md:text-sm report-light:border-slate-300 report-light:bg-white report-light:text-slate-800 report-light:hover:border-slate-400 report-light:hover:bg-slate-50 report-light:focus-visible:ring-offset-slate-50;
+        @apply inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-blue-500/35 px-4 py-2.5 text-xs font-medium text-white ring-1 ring-white/10 transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-blue-400/50 focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none active:scale-[0.97] md:text-sm report-light:border-blue-800/15 report-light:text-white report-light:focus-visible:ring-blue-600/35 report-light:focus-visible:ring-offset-slate-50;
+        background-color: var(--color-blue-700);
+    }
+
+    .report-view-btn:hover {
+        background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
     }
 
     .report-view-tabs {
@@ -828,7 +1522,7 @@
     }
 
     .report-view-tab {
-        @apply cursor-pointer touch-manipulation rounded-full border border-purple-400/35 bg-purple-900/55 px-4 py-2.5 text-xs font-medium whitespace-nowrap text-purple-200/80 ring-1 ring-white/10 transition-[transform,border-color,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-purple-400/50 hover:bg-purple-900/65 hover:text-purple-50 focus-visible:ring-2 focus-visible:ring-purple-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none active:scale-[0.97] md:px-5 md:text-sm report-light:border-slate-300 report-light:bg-white report-light:text-slate-600 report-light:hover:border-slate-400 report-light:hover:bg-white report-light:hover:text-slate-900 report-light:focus-visible:ring-offset-slate-50;
+        @apply cursor-pointer touch-manipulation rounded-full border border-purple-400/35 bg-purple-900/55 px-4 py-2.5 text-xs font-medium whitespace-nowrap text-purple-200/80 ring-1 ring-white/10 transition-[transform,border-color,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-purple-400/50 hover:bg-purple-900/65 hover:text-purple-50 focus-visible:ring-2 focus-visible:ring-purple-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none active:scale-[0.97] md:px-5 md:text-sm report-light:border-slate-300 report-light:bg-white report-light:text-black report-light:hover:border-slate-400 report-light:hover:bg-white report-light:hover:text-black report-light:focus-visible:ring-offset-slate-50;
     }
 
     .report-view-tab.is-active {
@@ -857,14 +1551,14 @@
     }
 
     .report-view-metric-label {
-        @apply text-xs font-light font-medium text-purple-200/80 report-light:text-slate-600;
+        @apply text-xs font-light font-medium text-purple-200/80 report-light:text-black;
     }
 
     .report-view-metric-value {
-        @apply text-lg font-semibold tracking-tight text-purple-50 tabular-nums md:text-xl report-light:text-slate-900;
+        @apply text-lg font-semibold tracking-tight text-purple-50 tabular-nums md:text-xl report-light:text-black;
     }
 
-    /* Sex-disaggregated metrics + legend (series A / B, not gender-stereotype hues) */
+    /* Sex-disaggregated series colors apply inside charts only */
     .report-view-metric-value--disagg-a {
         color: var(--report-disagg-a);
     }
@@ -873,8 +1567,13 @@
         color: var(--report-disagg-b);
     }
 
+    .report-view-page.report-theme-light .report-view-metric-value--disagg-a,
+    .report-view-page.report-theme-light .report-view-metric-value--disagg-b {
+        @apply text-black;
+    }
+
     .report-disagg-swatch {
-        @apply inline-block size-2.5 shrink-0 rounded-full ring-1 ring-white/25 report-light:ring-slate-300/90;
+        @apply inline-block size-2.5 shrink-0 rounded-full ring-1 ring-white/25 report-light:hidden;
     }
 
     .report-disagg-swatch--a {
@@ -894,7 +1593,7 @@
     }
 
     .report-view-metric-meta {
-        @apply text-xs text-purple-300/50 report-light:text-slate-500;
+        @apply text-xs text-purple-300/50 report-light:text-black;
     }
 
     .report-view-block {
@@ -906,11 +1605,11 @@
     }
 
     .report-view-block-title {
-        @apply text-sm font-semibold text-purple-50 md:text-base report-light:text-slate-900;
+        @apply text-sm font-semibold text-purple-50 md:text-base report-light:text-black;
     }
 
     .report-view-block-desc {
-        @apply text-xs font-light text-purple-200/80 report-light:text-slate-600;
+        @apply text-xs font-light text-purple-200/80 report-light:text-black;
     }
 
     .report-view-quick-grid {
@@ -922,19 +1621,19 @@
     }
 
     .report-view-quick-title {
-        @apply text-xs font-medium tracking-wide text-purple-50 uppercase report-light:text-slate-900;
+        @apply text-xs font-medium tracking-wide text-purple-50 uppercase report-light:text-black;
     }
 
     .report-view-quick-label {
-        @apply mt-1 text-xs font-light text-purple-200/80 report-light:text-slate-600;
+        @apply mt-1 text-xs font-light text-purple-200/80 report-light:text-black;
     }
 
     .report-view-quick-value {
-        @apply text-lg font-semibold tracking-tight text-purple-50 report-light:text-slate-900;
+        @apply text-lg font-semibold tracking-tight text-purple-50 report-light:text-black;
     }
 
     .report-view-quick-value-sm {
-        @apply text-sm font-semibold text-purple-50 report-light:text-slate-900;
+        @apply text-sm font-semibold text-purple-50 report-light:text-black;
     }
 
     .report-view-charts {
@@ -954,11 +1653,11 @@
     }
 
     .report-view-empty-title {
-        @apply text-base font-semibold text-purple-50 md:text-lg report-light:text-slate-900;
+        @apply text-base font-semibold text-purple-50 md:text-lg report-light:text-black;
     }
 
     .report-view-empty-desc {
-        @apply max-w-md text-sm leading-relaxed font-light text-purple-200/80 md:text-base report-light:text-slate-600;
+        @apply max-w-md text-sm leading-relaxed font-light text-purple-200/80 md:text-base report-light:text-black;
     }
 
     .report-view-loading {
@@ -970,7 +1669,7 @@
     }
 
     .report-view-loading-label {
-        @apply text-sm font-light text-purple-200/80 report-light:text-slate-600;
+        @apply text-sm font-light text-purple-200/80 report-light:text-black;
     }
 
     @media (prefers-reduced-motion: reduce) {

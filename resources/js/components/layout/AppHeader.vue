@@ -29,7 +29,7 @@ const userMenuLabel = computed(() => auth.value.user?.username?.trim() || '—')
 const isCurrentRoute = computed(() => (url: string) => page.url === url);
 
 const activeItemStyles = computed(
-    () => (url: string) => (isCurrentRoute.value(url) ? 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100' : ''),
+    () => (url: string) => (isCurrentRoute.value(url) ? 'text-neutral-900 bg-neutral-100' : ''),
 );
 
 const mainNavItems = computed((): NavItem[] => {
@@ -61,8 +61,8 @@ const mainNavItems = computed((): NavItem[] => {
                         </SheetTrigger>
                         <SheetContent side="left" class="w-[280px] p-4 sm:w-[300px] sm:p-6">
                             <SheetTitle class="sr-only">Navigation Menu</SheetTitle>
-                            <SheetHeader class="border-zinc-200 border-b pb-3 text-left dark:border-zinc-800">
-                                <span class="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">Menu</span>
+                            <SheetHeader class="border-zinc-200 border-b pb-3 text-left">
+                                <span class="text-sm font-semibold tracking-tight text-zinc-900">Menu</span>
                             </SheetHeader>
                             <div class="flex flex-1 flex-col space-y-4 py-6">
                                 <nav class="-mx-1 space-y-1">
@@ -70,7 +70,7 @@ const mainNavItems = computed((): NavItem[] => {
                                         v-for="item in mainNavItems"
                                         :key="item.title"
                                         :href="item.href"
-                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/80"
+                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-zinc-100"
                                         :class="activeItemStyles(item.href)"
                                     >
                                         <component v-if="item.icon" :is="item.icon" class="h-5 w-5" :stroke-width="2" />
@@ -100,7 +100,7 @@ const mainNavItems = computed((): NavItem[] => {
                                 </Link>
                                 <div
                                     v-if="isCurrentRoute(item.href)"
-                                    class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-indigo-600 dark:bg-indigo-400"
+                                    class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-indigo-600"
                                 ></div>
                             </NavigationMenuItem>
                         </NavigationMenuList>
@@ -124,7 +124,7 @@ const mainNavItems = computed((): NavItem[] => {
                             >
                                 <Avatar class="size-8 overflow-hidden rounded-full">
                                     <AvatarImage v-if="auth.user.avatar" :src="auth.user.avatar" :alt="userMenuLabel" />
-                                    <AvatarFallback class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white">
+                                    <AvatarFallback class="rounded-lg bg-neutral-200 font-semibold text-black">
                                         {{ getInitials(userMenuLabel) }}
                                     </AvatarFallback>
                                 </Avatar>

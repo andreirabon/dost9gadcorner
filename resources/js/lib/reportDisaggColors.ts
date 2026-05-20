@@ -1,6 +1,6 @@
 /**
  * Sex-disaggregated report colors (series A / B).
- * True neutrals: cool slate gray (light vs dark contrast).
+ * Cool slate gray palette for light report charts.
  * ApexCharts needs hex; values align with --report-disagg-* in app.css.
  */
 export type ReportDisaggPalette = {
@@ -22,14 +22,6 @@ const SLATE_HINT = '#cbd5e1';
 /** Slate 500 — stacked / soft B */
 const SLATE_MID = '#64748b';
 
-const DISAGG_DARK: ReportDisaggPalette = {
-    female: SLATE_LIGHT,
-    male: SLATE_GRAY,
-    femaleSoft: SLATE_HINT,
-    maleSoft: SLATE_MID,
-    stroke: ['#94a3b8', '#334155'],
-};
-
 const DISAGG_LIGHT: ReportDisaggPalette = {
     female: SLATE_LIGHT,
     male: SLATE_GRAY,
@@ -38,16 +30,16 @@ const DISAGG_LIGHT: ReportDisaggPalette = {
     stroke: ['#64748b', '#1e293b'],
 };
 
-export function reportDisaggPalette(appearance: 'light' | 'dark'): ReportDisaggPalette {
-    return appearance === 'light' ? DISAGG_LIGHT : DISAGG_DARK;
+export function reportDisaggPalette(_appearance?: 'light'): ReportDisaggPalette {
+    return DISAGG_LIGHT;
 }
 
-/** @deprecated Use reportDisaggPalette(appearance) for theme-aware charts */
+/** @deprecated Use reportDisaggPalette() */
 export const REPORT_CHART_SEX_COLORS = {
-    female: DISAGG_DARK.female,
-    male: DISAGG_DARK.male,
-    femaleSoft: DISAGG_DARK.femaleSoft,
-    maleSoft: DISAGG_DARK.maleSoft,
+    female: DISAGG_LIGHT.female,
+    male: DISAGG_LIGHT.male,
+    femaleSoft: DISAGG_LIGHT.femaleSoft,
+    maleSoft: DISAGG_LIGHT.maleSoft,
 } as const;
 
-export const REPORT_CHART_STROKE_COLORS = DISAGG_DARK.stroke;
+export const REPORT_CHART_STROKE_COLORS = DISAGG_LIGHT.stroke;

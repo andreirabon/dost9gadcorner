@@ -40,10 +40,10 @@ const yearTheme = computed(() => {
         :href="year.href"
         prefetch
         :class="[
-            'year-card group touch-target tap-highlight-none relative flex min-h-42 flex-col overflow-hidden rounded-[1.75rem] border p-5 text-left shadow-[0_8px_28px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/10 contain-[paint] transition-[transform,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-fuchsia-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none active:scale-[0.98] sm:min-h-46 sm:p-6',
+            'year-card group touch-target tap-highlight-none relative flex min-h-42 flex-col overflow-hidden rounded-[1.75rem] border p-5 text-left shadow-[0_8px_28px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/10 contain-[paint] transition-[transform,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none active:scale-[0.98] sm:min-h-46 sm:p-6',
             yearTheme.border,
             yearTheme.bg,
-            'hover:border-purple-400/50 hover:shadow-[0_12px_36px_-14px_rgba(0,0,0,0.5)]',
+            '[@media(hover:hover)_and_(pointer:fine)]:hover:border-purple-400/50',
         ]"
         :aria-label="`View ${year.year} sex-disaggregated data report`"
     >

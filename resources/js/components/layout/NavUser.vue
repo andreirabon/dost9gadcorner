@@ -24,13 +24,13 @@ function handleLogout(): void {
             <div class="flex w-full flex-col gap-3">
 
                 <div
-                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-white/10 bg-purple-900/20 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-md"
+                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-white/10 bg-blue-900/25 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)]"
                 >
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0 flex-1 text-left">
-                            <p class="text-[10px] font-semibold uppercase tracking-widest text-purple-300/50">Username</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-widest text-blue-300/50">Username</p>
                             <p
-                                class="mt-0.5 truncate text-[13.5px] font-medium leading-snug tracking-tight text-purple-50"
+                                class="mt-0.5 truncate text-[13.5px] font-medium leading-snug tracking-tight text-blue-50"
                                 :title="displayHandle"
                             >
                                 {{ displayHandle }}

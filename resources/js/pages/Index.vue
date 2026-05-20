@@ -40,17 +40,8 @@ const scrollToOrgChart = (): void => {
 
 <template>
     <Head title="Home" />
-    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div class="absolute inset-0 bg-linear-to-b from-purple-950 via-fuchsia-950/20 to-purple-950" />
-        <div
-            class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-50"
-        />
-    </div>
-
-    <div class="flex min-h-screen min-w-0 flex-col">
-        <div
-            class="pb-safe min-w-0 flex-1 bg-purple-950 text-purple-50 [color-scheme:dark]"
-        >
+    <div class="flex min-h-dvh min-w-0 flex-col">
+        <div class="pb-safe min-w-0 flex-1 bg-purple-950 text-purple-50 [color-scheme:dark]">
             <!-- <HomeTopNav /> -->
             <HeroSection @scroll-to-years="scrollToYears" @scroll-to-org-chart="scrollToOrgChart" />
             <!-- <div

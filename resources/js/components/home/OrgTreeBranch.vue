@@ -119,7 +119,7 @@ function toggleOpen(): void {
             <div v-if="hasChildren" class="flex w-full items-stretch gap-0">
                 <button
                     type="button"
-                    class="touch-target flex shrink-0 items-center justify-center self-stretch rounded-l-xl border-r border-purple-400/25 px-3 text-purple-100 transition-[transform,background-color] duration-160 ease-out hover:bg-purple-800/50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950"
+                    class="touch-target flex shrink-0 items-center justify-center self-stretch rounded-l-xl border-r border-purple-400/25 px-3 text-purple-100 transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-purple-800/50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950"
                     :aria-expanded="isOpen"
                     :aria-controls="childrenPanelId"
                     :aria-label="toggleLabel"

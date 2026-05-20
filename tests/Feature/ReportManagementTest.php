@@ -245,6 +245,54 @@ test('scholarship user can list report years and edit scholarship but not other 
         ->assertRedirect();
 });
 
+test('gad user can sparse patch metadata fields', function () {
+    $user = User::factory()->create(['role' => UserRole::GAD]);
+    $reportYear = ReportYear::factory()->create([
+        'year' => 2024,
+        'title' => 'Original title',
+        'description' => 'Original description',
+    ]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/metadata", [
+            'title' => 'Updated title',
+        ])
+        ->assertRedirect();
+
+    $reportYear->refresh();
+
+    expect($reportYear->title)->toBe('Updated title')
+        ->and($reportYear->description)->toBe('Original description');
+});
+
+test('administrator can sparse patch metadata via full update route', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create([
+        'year' => 2025,
+        'status' => ReportYear::STATUS_PENDING,
+    ]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}", [
+            'status' => ReportYear::STATUS_PUBLISHED,
+        ])
+        ->assertRedirect();
+
+    $reportYear->refresh();
+
+    expect($reportYear->status)->toBe(ReportYear::STATUS_PUBLISHED)
+        ->and($reportYear->published_at)->not->toBeNull();
+});
+
+test('metadata patch requires at least one field', function () {
+    $user = User::factory()->create(['role' => UserRole::GAD]);
+    $reportYear = ReportYear::factory()->create(['year' => 2024]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/metadata", [])
+        ->assertInvalid(['patch']);
+});
+
 test('gad user cannot change publication status on full report update route', function () {
     $this->seed(ReportLookupSeeder::class);
 

@@ -11,20 +11,23 @@ use App\Http\Requests\UpdateReportYearMetadataRequest;
 use App\Http\Requests\UpdateReportYearRequest;
 use App\Http\Requests\UpdateRstlMonthlyBreakdownsRequest;
 use App\Http\Requests\UpdateScholarshipSummaryRequest;
-use App\Models\EmployeeStatusBreakdown;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
-use App\Models\GfpsAssemblyAttendance;
 use App\Models\GfpsAssemblyPeriod;
 use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
-use App\Models\RstlMonthlyBreakdown;
 use App\Models\SchoolYear;
+use App\Services\Reports\PatchEmployeeStatusBreakdowns;
+use App\Services\Reports\PatchGfpsAssemblyAttendances;
+use App\Services\Reports\PatchGfpsMembershipSummary;
+use App\Services\Reports\PatchProgramFundingSummaries;
+use App\Services\Reports\PatchReportYearAttributes;
+use App\Services\Reports\PatchRstlMonthlyBreakdowns;
+use App\Services\Reports\PatchScholarshipSummary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -44,7 +47,7 @@ class ReportYearManagementController extends Controller
                     'title' => $reportYear->title,
                     'description' => $reportYear->description,
                     'status' => $reportYear->status,
-                    'publishedAt' => $reportYear->published_at?->toDateString(),
+                    'publishedAt' => $reportYear->published_at?->toIso8601String(),
                 ]),
         ]);
     }
@@ -103,7 +106,7 @@ class ReportYearManagementController extends Controller
                 'title' => $reportYear->title,
                 'description' => $reportYear->description,
                 'status' => $reportYear->status,
-                'publishedAt' => $reportYear->published_at?->toDateString(),
+                'publishedAt' => $reportYear->published_at?->toIso8601String(),
                 'coverImageUrl' => null,
                 'gfpsMembership' => [
                     'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),
@@ -123,21 +126,16 @@ class ReportYearManagementController extends Controller
         ]);
     }
 
-    public function update(UpdateReportYearRequest $request, ReportYear $reportYear): RedirectResponse
+    public function update(UpdateReportYearRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear): RedirectResponse
     {
-        $validated = $request->validated();
-        $validated['published_at'] = $validated['status'] === ReportYear::STATUS_PUBLISHED
-            ? ($reportYear->published_at ?? now())
-            : null;
-
-        $reportYear->update($validated);
+        $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description', 'status']);
 
         return back();
     }
 
-    public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear): RedirectResponse
+    public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear): RedirectResponse
     {
-        $reportYear->update($request->validated());
+        $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description']);
 
         return back();
     }
@@ -151,141 +149,44 @@ class ReportYearManagementController extends Controller
         return to_route('report-years.index');
     }
 
-    public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear): RedirectResponse
+    public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, PatchGfpsMembershipSummary $patchGfpsMembership): RedirectResponse
     {
-        $reportYear->gfpsMembershipSummary()->updateOrCreate(
-            ['report_year_id' => $reportYear->id],
-            [
-                'female_count' => $request->integer('female_count'),
-                'male_count' => $request->integer('male_count'),
-            ],
-        );
+        $patchGfpsMembership->apply($reportYear, $request->validated());
 
         return back();
     }
 
-    public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear): RedirectResponse
+    public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear, PatchGfpsAssemblyAttendances $patchGfpsAssemblies): RedirectResponse
     {
-        $attendances = collect($request->validated('attendances'));
-
-        DB::transaction(function () use ($attendances, $reportYear): void {
-            $periodIds = $attendances->pluck('period_id');
-
-            $reportYear->gfpsAssemblyAttendances()
-                ->whereNotIn('gfps_assembly_period_id', $periodIds)
-                ->delete();
-
-            GfpsAssemblyAttendance::query()->upsert(
-                $attendances
-                    ->map(fn (array $attendance): array => [
-                        'report_year_id' => $reportYear->id,
-                        'gfps_assembly_period_id' => $attendance['period_id'],
-                        'female_count' => $attendance['female_count'],
-                        'male_count' => $attendance['male_count'],
-                    ])
-                    ->all(),
-                ['report_year_id', 'gfps_assembly_period_id'],
-                ['female_count', 'male_count'],
-            );
-        });
+        $patchGfpsAssemblies->apply($reportYear, $request->validated('attendances'));
 
         return back();
     }
 
-    public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear): RedirectResponse
+    public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, PatchEmployeeStatusBreakdowns $patchEmployeeStatuses): RedirectResponse
     {
-        $breakdowns = collect($request->validated('breakdowns'));
-
-        DB::transaction(function () use ($breakdowns, $reportYear): void {
-            $statusIds = $breakdowns->pluck('employment_status_id');
-
-            $reportYear->employeeStatusBreakdowns()
-                ->whereNotIn('employment_status_id', $statusIds)
-                ->delete();
-
-            EmployeeStatusBreakdown::query()->upsert(
-                $breakdowns
-                    ->map(fn (array $breakdown): array => [
-                        'report_year_id' => $reportYear->id,
-                        'employment_status_id' => $breakdown['employment_status_id'],
-                        'female_count' => $breakdown['female_count'],
-                        'male_count' => $breakdown['male_count'],
-                    ])
-                    ->all(),
-                ['report_year_id', 'employment_status_id'],
-                ['female_count', 'male_count'],
-            );
-        });
+        $patchEmployeeStatuses->apply($reportYear, $request->validated('breakdowns'));
 
         return back();
     }
 
-    public function updateScholarship(UpdateScholarshipSummaryRequest $request, ReportYear $reportYear): RedirectResponse
+    public function updateScholarship(UpdateScholarshipSummaryRequest $request, ReportYear $reportYear, PatchScholarshipSummary $patchScholarship): RedirectResponse
     {
-        $reportYear->scholarshipSummary()->updateOrCreate(
-            ['report_year_id' => $reportYear->id],
-            $request->validated(),
-        );
+        $patchScholarship->apply($reportYear, $request->validated());
 
         return back();
     }
 
-    public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear): RedirectResponse
+    public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear, PatchRstlMonthlyBreakdowns $patchRstlMonthly): RedirectResponse
     {
-        $breakdowns = collect($request->validated('breakdowns'));
-
-        DB::transaction(function () use ($breakdowns, $reportYear): void {
-            $monthIds = $breakdowns->pluck('report_month_id');
-
-            $reportYear->rstlMonthlyBreakdowns()
-                ->whereNotIn('report_month_id', $monthIds)
-                ->delete();
-
-            RstlMonthlyBreakdown::query()->upsert(
-                $breakdowns
-                    ->map(fn (array $breakdown): array => [
-                        'report_year_id' => $reportYear->id,
-                        'report_month_id' => $breakdown['report_month_id'],
-                        'female_count' => $breakdown['female_count'],
-                        'female_led_count' => $breakdown['female_led_count'],
-                        'male_count' => $breakdown['male_count'],
-                        'male_led_count' => $breakdown['male_led_count'],
-                    ])
-                    ->all(),
-                ['report_year_id', 'report_month_id'],
-                ['female_count', 'female_led_count', 'male_count', 'male_led_count'],
-            );
-        });
+        $patchRstlMonthly->apply($reportYear, $request->validated('breakdowns'));
 
         return back();
     }
 
-    public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear): RedirectResponse
+    public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, PatchProgramFundingSummaries $patchProgramFunding): RedirectResponse
     {
-        $summaries = collect($request->validated('summaries'));
-
-        DB::transaction(function () use ($reportYear, $summaries): void {
-            $programIds = $summaries->pluck('funding_program_id');
-
-            $reportYear->programFundingSummaries()
-                ->whereNotIn('funding_program_id', $programIds)
-                ->delete();
-
-            ProgramFundingSummary::query()->upsert(
-                $summaries
-                    ->map(fn (array $summary): array => [
-                        'report_year_id' => $reportYear->id,
-                        'funding_program_id' => $summary['funding_program_id'],
-                        'female_projects' => $summary['female_projects'],
-                        'female_amount' => $summary['female_amount'],
-                        'male_projects' => $summary['male_projects'],
-                        'male_amount' => $summary['male_amount'],
-                    ])
-                    ->all(),
-                ['report_year_id', 'funding_program_id'],
-                ['female_projects', 'female_amount', 'male_projects', 'male_amount'],
-            );
-        });
+        $patchProgramFunding->apply($reportYear, $request->validated('summaries'));
 
         return back();
     }

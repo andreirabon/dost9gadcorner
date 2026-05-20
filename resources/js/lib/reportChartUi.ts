@@ -19,7 +19,7 @@ export type ReportChartUi = {
     dataLabelColor: string;
 };
 
-export function reportChartUi(_appearance: 'light' | 'dark'): ReportChartUi {
+export function reportChartUi(_appearance?: 'light'): ReportChartUi {
     return {
         themeMode: 'light',
         chartBackground: REPORT_CHART_SURFACE_BACKGROUND,
@@ -29,7 +29,7 @@ export function reportChartUi(_appearance: 'light' | 'dark'): ReportChartUi {
         gridBorder: '#e2e8f0',
         titleColor: '#0f172a',
         tooltipTheme: 'light',
-        dataLabelColor: '#1e293b',
+        dataLabelColor: '#ffffff',
     };
 }
 

@@ -10,21 +10,21 @@ const MANDATE_TEXT =
     'DOST IX shall promote equal access and participation of women and men in science, research, innovation, and technology transfer; address region-specific gender issues, particularly among marginalized sectors; ensure a safe and respectful workplace; and institutionalize GAD mechanisms.';
 
 const bentoCardClass =
-    'group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 transition-[border-color,background-color,box-shadow] duration-300 ease-out hover:border-purple-400/50 hover:bg-purple-900/65 lg:p-10';
+    'group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] transition-[border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none lg:p-10 [@media(hover:hover)_and_(pointer:fine)]:hover:border-purple-400/50 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-purple-900/65';
 
 const headerIntroCardClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] sm:p-10';
+    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-10';
 </script>
 
 <template>
     <section
         id="gad-strategic-framework"
-        class="relative isolate scroll-mt-24 overflow-x-clip border-t border-purple-500/45 bg-linear-to-b from-purple-950/98 via-fuchsia-950/28 to-purple-950 px-page-gutter pb-12 pt-12 sm:scroll-mt-28 sm:pb-16 sm:pt-16 md:pb-20"
+        class="home-index-section bg-linear-to-b from-purple-950/98 via-fuchsia-950/28 to-purple-950 px-page-gutter"
         aria-labelledby="gad-strategic-framework-heading"
     >
         <IndexSectionDecor variant="framework" />
 
-        <div class="relative z-10 mx-auto w-full max-w-7xl">
+        <div class="home-index-section__inner max-w-7xl">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
                 <article :class="[headerIntroCardClass, 'md:col-span-2']">
                     <div

@@ -1,25 +1,20 @@
 <script setup lang="ts">
+import ReportBackNavLink from '@/components/reports/ReportBackNavLink.vue';
 import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { REPORT_YEAR_FIELD_LIMITS } from '@/constants/reportYearFields';
+import { formatPublishedAt } from '@/helpers/formatPublishedAt';
+import { cloneSnapshot, diffObjectPatch, diffRowPatches, hasPatch, normalizeNumeric } from '@/helpers/reportPatch';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { EditableReportYear, LookupSchoolYear, ReportYearEditAbilities } from '@/types/reports';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import {
-    ArrowLeft,
-    Briefcase,
-    Calendar,
-    CheckCircle2,
-    FileChartColumnIncreasing,
-    FlaskConical,
-    GraduationCap,
-    PieChart,
-    Presentation,
-    Save,
-    Users,
+  Calendar,
+  CheckCircle2,
+  Save,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
@@ -120,64 +115,242 @@ const fundingForm = useForm({
  })),
 });
 
+const snapshotMetadataForm = () =>
+ cloneSnapshot({
+  year: normalizeNumeric(metadataForm.year),
+  title: metadataForm.title,
+  description: metadataForm.description,
+  status: metadataForm.status,
+ });
+
+const snapshotGfpsMembershipForm = () =>
+ cloneSnapshot({
+  female_count: gfpsMembershipForm.female_count,
+  male_count: gfpsMembershipForm.male_count,
+ });
+
+const snapshotScholarshipForm = () =>
+ cloneSnapshot({
+  school_year_id: scholarshipForm.school_year_id,
+  as_of_date: scholarshipForm.as_of_date,
+  female_count: scholarshipForm.female_count,
+  male_count: scholarshipForm.male_count,
+ });
+
+const originalMetadata = ref(snapshotMetadataForm());
+const originalGfpsMembership = ref(snapshotGfpsMembershipForm());
+const originalGfpsAssemblies = ref(cloneSnapshot(gfpsAssembliesForm.attendances));
+const originalEmployeeStatuses = ref(cloneSnapshot(employeeStatusesForm.breakdowns));
+const originalScholarship = ref(snapshotScholarshipForm());
+const originalRstlBreakdowns = ref(cloneSnapshot(rstlForm.breakdowns));
+const originalFundingSummaries = ref(cloneSnapshot(fundingForm.summaries));
+
+const saveNotice = ref<string | null>(null);
+const metadataSaving = ref(false);
+
+const showSaveNotice = (message: string) => {
+ saveNotice.value = message;
+ window.setTimeout(() => {
+  if (saveNotice.value === message) {
+   saveNotice.value = null;
+  }
+ }, 3000);
+};
+
+const patchOptions = { preserveScroll: true as const };
+
 const updateMetadata = () => {
+ const metadataFields = props.abilities.updateFullReport
+  ? (['year', 'title', 'description', 'status'] as const)
+  : (['year', 'title', 'description'] as const);
+
+ const patch = diffObjectPatch(originalMetadata.value, snapshotMetadataForm(), [...metadataFields], {
+  numeric: ['year'],
+ });
+
+ if (!hasPatch(patch)) {
+  showSaveNotice('No changes to save.');
+  return;
+ }
+
  const url = props.abilities.updateFullReport
- ? route('report-years.update', props.reportYear.id)
- : route('report-years.metadata.update', props.reportYear.id);
- metadataForm.patch(url, { preserveScroll: true });
+  ? route('report-years.update', props.reportYear.id)
+  : route('report-years.metadata.update', props.reportYear.id);
+
+ metadataSaving.value = true;
+ metadataForm.clearErrors();
+
+ router.patch(url, (patch ?? {}) as Record<string, string | number>, {
+  ...patchOptions,
+  onSuccess: () => {
+   originalMetadata.value = snapshotMetadataForm();
+  },
+  onError: (errors) => {
+   metadataForm.setError(errors);
+   const first = Object.values(errors)[0];
+   const message = Array.isArray(first) ? first[0] : first;
+   if (typeof message === 'string' && message !== '') {
+    showSaveNotice(message);
+   }
+  },
+  onFinish: () => {
+   metadataSaving.value = false;
+  },
+ });
 };
 
 const updateGfpsMembership = () => {
- gfpsMembershipForm.patch(route('report-years.gfps-membership.update', props.reportYear.id), {
- preserveScroll: true,
+ const patch = diffObjectPatch(originalGfpsMembership.value, snapshotGfpsMembershipForm(), ['female_count', 'male_count'], {
+  numeric: ['female_count', 'male_count'],
  });
+
+ if (!hasPatch(patch)) {
+  showSaveNotice('No changes to save.');
+  return;
+ }
+
+ gfpsMembershipForm
+  .transform(() => patch ?? {})
+  .patch(route('report-years.gfps-membership.update', props.reportYear.id), {
+   ...patchOptions,
+   onSuccess: () => {
+    originalGfpsMembership.value = snapshotGfpsMembershipForm();
+   },
+  });
 };
 
 const updateGfpsAssemblies = () => {
- gfpsAssembliesForm.patch(route('report-years.gfps-assemblies.update', props.reportYear.id), {
- preserveScroll: true,
- });
+ const attendances = diffRowPatches(
+  originalGfpsAssemblies.value,
+  gfpsAssembliesForm.attendances,
+  'period_id',
+  ['female_count', 'male_count'],
+ );
+
+ if (!hasPatch(attendances)) {
+  showSaveNotice('No changes to save.');
+  return;
+ }
+
+ gfpsAssembliesForm
+  .transform(() => ({ attendances }))
+  .patch(route('report-years.gfps-assemblies.update', props.reportYear.id), {
+   ...patchOptions,
+   onSuccess: () => {
+    originalGfpsAssemblies.value = cloneSnapshot(gfpsAssembliesForm.attendances);
+   },
+  });
 };
 
 const updateEmployeeStatuses = () => {
- employeeStatusesForm.patch(route('report-years.employee-statuses.update', props.reportYear.id), {
- preserveScroll: true,
- });
+ const breakdowns = diffRowPatches(
+  originalEmployeeStatuses.value,
+  employeeStatusesForm.breakdowns,
+  'employment_status_id',
+  ['female_count', 'male_count'],
+ );
+
+ if (!hasPatch(breakdowns)) {
+  showSaveNotice('No changes to save.');
+  return;
+ }
+
+ employeeStatusesForm
+  .transform(() => ({ breakdowns }))
+  .patch(route('report-years.employee-statuses.update', props.reportYear.id), {
+   ...patchOptions,
+   onSuccess: () => {
+    originalEmployeeStatuses.value = cloneSnapshot(employeeStatusesForm.breakdowns);
+   },
+  });
 };
 
 const updateScholarship = () => {
- scholarshipForm.patch(route('report-years.scholarship.update', props.reportYear.id), {
- preserveScroll: true,
+ const patch = diffObjectPatch(originalScholarship.value, snapshotScholarshipForm(), [
+  'school_year_id',
+  'as_of_date',
+  'female_count',
+  'male_count',
+ ], {
+  numeric: ['female_count', 'male_count'],
  });
+
+ if (!hasPatch(patch)) {
+  showSaveNotice('No changes to save.');
+  return;
+ }
+
+ scholarshipForm
+  .transform(() => patch ?? {})
+  .patch(route('report-years.scholarship.update', props.reportYear.id), {
+   ...patchOptions,
+   onSuccess: () => {
+    originalScholarship.value = snapshotScholarshipForm();
+   },
+  });
 };
 
 const updateRstlMonthly = () => {
- rstlForm.patch(route('report-years.rstl-monthly.update', props.reportYear.id), {
- preserveScroll: true,
- });
+ const breakdowns = diffRowPatches(
+  originalRstlBreakdowns.value,
+  rstlForm.breakdowns,
+  'report_month_id',
+  ['female_count', 'female_led_count', 'male_count', 'male_led_count'],
+ );
+
+ if (!hasPatch(breakdowns)) {
+  showSaveNotice('No changes to save.');
+  return;
+ }
+
+ rstlForm
+  .transform(() => ({ breakdowns }))
+  .patch(route('report-years.rstl-monthly.update', props.reportYear.id), {
+   ...patchOptions,
+   onSuccess: () => {
+    originalRstlBreakdowns.value = cloneSnapshot(rstlForm.breakdowns);
+   },
+  });
 };
 
 const updateProgramFunding = () => {
- fundingForm.patch(route('report-years.program-funding.update', props.reportYear.id), {
- preserveScroll: true,
- });
+ const summaries = diffRowPatches(
+  originalFundingSummaries.value,
+  fundingForm.summaries,
+  'funding_program_id',
+  ['female_projects', 'female_amount', 'male_projects', 'male_amount'],
+  { decimalFields: ['female_amount', 'male_amount'] },
+ );
+
+ if (!hasPatch(summaries)) {
+  showSaveNotice('No changes to save.');
+  return;
+ }
+
+ fundingForm
+  .transform(() => ({ summaries }))
+  .patch(route('report-years.program-funding.update', props.reportYear.id), {
+   ...patchOptions,
+   onSuccess: () => {
+    originalFundingSummaries.value = cloneSnapshot(fundingForm.summaries);
+   },
+  });
 };
 
-const inputClass = 'h-11 rounded-xl border border-purple-400/35 bg-purple-950/60 px-3 text-sm text-purple-50 transition-colors focus-visible:border-purple-400 focus-visible:bg-purple-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-500/20 w-full placeholder:text-purple-300/50';
+const inputClass = 'report-field w-full';
+const tableInputClass = 'report-field report-years-data-input w-full';
 
-const publishedAtLabel = computed(() => {
- const raw = props.reportYear.publishedAt;
- if (!raw) {
- return null;
- }
- const d = new Date(raw);
- if (Number.isNaN(d.getTime())) {
- return raw;
- }
- return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
-});
+const isPublished = computed(() => props.reportYear.status === 'published');
+
+const publishedAtLabel = computed(() => formatPublishedAt(props.reportYear.publishedAt));
 
 const descriptionLength = computed(() => String(metadataForm.description ?? '').length);
+
+const metadataPatchError = computed(() => {
+ const errors = metadataForm.errors as Record<string, string | undefined>;
+
+ return errors.patch;
+});
 
 const displayReportTitle = computed(() => {
  const t = String(metadataForm.title ?? '').trim();
@@ -224,120 +397,108 @@ watch(
 <template>
  <AppLayout
  :show-footer="false"
- content-class="flex min-h-0 flex-1 flex-col bg-linear-to-b from-purple-950 via-fuchsia-950/28 to-purple-950 text-purple-50 selection:bg-purple-500/30"
+ content-class="report-years-page"
  >
  <Head :title="`Manage ${reportYear.year} report`" />
- <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
- <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(192,38,211,0.12),transparent_55%)]" />
- <div
- class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[64px_64px] opacity-50"
- />
- </div>
 
- <div class="w-full px-2 py-6 sm:px-4">
- <header class="mb-2">
- <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
- <div class="flex min-w-0 flex-1 items-start gap-3">
- <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
- aria-hidden="true"
- >
- <FileChartColumnIncreasing class="size-5" :stroke-width="2" />
- </div>
- <div class="min-w-0 flex flex-col justify-center">
- <div class="mb-0.5 flex flex-wrap items-center gap-x-4 gap-y-2">
- <p class="text-[10px] font-bold tracking-[0.15em] text-purple-200/70 uppercase dark:text-zinc-400">
- Editing year
- </p>
+ <div class="report-years-inner report-years-inner--edit">
+ <header class="report-years-edit-header">
+ <div class="report-years-edit-intro">
+ <div class="report-years-edit-hero">
+ <div class="report-years-edit-hero-top">
+ <div class="report-years-edit-hero-badges">
+ <span class="report-years-edit-meta-chip">Currently Editing</span>
  <span
- class="inline-flex max-w-full items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 ring-1 ring-emerald-500/20"
+ class="report-years-status-badge"
+ :class="isPublished ? 'report-years-status-badge--published' : 'report-years-status-badge--pending'"
  >
- <span
- class="flex size-7 shrink-0 items-center justify-center rounded-md border border-emerald-500/20 bg-emerald-500/20"
+ <Calendar
+ v-if="isPublished"
+ class="size-3.5 shrink-0 text-emerald-700"
+ :stroke-width="2"
  aria-hidden="true"
+ />
+ <span
+ class="report-years-status-badge-label"
+ :class="isPublished ? 'report-years-status-badge-label--published' : 'report-years-status-badge-label--pending'"
  >
- <Calendar class="size-3.5 text-emerald-700 dark:text-emerald-300" :stroke-width="2" />
- </span>
- <span class="min-w-0 text-[10px] font-bold tracking-[0.12em] text-emerald-300 uppercase">
- Published date
+ {{ isPublished ? 'Published' : 'Pending' }}
  </span>
  <span
- v-if="publishedAtLabel"
- class="text-[11px] font-semibold normal-case tracking-normal text-emerald-50"
+ v-if="isPublished && publishedAtLabel"
+ class="report-years-status-badge-detail report-years-status-badge-detail--published"
  >
  {{ publishedAtLabel }}
  </span>
  <span
- v-else
- class="text-[11px] font-medium normal-case tracking-normal text-emerald-600/75 dark:text-emerald-500/80"
+ v-else-if="isPublished"
+ class="report-years-status-badge-detail report-years-status-badge-detail--published"
  >
- —
+ Not set
+ </span>
+ <span
+ v-else
+ class="report-years-status-badge-detail report-years-status-badge-detail--pending"
+ >
+ Awaiting publication
  </span>
  </span>
  </div>
- <h1 class="text-2xl font-bold leading-none tracking-tight text-purple-50 tabular-nums">
+ <ReportBackNavLink :href="route('report-years.index')" inline>
+ Select Another Year
+ </ReportBackNavLink>
+ </div>
+ <h1 class="report-years-edit-hero-title">
  {{ displayReportTitle }}
  </h1>
- <p class="mt-1 max-w-xl text-xs text-purple-200/70 font-light">
- Sections may be updated in any order. Save your changes within each tab upon completing that section. Visible tabs are determined by your account's access privileges.
+ <p class="report-years-lede text-xs">
+ Sections may be updated in any order. Save each tab when you finish that section. Visible tabs follow your account access.
  </p>
  </div>
- </div>
- <Button as-child variant="ghost" class="report-btn-secondary h-9 w-full shrink-0 sm:w-auto">
- <Link class="cursor-pointer" :href="route('report-years.index')" prefetch>
- <ArrowLeft class="mr-2 inline size-4 align-middle" :stroke-width="2" aria-hidden="true" />
- All years
- </Link>
- </Button>
- </div>
 
- <div class="overflow-x-auto overflow-y-hidden border-purple-400/35 border-b [scrollbar-width:none] dark:border-zinc-800 [&::-webkit-scrollbar]:hidden">
- <nav class="-mb-px flex min-w-max space-x-8 px-1" aria-label="Report sections" role="tablist">
+ <div class="report-years-tab-bar">
+ <nav class="report-years-tab-nav" aria-label="Report sections" role="tablist">
  <button
  v-for="tab in visibleTabs"
  :key="tab.id"
  type="button"
  role="tab"
  :aria-selected="activeTab === tab.id"
+ class="report-years-tab"
+ :class="{ 'is-active': activeTab === tab.id }"
  @click="activeTab = tab.id"
- :class="[
- activeTab === tab.id
- ? 'border-purple-400 text-purple-50 shadow-[0_1px_0_0_#2563eb]'
- : 'border-transparent border-transparent text-purple-200/70 hover:border-purple-400/35 hover:text-purple-100',
- 'cursor-pointer whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors duration-200',
- ]"
  >
  {{ tab.name }}
  </button>
  </nav>
  </div>
+ </div>
+
+ <p
+ v-if="saveNotice"
+ class="text-xs font-medium text-amber-800"
+ role="status"
+ aria-live="polite"
+ >
+ {{ saveNotice }}
+ </p>
  </header>
 
  <div class="w-full">
  <section v-show="activeTab === 'metadata'" class="report-panel" role="tabpanel">
 
- <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
- <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
- aria-hidden="true"
- >
- <Calendar class="size-5" :stroke-width="2" />
- </div>
- <div class="min-w-0 flex-1">
  <HeadingSmall
  variant="report"
  title="Metadata"
  description="Calendar year, publication status, and the title and description readers see for this report."
  />
- </div>
- </div>
 
  <form
- class="report-form mt-6 flex max-w-3xl flex-col gap-6"
+ class="report-form report-form--edit w-full"
  autocomplete="off"
  @submit.prevent="updateMetadata"
  >
- <div class="grid gap-5 sm:grid-cols-[10rem_14rem]">
+ <div class="grid gap-4 sm:grid-cols-[10rem_14rem]">
  <div class="grid gap-2">
  <Label for="year">Year</Label>
  <Input
@@ -355,23 +516,24 @@ watch(
 
  <div v-if="abilities.updateFullReport" class="grid gap-2">
  <Label for="status">Status</Label>
- <select id="status" v-model="metadataForm.status" name="status" class="report-select bg-purple-950 border-purple-400/35 text-purple-50">
+ <select id="status" v-model="metadataForm.status" name="status" class="report-select">
  <option value="pending">Pending</option>
  <option value="published">Published</option>
  </select>
  <InputError :message="metadataForm.errors.status" />
  </div>
  <div v-else class="grid gap-2">
- <span class="text-sm font-medium text-purple-100">Status</span>
+ <span class="text-sm font-medium text-black">Status</span>
  <p
- class="rounded-md border border-purple-400/35 bg-purple-950/60 border-purple-400/35 px-3 py-2 text-sm text-purple-50"
+ class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-black"
  >
  <span
  v-if="metadataForm.status === 'published'"
- class="font-medium text-emerald-800 dark:text-emerald-300"
- >Published</span
+ class="font-medium text-emerald-800"
  >
- <span v-else class="font-medium text-amber-800 dark:text-amber-200">Pending</span>
+ Published<template v-if="publishedAtLabel"> · {{ publishedAtLabel }}</template>
+ </span>
+ <span v-else class="font-medium text-amber-800">Pending</span>
  </p>
  </div>
  </div>
@@ -387,7 +549,7 @@ watch(
  :maxlength="REPORT_YEAR_FIELD_LIMITS.title"
  :class="inputClass"
  />
- <p class="text-xs text-purple-200/70">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
+ <p class="text-xs text-black">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
  <InputError :message="metadataForm.errors.title" />
  </div>
 
@@ -398,17 +560,19 @@ watch(
  v-model="metadataForm.description"
  name="description"
  rows="4"
- class="report-textarea bg-purple-950 border-purple-400/35 text-purple-50"
+ class="report-textarea"
  :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
  />
- <p class="text-xs text-purple-200/70">
+ <p class="text-xs text-black">
  {{ descriptionLength }} / {{ REPORT_YEAR_FIELD_LIMITS.description }}
  </p>
  <InputError :message="metadataForm.errors.description" />
  </div>
 
- <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
- <Button type="submit" :disabled="metadataForm.processing" class="report-save-btn">
+ <InputError :message="metadataPatchError" />
+
+ <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2">
+ <Button type="submit" :disabled="metadataSaving" class="report-save-btn">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save metadata
  </Button>
@@ -422,29 +586,19 @@ watch(
 
  <section v-show="activeTab === 'gfps_membership'" class="report-panel" role="tabpanel">
 
- <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
- <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
- aria-hidden="true"
- >
- <Users class="size-5" :stroke-width="2" />
- </div>
- <div class="min-w-0 flex-1">
  <HeadingSmall
  variant="report"
  title="GFPS membership"
  description="Total GFPS members by sex for this reporting year. Use whole numbers only."
  />
- </div>
- </div>
 
  <form
- class="report-form mt-6 max-w-3xl space-y-6"
+ class="report-form report-form--edit w-full"
  @submit.prevent="updateGfpsMembership"
  >
- <div class="rounded-xl border border-purple-400/35 bg-purple-950/60 p-4 ">
- <div class="grid gap-5 sm:grid-cols-2">
- <div class="grid gap-2 border-l-2 border-rose-500/50 pl-3 ">
+ <div class="rounded-xl border border-slate-400 bg-slate-50 p-4">
+ <div class="grid gap-4 sm:grid-cols-2">
+ <div class="grid gap-2">
  <Label for="gfps_female_count">Female count</Label>
  <Input
  id="gfps_female_count"
@@ -457,7 +611,7 @@ watch(
  <InputError :message="gfpsMembershipForm.errors.female_count" />
  </div>
 
- <div class="grid gap-2 border-l-2 border-sky-500/50 pl-3 ">
+ <div class="grid gap-2">
  <Label for="gfps_male_count">Male count</Label>
  <Input
  id="gfps_male_count"
@@ -470,12 +624,12 @@ watch(
  <InputError :message="gfpsMembershipForm.errors.male_count" />
  </div>
  </div>
- <p class="mt-1 max-w-md text-xs text-purple-200/70">
- Total members: <span class="font-medium text-purple-100 tabular-nums">{{ gfpsMembershipTotal }}</span>
+ <p class="mt-1 max-w-md text-xs text-black">
+ Total members: <span class="font-medium text-black tabular-nums">{{ gfpsMembershipTotal }}</span>
  </p>
  </div>
 
- <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+ <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2">
  <Button type="submit" class="report-save-btn" :disabled="gfpsMembershipForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save GFPS membership
@@ -490,33 +644,23 @@ watch(
 
  <section v-show="activeTab === 'scholarship'" class="report-panel" role="tabpanel">
 
- <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
- <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
- aria-hidden="true"
- >
- <GraduationCap class="size-5" :stroke-width="2" />
- </div>
- <div class="min-w-0 flex-1">
  <HeadingSmall
  variant="report"
  title="Scholarship"
  description="Pick the school year, the reference date for the counts, then enter scholars by sex."
  />
- </div>
- </div>
 
  <form
- class="report-form mt-6 max-w-3xl space-y-6"
+ class="report-form report-form--edit w-full"
  @submit.prevent="updateScholarship"
  >
- <div class="grid gap-5 sm:grid-cols-[minmax(0,1fr)_11rem]">
+ <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem]">
  <div class="grid gap-2">
  <Label for="school_year_id">School year</Label>
  <select
  id="school_year_id"
  v-model="scholarshipForm.school_year_id"
- class="report-select bg-purple-950 border-purple-400/35 text-purple-50"
+ class="report-select"
  >
  <option value="" disabled>Select school year…</option>
  <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
@@ -533,9 +677,9 @@ watch(
  </div>
  </div>
 
- <div class="rounded-xl border border-purple-400/35 bg-purple-950/60 p-4 ">
- <div class="grid gap-5 sm:grid-cols-2">
- <div class="grid gap-2 border-l-2 border-rose-500/50 pl-3 ">
+ <div class="rounded-xl border border-slate-400 bg-slate-50 p-4">
+ <div class="grid gap-4 sm:grid-cols-2">
+ <div class="grid gap-2">
  <Label for="scholarship_female_count">Female count</Label>
  <Input
  id="scholarship_female_count"
@@ -548,7 +692,7 @@ watch(
  <InputError :message="scholarshipForm.errors.female_count" />
  </div>
 
- <div class="grid gap-2 border-l-2 border-sky-500/50 pl-3 ">
+ <div class="grid gap-2">
  <Label for="scholarship_male_count">Male count</Label>
  <Input
  id="scholarship_male_count"
@@ -561,12 +705,12 @@ watch(
  <InputError :message="scholarshipForm.errors.male_count" />
  </div>
  </div>
- <p class="mt-1 max-w-md text-xs text-purple-200/70">
- Total scholars: <span class="font-medium text-purple-100 tabular-nums">{{ scholarshipTotal }}</span>
+ <p class="mt-1 max-w-md text-xs text-black">
+ Total scholars: <span class="font-medium text-black tabular-nums">{{ scholarshipTotal }}</span>
  </p>
  </div>
 
- <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+ <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2">
  <Button type="submit" class="report-save-btn" :disabled="scholarshipForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save scholarship
@@ -581,59 +725,49 @@ watch(
 
  <section v-show="activeTab === 'gfps_assemblies'" class="report-panel" role="tabpanel">
 
- <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
- <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
- aria-hidden="true"
- >
- <Presentation class="size-5" :stroke-width="2" />
- </div>
- <div class="min-w-0 flex-1">
  <HeadingSmall
  variant="report"
  title="GFPS assemblies"
  description="Attendance by assembly period. Enter headcounts by sex for each row."
  />
- </div>
- </div>
 
- <form class="report-form mt-6 max-w-3xl space-y-6" @submit.prevent="updateGfpsAssemblies">
- <div class="report-data-shell divide-y divide-zinc-200/70 dark:divide-zinc-800">
- <div class="report-data-head md:grid-cols-[minmax(0,1fr)_9rem_9rem]">
- <span>Period</span>
- <span>Female</span>
- <span>Male</span>
+ <form class="report-form report-form--edit w-full" @submit.prevent="updateGfpsAssemblies">
+ <div class="report-years-data-table">
+ <div class="report-years-data-head report-years-data-head--3col">
+ <span class="report-years-data-head-label">Period</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
  </div>
  <div
  v-for="(row, index) in gfpsAssembliesForm.attendances"
  :key="row.period_id"
- class="report-data-row md:grid-cols-[minmax(0,1fr)_9rem_9rem]"
+ class="report-years-data-row report-years-data-row--3col"
  >
- <div class="mb-3 text-sm font-semibold text-purple-50 md:mb-0">
+ <div class="report-years-data-row-label">
  {{ reportYear.gfpsAssemblies[index]?.label }}
  </div>
 
- <div class="grid gap-2">
- <Label :for="`gfps_assembly_female_${row.period_id}`" class="md:sr-only">Female count</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`gfps_assembly_female_${row.period_id}`" class="report-years-data-cell-label md:sr-only">Female count</Label>
  <Input
  :id="`gfps_assembly_female_${row.period_id}`"
  v-model="row.female_count"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
 
- <div class="grid gap-2">
- <Label :for="`gfps_assembly_male_${row.period_id}`" class="md:sr-only">Male count</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`gfps_assembly_male_${row.period_id}`" class="report-years-data-cell-label md:sr-only">Male count</Label>
  <Input
  :id="`gfps_assembly_male_${row.period_id}`"
  v-model="row.male_count"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
  </div>
@@ -641,7 +775,7 @@ watch(
 
  <InputError :message="gfpsAssembliesForm.errors.attendances" />
 
- <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+ <div class="report-years-form-actions">
  <Button type="submit" class="report-save-btn" :disabled="gfpsAssembliesForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save assemblies
@@ -656,59 +790,49 @@ watch(
 
  <section v-show="activeTab === 'employee_status'" class="report-panel" role="tabpanel">
 
- <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
- <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
- aria-hidden="true"
- >
- <Briefcase class="size-5" :stroke-width="2" />
- </div>
- <div class="min-w-0 flex-1">
  <HeadingSmall
  variant="report"
  title="Employee status"
  description="Workforce headcounts by employment status and sex. Use the same definitions as HR records."
  />
- </div>
- </div>
 
- <form class="report-form mt-6 max-w-3xl space-y-6" @submit.prevent="updateEmployeeStatuses">
- <div class="report-data-shell divide-y divide-zinc-200/70 dark:divide-zinc-800">
- <div class="report-data-head md:grid-cols-[minmax(0,1fr)_9rem_9rem]">
- <span>Employment status</span>
- <span>Female</span>
- <span>Male</span>
+ <form class="report-form report-form--edit w-full" @submit.prevent="updateEmployeeStatuses">
+ <div class="report-years-data-table">
+ <div class="report-years-data-head report-years-data-head--3col">
+ <span class="report-years-data-head-label">Employment status</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
  </div>
  <div
  v-for="(row, index) in employeeStatusesForm.breakdowns"
  :key="row.employment_status_id"
- class="report-data-row md:grid-cols-[minmax(0,1fr)_9rem_9rem]"
+ class="report-years-data-row report-years-data-row--3col"
  >
- <div class="mb-3 text-sm font-semibold text-purple-50 md:mb-0">
+ <div class="report-years-data-row-label">
  {{ reportYear.employeeStatuses[index]?.label }}
  </div>
 
- <div class="grid gap-2">
- <Label :for="`employee_female_${row.employment_status_id}`" class="md:sr-only">Female count</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`employee_female_${row.employment_status_id}`" class="report-years-data-cell-label md:sr-only">Female count</Label>
  <Input
  :id="`employee_female_${row.employment_status_id}`"
  v-model="row.female_count"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
 
- <div class="grid gap-2">
- <Label :for="`employee_male_${row.employment_status_id}`" class="md:sr-only">Male count</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`employee_male_${row.employment_status_id}`" class="report-years-data-cell-label md:sr-only">Male count</Label>
  <Input
  :id="`employee_male_${row.employment_status_id}`"
  v-model="row.male_count"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
  </div>
@@ -716,7 +840,7 @@ watch(
 
  <InputError :message="employeeStatusesForm.errors.breakdowns" />
 
- <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+ <div class="report-years-form-actions">
  <Button type="submit" class="report-save-btn" :disabled="employeeStatusesForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save employee status
@@ -731,91 +855,77 @@ watch(
 
  <section v-show="activeTab === 'rstl_monthly'" class="report-panel" role="tabpanel">
 
- <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
- <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
- aria-hidden="true"
- >
- <FlaskConical class="size-5" :stroke-width="2" />
- </div>
- <div class="min-w-0 flex-1">
  <HeadingSmall
  variant="report"
  title="RSTL by month"
  description="Monthly RSTL activity: clients or visits by sex, plus female-led and male-led counts. Scroll horizontally on small screens if the column labels do not fit."
  />
- </div>
- </div>
 
- <form class="report-form mt-6 max-w-5xl space-y-6" @submit.prevent="updateRstlMonthly">
- <div class="-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0">
- <div class="min-w-176">
- <div class="report-data-shell divide-y divide-zinc-200/70 dark:divide-zinc-800">
- <div
- class="report-data-head md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(5.5rem,8rem))]"
- >
- <span>Month</span>
- <span>Female</span>
- <span>Female-led</span>
- <span>Male</span>
- <span>Male-led</span>
+ <form class="report-form report-form--edit w-full" @submit.prevent="updateRstlMonthly">
+ <div class="report-years-data-table-scroll">
+ <div class="report-years-data-table report-years-data-table--wide report-years-data-table--rstl">
+ <div class="report-years-data-head report-years-data-head--5col">
+ <span class="report-years-data-head-label">Month</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Female-led</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Male-led</span>
  </div>
  <div
  v-for="(row, index) in rstlForm.breakdowns"
  :key="row.report_month_id"
- class="report-data-row md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(5.5rem,8rem))]"
+ class="report-years-data-row report-years-data-row--5col"
  >
- <div class="mb-3 text-sm font-semibold text-purple-50 md:mb-0">
+ <div class="report-years-data-row-label">
  {{ reportYear.rstlMonthly[index]?.label }}
  </div>
 
- <div class="grid gap-2">
- <Label :for="`rstl_female_${row.report_month_id}`" class="md:sr-only">Female</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`rstl_female_${row.report_month_id}`" class="report-years-data-cell-label md:sr-only">Female</Label>
  <Input
  :id="`rstl_female_${row.report_month_id}`"
  v-model="row.female_count"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
 
- <div class="grid gap-2">
- <Label :for="`rstl_female_led_${row.report_month_id}`" class="md:sr-only">Female-led</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`rstl_female_led_${row.report_month_id}`" class="report-years-data-cell-label md:sr-only">Female-led</Label>
  <Input
  :id="`rstl_female_led_${row.report_month_id}`"
  v-model="row.female_led_count"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
 
- <div class="grid gap-2">
- <Label :for="`rstl_male_${row.report_month_id}`" class="md:sr-only">Male</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`rstl_male_${row.report_month_id}`" class="report-years-data-cell-label md:sr-only">Male</Label>
  <Input
  :id="`rstl_male_${row.report_month_id}`"
  v-model="row.male_count"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
 
- <div class="grid gap-2">
- <Label :for="`rstl_male_led_${row.report_month_id}`" class="md:sr-only">Male-led</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`rstl_male_led_${row.report_month_id}`" class="report-years-data-cell-label md:sr-only">Male-led</Label>
  <Input
  :id="`rstl_male_led_${row.report_month_id}`"
  v-model="row.male_led_count"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
- </div>
  </div>
  </div>
  </div>
@@ -823,7 +933,7 @@ watch(
 
  <InputError :message="rstlForm.errors.breakdowns" />
 
- <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+ <div class="report-years-form-actions">
  <Button type="submit" class="report-save-btn" :disabled="rstlForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save RSTL
@@ -837,56 +947,45 @@ watch(
  </section>
 
  <section v-show="activeTab === 'program_funding'" class="report-panel" role="tabpanel">
- <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
- <div
- class="flex size-10 shrink-0 items-center justify-center rounded-xl border border-purple-400/35 bg-purple-900/55 text-purple-100 "
- aria-hidden="true"
- >
- <PieChart class="size-5" :stroke-width="2" />
- </div>
- <div class="min-w-0 flex-1">
  <HeadingSmall
  variant="report"
  title="Program funding"
  description="Projects and funding amounts by program, split by sex. Amounts use your organization’s currency; enter decimals as needed."
  />
- </div>
- </div>
 
- <form class="report-form mt-6 max-w-5xl space-y-6" @submit.prevent="updateProgramFunding">
- <div class="-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0 sm:px-0">
- <div class="min-w-208">
- <div class="report-data-shell divide-y divide-zinc-200/70 dark:divide-zinc-800">
- <div class="report-data-head md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(6.5rem,9rem))]">
- <span>Program</span>
- <span>Female projects</span>
- <span>Female amount</span>
- <span>Male projects</span>
- <span>Male amount</span>
+ <form class="report-form report-form--edit w-full" @submit.prevent="updateProgramFunding">
+ <div class="report-years-data-table-scroll">
+ <div class="report-years-data-table report-years-data-table--wide report-years-data-table--funding">
+ <div class="report-years-data-head report-years-data-head--funding">
+ <span class="report-years-data-head-label">Program</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Female projects</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Female amount</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Male projects</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Male amount</span>
  </div>
  <div
  v-for="(row, index) in fundingForm.summaries"
  :key="row.funding_program_id"
- class="report-data-row md:grid-cols-[minmax(0,1fr)_repeat(4,minmax(6.5rem,9rem))]"
+ class="report-years-data-row report-years-data-row--funding"
  >
- <div class="mb-3 text-sm font-semibold text-purple-50 md:mb-0">
+ <div class="report-years-data-row-label">
  {{ reportYear.programFunding[index]?.label }}
  </div>
 
- <div class="grid gap-2">
- <Label :for="`funding_female_projects_${row.funding_program_id}`" class="md:sr-only">Female projects</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`funding_female_projects_${row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">Female projects</Label>
  <Input
  :id="`funding_female_projects_${row.funding_program_id}`"
  v-model="row.female_projects"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
 
- <div class="grid gap-2">
- <Label :for="`funding_female_amount_${row.funding_program_id}`" class="md:sr-only">Female amount</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`funding_female_amount_${row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">Female amount</Label>
  <Input
  :id="`funding_female_amount_${row.funding_program_id}`"
  v-model="row.female_amount"
@@ -895,24 +994,24 @@ watch(
  step="0.01"
  inputmode="decimal"
  placeholder="0.00"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
 
- <div class="grid gap-2">
- <Label :for="`funding_male_projects_${row.funding_program_id}`" class="md:sr-only">Male projects</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`funding_male_projects_${row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">Male projects</Label>
  <Input
  :id="`funding_male_projects_${row.funding_program_id}`"
  v-model="row.male_projects"
  type="number"
  min="0"
  inputmode="numeric"
- :class="inputClass"
+ :class="tableInputClass"
  />
  </div>
 
- <div class="grid gap-2">
- <Label :for="`funding_male_amount_${row.funding_program_id}`" class="md:sr-only">Male amount</Label>
+ <div class="report-years-data-cell">
+ <Label :for="`funding_male_amount_${row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">Male amount</Label>
  <Input
  :id="`funding_male_amount_${row.funding_program_id}`"
  v-model="row.male_amount"
@@ -921,9 +1020,8 @@ watch(
  step="0.01"
  inputmode="decimal"
  placeholder="0.00"
- :class="inputClass"
+ :class="tableInputClass"
  />
- </div>
  </div>
  </div>
  </div>
@@ -931,7 +1029,7 @@ watch(
 
  <InputError :message="fundingForm.errors.summaries" />
 
- <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2 dark:border-zinc-800">
+ <div class="report-years-form-actions">
  <Button type="submit" class="report-save-btn" :disabled="fundingForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save program funding

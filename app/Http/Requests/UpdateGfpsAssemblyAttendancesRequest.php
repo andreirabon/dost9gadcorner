@@ -2,13 +2,17 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesSparsePatchPayload;
 use App\Models\ReportYear;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateGfpsAssemblyAttendancesRequest extends FormRequest
 {
+    use ValidatesSparsePatchPayload;
+
     public function authorize(): bool
     {
         /** @var ReportYear $reportYear */
@@ -25,8 +29,28 @@ class UpdateGfpsAssemblyAttendancesRequest extends FormRequest
         return [
             'attendances' => ['required', 'array', 'min:1'],
             'attendances.*.period_id' => ['required', 'integer', Rule::exists('gfps_assembly_periods', 'id')],
-            'attendances.*.female_count' => ['required', 'integer', 'min:0'],
-            'attendances.*.male_count' => ['required', 'integer', 'min:0'],
+            'attendances.*.female_count' => ['sometimes', 'required', 'integer', 'min:0'],
+            'attendances.*.male_count' => ['sometimes', 'required', 'integer', 'min:0'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            /** @var array<int, array<string, mixed>> $attendances */
+            $attendances = $this->input('attendances', []);
+
+            $this->assertEachItemHasPatchField(
+                $validator,
+                $attendances,
+                'period_id',
+                ['female_count', 'male_count'],
+                'attendances',
+            );
+        });
     }
 }

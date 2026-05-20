@@ -158,7 +158,6 @@ const chartOptions = computed<ApexOptions>(() => {
 
                 return `${value}`;
             },
-            offsetY: -4,
             style: {
                 fontFamily: REPORT_CHART_FONT_FAMILY,
                 fontSize: '12px',
@@ -201,6 +200,9 @@ const chartOptions = computed<ApexOptions>(() => {
             bar: {
                 borderRadius: 4,
                 columnWidth: '52%',
+                dataLabels: {
+                    position: 'center',
+                },
             },
         },
         stroke: {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import ReportBackNavLink from '@/components/reports/ReportBackNavLink.vue';
 import type { YearItem } from '@/types';
 import type { FundingSummaryData, GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow } from '@/types/reports';
-import { Link } from '@inertiajs/vue3';
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const AssemblyStackedBarChart = defineAsyncComponent(() => import('@/components/charts/AssemblyStackedBarChart.vue'));
@@ -302,23 +302,16 @@ onUnmounted(() => {
                             Sex Disaggregated Data
                         </h1>
                         <p class="report-view-subtitle">
-                            Department of Science and Technology Regional Office No. IX — validated figures across GFPS,
+                            Department of Science and Technology Regional Office IX validated figures across GFPS,
                             employment, scholarship, RSTL, SETUP, and CEST programs.
                         </p>
                     </div>
             </div>
             <div class="report-view-actions">
-                    <Link
-                        :href="`${route('index')}#yearly`"
-                        prefetch
-                        class="report-view-btn"
-                    >
-                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                        <span class="hidden sm:inline">Back to yearly reports</span>
+                    <ReportBackNavLink :href="`${route('index')}#yearly`">
+                        <span class="hidden sm:inline">Select Another Year</span>
                         <span class="sm:hidden">Back</span>
-                    </Link>
+                    </ReportBackNavLink>
             </div>
             <div v-if="!isYearDataPending" class="report-view-tabs" role="tablist" aria-label="Report sections">
                 <button
@@ -366,50 +359,42 @@ onUnmounted(() => {
             <div v-else-if="activeTab === 'Overview'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
-                                <span>Total Female (all sections)</span>
-                            </p>
-                            <p class="text-lg font-semibold report-view-metric-value--disagg-a md:text-xl">{{ formatCompactNumber(totalFemaleAcrossPrograms) }}</p>
+                            <p class="report-view-metric-label">Total Female (all sections)</p>
+                            <p class="report-view-metric-value">{{ formatCompactNumber(totalFemaleAcrossPrograms) }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
-                                <span>Total Male (all sections)</span>
-                            </p>
-                            <p class="text-lg font-semibold report-view-metric-value--disagg-b md:text-xl">{{ formatCompactNumber(totalMaleAcrossPrograms) }}</p>
+                            <p class="report-view-metric-label">Total Male (all sections)</p>
+                            <p class="report-view-metric-value">{{ formatCompactNumber(totalMaleAcrossPrograms) }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs font-medium text-purple-200/80 font-light report-light:text-slate-600">Combined Projects</p>
-                            <p class="text-lg font-semibold text-purple-50 report-light:text-slate-900 md:text-xl">{{ combinedProjectsCount }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">SETUP + CEST</p>
+                            <p class="report-view-metric-label">Combined Projects</p>
+                            <p class="report-view-metric-value">{{ combinedProjectsCount }}</p>
+                            <p class="report-view-metric-meta">SETUP + CEST</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs font-medium text-purple-200/80 font-light report-light:text-slate-600">Combined Funding</p>
-                            <p class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">{{ formatCurrency(combinedFundingAmount) }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">SETUP + CEST</p>
+                            <p class="report-view-metric-label">Combined Funding</p>
+                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(combinedFundingAmount) }}</p>
+                            <p class="report-view-metric-meta">SETUP + CEST</p>
                         </div>
                     </div>
 
                     <div class="report-view-metric">
-                        <div class="mb-3 border-b border-white/10 pb-3 report-light:border-slate-200">
-                            <h3 class="text-xs font-semibold tracking-tight text-purple-50 report-light:text-slate-900 md:text-sm">Quick Access</h3>
+                        <div class="report-view-block-header">
+                            <h3 class="report-view-block-title">Quick Access</h3>
                         </div>
-                        <div
-                            class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
-                        >
+                        <div class="report-view-quick-grid">
                             <button
                                 v-for="program in overviewPrograms"
                                 :key="program.tab"
                                 type="button"
-                                class="cursor-pointer rounded-xl border border-purple-400/35 bg-purple-900/55 ring-1 ring-white/10 p-4 text-left shadow-sm transition-colors duration-200 hover:border-purple-400/50 hover:bg-purple-900/65 report-light:border-slate-300 report-light:bg-slate-50 report-light:hover:border-slate-400 report-light:hover:bg-slate-100 md:p-5"
+                                class="report-view-quick-item"
                                 @click="selectTab(program.tab)"
                             >
-                                <p class="text-xs font-medium uppercase tracking-wide text-purple-50 report-light:text-slate-900">{{ program.title }}</p>
-                                <p class="mt-1 text-xs text-purple-200/80 font-light report-light:text-slate-600">{{ program.primaryLabel }}</p>
-                                <p class="text-lg font-semibold tracking-tight text-purple-50 report-light:text-slate-900">{{ program.primaryValue }}</p>
-                                <p class="mt-1 text-xs text-purple-200/80 font-light report-light:text-slate-600">{{ program.secondaryLabel }}</p>
-                                <p class="text-sm font-semibold text-purple-50 report-light:text-slate-900">{{ program.secondaryValue }}</p>
+                                <p class="report-view-quick-title">{{ program.title }}</p>
+                                <p class="report-view-quick-label">{{ program.primaryLabel }}</p>
+                                <p class="report-view-quick-value">{{ program.primaryValue }}</p>
+                                <p class="report-view-quick-label">{{ program.secondaryLabel }}</p>
+                                <p class="report-view-quick-value-sm">{{ program.secondaryValue }}</p>
                             </button>
                         </div>
                     </div>
@@ -418,37 +403,31 @@ onUnmounted(() => {
                 <div v-else-if="activeTab === 'GFPS'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Total Members</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ gfpsStats.totalMembers }}</p>
+                            <p class="report-view-metric-label">Total Members</p>
+                            <p class="report-view-metric-value">{{ gfpsStats.totalMembers }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
-                                <span>Female Members</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ gfpsStats.femaleCount }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">{{ gfpsStats.femalePercentage }}%</p>
+                            <p class="report-view-metric-label">Female Members</p>
+                            <p class="report-view-metric-value">{{ gfpsStats.femaleCount }}</p>
+                            <p class="report-view-metric-meta">{{ gfpsStats.femalePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
-                                <span>Male Members</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ gfpsStats.maleCount }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">{{ gfpsStats.malePercentage }}%</p>
+                            <p class="report-view-metric-label">Male Members</p>
+                            <p class="report-view-metric-value">{{ gfpsStats.maleCount }}</p>
+                            <p class="report-view-metric-meta">{{ gfpsStats.malePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">GFPS Assemblies</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ assemblyData.length }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">Quarterly</p>
+                            <p class="report-view-metric-label">GFPS Assemblies</p>
+                            <p class="report-view-metric-value">{{ assemblyData.length }}</p>
+                            <p class="report-view-metric-meta">Quarterly</p>
                         </div>
                     </div>
 
                     <div class="report-view-charts">
                         <div class="report-view-block">
                             <div class="report-view-chart-head">
-                                <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">GFPS Membership by Sex</h3>
-                                <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Distribution of GFPS members</p>
+                                <h3 class="report-view-block-title">GFPS Membership by Sex</h3>
+                                <p class="report-view-block-desc">Distribution of GFPS members</p>
                             </div>
                             <div class="report-chart-panel">
                                 <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
@@ -470,34 +449,28 @@ onUnmounted(() => {
                 <div v-else-if="activeTab === 'DOST IX Employees'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Total Employees</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ employeesStats.totalEmployees }}</p>
+                            <p class="report-view-metric-label">Total Employees</p>
+                            <p class="report-view-metric-value">{{ employeesStats.totalEmployees }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
-                                <span>Female Employees</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ employeesStats.femaleCount }}</p>
+                            <p class="report-view-metric-label">Female Employees</p>
+                            <p class="report-view-metric-value">{{ employeesStats.femaleCount }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
-                                <span>Male Employees</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ employeesStats.maleCount }}</p>
+                            <p class="report-view-metric-label">Male Employees</p>
+                            <p class="report-view-metric-value">{{ employeesStats.maleCount }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Employment Types</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ employeesData.length }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">Categories</p>
+                            <p class="report-view-metric-label">Employment Types</p>
+                            <p class="report-view-metric-value">{{ employeesData.length }}</p>
+                            <p class="report-view-metric-meta">Categories</p>
                         </div>
                     </div>
 
                     <div class="report-view-block">
                         <div class="report-view-chart-head">
-                            <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Employees by Employment Status</h3>
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Sex-disaggregated data as of December 31, {{ year.year }}</p>
+                            <h3 class="report-view-block-title">Employees by Employment Status</h3>
+                            <p class="report-view-block-desc">Sex-disaggregated data as of December 31, {{ year.year }}</p>
                         </div>
                         <div class="report-chart-panel">
                             <EmployeesGroupedBarChart :data="employeesData" />
@@ -508,36 +481,30 @@ onUnmounted(() => {
                 <div v-else-if="activeTab === 'Scholarship'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Total Scholars</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ scholarsStats.totalScholars }}</p>
+                            <p class="report-view-metric-label">Total Scholars</p>
+                            <p class="report-view-metric-value">{{ scholarsStats.totalScholars }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
-                                <span>Female Scholars</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ scholarsStats.femaleCount }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">{{ scholarsStats.femalePercentage }}%</p>
+                            <p class="report-view-metric-label">Female Scholars</p>
+                            <p class="report-view-metric-value">{{ scholarsStats.femaleCount }}</p>
+                            <p class="report-view-metric-meta">{{ scholarsStats.femalePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
-                                <span>Male Scholars</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ scholarsStats.maleCount }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">{{ scholarsStats.malePercentage }}%</p>
+                            <p class="report-view-metric-label">Male Scholars</p>
+                            <p class="report-view-metric-value">{{ scholarsStats.maleCount }}</p>
+                            <p class="report-view-metric-meta">{{ scholarsStats.malePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">School Year</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ scholarsStats.schoolYearLabel || 'Not set' }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">{{ scholarsStats.asOfDate ?? 'No date set' }}</p>
+                            <p class="report-view-metric-label">School Year</p>
+                            <p class="report-view-metric-value">{{ scholarsStats.schoolYearLabel || 'Not set' }}</p>
+                            <p class="report-view-metric-meta">{{ scholarsStats.asOfDate ?? 'No date set' }}</p>
                         </div>
                     </div>
 
                     <div class="report-view-block">
                         <div class="report-view-chart-head">
-                            <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Distribution of On-Going Scholars by Sex</h3>
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">
+                            <h3 class="report-view-block-title">Distribution of On-Going Scholars by Sex</h3>
+                            <p class="report-view-block-desc">
                                 {{ scholarsStats.schoolYearLabel || `School Year ${year.year}` }}
                                 <span v-if="scholarsStats.asOfDate"> • Data as of {{ scholarsStats.asOfDate }}</span>
                             </p>
@@ -551,34 +518,28 @@ onUnmounted(() => {
                 <div v-else-if="activeTab === 'RSTL'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Total Customers</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ rstlStats.totalCustomers }}</p>
+                            <p class="report-view-metric-label">Total Customers</p>
+                            <p class="report-view-metric-value">{{ rstlStats.totalCustomers }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
-                                <span>Female</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ rstlStats.femaleCount }}</p>
+                            <p class="report-view-metric-label">Female</p>
+                            <p class="report-view-metric-value">{{ rstlStats.femaleCount }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
-                                <span>Male</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ rstlStats.maleCount }}</p>
+                            <p class="report-view-metric-label">Male</p>
+                            <p class="report-view-metric-value">{{ rstlStats.maleCount }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Period</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ year.year }}</p>
-                            <p class="text-xs text-slate-500 report-light:text-slate-600">Full Year</p>
+                            <p class="report-view-metric-label">Period</p>
+                            <p class="report-view-metric-value">{{ year.year }}</p>
+                            <p class="report-view-metric-meta">Full Year</p>
                         </div>
                     </div>
 
                     <div class="report-view-block">
                         <div class="report-view-chart-head">
-                            <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Testing and Calibration Services</h3>
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Customers by sex (warm bodies) - Monthly breakdown for {{ year.year }}</p>
+                            <h3 class="report-view-block-title">Testing and Calibration Services</h3>
+                            <p class="report-view-block-desc">Customers by sex (warm bodies) - Monthly breakdown for {{ year.year }}</p>
                         </div>
                         <div class="report-chart-panel">
                             <RstlWarmBodiesStackedChart :data="rstlWarmBodiesData" />
@@ -589,33 +550,27 @@ onUnmounted(() => {
                 <div v-else-if="activeTab === 'SETUP'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Total Projects</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ setupStats.totalProjects }}</p>
+                            <p class="report-view-metric-label">Total Projects</p>
+                            <p class="report-view-metric-value">{{ setupStats.totalProjects }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Total Funding</p>
-                            <p class="text-sm font-bold text-purple-50 report-light:text-slate-900 md:text-base">{{ formatCurrency(setupStats.totalAmount) }}</p>
+                            <p class="report-view-metric-label">Total Funding</p>
+                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(setupStats.totalAmount) }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
-                                <span>Male-led Projects</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ setupStats.maleProjects }}</p>
+                            <p class="report-view-metric-label">Male-led Projects</p>
+                            <p class="report-view-metric-value">{{ setupStats.maleProjects }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
-                                <span>Female-led Projects</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ setupStats.femaleProjects }}</p>
+                            <p class="report-view-metric-label">Female-led Projects</p>
+                            <p class="report-view-metric-value">{{ setupStats.femaleProjects }}</p>
                         </div>
                     </div>
 
                     <div class="report-view-block">
                         <div class="report-view-chart-head">
-                            <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Small Enterprise Technology Upgrading Program (SETUP)</h3>
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Projects funded by sex • {{ year.year }}</p>
+                            <h3 class="report-view-block-title">Small Enterprise Technology Upgrading Program (SETUP)</h3>
+                            <p class="report-view-block-desc">Projects funded by sex • {{ year.year }}</p>
                         </div>
                         <div class="report-chart-panel">
                             <SetupFundingChart :data="setupFundingData" />
@@ -626,33 +581,27 @@ onUnmounted(() => {
                 <div v-else-if="activeTab === 'CEST'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Total Projects</p>
-                            <p class="text-lg font-bold text-purple-50 report-light:text-slate-900 md:text-xl">{{ cestStats.totalProjects }}</p>
+                            <p class="report-view-metric-label">Total Projects</p>
+                            <p class="report-view-metric-value">{{ cestStats.totalProjects }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Total Funding</p>
-                            <p class="text-sm font-bold text-purple-50 report-light:text-slate-900 md:text-base">{{ formatCurrency(cestStats.totalAmount) }}</p>
+                            <p class="report-view-metric-label">Total Funding</p>
+                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(cestStats.totalAmount) }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--b" aria-hidden="true" />
-                                <span>Male-led Projects</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-b md:text-xl">{{ cestStats.maleProjects }}</p>
+                            <p class="report-view-metric-label">Male-led Projects</p>
+                            <p class="report-view-metric-value">{{ cestStats.maleProjects }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label inline-flex items-center gap-2">
-                                <span class="report-disagg-swatch report-disagg-swatch--a" aria-hidden="true" />
-                                <span>Female-led Projects</span>
-                            </p>
-                            <p class="text-lg font-bold report-view-metric-value--disagg-a md:text-xl">{{ cestStats.femaleProjects }}</p>
+                            <p class="report-view-metric-label">Female-led Projects</p>
+                            <p class="report-view-metric-value">{{ cestStats.femaleProjects }}</p>
                         </div>
                     </div>
 
                     <div class="report-view-block">
                         <div class="report-view-chart-head">
-                            <h3 class="text-sm font-semibold text-purple-50 report-light:text-slate-900 md:text-base">Community Empowerment thru Science and Technology (CEST)</h3>
-                            <p class="text-xs text-purple-200/80 font-light report-light:text-slate-600">Projects funded by sex • {{ year.year }}</p>
+                            <h3 class="report-view-block-title">Community Empowerment thru Science and Technology (CEST)</h3>
+                            <p class="report-view-block-desc">Projects funded by sex • {{ year.year }}</p>
                         </div>
                         <div class="report-chart-panel">
                             <CestFundingChart :data="cestFundingData" />

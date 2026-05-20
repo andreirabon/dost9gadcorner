@@ -121,7 +121,6 @@ const chartOptions = computed<ApexOptions>(() => {
         dataLabels: {
             enabled: true,
             formatter: (value: number) => (value === 0 ? '' : `${value}`),
-            offsetY: -4,
             style: {
                 colors: [ui.dataLabelColor],
                 fontFamily: REPORT_CHART_FONT_FAMILY,
@@ -152,6 +151,9 @@ const chartOptions = computed<ApexOptions>(() => {
             bar: {
                 borderRadius: 3,
                 columnWidth: '58%',
+                dataLabels: {
+                    position: 'center',
+                },
             },
         },
     };
