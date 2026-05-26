@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ReportYearCreated;
+use App\Events\ReportYearDeleted;
+use App\Events\ReportYearUpdated;
 use App\Http\Requests\StoreReportYearRequest;
 use App\Http\Requests\UpdateEmployeeStatusBreakdownsRequest;
 use App\Http\Requests\UpdateGfpsAssemblyAttendancesRequest;
@@ -18,13 +21,13 @@ use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\SchoolYear;
+use App\Services\Reports\ConflictGuard;
 use App\Services\Reports\PatchEmployeeStatusBreakdowns;
 use App\Services\Reports\PatchGfpsAssemblyAttendances;
 use App\Services\Reports\PatchGfpsMembershipSummary;
 use App\Services\Reports\PatchProgramFundingSummaries;
 use App\Services\Reports\PatchReportYearAttributes;
 use App\Services\Reports\PatchRstlMonthlyBreakdowns;
-use App\Services\Reports\ConflictGuard;
 use App\Services\Reports\PatchScholarshipSummary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,6 +49,7 @@ class ReportYearManagementController extends Controller
             ? $request->input('expected_updated_at')
             : false;
     }
+
     public function index(): Response
     {
         $this->authorize('viewAny', ReportYear::class);
@@ -79,7 +83,7 @@ class ReportYearManagementController extends Controller
 
         $reportYear = ReportYear::query()->create($validated);
 
-        \App\Events\ReportYearCreated::dispatch($reportYear);
+        ReportYearCreated::dispatch($reportYear);
 
         return to_route('report-years.edit', $reportYear);
     }
@@ -156,7 +160,7 @@ class ReportYearManagementController extends Controller
 
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description', 'status']);
 
-        \App\Events\ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear, auth()->id());
 
         return back();
     }
@@ -167,7 +171,7 @@ class ReportYearManagementController extends Controller
 
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description']);
 
-        \App\Events\ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear, auth()->id());
 
         return back();
     }
@@ -175,11 +179,11 @@ class ReportYearManagementController extends Controller
     public function destroy(ReportYear $reportYear): RedirectResponse
     {
         $this->authorize('delete', $reportYear);
-        
+
         $id = $reportYear->id;
         $reportYear->delete();
 
-        \App\Events\ReportYearDeleted::dispatch($id);
+        ReportYearDeleted::dispatch($id);
 
         return to_route('report-years.index');
     }
@@ -190,7 +194,7 @@ class ReportYearManagementController extends Controller
 
         $patchGfpsMembership->apply($reportYear, $request->validated());
 
-        \App\Events\ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear, auth()->id());
 
         return back();
     }
@@ -201,7 +205,7 @@ class ReportYearManagementController extends Controller
 
         $patchGfpsAssemblies->apply($reportYear, $request->validated('attendances'));
 
-        \App\Events\ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear, auth()->id());
 
         return back();
     }
@@ -212,7 +216,7 @@ class ReportYearManagementController extends Controller
 
         $patchEmployeeStatuses->apply($reportYear, $request->validated('breakdowns'));
 
-        \App\Events\ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear, auth()->id());
 
         return back();
     }
@@ -223,7 +227,7 @@ class ReportYearManagementController extends Controller
 
         $patchScholarship->apply($reportYear, $request->validated());
 
-        \App\Events\ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear, auth()->id());
 
         return back();
     }
@@ -234,7 +238,7 @@ class ReportYearManagementController extends Controller
 
         $patchRstlMonthly->apply($reportYear, $request->validated('breakdowns'));
 
-        \App\Events\ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear);
 
         return back();
     }
@@ -245,7 +249,7 @@ class ReportYearManagementController extends Controller
 
         $patchProgramFunding->apply($reportYear, $request->validated('summaries'));
 
-        \App\Events\ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear, auth()->id());
 
         return back();
     }

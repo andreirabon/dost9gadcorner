@@ -15,7 +15,8 @@ class ReportYearUpdated implements ShouldBroadcastNow
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public ReportYear $reportYear
+        public ReportYear $reportYear,
+        public ?int $userId = null
     ) {}
 
     public function broadcastOn(): array
@@ -36,7 +37,8 @@ class ReportYearUpdated implements ShouldBroadcastNow
                 'description' => $this->reportYear->description,
                 'status' => $this->reportYear->status,
                 'publishedAt' => $this->reportYear->published_at?->toIso8601String(),
-            ]
+            ],
+            'userId' => $this->userId,
         ];
     }
 }
