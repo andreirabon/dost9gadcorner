@@ -9,22 +9,109 @@ import { REPORT_YEAR_FIELD_LIMITS } from '@/constants/reportYearFields';
 import { formatPublishedAt } from '@/helpers/formatPublishedAt';
 import { cloneSnapshot, diffObjectPatch, diffRowPatches, hasPatch, normalizeNumeric } from '@/helpers/reportPatch';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { EditableReportYear, LookupSchoolYear, ReportYearEditAbilities } from '@/types/reports';
+import type { EditableReportYear, LookupSchoolYear, ReportYearEditAbilities, SectionTimestamps } from '@/types/reports';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import {
   Calendar,
   CheckCircle2,
   Save,
 } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onUnmounted } from 'vue';
+import { echo } from '@laravel/echo-vue';
+import { useToast } from '@/components/ui/toast/use-toast';
+
+interface Editor {
+    id: number;
+    username: string;
+}
 
 interface Props {
  reportYear: EditableReportYear;
  schoolYears: LookupSchoolYear[];
  abilities: ReportYearEditAbilities;
+ sectionTimestamps: SectionTimestamps;
 }
 
 const props = defineProps<Props>();
+
+const { toast } = useToast();
+
+const sectionTs = ref<SectionTimestamps>({ ...props.sectionTimestamps });
+
+watch(() => props.sectionTimestamps, (fresh) => {
+ sectionTs.value = { ...fresh };
+});
+
+const handleConflictError = (errors: Record<string, string>): boolean => {
+ if (errors.conflict) {
+  toast({
+   title: 'Save Conflict',
+   description: errors.conflict,
+   type: 'error',
+   duration: 0,
+   action: {
+    label: 'Refresh',
+    onClick: () => router.reload(),
+   },
+  });
+  return true;
+ }
+ return false;
+};
+
+const currentEditors = ref<Editor[]>([]);
+
+const getAvatarColor = (username: string): string => {
+    const colors = [
+        'bg-blue-100 text-blue-700', 'bg-rose-100 text-rose-700',
+        'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700',
+        'bg-purple-100 text-purple-700', 'bg-fuchsia-100 text-fuchsia-700',
+        'bg-indigo-100 text-indigo-700', 'bg-teal-100 text-teal-700',
+        'bg-orange-100 text-orange-700', 'bg-cyan-100 text-cyan-700',
+    ];
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+};
+
+const getInitial = (username?: string): string => {
+    return username ? username.charAt(0).toUpperCase() : '?';
+};
+
+const presenceChannelName = `report-year.edit.${props.reportYear.id}`;
+
+// Initialize WebSockets
+echo().join(presenceChannelName)
+    .here((users: Editor[]) => {
+        currentEditors.value = users;
+    })
+    .joining((user: Editor) => {
+        currentEditors.value.push(user);
+        toast({ title: 'User joined', description: `${user.username} is now viewing this report.` });
+    })
+    .leaving((user: Editor) => {
+        currentEditors.value = currentEditors.value.filter(u => String(u.id) !== String(user.id));
+    });
+
+echo().private('report-years')
+    .listen('ReportYearUpdated', (e: { reportYear: { id: number } }) => {
+        if (e.reportYear.id === props.reportYear.id) {
+            toast({
+                title: 'Report Updated',
+                description: 'Another user has saved changes to this report. You may want to refresh to see the latest data.',
+                type: 'warning',
+                duration: 8000,
+            });
+        }
+    });
+
+// Prevent memory leaks / ghost users on navigation
+onUnmounted(() => {
+    echo().leave(presenceChannelName);
+    echo().leave('report-years');
+});
 
 const tabDefs = [
  { id: 'metadata', name: 'Metadata' },
@@ -180,12 +267,16 @@ const updateMetadata = () => {
  metadataSaving.value = true;
  metadataForm.clearErrors();
 
- router.patch(url, (patch ?? {}) as Record<string, string | number>, {
+ router.patch(url, { ...(patch ?? {}), expected_updated_at: sectionTs.value.metadata } as Record<string, string | number | null>, {
   ...patchOptions,
   onSuccess: () => {
    originalMetadata.value = snapshotMetadataForm();
   },
   onError: (errors) => {
+   if (handleConflictError(errors)) {
+    metadataSaving.value = false;
+    return;
+   }
    metadataForm.setError(errors);
    const first = Object.values(errors)[0];
    const message = Array.isArray(first) ? first[0] : first;
@@ -209,14 +300,17 @@ const updateGfpsMembership = () => {
   return;
  }
 
- gfpsMembershipForm
-  .transform(() => patch ?? {})
-  .patch(route('report-years.gfps-membership.update', props.reportYear.id), {
-   ...patchOptions,
-   onSuccess: () => {
-    originalGfpsMembership.value = snapshotGfpsMembershipForm();
-   },
-  });
+  gfpsMembershipForm
+   .transform(() => ({ ...patch, expected_updated_at: sectionTs.value.gfpsMembership }))
+   .patch(route('report-years.gfps-membership.update', props.reportYear.id), {
+    ...patchOptions,
+    onSuccess: () => {
+     originalGfpsMembership.value = snapshotGfpsMembershipForm();
+    },
+    onError: (errors) => {
+     handleConflictError(errors);
+    },
+   });
 };
 
 const updateGfpsAssemblies = () => {
@@ -232,14 +326,17 @@ const updateGfpsAssemblies = () => {
   return;
  }
 
- gfpsAssembliesForm
-  .transform(() => ({ attendances }))
-  .patch(route('report-years.gfps-assemblies.update', props.reportYear.id), {
-   ...patchOptions,
-   onSuccess: () => {
-    originalGfpsAssemblies.value = cloneSnapshot(gfpsAssembliesForm.attendances);
-   },
-  });
+  gfpsAssembliesForm
+   .transform(() => ({ attendances, expected_updated_at: sectionTs.value.gfpsAssemblies }))
+   .patch(route('report-years.gfps-assemblies.update', props.reportYear.id), {
+    ...patchOptions,
+    onSuccess: () => {
+     originalGfpsAssemblies.value = cloneSnapshot(gfpsAssembliesForm.attendances);
+    },
+    onError: (errors) => {
+     handleConflictError(errors);
+    },
+   });
 };
 
 const updateEmployeeStatuses = () => {
@@ -255,14 +352,17 @@ const updateEmployeeStatuses = () => {
   return;
  }
 
- employeeStatusesForm
-  .transform(() => ({ breakdowns }))
-  .patch(route('report-years.employee-statuses.update', props.reportYear.id), {
-   ...patchOptions,
-   onSuccess: () => {
-    originalEmployeeStatuses.value = cloneSnapshot(employeeStatusesForm.breakdowns);
-   },
-  });
+  employeeStatusesForm
+   .transform(() => ({ breakdowns, expected_updated_at: sectionTs.value.employeeStatuses }))
+   .patch(route('report-years.employee-statuses.update', props.reportYear.id), {
+    ...patchOptions,
+    onSuccess: () => {
+     originalEmployeeStatuses.value = cloneSnapshot(employeeStatusesForm.breakdowns);
+    },
+    onError: (errors) => {
+     handleConflictError(errors);
+    },
+   });
 };
 
 const updateScholarship = () => {
@@ -280,14 +380,17 @@ const updateScholarship = () => {
   return;
  }
 
- scholarshipForm
-  .transform(() => patch ?? {})
-  .patch(route('report-years.scholarship.update', props.reportYear.id), {
-   ...patchOptions,
-   onSuccess: () => {
-    originalScholarship.value = snapshotScholarshipForm();
-   },
-  });
+  scholarshipForm
+   .transform(() => ({ ...patch, expected_updated_at: sectionTs.value.scholarship }))
+   .patch(route('report-years.scholarship.update', props.reportYear.id), {
+    ...patchOptions,
+    onSuccess: () => {
+     originalScholarship.value = snapshotScholarshipForm();
+    },
+    onError: (errors) => {
+     handleConflictError(errors);
+    },
+   });
 };
 
 const updateRstlMonthly = () => {
@@ -303,14 +406,17 @@ const updateRstlMonthly = () => {
   return;
  }
 
- rstlForm
-  .transform(() => ({ breakdowns }))
-  .patch(route('report-years.rstl-monthly.update', props.reportYear.id), {
-   ...patchOptions,
-   onSuccess: () => {
-    originalRstlBreakdowns.value = cloneSnapshot(rstlForm.breakdowns);
-   },
-  });
+  rstlForm
+   .transform(() => ({ breakdowns, expected_updated_at: sectionTs.value.rstlMonthly }))
+   .patch(route('report-years.rstl-monthly.update', props.reportYear.id), {
+    ...patchOptions,
+    onSuccess: () => {
+     originalRstlBreakdowns.value = cloneSnapshot(rstlForm.breakdowns);
+    },
+    onError: (errors) => {
+     handleConflictError(errors);
+    },
+   });
 };
 
 const updateProgramFunding = () => {
@@ -327,14 +433,17 @@ const updateProgramFunding = () => {
   return;
  }
 
- fundingForm
-  .transform(() => ({ summaries }))
-  .patch(route('report-years.program-funding.update', props.reportYear.id), {
-   ...patchOptions,
-   onSuccess: () => {
-    originalFundingSummaries.value = cloneSnapshot(fundingForm.summaries);
-   },
-  });
+  fundingForm
+   .transform(() => ({ summaries, expected_updated_at: sectionTs.value.programFunding }))
+   .patch(route('report-years.program-funding.update', props.reportYear.id), {
+    ...patchOptions,
+    onSuccess: () => {
+     originalFundingSummaries.value = cloneSnapshot(fundingForm.summaries);
+    },
+    onError: (errors) => {
+     handleConflictError(errors);
+    },
+   });
 };
 
 const inputClass = 'report-field w-full';
@@ -407,7 +516,12 @@ watch(
  <div class="report-years-edit-hero">
  <div class="report-years-edit-hero-top">
  <div class="report-years-edit-hero-badges">
- <span class="report-years-edit-meta-chip">Currently Editing</span>
+ <div v-if="currentEditors.length > 1" class="flex space-x-1.5 mr-2">
+ <div v-for="editor in currentEditors" :key="editor.id" class="flex h-6 items-center justify-center rounded-full px-2.5 text-[10px] font-bold shadow-sm" :class="getAvatarColor(editor.username ?? '')" :title="editor.username ?? 'Unknown User'">
+ {{ editor.username }}
+ </div>
+ </div>
+ <span v-else class="report-years-edit-meta-chip">Currently Editing</span>
  <span
  class="report-years-status-badge"
  :class="isPublished ? 'report-years-status-badge--published' : 'report-years-status-badge--pending'"

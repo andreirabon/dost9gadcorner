@@ -26,6 +26,7 @@ class UpdateScholarshipSummaryRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'school_year_id' => ['sometimes', 'required', 'exists:school_years,id'],
             'as_of_date' => ['sometimes', 'nullable', 'date'],
             'female_count' => ['sometimes', 'required', 'integer', 'min:0'],

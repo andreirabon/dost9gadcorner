@@ -25,7 +25,9 @@ import {
     Search,
     Trash2,
 } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onUnmounted } from 'vue';
+import { echo } from '@laravel/echo-vue';
+import { useToast } from '@/components/ui/toast/use-toast';
 
 interface Props {
     reportYears: ManagedReportYearListItem[];
@@ -37,19 +39,53 @@ const page = usePage();
 const canCreate = computed(() => page.props.auth.user?.can?.createReportYears === true);
 const canDelete = computed(() => page.props.auth.user?.can?.deleteReportYears === true);
 
+const { toast } = useToast();
+
+const localReportYears = ref<ManagedReportYearListItem[]>([...props.reportYears]);
+
+watch(() => props.reportYears, (newVal) => {
+    localReportYears.value = [...newVal];
+}, { deep: true });
+
+echo().private('report-years')
+    .listen('ReportYearCreated', (e: any) => {
+        localReportYears.value.unshift(e.reportYear);
+        toast({ title: 'Report Year Added', description: `Year ${e.reportYear.year} was created.` });
+    })
+    .listen('ReportYearUpdated', (e: any) => {
+        const index = localReportYears.value.findIndex(r => r.id === e.reportYear.id);
+        if (index !== -1) {
+            localReportYears.value[index] = e.reportYear;
+            localReportYears.value[index]._justUpdated = true;
+            setTimeout(() => {
+                if (localReportYears.value[index]) {
+                    localReportYears.value[index]._justUpdated = false;
+                }
+            }, 2000);
+        }
+    })
+    .listen('ReportYearDeleted', (e: any) => {
+        localReportYears.value = localReportYears.value.filter(r => r.id !== e.id);
+        toast({ title: 'Report Year Deleted', description: 'A report year was removed.', type: 'error' });
+    });
+
+onUnmounted(() => {
+    echo().leave('report-years');
+});
+
 const searchQuery = ref('');
 const statusTab = ref<'all' | 'published' | 'pending'>('all');
 const currentPage = ref(1);
 const perPage = 10;
 
 const counts = computed(() => ({
-    all: props.reportYears.length,
-    published: props.reportYears.filter((r) => r.status === 'published').length,
-    pending: props.reportYears.filter((r) => r.status === 'pending').length,
+    all: localReportYears.value.length,
+    published: localReportYears.value.filter((r) => r.status === 'published').length,
+    pending: localReportYears.value.filter((r) => r.status === 'pending').length,
 }));
 
 const filteredYears = computed((): ManagedReportYearListItem[] => {
-    let rows = [...props.reportYears];
+    let rows = [...localReportYears.value];
     if (statusTab.value !== 'all') {
         rows = rows.filter((r) => r.status === statusTab.value);
     }
@@ -230,8 +266,8 @@ function confirmDeleteReportYear(): void {
                                 <th scope="col" class="w-32">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr v-if="filteredYears.length === 0">
+                        <transition-group name="list" tag="tbody">
+                            <tr v-if="filteredYears.length === 0" key="empty">
                                 <td colspan="5" class="py-12 text-center text-sm text-slate-600">
                                     No reports found matching your criteria.
                                     <button
@@ -243,7 +279,12 @@ function confirmDeleteReportYear(): void {
                                     </button>
                                 </td>
                             </tr>
-                            <tr v-for="reportYear in paginatedYears" :key="reportYear.id">
+                            <tr
+                                v-for="reportYear in paginatedYears"
+                                :key="reportYear.id"
+                                class="transition-colors duration-500"
+                                :class="{ 'bg-blue-50/70 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.2)]': (reportYear as any)._justUpdated }"
+                            >
                                 <td>
                                     <span class="report-years-table-year">{{ reportYear.year }}</span>
                                 </td>
@@ -296,7 +337,7 @@ function confirmDeleteReportYear(): void {
                                     </div>
                                 </td>
                             </tr>
-                        </tbody>
+                        </transition-group>
                     </table>
                 </div>
 
@@ -383,3 +424,18 @@ function confirmDeleteReportYear(): void {
         </Dialog>
     </AppLayout>
 </template>
+
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+    transition: all 400ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: scale(0.98) translateY(10px);
+}
+.list-leave-active {
+    position: absolute;
+}
+</style>

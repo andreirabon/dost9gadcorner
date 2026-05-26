@@ -30,6 +30,7 @@ class UpdateReportYearRequest extends FormRequest
         $reportYear = $this->route('reportYear');
 
         return [
+            'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'year' => ['sometimes', 'required', 'integer', 'min:2000', 'max:2100', Rule::unique('report_years', 'year')->ignore($reportYear->id)],
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string', 'max:4000'],

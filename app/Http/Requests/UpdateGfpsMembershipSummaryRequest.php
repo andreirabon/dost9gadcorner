@@ -26,6 +26,7 @@ class UpdateGfpsMembershipSummaryRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'female_count' => ['sometimes', 'required', 'integer', 'min:0'],
             'male_count' => ['sometimes', 'required', 'integer', 'min:0'],
         ];

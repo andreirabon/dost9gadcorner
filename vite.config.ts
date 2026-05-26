@@ -22,6 +22,14 @@ export default defineConfig({
     optimizeDeps: {
         exclude: ['d3-org-chart'],
     },
+    server: {
+        proxy: {
+            '/app': {
+                target: 'ws://127.0.0.1:8080',
+                ws: true,
+            },
+        },
+    },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, 'resources/js'),

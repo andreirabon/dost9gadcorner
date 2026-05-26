@@ -45,27 +45,27 @@ class ReportYearPolicy
 
     public function updateScholarship(User $user, ReportYear $reportYear): bool
     {
-        return $this->isAdministrator($user) || $this->isRole($user, UserRole::SCHOLARSHIP);
+        return $this->isAdministrator($user) || $this->isRole($user, UserRole::SCHOLARSHIP) || $this->isRole($user, UserRole::GAD);
     }
 
     public function updateEmployeeStatuses(User $user, ReportYear $reportYear): bool
     {
-        return $this->isAdministrator($user) || $this->isRole($user, UserRole::HR);
+        return $this->isAdministrator($user) || $this->isRole($user, UserRole::HR) || $this->isRole($user, UserRole::GAD);
     }
 
     public function updateRstlMonthly(User $user, ReportYear $reportYear): bool
     {
-        return $this->isAdministrator($user) || $this->isRole($user, UserRole::RSTL);
+        return $this->isAdministrator($user) || $this->isRole($user, UserRole::RSTL) || $this->isRole($user, UserRole::GAD);
     }
 
     public function updateProgramFunding(User $user, ReportYear $reportYear): bool
     {
-        return $this->isAdministrator($user) || $this->isRole($user, UserRole::TOS);
+        return $this->isAdministrator($user) || $this->isRole($user, UserRole::TOS) || $this->isRole($user, UserRole::GAD);
     }
 
     public function delete(User $user, ReportYear $reportYear): bool
     {
-        return $this->isAdministrator($user);
+        return $this->isAdministrator($user) || $this->isRole($user, UserRole::GAD);
     }
 
     private function isAdministrator(User $user): bool

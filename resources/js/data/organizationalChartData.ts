@@ -69,9 +69,6 @@ export function getGfpsNodes(): OrgChartNode[] {
             title: 'Executive Committee — Co-Chairperson; Technical Working Group — Chairperson ',
         },
         { id: 4, pid: 3, name: 'JENNIFER A. PIDOR', title: 'Technical Working Group — Co-Chairperson ' },
-        { id: 5, pid: 3, name: 'Secretariat', title: 'Technical Working Group — Secretariat' },
-        { id: 6, pid: 5, name: 'MARIEFER T. UTAL', title: 'Secretariat ' },
-        { id: 7, pid: 5, name: 'AUBREY A. AMPARO', title: 'Secretariat ' },
         { id: 8, pid: 3, name: 'TWG Members', title: 'Technical Working Group — Members ' },
         { id: 9, pid: 8, name: 'THELMA E. DIEGO', title: 'Member — Technical Working Group ' },
         { id: 10, pid: 8, name: 'GERARDO F. PAROT', title: 'Member — Technical Working Group ' },
@@ -100,6 +97,9 @@ export function getGfpsNodes(): OrgChartNode[] {
         { id: 33, pid: 8, name: 'SHEILA S. BERNARDO', title: 'Member — Technical Working Group ' },
         { id: 34, pid: 8, name: 'MA. ELLAINE M. RAYMAN', title: 'Member — Technical Working Group ' },
         { id: 35, pid: 8, name: 'HERSON SANTIAGO S. FERNANDO Jr.', title: 'Member — Technical Working Group ' },
+        { id: 5, pid: 3, name: 'Secretariat', title: 'Technical Working Group — Secretariat' },
+        { id: 6, pid: 5, name: 'MARIEFER T. UTAL', title: 'Secretariat ' },
+        { id: 7, pid: 5, name: 'AUBREY A. AMPARO', title: 'Secretariat ' },
     ];
 }
 
@@ -107,15 +107,15 @@ export function getMoveNodes(): OrgChartNode[] {
     return [
         { id: 1, name: 'RONNEL B. GUNDOY', title: 'Chairperson' },
         { id: 2, pid: 1, name: 'JULIUS T. FOJAS', title: 'Co-Chairperson' },
-        /* Under Co-Chair: Secretariat first, then Focal Persons (array order defines child order in tree). */
-        { id: 8, pid: 2, name: 'Secretariat', title: 'Secretariat' },
-        { id: 9, pid: 8, name: 'HERSON SANTIAGO S. FERNANDO Jr.', title: 'Secretariat' },
-        { id: 10, pid: 8, name: 'CRIS-ANGELO B. PRIETO', title: 'Secretariat' },
-        { id: 11, pid: 8, name: 'KYLE ANGELO G. ADAS', title: 'Secretariat' },
+        /* Under Co-Chair: Focal Persons first, then Secretariat (array order defines child order in tree). */
         { id: 3, pid: 2, name: 'IAN C. AVENIDO', title: 'Focal Person ' },
         { id: 4, pid: 2, name: 'ROGER DAVE F. GRAMATICA', title: 'Focal Person ' },
         { id: 5, pid: 2, name: 'CHRISTIAN CARL R. RESENTE', title: 'Focal Person ' },
         { id: 6, pid: 2, name: 'MARC G. CACHIN', title: 'Focal Person ' },
         { id: 7, pid: 2, name: 'KIM R. CARUMBA', title: 'Focal Person ' },
+        { id: 8, pid: 2, name: 'Secretariat', title: 'Secretariat' },
+        { id: 9, pid: 8, name: 'HERSON SANTIAGO S. FERNANDO Jr.', title: 'Secretariat' },
+        { id: 10, pid: 8, name: 'CRIS-ANGELO B. PRIETO', title: 'Secretariat' },
+        { id: 11, pid: 8, name: 'KYLE ANGELO G. ADAS', title: 'Secretariat' },
     ];
 }

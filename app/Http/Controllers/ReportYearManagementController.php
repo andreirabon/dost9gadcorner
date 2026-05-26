@@ -24,6 +24,7 @@ use App\Services\Reports\PatchGfpsMembershipSummary;
 use App\Services\Reports\PatchProgramFundingSummaries;
 use App\Services\Reports\PatchReportYearAttributes;
 use App\Services\Reports\PatchRstlMonthlyBreakdowns;
+use App\Services\Reports\ConflictGuard;
 use App\Services\Reports\PatchScholarshipSummary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,18 @@ use Inertia\Response;
 
 class ReportYearManagementController extends Controller
 {
+    /**
+     * Extract the expected_updated_at value from a request.
+     *
+     * Returns `false` when the field is absent (skip conflict check),
+     * or `null`/string when explicitly provided.
+     */
+    private function expectedUpdatedAt(Request $request): string|false|null
+    {
+        return $request->has('expected_updated_at')
+            ? $request->input('expected_updated_at')
+            : false;
+    }
     public function index(): Response
     {
         $this->authorize('viewAny', ReportYear::class);
@@ -65,6 +78,8 @@ class ReportYearManagementController extends Controller
         $validated['published_at'] = $validated['status'] === ReportYear::STATUS_PUBLISHED ? now() : null;
 
         $reportYear = ReportYear::query()->create($validated);
+
+        \App\Events\ReportYearCreated::dispatch($reportYear);
 
         return to_route('report-years.edit', $reportYear);
     }
@@ -100,6 +115,15 @@ class ReportYearManagementController extends Controller
                 'id' => $sy->id,
                 'label' => $sy->name,
             ]),
+            'sectionTimestamps' => [
+                'metadata' => $reportYear->updated_at?->toIso8601String(),
+                'gfpsMembership' => $reportYear->gfpsMembershipSummary?->updated_at?->toIso8601String(),
+                'gfpsAssemblies' => $reportYear->gfpsAssemblyAttendances->max('updated_at')?->toIso8601String(),
+                'employeeStatuses' => $reportYear->employeeStatusBreakdowns->max('updated_at')?->toIso8601String(),
+                'scholarship' => $reportYear->scholarshipSummary?->updated_at?->toIso8601String(),
+                'rstlMonthly' => $reportYear->rstlMonthlyBreakdowns->max('updated_at')?->toIso8601String(),
+                'programFunding' => $reportYear->programFundingSummaries->max('updated_at')?->toIso8601String(),
+            ],
             'reportYear' => [
                 'id' => $reportYear->id,
                 'year' => $reportYear->year,
@@ -126,16 +150,24 @@ class ReportYearManagementController extends Controller
         ]);
     }
 
-    public function update(UpdateReportYearRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear): RedirectResponse
+    public function update(UpdateReportYearRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
+        $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
+
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description', 'status']);
+
+        \App\Events\ReportYearUpdated::dispatch($reportYear);
 
         return back();
     }
 
-    public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear): RedirectResponse
+    public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
+        $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
+
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description']);
+
+        \App\Events\ReportYearUpdated::dispatch($reportYear);
 
         return back();
     }
@@ -143,50 +175,77 @@ class ReportYearManagementController extends Controller
     public function destroy(ReportYear $reportYear): RedirectResponse
     {
         $this->authorize('delete', $reportYear);
-
+        
+        $id = $reportYear->id;
         $reportYear->delete();
+
+        \App\Events\ReportYearDeleted::dispatch($id);
 
         return to_route('report-years.index');
     }
 
-    public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, PatchGfpsMembershipSummary $patchGfpsMembership): RedirectResponse
+    public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, PatchGfpsMembershipSummary $patchGfpsMembership, ConflictGuard $conflictGuard): RedirectResponse
     {
+        $conflictGuard->assertFresh($reportYear->gfpsMembershipSummary, $this->expectedUpdatedAt($request));
+
         $patchGfpsMembership->apply($reportYear, $request->validated());
 
+        \App\Events\ReportYearUpdated::dispatch($reportYear);
+
         return back();
     }
 
-    public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear, PatchGfpsAssemblyAttendances $patchGfpsAssemblies): RedirectResponse
+    public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear, PatchGfpsAssemblyAttendances $patchGfpsAssemblies, ConflictGuard $conflictGuard): RedirectResponse
     {
+        $conflictGuard->assertRelationFresh($reportYear, 'gfpsAssemblyAttendances', $this->expectedUpdatedAt($request));
+
         $patchGfpsAssemblies->apply($reportYear, $request->validated('attendances'));
 
+        \App\Events\ReportYearUpdated::dispatch($reportYear);
+
         return back();
     }
 
-    public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, PatchEmployeeStatusBreakdowns $patchEmployeeStatuses): RedirectResponse
+    public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, PatchEmployeeStatusBreakdowns $patchEmployeeStatuses, ConflictGuard $conflictGuard): RedirectResponse
     {
+        $conflictGuard->assertRelationFresh($reportYear, 'employeeStatusBreakdowns', $this->expectedUpdatedAt($request));
+
         $patchEmployeeStatuses->apply($reportYear, $request->validated('breakdowns'));
 
+        \App\Events\ReportYearUpdated::dispatch($reportYear);
+
         return back();
     }
 
-    public function updateScholarship(UpdateScholarshipSummaryRequest $request, ReportYear $reportYear, PatchScholarshipSummary $patchScholarship): RedirectResponse
+    public function updateScholarship(UpdateScholarshipSummaryRequest $request, ReportYear $reportYear, PatchScholarshipSummary $patchScholarship, ConflictGuard $conflictGuard): RedirectResponse
     {
+        $conflictGuard->assertFresh($reportYear->scholarshipSummary, $this->expectedUpdatedAt($request));
+
         $patchScholarship->apply($reportYear, $request->validated());
 
+        \App\Events\ReportYearUpdated::dispatch($reportYear);
+
         return back();
     }
 
-    public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear, PatchRstlMonthlyBreakdowns $patchRstlMonthly): RedirectResponse
+    public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear, PatchRstlMonthlyBreakdowns $patchRstlMonthly, ConflictGuard $conflictGuard): RedirectResponse
     {
+        $conflictGuard->assertRelationFresh($reportYear, 'rstlMonthlyBreakdowns', $this->expectedUpdatedAt($request));
+
         $patchRstlMonthly->apply($reportYear, $request->validated('breakdowns'));
 
+        \App\Events\ReportYearUpdated::dispatch($reportYear);
+
         return back();
     }
 
-    public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, PatchProgramFundingSummaries $patchProgramFunding): RedirectResponse
+    public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, PatchProgramFundingSummaries $patchProgramFunding, ConflictGuard $conflictGuard): RedirectResponse
     {
+        $conflictGuard->assertRelationFresh($reportYear, 'programFundingSummaries', $this->expectedUpdatedAt($request));
+
         $patchProgramFunding->apply($reportYear, $request->validated('summaries'));
+
+        \App\Events\ReportYearUpdated::dispatch($reportYear);
 
         return back();
     }

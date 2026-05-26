@@ -27,6 +27,7 @@ class UpdateProgramFundingSummariesRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'summaries' => ['required', 'array', 'min:1'],
             'summaries.*.funding_program_id' => ['required', 'integer', Rule::exists('funding_programs', 'id')],
             'summaries.*.female_projects' => ['sometimes', 'required', 'integer', 'min:0'],

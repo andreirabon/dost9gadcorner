@@ -128,3 +128,13 @@ export interface ManagedReportYearListItem {
     status: 'pending' | 'published';
     publishedAt: string | null;
 }
+
+export interface SectionTimestamps {
+    metadata: string | null;
+    gfpsMembership: string | null;
+    gfpsAssemblies: string | null;
+    employeeStatuses: string | null;
+    scholarship: string | null;
+    rstlMonthly: string | null;
+    programFunding: string | null;
+}

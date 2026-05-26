@@ -27,6 +27,7 @@ class UpdateRstlMonthlyBreakdownsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'breakdowns' => ['required', 'array', 'min:1'],
             'breakdowns.*.report_month_id' => ['required', 'integer', Rule::exists('report_months', 'id')],
             'breakdowns.*.female_count' => ['sometimes', 'required', 'integer', 'min:0'],

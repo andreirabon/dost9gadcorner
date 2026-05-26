@@ -27,6 +27,7 @@ class UpdateGfpsAssemblyAttendancesRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'attendances' => ['required', 'array', 'min:1'],
             'attendances.*.period_id' => ['required', 'integer', Rule::exists('gfps_assembly_periods', 'id')],
             'attendances.*.female_count' => ['sometimes', 'required', 'integer', 'min:0'],

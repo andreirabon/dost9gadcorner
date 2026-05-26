@@ -6,7 +6,7 @@ defineOptions({
 });
 
 const MANDATE_TEXT =
-    'The Department of Science and Technology Region IX is mandated to mainstream Gender and Development in all regional policies, programs, and activities in accordance with the Constitution, the Magna Carta of Women (RA 9710), and PCW guidelines, ensuring that science, technology, and innovation initiatives are gender-responsive, inclusive, and equitable. ' +
+    'The Department of Science and Technology - Region IX is mandated to mainstream Gender and Development (GAD) in all regional policies, programs, and activities in accordance with the Constitution, the Magna Carta of Women (RA 9710), and PCW guidelines, ensuring that science, technology, and innovation initiatives are gender-responsive, inclusive, and equitable. ' +
     'DOST IX shall promote equal access and participation of women and men in science, research, innovation, and technology transfer; address region-specific gender issues, particularly among marginalized sectors; ensure a safe and respectful workplace; and institutionalize GAD mechanisms.';
 
 const bentoCardClass =
@@ -72,7 +72,7 @@ const headerIntroCardClass =
                     </div>
                     <div class="relative z-10">
                         <p class="text-base font-light leading-relaxed tracking-tight text-purple-100/90 sm:text-lg">
-                            Gender-responsive science, technology, and innovation that empowers people and drives inclusive, sustainable development.
+                            Gender-responsive science, technology, and Innovation (STI) for inclusive development.
                         </p>
                     </div>
                 </article>
@@ -83,7 +83,7 @@ const headerIntroCardClass =
                     </div>
                     <div class="relative z-10">
                         <p class="text-base font-light leading-relaxed tracking-tight text-purple-100/90 sm:text-lg">
-                            Advances gender-responsive science, technology and innovation that empowers people and drives inclusive, sustainable development.
+                           Advances gender-responsive science, technology and innovation that empowers people and drives inclusive, sustainable development.
                         </p>
                     </div>
                 </article>
@@ -92,26 +92,15 @@ const headerIntroCardClass =
                     <div class="relative z-10 mb-8 md:mb-10">
                         <h3 class="font-sans text-4xl font-bold tracking-tighter text-purple-100 sm:text-5xl lg:text-6xl">Goals.</h3>
                     </div>
-                    <div class="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-2">
-                        <div>
-                            <h4 class="font-sans text-sm font-semibold tracking-wide text-purple-100">Organization-Focused</h4>
-                            <ol
-                                class="mt-4 list-decimal space-y-3 pl-4 text-base font-light leading-relaxed text-purple-100/90 marker:text-fuchsia-300/70 sm:text-lg"
-                            >
-                                <li>To build robust gender-responsive institutional policies.</li>
-                                <li>To capacitate all DOST-IX employees on Gender and Development through continuous training and learning initiatives.</li>
-                            </ol>
-                        </div>
-                        <div>
-                            <h4 class="font-sans text-sm font-semibold tracking-wide text-purple-100">Client-Focused</h4>
-                            <ol
-                                class="mt-4 list-decimal space-y-3 pl-4 text-base font-light leading-relaxed text-purple-100/90 marker:text-fuchsia-300/70 sm:text-lg"
-                                start="3"
-                            >
-                                <li>Establish and maintain strategic partnerships with LGUs, academe, private sector, and civil society.</li>
-                                <li>To mainstream gender and development in all programs, activities, and projects, ensuring equitable outcomes.</li>
-                            </ol>
-                        </div>
+                    <div class="relative z-10">
+                        <ol
+                            class="list-decimal space-y-3 pl-4 text-base font-light leading-relaxed text-purple-100/90 marker:text-fuchsia-300/70 sm:text-lg"
+                        >
+                            <li>To build robust gender-responsive institutional policies.</li>
+                            <li>To capacitate all DOST-IX employees on Gender and Development through continuous training and learning initiatives.</li>
+                            <li>Establish and maintain strategic partnerships with LGUs, academe, private sector, and civil society.</li>
+                            <li>To mainstream gender and development in all programs, activities, and projects, ensuring equitable outcomes.</li>
+                        </ol>
                     </div>
                 </article>
             </div>

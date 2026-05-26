@@ -54,6 +54,6 @@ class User extends Authenticatable
 
     public function canDeleteReportYears(): bool
     {
-        return $this->role === UserRole::ADMINISTRATOR;
+        return $this->role === UserRole::ADMINISTRATOR || $this->role === UserRole::GAD;
     }
 }

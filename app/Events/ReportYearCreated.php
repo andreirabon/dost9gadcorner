@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Events;
+
+use App\Models\ReportYear;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class ReportYearCreated implements ShouldBroadcastNow
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public function __construct(
+        public ReportYear $reportYear
+    ) {}
+
+    public function broadcastOn(): array
+    {
+        return [
+            new PrivateChannel('report-years'),
+        ];
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'reportYear' => [
+                'id' => $this->reportYear->id,
+                'year' => $this->reportYear->year,
+                'title' => $this->reportYear->title,
+                'description' => $this->reportYear->description,
+                'status' => $this->reportYear->status,
+                'publishedAt' => $this->reportYear->published_at?->toIso8601String(),
+            ]
+        ];
+    }
+}
