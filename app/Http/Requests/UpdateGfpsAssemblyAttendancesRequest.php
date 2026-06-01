@@ -30,8 +30,8 @@ class UpdateGfpsAssemblyAttendancesRequest extends FormRequest
             'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'attendances' => ['required', 'array', 'min:1'],
             'attendances.*.period_id' => ['required', 'integer', Rule::exists('gfps_assembly_periods', 'id')],
-            'attendances.*.female_count' => ['sometimes', 'required', 'integer', 'min:0'],
-            'attendances.*.male_count' => ['sometimes', 'required', 'integer', 'min:0'],
+            'attendances.*.female_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'attendances.*.male_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
         ];
     }
 

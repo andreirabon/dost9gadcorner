@@ -16,7 +16,8 @@ class ReportYearUpdated implements ShouldBroadcastNow
 
     public function __construct(
         public ReportYear $reportYear,
-        public ?int $userId = null
+        public ?int $userId = null,
+        public ?string $section = null
     ) {}
 
     public function broadcastOn(): array
@@ -39,6 +40,7 @@ class ReportYearUpdated implements ShouldBroadcastNow
                 'publishedAt' => $this->reportYear->published_at?->toIso8601String(),
             ],
             'userId' => $this->userId,
+            'section' => $this->section,
         ];
     }
 }

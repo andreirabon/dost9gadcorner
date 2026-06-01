@@ -30,10 +30,10 @@ class UpdateProgramFundingSummariesRequest extends FormRequest
             'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'summaries' => ['required', 'array', 'min:1'],
             'summaries.*.funding_program_id' => ['required', 'integer', Rule::exists('funding_programs', 'id')],
-            'summaries.*.female_projects' => ['sometimes', 'required', 'integer', 'min:0'],
-            'summaries.*.female_amount' => ['sometimes', 'required', 'numeric', 'min:0'],
-            'summaries.*.male_projects' => ['sometimes', 'required', 'integer', 'min:0'],
-            'summaries.*.male_amount' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'summaries.*.female_projects' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'summaries.*.female_amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
+            'summaries.*.male_projects' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'summaries.*.male_amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
         ];
     }
 

@@ -143,18 +143,31 @@ const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id as number | null);
 
 echo().private('report-years')
-    .listen('ReportYearUpdated', (e: { reportYear: { id: number }; userId: number | null }) => {
-        if (e.reportYear.id === props.reportYear.id && e.userId !== currentUserId.value) {
-            // Store current timestamps before they change (for post-refresh comparison)
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(sectionTs.value));
-
-            toast({
-                title: 'Report Updated',
-                description: 'Another user has saved changes to this report. You may want to refresh to see the latest data.',
-                type: 'warning',
-                duration: 8000,
-            });
+    .listen('ReportYearUpdated', (e: { reportYear: { id: number }; userId: number | null; section: string | null }) => {
+        if (e.reportYear.id !== props.reportYear.id || e.userId === currentUserId.value) {
+            return;
         }
+
+        // Only notify if the updated section is visible to the current user
+        if (e.section && !visibleTabs.value.some(t => t.id === e.section)) {
+            return;
+        }
+
+        // Store current timestamps before they change (for post-refresh comparison)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sectionTs.value));
+
+        const sectionLabel = e.section
+            ? visibleTabs.value.find(t => t.id === e.section)?.name ?? e.section
+            : null;
+
+        toast({
+            title: 'Report Updated',
+            description: sectionLabel
+                ? `Another user has saved changes to "${sectionLabel}". You may want to refresh to see the latest data.`
+                : 'Another user has saved changes to this report. You may want to refresh to see the latest data.',
+            type: 'warning',
+            duration: 8000,
+        });
     });
 
 // Prevent memory leaks / ghost users on navigation

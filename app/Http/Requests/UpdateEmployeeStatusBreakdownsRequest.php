@@ -30,8 +30,8 @@ class UpdateEmployeeStatusBreakdownsRequest extends FormRequest
             'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'breakdowns' => ['required', 'array', 'min:1'],
             'breakdowns.*.employment_status_id' => ['required', 'integer', Rule::exists('employment_statuses', 'id')],
-            'breakdowns.*.female_count' => ['sometimes', 'required', 'integer', 'min:0'],
-            'breakdowns.*.male_count' => ['sometimes', 'required', 'integer', 'min:0'],
+            'breakdowns.*.female_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'breakdowns.*.male_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
         ];
     }
 

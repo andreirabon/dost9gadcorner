@@ -27,8 +27,8 @@ class UpdateGfpsMembershipSummaryRequest extends FormRequest
     {
         return [
             'expected_updated_at' => ['sometimes', 'nullable', 'string'],
-            'female_count' => ['sometimes', 'required', 'integer', 'min:0'],
-            'male_count' => ['sometimes', 'required', 'integer', 'min:0'],
+            'female_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'male_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
         ];
     }
 

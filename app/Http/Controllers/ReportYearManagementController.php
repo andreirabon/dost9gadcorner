@@ -160,7 +160,7 @@ class ReportYearManagementController extends Controller
 
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description', 'status']);
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id());
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'metadata');
 
         return back();
     }
@@ -171,7 +171,7 @@ class ReportYearManagementController extends Controller
 
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description']);
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id());
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'metadata');
 
         return back();
     }
@@ -194,7 +194,7 @@ class ReportYearManagementController extends Controller
 
         $patchGfpsMembership->apply($reportYear, $request->validated());
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id());
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'gfps_membership');
 
         return back();
     }
@@ -205,7 +205,7 @@ class ReportYearManagementController extends Controller
 
         $patchGfpsAssemblies->apply($reportYear, $request->validated('attendances'));
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id());
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'gfps_assemblies');
 
         return back();
     }
@@ -216,7 +216,7 @@ class ReportYearManagementController extends Controller
 
         $patchEmployeeStatuses->apply($reportYear, $request->validated('breakdowns'));
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id());
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'employee_status');
 
         return back();
     }
@@ -227,7 +227,7 @@ class ReportYearManagementController extends Controller
 
         $patchScholarship->apply($reportYear, $request->validated());
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id());
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'scholarship');
 
         return back();
     }
@@ -238,7 +238,7 @@ class ReportYearManagementController extends Controller
 
         $patchRstlMonthly->apply($reportYear, $request->validated('breakdowns'));
 
-        ReportYearUpdated::dispatch($reportYear);
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'rstl_monthly');
 
         return back();
     }
@@ -249,7 +249,7 @@ class ReportYearManagementController extends Controller
 
         $patchProgramFunding->apply($reportYear, $request->validated('summaries'));
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id());
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'program_funding');
 
         return back();
     }

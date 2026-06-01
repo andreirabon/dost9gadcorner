@@ -240,3 +240,34 @@ test('fresh rstl monthly save succeeds for multi-row section', function () {
         'female_count' => 55,
     ]);
 });
+
+test('metadata update sanitizes HTML tags from title and description', function () {
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2025]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/metadata", [
+            'title' => '<strong>Secure Title</strong>',
+            'description' => '<p>Paragraph</p> <strong>Bold</strong> Text',
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('report_years', [
+        'id' => $reportYear->id,
+        'title' => 'Secure Title',
+        'description' => 'Paragraph Bold Text',
+    ]);
+});
+
+test('numeric counts above maximum bounds are rejected', function () {
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2025]);
+
+    // Extremely high count exceeding max bound (2147483647)
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/gfps-membership", [
+            'female_count' => 999999999999,
+        ])
+        ->assertSessionHasErrors(['female_count']);
+});
+

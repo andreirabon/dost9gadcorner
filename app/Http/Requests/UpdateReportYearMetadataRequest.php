@@ -47,4 +47,19 @@ class UpdateReportYearMetadataRequest extends FormRequest
             $this->assertHasAtLeastOneField($validator, $this->only(['year', 'title', 'description']), ['year', 'title', 'description']);
         });
     }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('title')) {
+            $this->merge([
+                'title' => $this->input('title') !== null ? trim(strip_tags($this->input('title'))) : null,
+            ]);
+        }
+
+        if ($this->has('description')) {
+            $this->merge([
+                'description' => $this->input('description') !== null ? trim(strip_tags($this->input('description'))) : null,
+            ]);
+        }
+    }
 }
