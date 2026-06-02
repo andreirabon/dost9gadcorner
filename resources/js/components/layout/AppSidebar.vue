@@ -30,9 +30,13 @@ const mainNavItems = computed((): NavItem[] => {
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="sidebar" class="border-r border-white/10 shadow-none">
+    <Sidebar
+        collapsible="icon"
+        variant="sidebar"
+        class="border-r border-sidebar-border/70 bg-sidebar text-sidebar-foreground shadow-[inset_-1px_0_0_rgba(255,255,255,0.06)]"
+    >
         <SidebarHeader
-            class="border-b border-white/10 px-3 pt-4 pb-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3 group-data-[collapsible=icon]:pb-2"
+            class="border-b border-sidebar-border/70 px-3 pt-4 pb-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3 group-data-[collapsible=icon]:pb-2"
         >
             <div
                 class="flex items-start justify-between gap-2 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3"
@@ -60,7 +64,7 @@ const mainNavItems = computed((): NavItem[] => {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    class="h-9 w-9 shrink-0 rounded-md border border-white/10 bg-white/5 text-blue-300/50 shadow-sm transition-[background-color,color,transform] duration-300 hover:bg-white/10 hover:text-blue-100 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:outline-none group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
+                    class="h-9 w-9 shrink-0 rounded-md border border-blue-300/20 bg-blue-900/40 text-blue-100/70 shadow-sm transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-blue-200/35 hover:bg-blue-800/55 hover:text-blue-50 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-blue-300/50 focus-visible:outline-none group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
                     :aria-label="
                         isMobile
                             ? 'Close sidebar'
@@ -84,11 +88,11 @@ const mainNavItems = computed((): NavItem[] => {
             </div>
         </SidebarHeader>
 
-        <SidebarContent class="px-3 py-5">
+        <SidebarContent class="px-3 py-4">
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter class="border-t border-white/10 p-2">
+        <SidebarFooter class="border-t border-sidebar-border/70 p-2.5">
             <NavUser />
         </SidebarFooter>
         <SidebarRail />

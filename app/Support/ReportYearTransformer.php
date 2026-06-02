@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\FundingProgram;
 use App\Models\ProgramFundingSummary;
 use App\Models\ReportYear;
 use Illuminate\Support\Collection;
@@ -31,6 +32,11 @@ class ReportYearTransformer
      */
     public function toDetailArray(ReportYear $reportYear): array
     {
+        $setupFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'setup');
+        $cestFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'cest');
+        $setupFundingSummary = $this->sumFundingBreakdown($setupFundingBreakdown);
+        $cestFundingSummary = $this->sumFundingBreakdown($cestFundingBreakdown);
+
         return [
             'id' => $reportYear->id,
             'year' => (string) $reportYear->year,
@@ -53,8 +59,10 @@ class ReportYearTransformer
                         'maleCount' => (int) ($reportYear->scholarshipSummary?->male_count ?? 0),
                     ],
                     'rstlMonthly' => $this->transformRstlMonthlyBreakdowns($reportYear),
-                    'setupFunding' => $this->transformFundingSummary($reportYear, 'setup'),
-                    'cestFunding' => $this->transformFundingSummary($reportYear, 'cest'),
+                    'setupFunding' => $setupFundingSummary,
+                    'cestFunding' => $cestFundingSummary,
+                    'setupFundingBreakdown' => $setupFundingBreakdown,
+                    'cestFundingBreakdown' => $cestFundingBreakdown,
                 ],
         ];
     }
@@ -110,20 +118,56 @@ class ReportYearTransformer
     }
 
     /**
-     * @return array{maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}
+     * @return array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}>
      */
-    private function transformFundingSummary(ReportYear $reportYear, string $slug): array
+    private function transformFundingBreakdown(ReportYear $reportYear, string $prefix): array
     {
         /** @var Collection<int, ProgramFundingSummary> $fundingSummaries */
-        $fundingSummaries = $reportYear->programFundingSummaries;
+        $fundingSummaries = $reportYear->programFundingSummaries->keyBy('funding_program_id');
 
-        $summary = $fundingSummaries->first(fn (ProgramFundingSummary $item): bool => $item->fundingProgram?->slug === $slug);
+        return FundingProgram::query()
+            ->where(function ($query) use ($prefix): void {
+                $query
+                    ->where('slug', $prefix)
+                    ->orWhere('slug', 'like', $prefix.'-%');
+            })
+            ->orderBy('sort_order')
+            ->get(['id', 'name', 'slug'])
+            ->map(function (FundingProgram $program) use ($fundingSummaries): array {
+                /** @var ProgramFundingSummary|null $summary */
+                $summary = $fundingSummaries->get($program->id);
 
-        return [
-            'maleProjects' => (int) ($summary?->male_projects ?? 0),
-            'maleAmount' => (float) ($summary?->male_amount ?? 0),
-            'femaleProjects' => (int) ($summary?->female_projects ?? 0),
-            'femaleAmount' => (float) ($summary?->female_amount ?? 0),
-        ];
+                return [
+                    'label' => (string) $program->name,
+                    'slug' => (string) $program->slug,
+                    'maleProjects' => (int) ($summary?->male_projects ?? 0),
+                    'maleAmount' => (float) ($summary?->male_amount ?? 0),
+                    'femaleProjects' => (int) ($summary?->female_projects ?? 0),
+                    'femaleAmount' => (float) ($summary?->female_amount ?? 0),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}>  $rows
+     * @return array{maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}
+     */
+    private function sumFundingBreakdown(array $rows): array
+    {
+        return array_reduce($rows, function (array $carry, array $row): array {
+            $carry['maleProjects'] += $row['maleProjects'];
+            $carry['maleAmount'] += $row['maleAmount'];
+            $carry['femaleProjects'] += $row['femaleProjects'];
+            $carry['femaleAmount'] += $row['femaleAmount'];
+
+            return $carry;
+        }, [
+            'maleProjects' => 0,
+            'maleAmount' => 0.0,
+            'femaleProjects' => 0,
+            'femaleAmount' => 0.0,
+        ]);
     }
 }

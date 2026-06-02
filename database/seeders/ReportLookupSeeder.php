@@ -42,8 +42,14 @@ class ReportLookupSeeder extends Seeder
         ], ['month_number'], ['name', 'short_name']);
 
         FundingProgram::query()->upsert([
-            ['name' => 'SETUP', 'slug' => 'setup', 'sort_order' => 1],
-            ['name' => 'CEST', 'slug' => 'cest', 'sort_order' => 2],
+            ['name' => 'SETUP ZC/IC', 'slug' => 'setup-zc-ic', 'sort_order' => 1],
+            ['name' => 'SETUP ZSP', 'slug' => 'setup-zsp', 'sort_order' => 2],
+            ['name' => 'SETUP ZDS', 'slug' => 'setup-zds', 'sort_order' => 3],
+            ['name' => 'SETUP ZDN', 'slug' => 'setup-zdn', 'sort_order' => 4],
+            ['name' => 'CEST ZC/IC', 'slug' => 'cest-zc-ic', 'sort_order' => 5],
+            ['name' => 'CEST ZSP', 'slug' => 'cest-zsp', 'sort_order' => 6],
+            ['name' => 'CEST ZDS', 'slug' => 'cest-zds', 'sort_order' => 7],
+            ['name' => 'CEST ZDN', 'slug' => 'cest-zdn', 'sort_order' => 8],
         ], ['slug'], ['name', 'sort_order']);
 
         $this->call(SchoolYearSeeder::class);

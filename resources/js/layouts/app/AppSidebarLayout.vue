@@ -30,7 +30,7 @@ withDefaults(defineProps<Props>(), {
 <template>
     <AppShell variant="sidebar">
         <AppSidebar />
-        <AppContent variant="sidebar" class="flex min-h-0 flex-1 flex-col overflow-x-hidden">
+        <AppContent variant="sidebar" class="app-main-shell flex min-h-0 flex-1 flex-col overflow-x-hidden">
             <div
                 v-if="breadcrumbs.length === 0"
                 class="flex h-12 shrink-0 items-center border-b border-sidebar-border/70 bg-background px-3 md:hidden"

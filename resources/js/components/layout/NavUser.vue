@@ -24,11 +24,11 @@ function handleLogout(): void {
             <div class="flex w-full flex-col gap-3">
 
                 <div
-                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-white/10 bg-blue-900/25 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)]"
+                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-blue-200/15 bg-blue-950/35 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_36px_-22px_rgba(0,0,0,0.65)]"
                 >
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0 flex-1 text-left">
-                            <p class="text-[10px] font-semibold uppercase tracking-widest text-blue-300/50">Username</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-widest text-blue-200/55">Signed in as</p>
                             <p
                                 class="mt-0.5 truncate text-[13.5px] font-medium leading-snug tracking-tight text-blue-50"
                                 :title="displayHandle"
@@ -37,7 +37,7 @@ function handleLogout(): void {
                             </p>
                         </div>
                         <Link
-                            class="inline-flex h-8 items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 text-xs font-semibold text-red-400 shadow-sm transition-all duration-300 hover:border-red-500/40 hover:bg-red-500/20 hover:text-red-300 active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
+                            class="inline-flex h-8 items-center justify-center rounded-lg border border-red-300/25 bg-red-500/10 px-2.5 text-xs font-semibold text-red-200 shadow-sm transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-red-200/40 hover:bg-red-500/20 hover:text-red-100 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/55"
                             method="post"
                             :href="route('logout')"
                             as="button"

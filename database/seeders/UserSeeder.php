@@ -51,6 +51,10 @@ class UserSeeder extends Seeder
             ['username' => 'HRStaff', 'role' => UserRole::HR],
             ['username' => 'RSTLStaff', 'role' => UserRole::RSTL],
             ['username' => 'TOSStaff', 'role' => UserRole::TOS],
+            ['username' => 'toszcic', 'role' => UserRole::TOS],
+            ['username' => 'toszsp', 'role' => UserRole::TOS],
+            ['username' => 'toszds', 'role' => UserRole::TOS],
+            ['username' => 'toszdn', 'role' => UserRole::TOS],
         ];
 
         Model::unguarded(function () use ($rows, $password): void {

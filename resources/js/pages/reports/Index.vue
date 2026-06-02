@@ -428,12 +428,14 @@ function confirmDeleteReportYear(): void {
 <style scoped>
 .list-enter-active,
 .list-leave-active {
-    transition: all 400ms cubic-bezier(0.23, 1, 0.32, 1);
+    transition-property: opacity, transform;
+    transition-duration: 320ms;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 }
 .list-enter-from,
 .list-leave-to {
     opacity: 0;
-    transform: scale(0.98) translateY(10px);
+    transform: scale(0.97) translateY(8px);
 }
 .list-leave-active {
     position: absolute;

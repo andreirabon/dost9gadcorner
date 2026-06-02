@@ -22,13 +22,17 @@ const user = usePage().props.auth.user! as User;
         <Head title="Profile settings" />
 
         <SettingsLayout>
-            <div class="flex flex-col space-y-6">
+            <div class="app-surface-card rounded-2xl p-5 sm:p-6">
                 <HeadingSmall title="Profile" description="Your sign-in username" />
 
-                <div class="rounded-lg border border-neutral-200 bg-neutral-50/90 p-4">
-                    <p class="text-sm font-medium text-foreground">Username</p>
-                    <p class="mt-1.5 font-sans text-sm font-medium tabular-nums tracking-tight text-muted-foreground">{{ user.username ?? '—' }}</p>
-                    <p class="mt-2 text-xs leading-relaxed text-muted-foreground">Contact an administrator to change this.</p>
+                <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+                    <p class="text-xs font-semibold tracking-[0.14em] text-slate-500 uppercase">Username</p>
+                    <p class="mt-1.5 font-sans text-base font-semibold tabular-nums tracking-tight text-slate-900">
+                        {{ user.username ?? '—' }}
+                    </p>
+                    <p class="mt-2 text-sm leading-relaxed text-slate-600">
+                        Contact an administrator to change this value.
+                    </p>
                 </div>
             </div>
 

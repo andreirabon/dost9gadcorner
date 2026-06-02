@@ -28,7 +28,7 @@ class ReportYear2025Seeder extends Seeder
                 ['year' => 2025],
                 [
                     'title' => '2025 Sex Disaggregated Data Report',
-                    'description' => 'Data report for 2025 covering DOST IX employees, RSTL services, SETUP, and CEST programs.',
+                    'description' => 'Data report for 2025 covering DOST IX employees, RSTL services, and categorized SETUP/CEST programs.',
                     'status' => ReportYear::STATUS_PUBLISHED,
                     'published_at' => now(),
                 ],
@@ -114,29 +114,29 @@ class ReportYear2025Seeder extends Seeder
             }
 
             $fundingPrograms = FundingProgram::query()->pluck('id', 'slug');
+            $zeroFundingValues = [
+                'male_projects' => 0,
+                'male_amount' => 0.00,
+                'female_projects' => 0,
+                'female_amount' => 0.00,
+            ];
 
-            // Amounts are in PHP. Values below are rounded demo totals so seed data is easy to read
-            // in admin forms (plain number inputs do not show thousands separators).
             foreach ([
-                'setup' => [
-                    'male_projects' => 12,
-                    'male_amount' => 33_200_000.00,
-                    'female_projects' => 8,
-                    'female_amount' => 16_950_000.00,
-                ],
-                'cest' => [
-                    'male_projects' => 9,
-                    'male_amount' => 14_750_000.00,
-                    'female_projects' => 5,
-                    'female_amount' => 14_700_000.00,
-                ],
-            ] as $slug => $values) {
+                'setup-zc-ic',
+                'setup-zsp',
+                'setup-zds',
+                'setup-zdn',
+                'cest-zc-ic',
+                'cest-zsp',
+                'cest-zds',
+                'cest-zdn',
+            ] as $slug) {
                 ProgramFundingSummary::query()->updateOrCreate(
                     [
                         'report_year_id' => $reportYear->id,
                         'funding_program_id' => $fundingPrograms[$slug],
                     ],
-                    $values,
+                    $zeroFundingValues,
                 );
             }
         });

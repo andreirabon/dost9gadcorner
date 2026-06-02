@@ -49,6 +49,11 @@ export interface FundingSummaryData {
     femaleAmount: number;
 }
 
+export interface FundingCategorySummaryData extends FundingSummaryData {
+    label: string;
+    slug: string;
+}
+
 export interface ReportYearData {
     gfpsMembership: GfpsMembershipData;
     gfpsAssemblies: GfpsAssemblyDataRow[];
@@ -57,6 +62,8 @@ export interface ReportYearData {
     rstlMonthly: RstlMonthlyDataRow[];
     setupFunding: FundingSummaryData;
     cestFunding: FundingSummaryData;
+    setupFundingBreakdown: FundingCategorySummaryData[];
+    cestFundingBreakdown: FundingCategorySummaryData[];
 }
 
 export interface EditableGfpsAssemblyRow {

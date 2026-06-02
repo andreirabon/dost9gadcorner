@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ReportBackNavLink from '@/components/reports/ReportBackNavLink.vue';
 import type { YearItem } from '@/types';
-import type { FundingSummaryData, GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow } from '@/types/reports';
+import type { FundingCategorySummaryData, FundingSummaryData, GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow } from '@/types/reports';
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const AssemblyStackedBarChart = defineAsyncComponent(() => import('@/components/charts/AssemblyStackedBarChart.vue'));
@@ -30,6 +30,111 @@ const employeesData = computed<GfpsAssemblyDataRow[]>(() => reportData.value?.em
 const rstlWarmBodiesData = computed<RstlMonthlyDataRow[]>(() => reportData.value?.rstlMonthly ?? []);
 const setupFundingData = computed<FundingSummaryData>(() => reportData.value?.setupFunding ?? emptyFundingData);
 const cestFundingData = computed<FundingSummaryData>(() => reportData.value?.cestFunding ?? emptyFundingData);
+const setupFundingBreakdown = computed<FundingCategorySummaryData[]>(() => reportData.value?.setupFundingBreakdown ?? []);
+const cestFundingBreakdown = computed<FundingCategorySummaryData[]>(() => reportData.value?.cestFundingBreakdown ?? []);
+
+const sumFundingRows = (rows: FundingCategorySummaryData[]): FundingSummaryData =>
+    rows.reduce<FundingSummaryData>(
+        (carry, row) => ({
+            maleProjects: carry.maleProjects + row.maleProjects,
+            maleAmount: carry.maleAmount + row.maleAmount,
+            femaleProjects: carry.femaleProjects + row.femaleProjects,
+            femaleAmount: carry.femaleAmount + row.femaleAmount,
+        }),
+        { ...emptyFundingData },
+    );
+
+const setupFundingRows = computed<FundingCategorySummaryData[]>(() => {
+    if (setupFundingBreakdown.value.length > 0) {
+        return setupFundingBreakdown.value;
+    }
+
+    if (setupFundingData.value.maleProjects === 0 && setupFundingData.value.femaleProjects === 0) {
+        return [];
+    }
+
+    return [
+        {
+            label: 'SETUP',
+            slug: 'setup',
+            ...setupFundingData.value,
+        },
+    ];
+});
+
+const cestFundingRows = computed<FundingCategorySummaryData[]>(() => {
+    if (cestFundingBreakdown.value.length > 0) {
+        return cestFundingBreakdown.value;
+    }
+
+    if (cestFundingData.value.maleProjects === 0 && cestFundingData.value.femaleProjects === 0) {
+        return [];
+    }
+
+    return [
+        {
+            label: 'CEST',
+            slug: 'cest',
+            ...cestFundingData.value,
+        },
+    ];
+});
+
+const selectedSetupCategorySlug = ref<string | null>(null);
+const selectedCestCategorySlug = ref<string | null>(null);
+
+const syncSelectedFundingCategory = (
+    rows: FundingCategorySummaryData[],
+    selectedSlug: { value: string | null },
+): void => {
+    if (rows.length === 0) {
+        selectedSlug.value = null;
+        return;
+    }
+
+    if (selectedSlug.value === null || !rows.some((row) => row.slug === selectedSlug.value)) {
+        selectedSlug.value = rows[0].slug;
+    }
+};
+
+watch(
+    setupFundingRows,
+    (rows) => {
+        syncSelectedFundingCategory(rows, selectedSetupCategorySlug);
+    },
+    { immediate: true },
+);
+
+watch(
+    cestFundingRows,
+    (rows) => {
+        syncSelectedFundingCategory(rows, selectedCestCategorySlug);
+    },
+    { immediate: true },
+);
+
+const selectedSetupCategory = computed<FundingCategorySummaryData | null>(
+    () => setupFundingRows.value.find((row) => row.slug === selectedSetupCategorySlug.value) ?? null,
+);
+
+const selectedCestCategory = computed<FundingCategorySummaryData | null>(
+    () => cestFundingRows.value.find((row) => row.slug === selectedCestCategorySlug.value) ?? null,
+);
+
+const selectSetupCategory = (slug: string): void => {
+    selectedSetupCategorySlug.value = slug;
+};
+
+const selectCestCategory = (slug: string): void => {
+    selectedCestCategorySlug.value = slug;
+};
+
+const fundingCategoryButtonClass = (isActive: boolean): string[] => [
+    'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold tracking-wide transition-[background-color,border-color,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40',
+    isActive
+        ? 'border-purple-500 bg-purple-600 text-white shadow-sm'
+        : 'border-purple-400/35 bg-purple-900/55 text-purple-100 hover:border-purple-400/55 hover:bg-purple-900/75 report-light:border-slate-300 report-light:bg-slate-50 report-light:text-slate-700 report-light:hover:border-slate-400 report-light:hover:bg-slate-100',
+];
 
 const percentage = (value: number, total: number): number => {
     if (total === 0) {
@@ -93,19 +198,27 @@ const rstlStats = computed(() => {
     };
 });
 
-const setupStats = computed(() => ({
-    totalProjects: setupFundingData.value.maleProjects + setupFundingData.value.femaleProjects,
-    totalAmount: setupFundingData.value.maleAmount + setupFundingData.value.femaleAmount,
-    maleProjects: setupFundingData.value.maleProjects,
-    femaleProjects: setupFundingData.value.femaleProjects,
-}));
+const setupStats = computed(() => {
+    const totals = sumFundingRows(setupFundingRows.value);
 
-const cestStats = computed(() => ({
-    totalProjects: cestFundingData.value.maleProjects + cestFundingData.value.femaleProjects,
-    totalAmount: cestFundingData.value.maleAmount + cestFundingData.value.femaleAmount,
-    maleProjects: cestFundingData.value.maleProjects,
-    femaleProjects: cestFundingData.value.femaleProjects,
-}));
+    return {
+        totalProjects: totals.maleProjects + totals.femaleProjects,
+        totalAmount: totals.maleAmount + totals.femaleAmount,
+        maleProjects: totals.maleProjects,
+        femaleProjects: totals.femaleProjects,
+    };
+});
+
+const cestStats = computed(() => {
+    const totals = sumFundingRows(cestFundingRows.value);
+
+    return {
+        totalProjects: totals.maleProjects + totals.femaleProjects,
+        totalAmount: totals.maleAmount + totals.femaleAmount,
+        maleProjects: totals.maleProjects,
+        femaleProjects: totals.femaleProjects,
+    };
+});
 
 const totalFemaleAcrossPrograms = computed(
     () => gfpsStats.value.femaleCount + employeesStats.value.femaleCount + scholarsStats.value.femaleCount + rstlStats.value.femaleCount,
@@ -117,9 +230,10 @@ const totalMaleAcrossPrograms = computed(
 
 const combinedFundingAmount = computed(() => setupStats.value.totalAmount + cestStats.value.totalAmount);
 const combinedProjectsCount = computed(() => setupStats.value.totalProjects + cestStats.value.totalProjects);
+const combinedFundingCategories = computed(() => setupFundingRows.value.length + cestFundingRows.value.length);
 
-type TabType = 'Overview' | 'GFPS' | 'DOST IX Employees' | 'Scholarship' | 'RSTL' | 'SETUP' | 'CEST';
-const tabs: TabType[] = ['Overview', 'GFPS', 'DOST IX Employees', 'Scholarship', 'RSTL', 'SETUP', 'CEST'];
+type TabType = 'Overview' | 'GFPS' | 'DOST IX Employees' | 'Scholarship' | 'RSTL' | 'Program Funding' | 'SETUP' | 'CEST';
+const tabs: TabType[] = ['Overview', 'GFPS', 'DOST IX Employees', 'Scholarship', 'RSTL', 'Program Funding', 'SETUP', 'CEST'];
 const activeTab = ref<TabType>('Overview');
 const isChartLoading = ref(false);
 let openLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -218,6 +332,14 @@ const overviewPrograms = computed<
         primaryValue: rstlStats.value.totalCustomers,
         secondaryLabel: 'Female count',
         secondaryValue: rstlStats.value.femaleCount,
+    },
+    {
+        tab: 'Program Funding',
+        title: 'Program Funding',
+        primaryLabel: 'Funding categories',
+        primaryValue: combinedFundingCategories.value,
+        secondaryLabel: 'Combined funding',
+        secondaryValue: formatCurrency(combinedFundingAmount.value),
     },
     {
         tab: 'SETUP',
@@ -547,8 +669,69 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <div v-else-if="activeTab === 'SETUP'" class="space-y-4 md:space-y-6">
+                <div v-else-if="activeTab === 'Program Funding'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
+                        <div class="report-view-metric">
+                            <p class="report-view-metric-label">Combined Projects</p>
+                            <p class="report-view-metric-value">{{ combinedProjectsCount }}</p>
+                        </div>
+                        <div class="report-view-metric">
+                            <p class="report-view-metric-label">Combined Funding</p>
+                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(combinedFundingAmount) }}</p>
+                        </div>
+                        <div class="report-view-metric">
+                            <p class="report-view-metric-label">SETUP Funding</p>
+                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(setupStats.totalAmount) }}</p>
+                            <p class="report-view-metric-meta">{{ setupFundingRows.length }} Categories</p>
+                        </div>
+                        <div class="report-view-metric">
+                            <p class="report-view-metric-label">CEST Funding</p>
+                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(cestStats.totalAmount) }}</p>
+                            <p class="report-view-metric-meta">{{ cestFundingRows.length }} Categories</p>
+                        </div>
+                    </div>
+
+                    <div class="report-view-block">
+                        <div class="report-view-chart-head">
+                            <h3 class="report-view-block-title">SETUP Categories</h3>
+                            <p class="report-view-block-desc">Funding split by category • {{ year.year }}</p>
+                        </div>
+                        <div v-if="setupFundingRows.length === 0" class="report-view-block-desc">No SETUP category data yet.</div>
+                        <div v-else class="report-view-category-grid">
+                            <div v-for="category in setupFundingRows" :key="category.slug" class="report-view-quick-item">
+                                <p class="report-view-quick-title">{{ category.label }}</p>
+                                <p class="report-view-quick-label">Projects</p>
+                                <p class="report-view-quick-value">{{ category.maleProjects + category.femaleProjects }}</p>
+                                <p class="report-view-quick-label">Funding</p>
+                                <p class="report-view-quick-value-sm">{{ formatCurrency(category.maleAmount + category.femaleAmount) }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-view-block">
+                        <div class="report-view-chart-head">
+                            <h3 class="report-view-block-title">CEST Categories</h3>
+                            <p class="report-view-block-desc">Funding split by category • {{ year.year }}</p>
+                        </div>
+                        <div v-if="cestFundingRows.length === 0" class="report-view-block-desc">No CEST category data yet.</div>
+                        <div v-else class="report-view-category-grid">
+                            <div v-for="category in cestFundingRows" :key="category.slug" class="report-view-quick-item">
+                                <p class="report-view-quick-title">{{ category.label }}</p>
+                                <p class="report-view-quick-label">Projects</p>
+                                <p class="report-view-quick-value">{{ category.maleProjects + category.femaleProjects }}</p>
+                                <p class="report-view-quick-label">Funding</p>
+                                <p class="report-view-quick-value-sm">{{ formatCurrency(category.maleAmount + category.femaleAmount) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-else-if="activeTab === 'SETUP'" class="space-y-4 md:space-y-6">
+                    <div class="report-view-metrics report-view-metrics--five-up">
+                        <div class="report-view-metric">
+                            <p class="report-view-metric-label">Categories</p>
+                            <p class="report-view-metric-value">{{ setupFundingRows.length }}</p>
+                        </div>
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Total Projects</p>
                             <p class="report-view-metric-value">{{ setupStats.totalProjects }}</p>
@@ -567,19 +750,42 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <div class="report-view-block">
+                    <div v-if="setupFundingRows.length === 0" class="report-view-block">
                         <div class="report-view-chart-head">
                             <h3 class="report-view-block-title">Small Enterprise Technology Upgrading Program (SETUP)</h3>
-                            <p class="report-view-block-desc">Projects funded by sex • {{ year.year }}</p>
+                            <p class="report-view-block-desc">No category data yet for {{ year.year }}</p>
                         </div>
-                        <div class="report-chart-panel">
-                            <SetupFundingChart :data="setupFundingData" />
+                    </div>
+
+                    <div v-else class="report-view-block space-y-4">
+                        <div class="report-view-chart-head">
+                            <h3 class="report-view-block-title">Small Enterprise Technology Upgrading Program (SETUP)</h3>
+                            <p class="report-view-block-desc">Select category to preview chart • {{ year.year }}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-for="category in setupFundingRows"
+                                :key="category.slug"
+                                type="button"
+                                :class="fundingCategoryButtonClass(selectedSetupCategorySlug === category.slug)"
+                                :aria-pressed="selectedSetupCategorySlug === category.slug"
+                                @click="selectSetupCategory(category.slug)"
+                            >
+                                {{ category.label }}
+                            </button>
+                        </div>
+                        <div v-if="selectedSetupCategory" class="report-chart-panel">
+                            <SetupFundingChart :data="selectedSetupCategory" :title="selectedSetupCategory.label" />
                         </div>
                     </div>
                 </div>
 
                 <div v-else-if="activeTab === 'CEST'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
+                    <div class="report-view-metrics report-view-metrics--five-up">
+                        <div class="report-view-metric">
+                            <p class="report-view-metric-label">Categories</p>
+                            <p class="report-view-metric-value">{{ cestFundingRows.length }}</p>
+                        </div>
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Total Projects</p>
                             <p class="report-view-metric-value">{{ cestStats.totalProjects }}</p>
@@ -598,13 +804,32 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <div class="report-view-block">
+                    <div v-if="cestFundingRows.length === 0" class="report-view-block">
                         <div class="report-view-chart-head">
                             <h3 class="report-view-block-title">Community Empowerment thru Science and Technology (CEST)</h3>
-                            <p class="report-view-block-desc">Projects funded by sex • {{ year.year }}</p>
+                            <p class="report-view-block-desc">No category data yet for {{ year.year }}</p>
                         </div>
-                        <div class="report-chart-panel">
-                            <CestFundingChart :data="cestFundingData" />
+                    </div>
+
+                    <div v-else class="report-view-block space-y-4">
+                        <div class="report-view-chart-head">
+                            <h3 class="report-view-block-title">Community Empowerment thru Science and Technology (CEST)</h3>
+                            <p class="report-view-block-desc">Select category to preview chart • {{ year.year }}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-for="category in cestFundingRows"
+                                :key="category.slug"
+                                type="button"
+                                :class="fundingCategoryButtonClass(selectedCestCategorySlug === category.slug)"
+                                :aria-pressed="selectedCestCategorySlug === category.slug"
+                                @click="selectCestCategory(category.slug)"
+                            >
+                                {{ category.label }}
+                            </button>
+                        </div>
+                        <div v-if="selectedCestCategory" class="report-chart-panel">
+                            <CestFundingChart :data="selectedCestCategory" :title="selectedCestCategory.label" />
                         </div>
                     </div>
                 </div>

@@ -24,10 +24,10 @@ const isIconOnly = computed(() => !isMobile.value && !open.value);
 <template>
     <header
         v-if="breadcrumbs && breadcrumbs.length > 0"
-        class="flex h-14 shrink-0 items-center gap-2 border-b border-sidebar-border/70 px-3 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sm:h-16 sm:px-4 md:px-6"
+        class="app-topbar-surface sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 px-3 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 sm:h-16 sm:px-4 md:px-6"
     >
         <SidebarTrigger
-            class="shrink-0 rounded-md border border-sidebar-border/80 bg-background shadow-sm md:hidden"
+            class="shrink-0 rounded-md border border-slate-300/80 bg-white/90 text-slate-700 shadow-sm transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-slate-400 hover:bg-white hover:text-slate-900 active:scale-[0.97] md:hidden"
             aria-label="Open sidebar"
         />
         <div class="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
@@ -37,7 +37,7 @@ const isIconOnly = computed(() => !isMobile.value && !open.value);
             type="button"
             variant="outline"
             size="icon"
-            class="hidden shrink-0 rounded-md shadow-sm md:inline-flex"
+            class="hidden h-9 w-9 shrink-0 rounded-md border border-slate-300/80 bg-white/90 text-slate-700 shadow-sm transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-slate-400 hover:bg-white hover:text-slate-900 active:scale-[0.97] md:inline-flex"
             :aria-label="
                 isIconOnly ? 'Expand sidebar to full width' : 'Collapse sidebar to icon strip'
             "

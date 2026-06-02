@@ -11,6 +11,7 @@ use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\RstlMonthlyBreakdown;
 use App\Models\ScholarshipSummary;
+use App\Models\SchoolYear;
 use Database\Seeders\ReportLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -37,7 +38,7 @@ test('homepage lists only published report years and hides draft report pages', 
         'male_count' => 6,
     ]);
 
-    $schoolYear = \App\Models\SchoolYear::query()->where('name', '2025-2026')->first();
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
 
     ScholarshipSummary::query()->create([
         'report_year_id' => $publishedYear->id,
@@ -87,6 +88,9 @@ test('homepage lists only published report years and hides draft report pages', 
         ]);
     }
 
+    $setupCategoryCount = FundingProgram::query()->where('slug', 'like', 'setup-%')->count();
+    $cestCategoryCount = FundingProgram::query()->where('slug', 'like', 'cest-%')->count();
+
     $this->get('/')
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
@@ -108,8 +112,10 @@ test('homepage lists only published report years and hides draft report pages', 
             ->where('year.reportData.gfpsAssemblies.0.label', '1st Assembly')
             ->where('year.reportData.employeeStatuses.0.label', 'Plantilla')
             ->where('year.reportData.scholarship.schoolYearLabel', '2025-2026')
-            ->where('year.reportData.setupFunding.maleProjects', 12)
-            ->where('year.reportData.cestFunding.femaleProjects', 8)
+            ->where('year.reportData.setupFunding.maleProjects', 12 * $setupCategoryCount)
+            ->where('year.reportData.cestFunding.femaleProjects', 8 * $cestCategoryCount)
+            ->has('year.reportData.setupFundingBreakdown', $setupCategoryCount)
+            ->has('year.reportData.cestFundingBreakdown', $cestCategoryCount)
         );
 
     $this->get(route('reports.show', $pendingYear))->assertNotFound();

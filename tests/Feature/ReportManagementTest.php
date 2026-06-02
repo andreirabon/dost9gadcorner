@@ -105,6 +105,7 @@ test('admin can delete a report year', function () {
 
 test('authenticated user can view and update normalized report sections', function () {
     $this->seed(ReportLookupSeeder::class);
+    $programCount = FundingProgram::query()->count();
 
     $user = User::factory()->create();
     $reportYear = ReportYear::factory()->create([
@@ -120,7 +121,7 @@ test('authenticated user can view and update normalized report sections', functi
             ->has('reportYear.gfpsAssemblies', 4)
             ->has('reportYear.employeeStatuses', 4)
             ->has('reportYear.rstlMonthly', 12)
-            ->has('reportYear.programFunding', 2)
+            ->has('reportYear.programFunding', $programCount)
         );
 
     $periods = GfpsAssemblyPeriod::query()->orderBy('sort_order')->get();
@@ -199,7 +200,7 @@ test('authenticated user can view and update normalized report sections', functi
     $this->assertDatabaseCount('gfps_assembly_attendances', 4);
     $this->assertDatabaseCount('employee_status_breakdowns', 4);
     $this->assertDatabaseCount('rstl_monthly_breakdowns', 12);
-    $this->assertDatabaseCount('program_funding_summaries', 2);
+    $this->assertDatabaseCount('program_funding_summaries', $programCount);
     $this->assertDatabaseHas('scholarship_summaries', [
         'report_year_id' => $reportYear->id,
         'school_year_id' => $schoolYear->id,

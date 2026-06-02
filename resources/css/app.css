@@ -151,6 +151,43 @@
     }
 }
 
+@layer components {
+    .app-main-shell {
+        position: relative;
+        isolation: isolate;
+        background-color: rgb(248 250 252);
+        color: rgb(15 23 42);
+    }
+
+    .app-main-shell::before {
+        content: '';
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(120% 80% at 0% 0%, rgb(59 130 246 / 0.08), transparent 52%),
+            radial-gradient(95% 70% at 100% 100%, rgb(14 165 233 / 0.07), transparent 50%);
+        opacity: 0.9;
+    }
+
+    .app-main-shell > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .app-topbar-surface {
+        border-bottom: 1px solid color-mix(in oklab, var(--color-sidebar-border) 55%, white);
+        background-color: rgb(248 250 252 / 0.86);
+        backdrop-filter: blur(14px);
+    }
+
+    .app-surface-card {
+        border: 1px solid rgb(148 163 184 / 0.22);
+        background-color: rgb(255 255 255 / 0.88);
+        box-shadow: 0 14px 30px -24px rgb(15 23 42 / 0.32);
+    }
+}
+
 /* Project Card Styles - Mobile-optimized (transform-only transition for perf) */
 .project-card {
     transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -1546,6 +1583,10 @@
         @apply grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4;
     }
 
+    .report-view-metrics--five-up {
+        @apply md:grid-cols-5;
+    }
+
     .report-view-metric {
         @apply rounded-xl border border-purple-400/35 bg-purple-900/55 p-4 shadow-sm ring-1 ring-white/10 md:p-5 report-light:border-slate-200 report-light:bg-white/90;
     }
@@ -1614,6 +1655,10 @@
 
     .report-view-quick-grid {
         @apply grid gap-3 sm:grid-cols-2 xl:grid-cols-3;
+    }
+
+    .report-view-category-grid {
+        @apply grid gap-3 sm:grid-cols-2;
     }
 
     .report-view-quick-item {
