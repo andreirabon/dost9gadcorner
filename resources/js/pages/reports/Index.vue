@@ -429,7 +429,7 @@ function confirmDeleteReportYear(): void {
 .list-enter-active,
 .list-leave-active {
     transition-property: opacity, transform;
-    transition-duration: 320ms;
+    transition-duration: 200ms;
     transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 }
 .list-enter-from,

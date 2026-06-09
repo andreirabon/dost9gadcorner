@@ -636,7 +636,7 @@ watch(
  <Head :title="`Manage ${reportYear.year} report`" />
 
  <div class="report-years-inner report-years-inner--edit">
- <header class="report-years-edit-header">
+ <header class="report-years-edit-header animate-fade-in-up">
  <div class="report-years-edit-intro">
  <div class="report-years-edit-hero">
  <div class="report-years-edit-hero-top">
@@ -734,7 +734,7 @@ class="ml-1.5 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 tex
  </p>
  </header>
 
- <div class="w-full">
+ <div class="w-full animate-fade-in-up delay-1">
 <section v-show="activeTab === 'metadata'" class="report-panel" role="tabpanel">
 <div
 v-if="hasRecentUpdate('metadata')"
@@ -876,7 +876,7 @@ description="Total GFPS members by sex for this reporting year. Use whole number
  class="report-form report-form--edit w-full"
  @submit.prevent="updateGfpsMembership"
  >
- <div class="rounded-xl border border-slate-400 bg-slate-50 p-4">
+ <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm">
  <div class="grid gap-4 sm:grid-cols-2">
  <div class="grid gap-2">
  <Label for="gfps_female_count">Female count</Label>
@@ -950,7 +950,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
     <Button
      type="button"
      variant="outline"
-     class="flex items-center gap-2 border-emerald-200 bg-emerald-50/20 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-all duration-200 active:scale-[0.98]"
+     class="flex items-center gap-2 border-emerald-200 bg-emerald-50/20 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-[transform,background-color,border-color,color] duration-200 ease-out active:scale-[0.98]"
      @click="showAddForm = true"
     >
      <Plus class="size-4 text-emerald-600 animate-pulse" aria-hidden="true" />
@@ -961,7 +961,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
    <form
     v-else
     key="form"
-    class="report-form report-form--edit w-full mb-6 border border-zinc-200 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] mt-6 transition-all duration-200"
+    class="report-form report-form--edit w-full mb-6 border border-zinc-200 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] mt-6 transition-[transform,background-color,border-color,color] duration-200 ease-out"
     @submit.prevent="storeScholarshipSnapshot"
    >
     <div class="mb-4 flex items-center justify-between gap-2 border-b border-zinc-200 pb-3">
@@ -1039,14 +1039,14 @@ description="Track scholar counts across the year. Each update is saved as a sep
     </div>
 
     <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-4 mt-6">
-     <Button type="submit" class="report-save-btn flex items-center gap-2 active:scale-[0.98] transition-all duration-150" :disabled="newSnapshotForm.processing">
+     <Button type="submit" class="report-save-btn flex items-center gap-2 active:scale-[0.98] transition-[transform,background-color,color] duration-150 ease-out" :disabled="newSnapshotForm.processing">
       <Plus class="size-4" :stroke-width="2.5" aria-hidden="true" />
       Save new snapshot
      </Button>
      <Button
       type="button"
       variant="ghost"
-      class="text-zinc-500 hover:text-zinc-800 active:scale-[0.98] transition-all duration-150"
+      class="text-zinc-500 hover:text-zinc-800 active:scale-[0.98] transition-[transform,background-color,color] duration-150 ease-out"
       @click="showAddForm = false"
      >
       Cancel
@@ -1122,7 +1122,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
         <button
          v-if="abilities.updateScholarship"
          type="button"
-         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-all duration-150 active:scale-95"
+         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-[transform,background-color,color] duration-150 ease-out active:scale-95"
          @click="startEditSnapshot(snap)"
         >
          <Pencil class="size-3.5" aria-hidden="true" />
@@ -1131,7 +1131,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
         <button
          v-if="abilities.deleteScholarship"
          type="button"
-         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-150 active:scale-95"
+         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-[transform,background-color,color] duration-150 ease-out active:scale-95"
          @click="deleteScholarshipSnapshot(snap.id)"
         >
          <Trash2 class="size-3.5" aria-hidden="true" />
@@ -1214,14 +1214,14 @@ description="Track scholar counts across the year. Each update is saved as a sep
        </div>
 
        <div class="flex flex-wrap items-center gap-3 border-zinc-200/80 border-t pt-4 mt-6">
-        <Button type="submit" class="report-save-btn active:scale-[0.98] transition-all duration-150" :disabled="editSnapshotForm.processing">
+        <Button type="submit" class="report-save-btn active:scale-[0.98] transition-[transform,background-color,color] duration-150 ease-out" :disabled="editSnapshotForm.processing">
          <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
          Save changes
         </Button>
         <Button
          type="button"
          variant="ghost"
-         class="text-zinc-500 hover:text-zinc-800 active:scale-[0.98] transition-all duration-150"
+         class="text-zinc-500 hover:text-zinc-800 active:scale-[0.98] transition-[transform,background-color,color] duration-150 ease-out"
          @click="cancelEditSnapshot"
         >
          Cancel
@@ -1708,6 +1708,20 @@ description="Projects and funding amounts by program, split by sex. Amounts use 
  </template>
 
 <style scoped>
+.animate-fade-in-up {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 400ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+.delay-1 {
+  animation-delay: 60ms;
+}
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1);

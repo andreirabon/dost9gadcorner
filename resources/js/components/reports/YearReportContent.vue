@@ -130,7 +130,7 @@ const selectCestCategory = (slug: string): void => {
 };
 
 const fundingCategoryButtonClass = (isActive: boolean): string[] => [
-    'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold tracking-wide transition-[background-color,border-color,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40',
+    'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold tracking-wide transition-[transform,background-color,border-color,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40 active:scale-[0.97]',
     isActive
         ? 'border-purple-500 bg-purple-600 text-white shadow-sm'
         : 'border-purple-400/35 bg-purple-900/55 text-purple-100 hover:border-purple-400/55 hover:bg-purple-900/75 report-light:border-slate-300 report-light:bg-slate-50 report-light:text-slate-700 report-light:hover:border-slate-400 report-light:hover:bg-slate-100',
@@ -247,9 +247,6 @@ const combinedFundingCategories = computed(() => setupFundingRows.value.length +
 type TabType = 'Overview' | 'GFPS' | 'DOST IX Employees' | 'Scholarship' | 'RSTL' | 'Program Funding' | 'SETUP' | 'CEST';
 const tabs: TabType[] = ['Overview', 'GFPS', 'DOST IX Employees', 'Scholarship', 'RSTL', 'Program Funding', 'SETUP', 'CEST'];
 const activeTab = ref<TabType>('Overview');
-const isChartLoading = ref(false);
-let openLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
-let tabLoadingTimeout: ReturnType<typeof setTimeout> | null = null;
 const tabStorageKey = 'year-report-last-tab';
 
 const isValidTab = (value: string): value is TabType => tabs.includes(value as TabType);
@@ -389,40 +386,12 @@ onMounted(() => {
             activeTab.value = 'Overview';
         }
     }
-
-    isChartLoading.value = true;
-    openLoadingTimeout = setTimeout(() => {
-        isChartLoading.value = false;
-        openLoadingTimeout = null;
-    }, 150);
-});
-
-watch(activeTab, () => {
-    isChartLoading.value = true;
-    if (tabLoadingTimeout) {
-        clearTimeout(tabLoadingTimeout);
-    }
-    tabLoadingTimeout = setTimeout(() => {
-        isChartLoading.value = false;
-    }, 100);
-});
-
-onUnmounted(() => {
-    if (openLoadingTimeout) {
-        clearTimeout(openLoadingTimeout);
-        openLoadingTimeout = null;
-    }
-
-    if (tabLoadingTimeout) {
-        clearTimeout(tabLoadingTimeout);
-        tabLoadingTimeout = null;
-    }
 });
 </script>
 
 <template>
     <article class="report-view-shell" :aria-labelledby="`report-title-${year.id}`">
-        <header class="report-view-hero px-page-gutter">
+        <header class="report-view-hero px-page-gutter animate-fade-in-up">
             <div class="report-view-heading">
                     <p class="report-view-kicker">Annual report</p>
                     <div class="space-y-2">
@@ -463,7 +432,7 @@ onUnmounted(() => {
             </div>
         </header>
 
-        <div class="report-view-body px-page-gutter">
+        <div class="report-view-body px-page-gutter animate-fade-in-up delay-1">
             <div v-if="isYearDataPending" class="report-view-empty">
                 <div class="report-view-empty-icon" aria-hidden="true">
                     <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -483,14 +452,10 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <div v-else-if="isChartLoading" class="report-view-loading">
-                <div class="flex flex-col items-center gap-4">
-                    <div class="report-view-spinner" aria-hidden="true" />
-                    <p class="report-view-loading-label">Loading charts...</p>
-                </div>
-            </div>
-
-            <div v-else-if="activeTab === 'Overview'" class="space-y-4 md:space-y-6">
+            <div v-else>
+                <Transition name="tab-fade" mode="out-in">
+                    <div :key="activeTab" class="w-full">
+                        <div v-if="activeTab === 'Overview'" class="space-y-4 md:space-y-6">
                     <div class="report-view-metrics">
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Total Female (all sections)</p>
@@ -659,7 +624,7 @@ onUnmounted(() => {
                                 v-for="(entry, idx) in scholarshipHistory"
                                 :key="idx"
                                 type="button"
-                                class="w-full rounded-xl border px-4 py-3.5 text-left transition-all duration-200 ease-out active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40"
+                                class="w-full rounded-xl border px-4 py-3.5 text-left transition-[transform,background-color,border-color,color] duration-200 ease-out active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40"
                                 :class="isHistoryExpanded(idx) ? 'border-purple-400/50 bg-purple-900/30 text-purple-100 report-light:border-purple-200 report-light:bg-purple-50/70 report-light:text-purple-950' : 'border-transparent bg-purple-900/10 hover:bg-purple-900/20 text-purple-200/80 hover:text-purple-50 report-light:bg-slate-50 report-light:hover:bg-slate-100/80 report-light:border-slate-200/60 report-light:text-slate-700 report-light:hover:text-slate-900'"
                                 @click="toggleHistoryExpand(idx)"
                             >
@@ -694,10 +659,10 @@ onUnmounted(() => {
                                     </span>
                                 </div>
                                 <Transition
-                                    enter-active-class="transition-all duration-200 ease-out"
+                                    enter-active-class="transition-[transform,opacity] duration-200 ease-out"
                                     enter-from-class="transform scale-95 opacity-0"
                                     enter-to-class="transform scale-100 opacity-100"
-                                    leave-active-class="transition-all duration-150 ease-in"
+                                    leave-active-class="transition-[transform,opacity] duration-150 ease-in"
                                     leave-from-class="transform scale-100 opacity-100"
                                     leave-to-class="transform scale-95 opacity-0"
                                 >
@@ -934,7 +899,10 @@ onUnmounted(() => {
                         </div>
                     </div>
                 </div>
-        </div>
+            </div>
+        </Transition>
+    </div>
+</div>
     </article>
 </template>
 
@@ -945,5 +913,31 @@ onUnmounted(() => {
 }
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
+}
+.animate-fade-in-up {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeInUp 400ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+.delay-1 {
+    animation-delay: 80ms;
+}
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.tab-fade-enter-active,
+.tab-fade-leave-active {
+    transition: opacity 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.tab-fade-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
+}
+.tab-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 </style>

@@ -27,7 +27,7 @@ const submit = () => {
         <Head title="New Report Year" />
 
         <div class="report-years-inner report-years-inner--create">
-            <header class="report-years-create-header">
+            <header class="report-years-create-header animate-fade-in-up">
                 <div class="report-years-create-hero">
                     <div class="report-years-create-hero-top">
                         <div>
@@ -44,7 +44,7 @@ const submit = () => {
                 </div>
             </header>
 
-            <div class="report-years-form-card w-full min-w-0">
+            <div class="report-years-form-card w-full min-w-0 animate-fade-in-up delay-1">
                 <form autocomplete="off" class="report-years-create-form" @submit.prevent="submit">
                     <div class="report-years-create-form-grid">
                         <div class="space-y-2">
@@ -161,3 +161,22 @@ const submit = () => {
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+.animate-fade-in-up {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 400ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.delay-1 {
+    animation-delay: 60ms;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>

@@ -6,7 +6,7 @@
 @custom-variant report-light (&:is(.report-theme-light *));
 
 @theme inline {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Geist Sans', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* App off-white: replaces default #fff for all `*-white` utilities */
     --color-white: #fafafa;
@@ -877,32 +877,39 @@
     }
 
     .report-years-btn-primary {
-        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-blue-900/20 focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
         background-color: var(--color-blue-700);
     }
 
-    .report-years-btn-primary:hover {
-        background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-btn-primary:hover {
+            border-color: rgba(30, 58, 138, 0.2);
+            background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
+        }
     }
 
     .report-years-btn-secondary {
         @apply inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-slate-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
     }
 
-    .report-years-btn-secondary:hover {
-        @apply border-slate-400 text-slate-800;
-        background-color: rgb(241 245 249);
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-btn-secondary:hover {
+            @apply border-slate-400 text-slate-800;
+            background-color: rgb(241 245 249);
+        }
     }
 
     .report-years-btn-danger {
-        @apply inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-800/15 px-6 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-red-900/20 focus-visible:ring-2 focus-visible:ring-red-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:opacity-50;
+        @apply inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-800/15 px-6 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-red-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:opacity-50;
         background-color: var(--color-red-600);
     }
 
-    .report-years-btn-danger:hover {
-        border-color: rgb(153 27 27 / 0.2);
-        background-color: color-mix(in oklab, var(--color-red-600) 88%, black);
-        color: rgb(255 255 255);
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-btn-danger:hover {
+            border-color: rgb(153 27 27 / 0.2);
+            background-color: color-mix(in oklab, var(--color-red-600) 88%, black);
+            color: rgb(255 255 255);
+        }
     }
 
     /* Dialog/footer portals sit outside .report-years-page — keep label + hover colors */
@@ -924,9 +931,11 @@
         @apply inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-slate-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
     }
 
-    .report-years-btn-icon:hover {
-        @apply border-slate-400 text-slate-700;
-        background-color: rgb(241 245 249);
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-btn-icon:hover {
+            @apply border-slate-400 text-slate-700;
+            background-color: rgb(241 245 249);
+        }
     }
 
     .report-years-shell {
@@ -946,7 +955,13 @@
     }
 
     .report-years-filter-tab {
-        @apply flex cursor-pointer touch-manipulation items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 transition-[background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-slate-900;
+        @apply flex cursor-pointer touch-manipulation items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97];
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-filter-tab:hover {
+            @apply text-slate-900;
+        }
     }
 
     .report-years-filter-tab.is-active {
@@ -1038,16 +1053,20 @@
         @apply size-9 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition-[transform,background-color,color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97];
     }
 
-    .report-years-row-action:hover {
-        @apply border-blue-300 bg-blue-100 text-blue-800;
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-row-action:hover {
+            @apply border-blue-300 bg-blue-100 text-blue-800;
+        }
     }
 
     .report-years-row-action--danger {
         @apply border-red-200 bg-red-50 text-red-600;
     }
 
-    .report-years-row-action--danger:hover {
-        @apply border-red-300 bg-red-100 text-red-700;
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-row-action--danger:hover {
+            @apply border-red-300 bg-red-100 text-red-700;
+        }
     }
 
     .report-years-footer {
@@ -1066,9 +1085,11 @@
         @apply size-9 rounded-lg border border-slate-300 bg-white text-black transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40;
     }
 
-    .report-years-page-btn:hover:not(:disabled) {
-        @apply border-slate-400 text-black;
-        background-color: rgb(241 245 249);
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-page-btn:hover:not(:disabled) {
+            @apply border-slate-400 text-black;
+            background-color: rgb(241 245 249);
+        }
     }
 
     .report-years-page-indicator {
@@ -1156,7 +1177,13 @@
     }
 
     .report-years-tab {
-        @apply cursor-pointer touch-manipulation rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap text-slate-600 transition-[background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-white hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-blue-600/25 focus-visible:outline-none;
+        @apply cursor-pointer touch-manipulation rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap text-slate-600 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/25 focus-visible:outline-none active:scale-[0.97];
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-tab:hover {
+            @apply bg-white text-slate-900;
+        }
     }
 
     .report-years-tab.is-active {
@@ -1164,13 +1191,27 @@
         background-color: var(--color-blue-700);
     }
 
-    .report-years-tab.is-active:hover {
-        background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
-        @apply text-white;
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-tab.is-active:hover {
+            background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
+            @apply text-white;
+        }
     }
 
     .report-years-page .report-panel {
         @apply rounded-2xl border border-slate-200/90 bg-white p-6 text-black shadow-none ring-0 backdrop-blur-none;
+        animation: panelFadeIn 250ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    @keyframes panelFadeIn {
+        from {
+            opacity: 0.88;
+            transform: translateY(2px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .report-years-page .report-save-btn {
@@ -1223,28 +1264,30 @@
         stroke: rgb(30 41 59) !important;
     }
 
-    .report-years-page .report-years-btn-icon:hover,
-    .report-years-page [data-slot='button'].report-years-btn-icon:hover {
-        background-color: rgb(241 245 249) !important;
-        color: rgb(51 65 85) !important;
-        border-color: rgb(148 163 184) !important;
-    }
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-page .report-years-btn-icon:hover,
+        .report-years-page [data-slot='button'].report-years-btn-icon:hover {
+            background-color: rgb(241 245 249) !important;
+            color: rgb(51 65 85) !important;
+            border-color: rgb(148 163 184) !important;
+        }
 
-    .report-years-page .report-years-btn-icon:hover svg,
-    .report-years-page [data-slot='button'].report-years-btn-icon:hover svg {
-        color: rgb(51 65 85) !important;
-        stroke: rgb(51 65 85) !important;
-    }
+        .report-years-page .report-years-btn-icon:hover svg,
+        .report-years-page [data-slot='button'].report-years-btn-icon:hover svg {
+            color: rgb(51 65 85) !important;
+            stroke: rgb(51 65 85) !important;
+        }
 
-    .report-years-page .report-years-page-btn:hover:not(:disabled) {
-        background-color: rgb(241 245 249) !important;
-        color: rgb(15 23 42) !important;
-        border-color: rgb(148 163 184) !important;
-    }
+        .report-years-page .report-years-page-btn:hover:not(:disabled) {
+            background-color: rgb(241 245 249) !important;
+            color: rgb(15 23 42) !important;
+            border-color: rgb(148 163 184) !important;
+        }
 
-    .report-years-page .report-years-page-btn:hover:not(:disabled) svg {
-        color: rgb(15 23 42) !important;
-        stroke: rgb(15 23 42) !important;
+        .report-years-page .report-years-page-btn:hover:not(:disabled) svg {
+            color: rgb(15 23 42) !important;
+            stroke: rgb(15 23 42) !important;
+        }
     }
 
     .report-years-page [data-slot='button'].report-btn-secondary:hover {
@@ -1335,7 +1378,7 @@
     }
 
     .report-years-data-table {
-        @apply min-w-0 overflow-hidden rounded-2xl border border-slate-400 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)];
+        @apply min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)];
     }
 
     .report-years-data-table--wide {
@@ -1351,7 +1394,7 @@
     }
 
     .report-years-data-head {
-        @apply hidden border-b border-slate-400 bg-slate-100 md:grid md:gap-px md:bg-slate-300;
+        @apply hidden border-b border-slate-200 bg-slate-100 md:grid md:gap-px md:bg-slate-200;
     }
 
     .report-years-data-table-scroll .report-years-data-head {
@@ -1379,7 +1422,7 @@
     }
 
     .report-years-data-row {
-        @apply grid gap-3 border-b border-slate-300 px-4 py-4 transition-[background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] last:border-b-0 md:items-stretch md:gap-px md:bg-slate-300 md:px-0 md:py-0;
+        @apply grid gap-3 border-b border-slate-200 px-4 py-4 transition-[background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] last:border-b-0 md:items-stretch md:gap-px md:bg-slate-200 md:px-0 md:py-0;
     }
 
     .report-years-data-row-label,
@@ -1435,7 +1478,7 @@
     }
 
     .report-years-form-actions {
-        @apply flex flex-wrap items-center gap-4 border-t border-slate-400 pt-4;
+        @apply flex flex-wrap items-center gap-4 border-t border-slate-200/80 pt-4;
     }
 
     .report-years-page .report-data-head {
