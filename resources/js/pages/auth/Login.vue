@@ -48,44 +48,60 @@ const submit = (): void => {
         </div>
 
         <div class="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center px-4 py-10 px-safe pt-safe sm:px-6 lg:px-8">
-            <div class="grid w-full gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
+            <div class="grid w-full gap-8 lg:grid-cols-2 lg:items-stretch lg:gap-10">
                 <section
-                    class="app-surface-card hidden min-h-[540px] flex-col justify-between rounded-3xl p-8 text-left lg:flex"
+                    class="hidden min-h-[560px] flex-col justify-between rounded-3xl border border-blue-200/15 bg-slate-900/55 p-8 text-left shadow-[0_18px_44px_-22px_rgba(2,6,23,0.75)] ring-1 ring-white/10 backdrop-blur-xl lg:flex"
                 >
                     <div>
-                        <img
-                            src="/dostlogo.png"
-                            alt="DOST Region IX"
-                            class="mb-6 h-14 w-auto drop-shadow-xl"
-                            loading="eager"
-                            decoding="async"
-                        />
-                        <p class="text-xs font-semibold tracking-[0.18em] text-blue-700 uppercase">
+                        <div class="mb-6 flex items-center gap-3">
+                            <img
+                                src="/dostlogo.png"
+                                alt="DOST Region IX logo"
+                                class="h-14 w-auto drop-shadow-xl"
+                                loading="eager"
+                                decoding="async"
+                            />
+                            <img
+                                src="/gadlogo.png"
+                                alt="Gender and Development logo"
+                                class="h-14 w-auto rounded-full bg-white/5 p-0.5 drop-shadow-xl"
+                                loading="eager"
+                                decoding="async"
+                            />
+                            <img
+                                src="/Bagong_Pilipinas_logo.png"
+                                alt="Bagong Pilipinas logo"
+                                class="h-14 w-auto max-w-[170px] object-contain drop-shadow-xl"
+                                loading="eager"
+                                decoding="async"
+                            />
+                        </div>
+                        <p class="text-xs font-semibold tracking-[0.18em] text-blue-200/85 uppercase">
                             Regional GAD reporting workspace
                         </p>
-                        <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-900">
+                        <h1 class="mt-4 text-3xl font-semibold tracking-tight text-slate-50">
                             Reliable gender-disaggregated reporting for DOST Region IX.
                         </h1>
-                        <p class="mt-4 max-w-[60ch] text-sm leading-relaxed text-slate-600">
+                        <p class="mt-4 max-w-[60ch] text-sm leading-relaxed text-slate-300/85">
                             Securely encode, validate, and publish annual data across GFPS membership, employees,
                             scholarship, RSTL, and funding programs.
                         </p>
                     </div>
 
                     <div class="space-y-3">
-                        <div class="rounded-2xl border border-slate-200 bg-white/90 p-4">
+                        <div class="rounded-2xl border border-blue-300/14 bg-slate-950/40 p-4">
                             <div class="flex items-start gap-2.5">
-                                <ShieldCheck class="mt-0.5 size-4 shrink-0 text-blue-700" stroke-width="2" aria-hidden="true" />
-                                <p class="text-sm leading-relaxed text-slate-600">
+                                <ShieldCheck class="mt-0.5 size-4 shrink-0 text-blue-300/90" stroke-width="2" aria-hidden="true" />
+                                <p class="text-sm leading-relaxed text-slate-300/85">
                                     Access is restricted to authorized personnel. All sign-ins are recorded for
                                     accountability.
                                 </p>
                             </div>
                         </div>
-                        <div class="rounded-2xl border border-slate-200 bg-white/90 p-4">
+                        <div class="rounded-2xl border border-blue-300/14 bg-slate-950/40 p-4">
                             <div class="flex items-start gap-2.5">
-                                <Lock class="mt-0.5 size-4 shrink-0 text-blue-700" stroke-width="2" aria-hidden="true" />
-                                <p class="text-sm leading-relaxed text-slate-600">
+                                <Lock class="mt-0.5 size-4 shrink-0 text-blue-300/90" stroke-width="2" aria-hidden="true" />
+                                <p class="text-sm leading-relaxed text-slate-300/85">
                                     Use your assigned account credentials to continue to the reporting dashboard.
                                 </p>
                             </div>
@@ -93,11 +109,34 @@ const submit = (): void => {
                     </div>
                 </section>
 
-                <section class="w-full">
+                <section class="w-full lg:flex">
                     <div
-                        class="mx-auto w-full max-w-[460px] rounded-3xl border border-white/12 bg-slate-900/68 p-6 shadow-[0_18px_44px_-22px_rgba(2,6,23,0.72)] ring-1 ring-white/10 backdrop-blur-xl sm:p-8"
+                        class="flex w-full flex-col rounded-3xl border border-white/12 bg-slate-900/68 p-6 shadow-[0_18px_44px_-22px_rgba(2,6,23,0.72)] ring-1 ring-white/10 backdrop-blur-xl sm:p-8 lg:min-h-[560px]"
                     >
-                        <div class="mb-6 text-left">
+                        <div class="mb-6 text-left lg:pt-20">
+                            <div class="mb-4 flex items-center gap-2.5 lg:hidden">
+                                <img
+                                    src="/dostlogo.png"
+                                    alt="DOST Region IX logo"
+                                    class="h-10 w-auto drop-shadow-lg"
+                                    loading="eager"
+                                    decoding="async"
+                                />
+                                <img
+                                    src="/gadlogo.png"
+                                    alt="Gender and Development logo"
+                                    class="h-10 w-auto rounded-full bg-white/5 p-0.5 drop-shadow-lg"
+                                    loading="eager"
+                                    decoding="async"
+                                />
+                                <img
+                                    src="/Bagong_Pilipinas_logo.png"
+                                    alt="Bagong Pilipinas logo"
+                                    class="h-10 w-auto max-w-[118px] object-contain drop-shadow-lg"
+                                    loading="eager"
+                                    decoding="async"
+                                />
+                            </div>
                             <p class="text-xs font-semibold tracking-[0.18em] text-blue-200/80 uppercase">
                                 Authorized access
                             </p>
@@ -182,9 +221,7 @@ const submit = (): void => {
                                 Sign In
                             </Button>
                         </form>
-                    </div>
-
-                    <div class="mt-5 text-center lg:hidden">
+                        <div class="mt-6 border-t border-white/10 pt-5 text-center lg:mt-auto">
                         <Link
                             :href="route('index')"
                             class="inline-flex cursor-pointer items-center justify-center gap-1.5 text-[13px] font-medium text-slate-300/80 transition-colors duration-200 hover:text-slate-100"
@@ -193,15 +230,6 @@ const submit = (): void => {
                             Return to public site
                         </Link>
                     </div>
-
-                    <div class="mt-5 hidden text-center lg:block">
-                        <Link
-                            :href="route('index')"
-                            class="inline-flex cursor-pointer items-center justify-center gap-1.5 text-[13px] font-medium text-slate-300/80 transition-colors duration-200 hover:text-slate-100"
-                        >
-                            <ArrowLeft class="size-3.5 shrink-0 text-current" stroke-width="2" aria-hidden="true" />
-                            Return to public site
-                        </Link>
                     </div>
                 </section>
             </div>

@@ -144,6 +144,7 @@
     html {
         @apply font-sans antialiased;
         font-optical-sizing: auto;
+        color-scheme: light;
     }
 
     body {

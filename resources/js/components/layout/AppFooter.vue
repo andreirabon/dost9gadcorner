@@ -1,60 +1,24 @@
 <script setup lang="ts">
-import { REPORT_PAGE_THEME_KEY } from '@/composables/useReportPageTheme';
-import { computed, inject } from 'vue';
-
-const reportTheme = inject(REPORT_PAGE_THEME_KEY, null);
-
 const year = new Date().getFullYear();
-
-const isReportLight = computed(() => reportTheme?.value === 'light');
-
-const footerToneClasses = computed(() =>
-    isReportLight.value
-        ? 'scheme-light border-slate-200 bg-white text-slate-700'
-        : 'scheme-dark border-sidebar-border/70 bg-sidebar text-sidebar-foreground',
-);
-
-const footerGlowClasses = computed(() =>
-    isReportLight.value
-        ? 'bg-[radial-gradient(85%_80%_at_0%_0%,rgba(37,99,235,0.08),transparent_55%),radial-gradient(70%_70%_at_100%_100%,rgba(14,116,144,0.07),transparent_52%)]'
-        : 'bg-[radial-gradient(90%_80%_at_0%_0%,rgba(37,99,235,0.18),transparent_56%),radial-gradient(70%_70%_at_100%_100%,rgba(14,116,144,0.16),transparent_52%)]',
-);
-
-const footerBodyTextClasses = computed(() =>
-    isReportLight.value ? 'text-slate-500' : 'text-blue-100/72',
-);
-
-const footerStrongTextClasses = computed(() =>
-    isReportLight.value ? 'text-slate-800' : 'text-blue-50',
-);
-
-const footerLinkClasses = computed(() =>
-    isReportLight.value
-        ? 'text-slate-700 hover:text-blue-700 focus-visible:ring-blue-500/50 focus-visible:ring-offset-white'
-        : 'text-blue-100 hover:text-cyan-200 focus-visible:ring-blue-300/60 focus-visible:ring-offset-blue-950',
-);
 </script>
 
 <template>
     <footer
-        :class="['relative isolate shrink-0 overflow-hidden border-t', footerToneClasses]"
+        class="relative isolate shrink-0 overflow-hidden border-t [color-scheme:light] border-slate-200 bg-white text-slate-700"
         role="contentinfo"
     >
-        <div aria-hidden="true" :class="['pointer-events-none absolute inset-0', footerGlowClasses]" />
+        <div aria-hidden="true" class="pointer-events-none absolute inset-0 bg-[radial-gradient(85%_80%_at_0%_0%,rgba(37,99,235,0.08),transparent_55%),radial-gradient(70%_70%_at_100%_100%,rgba(14,116,144,0.07),transparent_52%)]" />
         <div
             class="relative mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:py-6"
         >
-            <p :class="['text-sm leading-relaxed', footerBodyTextClasses]">
+            <p class="text-sm leading-relaxed text-slate-500">
                 © {{ year }}
-                <span :class="['font-medium', footerStrongTextClasses]"
+                <span class="font-medium text-slate-800"
                     >Department of Science and Technology Region IX</span
                 >
             </p>
             <p
-                :class="[
-                    'flex flex-wrap items-center gap-x-1.5 text-sm leading-normal',
-                    footerBodyTextClasses,
-                ]"
+                class="flex flex-wrap items-center gap-x-1.5 text-sm leading-normal text-slate-500"
             >
                 <span class="shrink-0">Connect with us on</span>
                 <a
@@ -62,10 +26,7 @@ const footerLinkClasses = computed(() =>
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="DOST-IX GAD on Facebook (opens in new tab)"
-                    :class="[
-                        'group inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 transition-colors duration-200 hover:underline focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                        footerLinkClasses,
-                    ]"
+                    class="group inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 transition-colors duration-200 hover:underline focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 text-slate-700 hover:text-blue-700 focus-visible:ring-blue-500/50 focus-visible:ring-offset-white"
                 >
                     <svg
                         class="block size-4.5 shrink-0 text-[#1877F2] transition-transform duration-200 ease-out group-hover:scale-110"
