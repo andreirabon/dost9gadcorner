@@ -21,7 +21,7 @@ class ReportYearPublicController extends Controller
             'gfpsMembershipSummary',
             'gfpsAssemblyAttendances.gfpsAssemblyPeriod',
             'employeeStatusBreakdowns.employmentStatus',
-            'scholarshipSummary',
+            'scholarshipSnapshots.schoolYear',
             'rstlMonthlyBreakdowns.reportMonth',
             'programFundingSummaries.fundingProgram',
         ]);

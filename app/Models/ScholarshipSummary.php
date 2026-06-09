@@ -19,6 +19,8 @@ class ScholarshipSummary extends Model
         'as_of_date',
         'female_count',
         'male_count',
+        'last_edited_by',
+        'last_edited_at',
     ];
 
     /**
@@ -28,6 +30,7 @@ class ScholarshipSummary extends Model
     {
         return [
             'as_of_date' => 'date',
+            'last_edited_at' => 'datetime',
         ];
     }
 
@@ -39,5 +42,10 @@ class ScholarshipSummary extends Model
     public function schoolYear(): BelongsTo
     {
         return $this->belongsTo(SchoolYear::class);
+    }
+
+    public function lastEditedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'last_edited_by');
     }
 }

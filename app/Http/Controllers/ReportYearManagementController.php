@@ -13,7 +13,8 @@ use App\Http\Requests\UpdateProgramFundingSummariesRequest;
 use App\Http\Requests\UpdateReportYearMetadataRequest;
 use App\Http\Requests\UpdateReportYearRequest;
 use App\Http\Requests\UpdateRstlMonthlyBreakdownsRequest;
-use App\Http\Requests\UpdateScholarshipSummaryRequest;
+use App\Http\Requests\StoreScholarshipSnapshotRequest;
+use App\Http\Requests\UpdateScholarshipSnapshotRequest;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
 use App\Models\GfpsAssemblyPeriod;
@@ -28,7 +29,8 @@ use App\Services\Reports\PatchGfpsMembershipSummary;
 use App\Services\Reports\PatchProgramFundingSummaries;
 use App\Services\Reports\PatchReportYearAttributes;
 use App\Services\Reports\PatchRstlMonthlyBreakdowns;
-use App\Services\Reports\PatchScholarshipSummary;
+use App\Models\ScholarshipSummary;
+use App\Services\Reports\SparseRecordPatcher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -97,7 +99,7 @@ class ReportYearManagementController extends Controller
             'gfpsMembershipSummary',
             'gfpsAssemblyAttendances',
             'employeeStatusBreakdowns',
-            'scholarshipSummary',
+            'scholarshipSnapshots.schoolYear',
             'rstlMonthlyBreakdowns',
             'programFundingSummaries',
         ]);
@@ -108,6 +110,7 @@ class ReportYearManagementController extends Controller
             'updateGfpsMembership' => $user->can('updateGfpsMembership', $reportYear),
             'updateGfpsAssemblies' => $user->can('updateGfpsAssemblies', $reportYear),
             'updateScholarship' => $user->can('updateScholarship', $reportYear),
+            'deleteScholarship' => $user->can('deleteScholarship', $reportYear),
             'updateEmployeeStatuses' => $user->can('updateEmployeeStatuses', $reportYear),
             'updateRstlMonthly' => $user->can('updateRstlMonthly', $reportYear),
             'updateProgramFunding' => $user->can('updateProgramFunding', $reportYear),
@@ -124,7 +127,7 @@ class ReportYearManagementController extends Controller
                 'gfpsMembership' => $reportYear->gfpsMembershipSummary?->updated_at?->toIso8601String(),
                 'gfpsAssemblies' => $reportYear->gfpsAssemblyAttendances->max('updated_at')?->toIso8601String(),
                 'employeeStatuses' => $reportYear->employeeStatusBreakdowns->max('updated_at')?->toIso8601String(),
-                'scholarship' => $reportYear->scholarshipSummary?->updated_at?->toIso8601String(),
+                'scholarship' => $reportYear->scholarshipSnapshots->max('updated_at')?->toIso8601String(),
                 'rstlMonthly' => $reportYear->rstlMonthlyBreakdowns->max('updated_at')?->toIso8601String(),
                 'programFunding' => $reportYear->programFundingSummaries->max('updated_at')?->toIso8601String(),
             ],
@@ -142,12 +145,21 @@ class ReportYearManagementController extends Controller
                 ],
                 'gfpsAssemblies' => $this->editableGfpsAssemblyRows($reportYear),
                 'employeeStatuses' => $this->editableEmployeeStatusRows($reportYear),
-                'scholarship' => [
-                    'schoolYearId' => $reportYear->scholarshipSummary?->school_year_id,
-                    'asOfDate' => $reportYear->scholarshipSummary?->as_of_date?->toDateString(),
-                    'femaleCount' => (int) ($reportYear->scholarshipSummary?->female_count ?? 0),
-                    'maleCount' => (int) ($reportYear->scholarshipSummary?->male_count ?? 0),
-                ],
+                'scholarshipSnapshots' => $reportYear->scholarshipSnapshots
+                    ->sortByDesc('as_of_date')->sortByDesc('id')
+                    ->values()
+                    ->map(fn (ScholarshipSummary $s) => [
+                        'id' => $s->id,
+                        'schoolYearId' => $s->school_year_id,
+                        'schoolYearLabel' => $s->schoolYear?->name ?? '',
+                        'asOfDate' => $s->as_of_date?->toDateString(),
+                        'femaleCount' => (int) $s->female_count,
+                        'maleCount' => (int) $s->male_count,
+                        'createdAt' => $s->created_at?->toIso8601String(),
+                        'updatedAt' => $s->updated_at?->toIso8601String(),
+                        'lastEditedBy' => $s->lastEditedBy?->username,
+                        'lastEditedAt' => $s->last_edited_at?->toIso8601String(),
+                    ]),
                 'rstlMonthly' => $this->editableRstlMonthlyRows($reportYear),
                 'programFunding' => $this->editableProgramFundingRows($reportYear),
             ],
@@ -221,11 +233,39 @@ class ReportYearManagementController extends Controller
         return back();
     }
 
-    public function updateScholarship(UpdateScholarshipSummaryRequest $request, ReportYear $reportYear, PatchScholarshipSummary $patchScholarship, ConflictGuard $conflictGuard): RedirectResponse
+    public function storeScholarshipSnapshot(StoreScholarshipSnapshotRequest $request, ReportYear $reportYear): RedirectResponse
     {
-        $conflictGuard->assertFresh($reportYear->scholarshipSummary, $this->expectedUpdatedAt($request));
+        $reportYear->scholarshipSnapshots()->create($request->validated());
 
-        $patchScholarship->apply($reportYear, $request->validated());
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'scholarship');
+
+        return back();
+    }
+
+    public function updateScholarshipSnapshot(UpdateScholarshipSnapshotRequest $request, ReportYear $reportYear, ScholarshipSummary $scholarship, SparseRecordPatcher $patcher, ConflictGuard $conflictGuard): RedirectResponse
+    {
+        abort_unless($scholarship->report_year_id === $reportYear->id, 404);
+
+        $conflictGuard->assertFresh($scholarship, $this->expectedUpdatedAt($request));
+
+        $patcher->applyToModel($scholarship, $request->validated(), ['school_year_id', 'as_of_date', 'female_count', 'male_count']);
+
+        $scholarship->update([
+            'last_edited_by' => auth()->id(),
+            'last_edited_at' => now(),
+        ]);
+
+        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'scholarship');
+
+        return back();
+    }
+
+    public function destroyScholarshipSnapshot(Request $request, ReportYear $reportYear, ScholarshipSummary $scholarship): RedirectResponse
+    {
+        $this->authorize('deleteScholarship', $reportYear);
+        abort_unless($scholarship->report_year_id === $reportYear->id, 404);
+
+        $scholarship->delete();
 
         ReportYearUpdated::dispatch($reportYear, auth()->id(), 'scholarship');
 

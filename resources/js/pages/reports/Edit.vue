@@ -10,13 +10,18 @@ import { REPORT_YEAR_FIELD_LIMITS } from '@/constants/reportYearFields';
 import { formatPublishedAt } from '@/helpers/formatPublishedAt';
 import { cloneSnapshot, diffObjectPatch, diffRowPatches, hasPatch, normalizeNumeric } from '@/helpers/reportPatch';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { EditableReportYear, LookupSchoolYear, ReportYearEditAbilities, SectionTimestamps } from '@/types/reports';
+import type { EditableReportYear, LookupSchoolYear, ReportYearEditAbilities, ScholarshipSnapshot, SectionTimestamps } from '@/types/reports';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { echo } from '@laravel/echo-vue';
 import {
     Calendar,
     CheckCircle2,
-    Save, Sparkles
+    Pencil,
+    Plus,
+    Save,
+    Sparkles,
+    Trash2,
+    X,
 } from '@lucide/vue';
 import { computed, onUnmounted, ref, watch } from 'vue';
 
@@ -245,12 +250,39 @@ const employeeStatusesForm = useForm({
  })),
 });
 
-const scholarshipForm = useForm({
- school_year_id: props.reportYear.scholarship.schoolYearId ?? '',
- as_of_date: props.reportYear.scholarship.asOfDate ?? '',
- female_count: props.reportYear.scholarship.femaleCount,
- male_count: props.reportYear.scholarship.maleCount,
+// --- Scholarship snapshots ---
+const latestSnapshot = computed(() => props.reportYear.scholarshipSnapshots[0] ?? null);
+
+const todayDate = new Date().toLocaleDateString('en-CA');
+
+const newSnapshotForm = useForm({
+ school_year_id: latestSnapshot.value?.schoolYearId ?? '',
+ as_of_date: todayDate,
+ female_count: 0,
+ male_count: 0,
 });
+
+const showAddForm = ref(false);
+const editingSnapshotId = ref<number | null>(null);
+const editSnapshotForm = useForm({
+ school_year_id: '' as string | number,
+ as_of_date: '',
+ female_count: 0,
+ male_count: 0,
+});
+
+const startEditSnapshot = (snap: ScholarshipSnapshot) => {
+ editingSnapshotId.value = snap.id;
+ editSnapshotForm.school_year_id = snap.schoolYearId ?? '';
+ editSnapshotForm.as_of_date = snap.asOfDate ?? '';
+ editSnapshotForm.female_count = snap.femaleCount;
+ editSnapshotForm.male_count = snap.maleCount;
+};
+
+const cancelEditSnapshot = () => {
+ editingSnapshotId.value = null;
+ editSnapshotForm.reset();
+};
 
 const rstlForm = useForm({
  breakdowns: props.reportYear.rstlMonthly.map((row) => ({
@@ -286,19 +318,13 @@ const snapshotGfpsMembershipForm = () =>
   male_count: gfpsMembershipForm.male_count,
  });
 
-const snapshotScholarshipForm = () =>
- cloneSnapshot({
-  school_year_id: scholarshipForm.school_year_id,
-  as_of_date: scholarshipForm.as_of_date,
-  female_count: scholarshipForm.female_count,
-  male_count: scholarshipForm.male_count,
- });
+// (snapshotScholarshipForm removed — snapshots use store/update, not diff-patch)
 
 const originalMetadata = ref(snapshotMetadataForm());
 const originalGfpsMembership = ref(snapshotGfpsMembershipForm());
 const originalGfpsAssemblies = ref(cloneSnapshot(gfpsAssembliesForm.attendances));
 const originalEmployeeStatuses = ref(cloneSnapshot(employeeStatusesForm.breakdowns));
-const originalScholarship = ref(snapshotScholarshipForm());
+
 const originalRstlBreakdowns = ref(cloneSnapshot(rstlForm.breakdowns));
 const originalFundingSummaries = ref(cloneSnapshot(fundingForm.summaries));
 
@@ -435,32 +461,43 @@ const updateEmployeeStatuses = () => {
    });
 };
 
-const updateScholarship = () => {
- const patch = diffObjectPatch(originalScholarship.value, snapshotScholarshipForm(), [
-  'school_year_id',
-  'as_of_date',
-  'female_count',
-  'male_count',
- ], {
-  numeric: ['female_count', 'male_count'],
+const storeScholarshipSnapshot = () => {
+ newSnapshotForm.post(route('report-years.scholarship.store', props.reportYear.id), {
+  ...patchOptions,
+  onSuccess: () => {
+   newSnapshotForm.reset('female_count', 'male_count');
+   newSnapshotForm.as_of_date = todayDate;
+   showAddForm.value = false;
+  },
+  onError: (errors) => {
+   handleConflictError(errors);
+  },
  });
+};
 
- if (!hasPatch(patch)) {
-  showSaveNotice('No changes to save.');
-  return;
- }
+const saveEditSnapshot = (snapshotId: number) => {
+ const snap = props.reportYear.scholarshipSnapshots.find(s => s.id === snapshotId);
+ if (!snap) return;
 
-  scholarshipForm
-   .transform(() => ({ ...patch, expected_updated_at: sectionTs.value.scholarship }))
-   .patch(route('report-years.scholarship.update', props.reportYear.id), {
-    ...patchOptions,
-    onSuccess: () => {
-     originalScholarship.value = snapshotScholarshipForm();
-    },
-    onError: (errors) => {
-     handleConflictError(errors);
-    },
-   });
+ editSnapshotForm
+  .transform((data) => ({ ...data, expected_updated_at: snap.updatedAt }))
+  .patch(route('report-years.scholarship.update', [props.reportYear.id, snapshotId]), {
+   ...patchOptions,
+   onSuccess: () => {
+    editingSnapshotId.value = null;
+   },
+   onError: (errors) => {
+    handleConflictError(errors);
+   },
+  });
+};
+
+const deleteScholarshipSnapshot = (snapshotId: number) => {
+ if (!confirm('Permanently delete this snapshot? This cannot be undone.')) return;
+
+ router.delete(route('report-years.scholarship.destroy', [props.reportYear.id, snapshotId]), {
+  ...patchOptions,
+ });
 };
 
 const updateRstlMonthly = () => {
@@ -567,8 +604,12 @@ const gfpsMembershipTotal = computed(() =>
  toNum(gfpsMembershipForm.female_count) + toNum(gfpsMembershipForm.male_count),
 );
 
-const scholarshipTotal = computed(() =>
- toNum(scholarshipForm.female_count) + toNum(scholarshipForm.male_count),
+const newSnapshotTotal = computed(() =>
+ toNum(newSnapshotForm.female_count) + toNum(newSnapshotForm.male_count),
+);
+
+const editSnapshotTotal = computed(() =>
+ toNum(editSnapshotForm.female_count) + toNum(editSnapshotForm.male_count),
 );
 
 const activeTab = ref('metadata');
@@ -901,80 +942,304 @@ Dismiss
 <HeadingSmall
 variant="report"
 title="Scholarship"
-description="Pick the school year, the reference date for the counts, then enter scholars by sex."
+description="Track scholar counts across the year. Each update is saved as a separate snapshot — previous data is always preserved."
 />
 
- <form
- class="report-form report-form--edit w-full"
- @submit.prevent="updateScholarship"
- >
- <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem]">
- <div class="grid gap-2">
- <Label for="school_year_id">School year</Label>
- <select
- id="school_year_id"
- v-model="scholarshipForm.school_year_id"
- class="report-select"
- >
- <option value="" disabled>Select school year…</option>
- <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
- {{ sy.label }}
- </option>
- </select>
- <InputError :message="scholarshipForm.errors.school_year_id" />
- </div>
+  <Transition name="fade-slide" mode="out-in">
+   <div v-if="!showAddForm" key="btn" class="mt-6 mb-6">
+    <Button
+     type="button"
+     variant="outline"
+     class="flex items-center gap-2 border-emerald-200 bg-emerald-50/20 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-all duration-200 active:scale-[0.98]"
+     @click="showAddForm = true"
+    >
+     <Plus class="size-4 text-emerald-600 animate-pulse" aria-hidden="true" />
+     <span>Add New Snapshot</span>
+    </Button>
+   </div>
 
- <div class="grid gap-2">
- <Label for="as_of_date">As of date</Label>
- <Input id="as_of_date" v-model="scholarshipForm.as_of_date" type="date" :class="inputClass" />
- <InputError :message="scholarshipForm.errors.as_of_date" />
- </div>
- </div>
+   <form
+    v-else
+    key="form"
+    class="report-form report-form--edit w-full mb-6 border border-zinc-200 bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] mt-6 transition-all duration-200"
+    @submit.prevent="storeScholarshipSnapshot"
+   >
+    <div class="mb-4 flex items-center justify-between gap-2 border-b border-zinc-200 pb-3">
+     <div class="flex items-center gap-2">
+      <Plus class="size-4 text-emerald-600" aria-hidden="true" />
+      <span class="text-sm font-semibold text-zinc-900">Add New Snapshot</span>
+     </div>
+     <button
+      type="button"
+      class="text-xs text-zinc-400 hover:text-zinc-700 underline transition-colors"
+      @click="showAddForm = false"
+     >
+      Cancel
+     </button>
+    </div>
 
- <div class="rounded-xl border border-slate-400 bg-slate-50 p-4">
- <div class="grid gap-4 sm:grid-cols-2">
- <div class="grid gap-2">
- <Label for="scholarship_female_count">Female count</Label>
- <Input
- id="scholarship_female_count"
- v-model="scholarshipForm.female_count"
- type="number"
- min="0"
- inputmode="numeric"
- :class="inputClass"
- />
- <InputError :message="scholarshipForm.errors.female_count" />
- </div>
+    <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem] mt-6">
+     <div class="grid gap-2">
+      <Label for="new_school_year_id">School year</Label>
+      <select
+       id="new_school_year_id"
+       v-model="newSnapshotForm.school_year_id"
+       class="report-select transition-all hover:border-zinc-300 focus:border-zinc-400"
+      >
+       <option value="" disabled>Select school year…</option>
+       <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
+        {{ sy.label }}
+       </option>
+      </select>
+      <InputError :message="newSnapshotForm.errors.school_year_id" />
+     </div>
 
- <div class="grid gap-2">
- <Label for="scholarship_male_count">Male count</Label>
- <Input
- id="scholarship_male_count"
- v-model="scholarshipForm.male_count"
- type="number"
- min="0"
- inputmode="numeric"
- :class="inputClass"
- />
- <InputError :message="scholarshipForm.errors.male_count" />
- </div>
- </div>
- <p class="mt-1 max-w-md text-xs text-black">
- Total scholars: <span class="font-medium text-black tabular-nums">{{ scholarshipTotal }}</span>
- </p>
- </div>
+     <div class="grid gap-2">
+      <Label for="new_as_of_date">As of date</Label>
+      <Input id="new_as_of_date" v-model="newSnapshotForm.as_of_date" type="date" :max="todayDate" :class="inputClass" />
+      <InputError :message="newSnapshotForm.errors.as_of_date" />
+     </div>
+    </div>
 
- <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2">
- <Button type="submit" class="report-save-btn" :disabled="scholarshipForm.processing">
- <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
- Save scholarship
- </Button>
- <p v-show="scholarshipForm.recentlySuccessful" class="report-save-hint">
- <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
- Saved
- </p>
- </div>
- </form>
+    <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-5 mt-6 shadow-sm">
+     <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-2">
+       <Label for="new_female_count">Female count</Label>
+       <Input
+        id="new_female_count"
+        v-model="newSnapshotForm.female_count"
+        type="number"
+        min="0"
+        inputmode="numeric"
+        :class="inputClass"
+       />
+       <InputError :message="newSnapshotForm.errors.female_count" />
+      </div>
+
+      <div class="grid gap-2">
+       <Label for="new_male_count">Male count</Label>
+       <Input
+        id="new_male_count"
+        v-model="newSnapshotForm.male_count"
+        type="number"
+        min="0"
+        inputmode="numeric"
+        :class="inputClass"
+       />
+       <InputError :message="newSnapshotForm.errors.male_count" />
+      </div>
+     </div>
+
+     <div class="mt-4 flex items-center justify-between border-t border-zinc-200/60 pt-3 text-sm">
+      <span class="text-zinc-500 font-medium">Total Scholars</span>
+      <span class="rounded-lg bg-zinc-950 px-3 py-1 font-mono text-xs font-semibold text-white tabular-nums">
+       {{ newSnapshotTotal }}
+      </span>
+     </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-4 mt-6">
+     <Button type="submit" class="report-save-btn flex items-center gap-2 active:scale-[0.98] transition-all duration-150" :disabled="newSnapshotForm.processing">
+      <Plus class="size-4" :stroke-width="2.5" aria-hidden="true" />
+      Save new snapshot
+     </Button>
+     <Button
+      type="button"
+      variant="ghost"
+      class="text-zinc-500 hover:text-zinc-800 active:scale-[0.98] transition-all duration-150"
+      @click="showAddForm = false"
+     >
+      Cancel
+     </Button>
+     <p v-show="newSnapshotForm.recentlySuccessful" class="report-save-hint">
+      <CheckCircle2 class="size-4 shrink-0 text-emerald-600" :stroke-width="2" aria-hidden="true" />
+      Saved
+     </p>
+    </div>
+   </form>
+  </Transition>
+
+  <!-- Snapshot History -->
+  <div v-if="reportYear.scholarshipSnapshots.length > 0" class="mt-8">
+   <div class="mb-4 flex items-center gap-2">
+    <span class="text-sm font-semibold text-zinc-900">Snapshot History</span>
+    <span class="rounded-full bg-zinc-100 border border-zinc-200 px-2 py-0.5 text-[10px] font-bold text-zinc-700">{{ reportYear.scholarshipSnapshots.length }}</span>
+   </div>
+
+   <!-- Vertical Timeline line -->
+   <div class="relative pl-6 border-l border-zinc-200 ml-3 space-y-6">
+    <div
+     v-for="(snap, index) in reportYear.scholarshipSnapshots"
+     :key="snap.id"
+     class="relative rounded-2xl border p-5 transition-all duration-200 hover:border-zinc-300 hover:shadow-sm"
+     :class="index === 0 ? 'border-emerald-200 bg-emerald-50/30 shadow-[0_8px_30px_rgb(0,0,0,0.01)]' : 'border-zinc-200 bg-white'"
+    >
+     <!-- Timeline node indicator dot -->
+     <div
+      class="absolute -left-[33px] top-[26px] flex h-4 w-4 items-center justify-center rounded-full bg-white border-2"
+      :class="index === 0 ? 'border-emerald-500' : 'border-zinc-300'"
+     >
+      <div
+       class="h-1.5 w-1.5 rounded-full"
+       :class="index === 0 ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-300'"
+      />
+     </div>
+
+     <!-- View mode -->
+     <template v-if="editingSnapshotId !== snap.id">
+      <div class="flex items-start justify-between gap-4">
+       <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2 flex-wrap">
+         <span class="text-sm font-semibold text-zinc-900">
+          As of {{ snap.asOfDate ?? 'No date' }}
+         </span>
+         <span
+          v-if="index === 0"
+          class="inline-flex items-center rounded-full bg-emerald-100/80 px-2 py-0.5 text-[10px] font-bold text-emerald-800"
+         >
+          Latest Snapshot
+         </span>
+        </div>
+        <div class="mt-2 text-xs text-zinc-600 flex flex-wrap gap-x-4 gap-y-1">
+         <span>School Year: <span class="font-medium text-zinc-900">{{ snap.schoolYearLabel || 'No school year' }}</span></span>
+         <span>F: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.femaleCount }}</span></span>
+         <span>M: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.maleCount }}</span></span>
+         <span class="font-medium text-zinc-900">Total: <span class="font-bold text-zinc-950 font-mono tabular-nums">{{ snap.femaleCount + snap.maleCount }}</span></span>
+        </div>
+        <p class="mt-2 text-[10px] text-zinc-400 flex items-center gap-1.5">
+         <Calendar class="size-3 text-zinc-400" />
+         <span>Added {{ snap.createdAt ? new Date(snap.createdAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : 'unknown' }}</span>
+         <template v-if="snap.lastEditedBy">
+          <span>·</span>
+          <span>Last edited by <span class="font-medium text-zinc-600">{{ snap.lastEditedBy }}</span></span>
+          <template v-if="snap.lastEditedAt">
+           <span>on {{ new Date(snap.lastEditedAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) }}</span>
+          </template>
+         </template>
+        </p>
+       </div>
+       <div class="flex shrink-0 items-center gap-1.5">
+        <button
+         v-if="abilities.updateScholarship"
+         type="button"
+         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-all duration-150 active:scale-95"
+         @click="startEditSnapshot(snap)"
+        >
+         <Pencil class="size-3.5" aria-hidden="true" />
+         Edit
+        </button>
+        <button
+         v-if="abilities.deleteScholarship"
+         type="button"
+         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-150 active:scale-95"
+         @click="deleteScholarshipSnapshot(snap.id)"
+        >
+         <Trash2 class="size-3.5" aria-hidden="true" />
+         Delete
+        </button>
+       </div>
+      </div>
+     </template>
+
+     <!-- Edit mode -->
+     <template v-else>
+      <form @submit.prevent="saveEditSnapshot(snap.id)" class="space-y-4">
+       <div class="mb-2 flex items-center justify-between gap-2 border-b border-zinc-200/80 pb-2">
+        <span class="text-sm font-semibold text-zinc-900 flex items-center gap-2">
+         <Pencil class="size-4 text-zinc-500" aria-hidden="true" />
+         Editing Snapshot
+        </span>
+        <button type="button" class="text-zinc-400 hover:text-zinc-700" @click="cancelEditSnapshot">
+         <X class="size-4" />
+        </button>
+       </div>
+
+       <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem] mt-4">
+        <div class="grid gap-2">
+         <Label :for="`edit_school_year_${snap.id}`">School year</Label>
+         <select
+          :id="`edit_school_year_${snap.id}`"
+          v-model="editSnapshotForm.school_year_id"
+          class="report-select"
+         >
+          <option value="" disabled>Select school year…</option>
+          <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
+           {{ sy.label }}
+          </option>
+         </select>
+         <InputError :message="editSnapshotForm.errors.school_year_id" />
+        </div>
+
+        <div class="grid gap-2">
+         <Label :for="`edit_as_of_date_${snap.id}`">As of date</Label>
+         <Input :id="`edit_as_of_date_${snap.id}`" v-model="editSnapshotForm.as_of_date" type="date" :max="todayDate" :class="inputClass" />
+         <InputError :message="editSnapshotForm.errors.as_of_date" />
+        </div>
+       </div>
+
+       <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 mt-4">
+        <div class="grid gap-4 sm:grid-cols-2">
+         <div class="grid gap-2">
+          <Label :for="`edit_female_${snap.id}`">Female count</Label>
+          <Input
+           :id="`edit_female_${snap.id}`"
+           v-model="editSnapshotForm.female_count"
+           type="number"
+           min="0"
+           inputmode="numeric"
+           :class="inputClass"
+          />
+          <InputError :message="editSnapshotForm.errors.female_count" />
+         </div>
+         <div class="grid gap-2">
+          <Label :for="`edit_male_${snap.id}`">Male count</Label>
+          <Input
+           :id="`edit_male_${snap.id}`"
+           v-model="editSnapshotForm.male_count"
+           type="number"
+           min="0"
+           inputmode="numeric"
+           :class="inputClass"
+          />
+          <InputError :message="editSnapshotForm.errors.male_count" />
+         </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between border-t border-zinc-200/60 pt-3 text-sm">
+         <span class="text-zinc-500 font-medium">Total Scholars</span>
+         <span class="rounded-lg bg-zinc-950 px-3 py-1 font-mono text-xs font-semibold text-white tabular-nums">
+          {{ editSnapshotTotal }}
+         </span>
+        </div>
+       </div>
+
+       <div class="flex flex-wrap items-center gap-3 border-zinc-200/80 border-t pt-4 mt-6">
+        <Button type="submit" class="report-save-btn active:scale-[0.98] transition-all duration-150" :disabled="editSnapshotForm.processing">
+         <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
+         Save changes
+        </Button>
+        <Button
+         type="button"
+         variant="ghost"
+         class="text-zinc-500 hover:text-zinc-800 active:scale-[0.98] transition-all duration-150"
+         @click="cancelEditSnapshot"
+        >
+         Cancel
+        </Button>
+       </div>
+      </form>
+     </template>
+    </div>
+   </div>
+  </div>
+
+  <div v-else class="mt-6 rounded-2xl border border-dashed border-zinc-200 p-8 text-center bg-zinc-50/20">
+   <Calendar class="size-8 text-zinc-400 mx-auto mb-3" />
+   <h4 class="text-sm font-semibold text-zinc-900">No snapshots recorded</h4>
+   <p class="mt-1 text-xs text-zinc-500 max-w-sm mx-auto">
+    No scholarship data snapshots have been added for this year yet. Click "Add New Snapshot" above to create the first record.
+   </p>
+  </div>
  </section>
 
 <section v-show="activeTab === 'gfps_assemblies'" class="report-panel" role="tabpanel">
@@ -1440,4 +1705,19 @@ description="Projects and funding amounts by program, split by sex. Amounts use 
  </div>
  </div>
  </AppLayout>
-</template>
+ </template>
+
+<style scoped>
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+</style>

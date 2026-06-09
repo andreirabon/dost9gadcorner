@@ -53,11 +53,21 @@ class ReportYearTransformer
                     'gfpsAssemblies' => $this->transformGfpsAssemblyAttendances($reportYear),
                     'employeeStatuses' => $this->transformEmployeeStatusBreakdowns($reportYear),
                     'scholarship' => [
-                        'schoolYearLabel' => (string) ($reportYear->scholarshipSummary?->schoolYear?->name ?? ''),
-                        'asOfDate' => $reportYear->scholarshipSummary?->as_of_date?->toDateString(),
-                        'femaleCount' => (int) ($reportYear->scholarshipSummary?->female_count ?? 0),
-                        'maleCount' => (int) ($reportYear->scholarshipSummary?->male_count ?? 0),
+                        'schoolYearLabel' => (string) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->schoolYear?->name ?? ''),
+                        'asOfDate' => $reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->as_of_date?->toDateString(),
+                        'femaleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->female_count ?? 0),
+                        'maleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->male_count ?? 0),
                     ],
+                    'scholarshipHistory' => $reportYear->scholarshipSnapshots
+                        ->sortByDesc('as_of_date')
+                        ->values()
+                        ->map(fn ($s) => [
+                            'schoolYearLabel' => (string) ($s->schoolYear?->name ?? ''),
+                            'asOfDate' => $s->as_of_date?->toDateString(),
+                            'femaleCount' => (int) $s->female_count,
+                            'maleCount' => (int) $s->male_count,
+                        ])
+                        ->all(),
                     'rstlMonthly' => $this->transformRstlMonthlyBreakdowns($reportYear),
                     'setupFunding' => $setupFundingSummary,
                     'cestFunding' => $cestFundingSummary,

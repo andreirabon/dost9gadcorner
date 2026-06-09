@@ -48,6 +48,11 @@ class ReportYearPolicy
         return $this->isAdministrator($user) || $this->isRole($user, UserRole::SCHOLARSHIP) || $this->isRole($user, UserRole::GAD);
     }
 
+    public function deleteScholarship(User $user, ReportYear $reportYear): bool
+    {
+        return $this->isAdministrator($user) || $this->isRole($user, UserRole::SCHOLARSHIP) || $this->isRole($user, UserRole::GAD);
+    }
+
     public function updateEmployeeStatuses(User $user, ReportYear $reportYear): bool
     {
         return $this->isAdministrator($user) || $this->isRole($user, UserRole::HR) || $this->isRole($user, UserRole::GAD);

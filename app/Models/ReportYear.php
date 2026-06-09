@@ -53,9 +53,19 @@ class ReportYear extends Model
         return $this->hasMany(EmployeeStatusBreakdown::class);
     }
 
-    public function scholarshipSummary(): HasOne
+    public function scholarshipSnapshots(): HasMany
     {
-        return $this->hasOne(ScholarshipSummary::class);
+        return $this->hasMany(ScholarshipSummary::class);
+    }
+
+    /**
+     * Convenience: latest active scholarship snapshot by as_of_date then id.
+     */
+    public function latestScholarshipSnapshot(): HasOne
+    {
+        return $this->hasOne(ScholarshipSummary::class)->ofMany(
+            ['as_of_date' => 'max', 'id' => 'max'],
+        );
     }
 
     public function rstlMonthlyBreakdowns(): HasMany

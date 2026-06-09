@@ -159,7 +159,7 @@ test('authenticated user can view and update normalized report sections', functi
     $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
 
     $this->actingAs($user)
-        ->patch("/report-years/{$reportYear->id}/scholarship", [
+        ->post("/report-years/{$reportYear->id}/scholarship", [
             'school_year_id' => $schoolYear->id,
             'as_of_date' => '2025-01-13',
             'female_count' => 64,
@@ -237,7 +237,7 @@ test('scholarship user can list report years and edit scholarship but not other 
         ->assertForbidden();
 
     $this->actingAs($user)
-        ->patch("/report-years/{$reportYear->id}/scholarship", [
+        ->post("/report-years/{$reportYear->id}/scholarship", [
             'school_year_id' => $schoolYear->id,
             'as_of_date' => '2025-01-13',
             'female_count' => 10,
@@ -309,3 +309,120 @@ test('gad user cannot change publication status on full report update route', fu
         ])
         ->assertForbidden();
 });
+
+test('authenticated user can update scholarship snapshot', function () {
+    $this->seed(ReportLookupSeeder::class);
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2025]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $snapshot = $reportYear->scholarshipSnapshots()->create([
+        'school_year_id' => $schoolYear->id,
+        'as_of_date' => '2025-01-13',
+        'female_count' => 10,
+        'male_count' => 20,
+    ]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}", [
+            'female_count' => 15,
+            'male_count' => 25,
+        ], [
+            'X-Expected-Updated-At' => $snapshot->updated_at?->toIso8601String()
+        ])
+        ->assertRedirect();
+
+    $snapshot->refresh();
+    expect($snapshot->female_count)->toBe(15)
+        ->and($snapshot->male_count)->toBe(25)
+        ->and($snapshot->last_edited_by)->toBe($user->id)
+        ->and($snapshot->last_edited_at)->not->toBeNull();
+});
+
+test('scholarship user can delete scholarship snapshot', function () {
+    $this->seed(ReportLookupSeeder::class);
+    $user = User::factory()->create(['role' => UserRole::SCHOLARSHIP]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $snapshot = $reportYear->scholarshipSnapshots()->create([
+        'school_year_id' => $schoolYear->id,
+        'as_of_date' => '2025-01-13',
+        'female_count' => 10,
+        'male_count' => 20,
+    ]);
+
+    $this->actingAs($user)
+        ->delete("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}")
+        ->assertRedirect();
+
+    $this->assertDatabaseMissing('scholarship_summaries', [
+        'id' => $snapshot->id,
+    ]);
+});
+
+test('non-scholarship non-admin user cannot delete scholarship snapshot', function () {
+    $this->seed(ReportLookupSeeder::class);
+    $user = User::factory()->create(['role' => UserRole::None]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $snapshot = $reportYear->scholarshipSnapshots()->create([
+        'school_year_id' => $schoolYear->id,
+        'as_of_date' => '2025-01-13',
+        'female_count' => 10,
+        'male_count' => 20,
+    ]);
+
+    $this->actingAs($user)
+        ->delete("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}")
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('scholarship_summaries', [
+        'id' => $snapshot->id,
+    ]);
+});
+
+test('cannot store scholarship snapshot with future as_of_date', function () {
+    $this->seed(ReportLookupSeeder::class);
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2025]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $futureDate = now('Asia/Manila')->addDay()->toDateString();
+
+    $this->actingAs($user)
+        ->post("/report-years/{$reportYear->id}/scholarship", [
+            'school_year_id' => $schoolYear->id,
+            'as_of_date' => $futureDate,
+            'female_count' => 10,
+            'male_count' => 20,
+        ])
+        ->assertInvalid(['as_of_date']);
+});
+
+test('cannot update scholarship snapshot with future as_of_date', function () {
+    $this->seed(ReportLookupSeeder::class);
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2025]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $snapshot = $reportYear->scholarshipSnapshots()->create([
+        'school_year_id' => $schoolYear->id,
+        'as_of_date' => '2025-01-13',
+        'female_count' => 10,
+        'male_count' => 20,
+    ]);
+
+    $futureDate = now('Asia/Manila')->addDay()->toDateString();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}", [
+            'as_of_date' => $futureDate,
+        ], [
+            'X-Expected-Updated-At' => $snapshot->updated_at?->toIso8601String()
+        ])
+        ->assertInvalid(['as_of_date']);
+});
+
+

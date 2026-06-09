@@ -29,6 +29,19 @@ export interface EditableScholarshipSummary {
     maleCount: number;
 }
 
+export interface ScholarshipSnapshot {
+    id: number;
+    schoolYearId: number | null;
+    schoolYearLabel: string;
+    asOfDate: string | null;
+    femaleCount: number;
+    maleCount: number;
+    createdAt: string | null;
+    updatedAt: string | null;
+    lastEditedBy: string | null;
+    lastEditedAt: string | null;
+}
+
 export interface LookupSchoolYear {
     id: number;
     label: string;
@@ -59,6 +72,7 @@ export interface ReportYearData {
     gfpsAssemblies: GfpsAssemblyDataRow[];
     employeeStatuses: EmployeeStatusDataRow[];
     scholarship: ScholarshipSummaryData;
+    scholarshipHistory: ScholarshipSummaryData[];
     rstlMonthly: RstlMonthlyDataRow[];
     setupFunding: FundingSummaryData;
     cestFunding: FundingSummaryData;
@@ -105,6 +119,7 @@ export interface ReportYearEditAbilities {
     updateGfpsMembership: boolean;
     updateGfpsAssemblies: boolean;
     updateScholarship: boolean;
+    deleteScholarship: boolean;
     updateEmployeeStatuses: boolean;
     updateRstlMonthly: boolean;
     updateProgramFunding: boolean;
@@ -122,7 +137,7 @@ export interface EditableReportYear {
     gfpsMembership: GfpsMembershipData;
     gfpsAssemblies: EditableGfpsAssemblyRow[];
     employeeStatuses: EditableEmployeeStatusRow[];
-    scholarship: EditableScholarshipSummary;
+    scholarshipSnapshots: ScholarshipSnapshot[];
     rstlMonthly: EditableRstlMonthlyRow[];
     programFunding: EditableProgramFundingRow[];
 }

@@ -34,7 +34,9 @@ Route::middleware('auth')
         Route::patch('/{reportYear}/gfps-membership', [ReportYearManagementController::class, 'updateGfpsMembership'])->name('gfps-membership.update');
         Route::patch('/{reportYear}/gfps-assemblies', [ReportYearManagementController::class, 'updateGfpsAssemblies'])->name('gfps-assemblies.update');
         Route::patch('/{reportYear}/employee-statuses', [ReportYearManagementController::class, 'updateEmployeeStatuses'])->name('employee-statuses.update');
-        Route::patch('/{reportYear}/scholarship', [ReportYearManagementController::class, 'updateScholarship'])->name('scholarship.update');
+        Route::post('/{reportYear}/scholarship', [ReportYearManagementController::class, 'storeScholarshipSnapshot'])->name('scholarship.store');
+        Route::patch('/{reportYear}/scholarship/{scholarship}', [ReportYearManagementController::class, 'updateScholarshipSnapshot'])->name('scholarship.update');
+        Route::delete('/{reportYear}/scholarship/{scholarship}', [ReportYearManagementController::class, 'destroyScholarshipSnapshot'])->name('scholarship.destroy');
         Route::patch('/{reportYear}/rstl-monthly', [ReportYearManagementController::class, 'updateRstlMonthly'])->name('rstl-monthly.update');
         Route::patch('/{reportYear}/program-funding', [ReportYearManagementController::class, 'updateProgramFunding'])->name('program-funding.update');
     });
