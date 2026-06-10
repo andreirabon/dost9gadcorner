@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import ReportBackNavLink from '@/components/reports/ReportBackNavLink.vue';
+import ReportBackArrowIcon from '@/components/reports/ReportBackArrowIcon.vue';
+import { Link } from '@inertiajs/vue3';
 import type { YearItem } from '@/types';
 import type { FundingCategorySummaryData, FundingSummaryData, GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow, ScholarshipSummaryData } from '@/types/reports';
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 
 const AssemblyStackedBarChart = defineAsyncComponent(() => import('@/components/charts/AssemblyStackedBarChart.vue'));
 const CestFundingChart = defineAsyncComponent(() => import('@/components/charts/CestFundingChart.vue'));
@@ -391,46 +392,63 @@ onMounted(() => {
 
 <template>
     <article class="report-view-shell" :aria-labelledby="`report-title-${year.id}`">
-        <header class="report-view-hero px-page-gutter animate-fade-in-up">
-            <div class="report-view-heading">
-                    <p class="report-view-kicker">Annual report</p>
-                    <div class="space-y-2">
-                        <h1
-                            :id="`report-title-${year.id}`"
-                            data-focus-anchor="true"
-                            tabindex="-1"
-                            class="report-view-title"
-                        >
-                            <span class="report-view-title-accent">{{ year.year }}</span>
-                            Sex Disaggregated Data
-                        </h1>
-                        <p class="report-view-subtitle">
-                            Department of Science and Technology Regional Office IX validated figures across GFPS,
-                            employment, scholarship, RSTL, SETUP, and CEST programs.
-                        </p>
+        <header class="animate-fade-in-up">
+            <div class="report-view-hero-accent"></div>
+            <div class="report-view-hero px-page-gutter">
+                <div class="report-view-hero-top">
+                    <div class="report-view-heading">
+                        <div class="report-view-kicker-row">
+                            <span class="report-view-year-badge">{{ year.year }}</span>
+                            <p class="report-view-kicker">Annual report</p>
+                        </div>
+                        <div class="space-y-2">
+                            <h1
+                                :id="`report-title-${year.id}`"
+                                data-focus-anchor="true"
+                                tabindex="-1"
+                                class="report-view-title"
+                            >
+                                Sex Disaggregated Data
+                            </h1>
+                            <p class="report-view-subtitle">
+                                Department of Science and Technology Regional Office IX validated figures across GFPS,
+                                employment, scholarship, RSTL, SETUP, and CEST programs.
+                            </p>
+                        </div>
                     </div>
-            </div>
-            <div class="report-view-actions">
-                    <ReportBackNavLink :href="`${route('index')}#yearly`">
-                        <span class="hidden sm:inline">Select Another Year</span>
-                        <span class="sm:hidden">Back</span>
-                    </ReportBackNavLink>
-            </div>
-            <div v-if="!isYearDataPending" class="report-view-tabs" role="tablist" aria-label="Report sections">
-                <button
-                    v-for="tab in tabs"
-                    :key="tab"
-                    @click="selectTab(tab)"
-                    @keydown="handleTabKeydown"
-                    :class="['report-view-tab', { 'is-active': activeTab === tab }]"
-                    role="tab"
-                    :aria-selected="activeTab === tab"
-                    type="button"
-                >
-                    {{ tab }}
-                </button>
+                    <div class="report-view-actions">
+                        <Link
+                            :href="`${route('index')}#yearly`"
+                            class="report-view-back-link"
+                            prefetch
+                        >
+                            <ReportBackArrowIcon />
+                            <span class="hidden sm:inline">Select Another Year</span>
+                            <span class="sm:hidden">Back</span>
+                        </Link>
+                    </div>
+                </div>
+                <div class="report-view-hero-divider" aria-hidden="true"></div>
+                <div v-if="!isYearDataPending" class="report-view-tabs-container">
+                    <div class="report-view-tabs" role="tablist" aria-label="Report sections">
+                        <button
+                            v-for="(tab, idx) in tabs"
+                            :key="tab"
+                            @click="selectTab(tab)"
+                            @keydown="handleTabKeydown"
+                            :class="['report-view-tab', { 'is-active': activeTab === tab }]"
+                            :style="{ '--tab-index': idx }"
+                            role="tab"
+                            :aria-selected="activeTab === tab"
+                            type="button"
+                        >
+                            {{ tab }}
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
+
 
         <div class="report-view-body px-page-gutter animate-fade-in-up delay-1">
             <div v-if="isYearDataPending" class="report-view-empty">
@@ -630,12 +648,12 @@ onMounted(() => {
                             >
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2.5">
-                                        <svg 
-                                            class="size-4 shrink-0 transition-transform duration-200 text-purple-400/70 report-light:text-purple-700/60" 
+                                        <svg
+                                            class="size-4 shrink-0 transition-transform duration-200 text-purple-400/70 report-light:text-purple-700/60"
                                             :class="{ 'rotate-90': isHistoryExpanded(idx) }"
-                                            fill="none" 
-                                            viewBox="0 0 24 24" 
-                                            stroke="currentColor" 
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
                                             stroke-width="2.5"
                                             aria-hidden="true"
                                         >
@@ -651,7 +669,7 @@ onMounted(() => {
                                             Latest
                                         </span>
                                     </div>
-                                    <span 
+                                    <span
                                         class="text-sm font-medium tabular-nums"
                                         :class="isHistoryExpanded(idx) ? 'text-purple-200 report-light:text-purple-900/90' : 'text-purple-300/60 report-light:text-slate-500'"
                                     >
@@ -666,8 +684,8 @@ onMounted(() => {
                                     leave-from-class="transform scale-100 opacity-100"
                                     leave-to-class="transform scale-95 opacity-0"
                                 >
-                                    <div 
-                                        v-if="isHistoryExpanded(idx)" 
+                                    <div
+                                        v-if="isHistoryExpanded(idx)"
                                         class="mt-3.5 border-t border-purple-500/10 pt-3 text-xs report-light:border-purple-900/5"
                                     >
                                         <div class="grid grid-cols-2 gap-4">
@@ -685,12 +703,12 @@ onMounted(() => {
                                                 </p>
                                                 <div class="mt-1 flex items-baseline gap-3">
                                                     <span class="text-xs text-purple-300/70 report-light:text-slate-500">
-                                                        Female: 
+                                                        Female:
                                                         <span class="text-base font-bold text-purple-100 report-light:text-slate-900 font-mono ml-0.5">{{ entry.femaleCount }}</span>
                                                     </span>
                                                     <span class="text-purple-500/20 report-light:text-slate-200">|</span>
                                                     <span class="text-xs text-purple-300/70 report-light:text-slate-500">
-                                                        Male: 
+                                                        Male:
                                                         <span class="text-base font-bold text-purple-100 report-light:text-slate-900 font-mono ml-0.5">{{ entry.maleCount }}</span>
                                                     </span>
                                                 </div>
