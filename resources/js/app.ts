@@ -15,8 +15,10 @@ import { configureEcho } from '@laravel/echo-vue';
 import Pusher from 'pusher-js';
 window.Pusher = Pusher;
 
+const broadcaster = import.meta.env.VITE_BROADCAST_CONNECTION === 'reverb' ? 'reverb' : 'null';
+
 configureEcho({
-    broadcaster: 'reverb',
+    broadcaster: broadcaster,
     key: import.meta.env.VITE_REVERB_APP_KEY,
     wsHost: import.meta.env.DEV ? window.location.hostname : import.meta.env.VITE_REVERB_HOST,
     wsPort: import.meta.env.DEV ? 5173 : (import.meta.env.VITE_REVERB_PORT ?? 8080),
