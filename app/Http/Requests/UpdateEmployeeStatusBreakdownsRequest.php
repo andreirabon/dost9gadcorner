@@ -31,6 +31,8 @@ class UpdateEmployeeStatusBreakdownsRequest extends FormRequest
             'breakdowns' => ['required', 'array', 'min:1'],
             'breakdowns.*.employment_status_id' => ['required', 'integer', Rule::exists('employment_statuses', 'id')],
             'breakdowns.*.female_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'breakdowns.*.non_binary_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'breakdowns.*.genderqueer_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
             'breakdowns.*.male_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
         ];
     }
@@ -49,7 +51,7 @@ class UpdateEmployeeStatusBreakdownsRequest extends FormRequest
                 $validator,
                 $breakdowns,
                 'employment_status_id',
-                ['female_count', 'male_count'],
+                ['female_count', 'non_binary_count', 'genderqueer_count', 'male_count'],
                 'breakdowns',
             );
         });

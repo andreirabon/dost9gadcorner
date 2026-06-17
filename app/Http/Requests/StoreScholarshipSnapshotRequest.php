@@ -24,9 +24,11 @@ class StoreScholarshipSnapshotRequest extends FormRequest
         $today = now('Asia/Manila')->toDateString();
 
         return [
-            'school_year_id' => ['required', 'exists:school_years,id'],
-            'as_of_date' => ['required', 'date', "before_or_equal:{$today}"],
+            'school_year_id' => ['required', 'integer', 'exists:school_years,id'],
+            'as_of_date' => ['nullable', 'date'],
             'female_count' => ['required', 'integer', 'min:0', 'max:2147483647'],
+            'non_binary_count' => ['required', 'integer', 'min:0', 'max:2147483647'],
+            'genderqueer_count' => ['required', 'integer', 'min:0', 'max:2147483647'],
             'male_count' => ['required', 'integer', 'min:0', 'max:2147483647'],
         ];
     }

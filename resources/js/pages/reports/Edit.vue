@@ -230,24 +230,30 @@ const metadataForm = useForm({
 });
 
 const gfpsMembershipForm = useForm({
- female_count: props.reportYear.gfpsMembership.femaleCount,
- male_count: props.reportYear.gfpsMembership.maleCount,
+    female_count: props.reportYear.gfpsMembership.femaleCount,
+    non_binary_count: props.reportYear.gfpsMembership.nonBinaryCount,
+    genderqueer_count: props.reportYear.gfpsMembership.genderqueerCount,
+    male_count: props.reportYear.gfpsMembership.maleCount,
 });
 
 const gfpsAssembliesForm = useForm({
- attendances: props.reportYear.gfpsAssemblies.map((row) => ({
- period_id: row.periodId,
- female_count: row.femaleCount,
- male_count: row.maleCount,
- })),
+    attendances: props.reportYear.gfpsAssemblies.map((row) => ({
+        period_id: row.periodId,
+        female_count: row.femaleCount,
+        non_binary_count: row.nonBinaryCount,
+        genderqueer_count: row.genderqueerCount,
+        male_count: row.maleCount,
+    })),
 });
 
 const employeeStatusesForm = useForm({
- breakdowns: props.reportYear.employeeStatuses.map((row) => ({
- employment_status_id: row.employmentStatusId,
- female_count: row.femaleCount,
- male_count: row.maleCount,
- })),
+    breakdowns: props.reportYear.employeeStatuses.map((row) => ({
+        employment_status_id: row.employmentStatusId,
+        female_count: row.femaleCount,
+        non_binary_count: row.nonBinaryCount,
+        genderqueer_count: row.genderqueerCount,
+        male_count: row.maleCount,
+    })),
 });
 
 // --- Scholarship snapshots ---
@@ -256,27 +262,33 @@ const latestSnapshot = computed(() => props.reportYear.scholarshipSnapshots[0] ?
 const todayDate = new Date().toLocaleDateString('en-CA');
 
 const newSnapshotForm = useForm({
- school_year_id: latestSnapshot.value?.schoolYearId ?? '',
- as_of_date: todayDate,
- female_count: 0,
- male_count: 0,
+    school_year_id: latestSnapshot.value?.schoolYearId ?? '',
+    as_of_date: todayDate,
+    female_count: 0,
+    non_binary_count: 0,
+    genderqueer_count: 0,
+    male_count: 0,
 });
 
 const showAddForm = ref(false);
 const editingSnapshotId = ref<number | null>(null);
 const editSnapshotForm = useForm({
- school_year_id: '' as string | number,
- as_of_date: '',
- female_count: 0,
- male_count: 0,
+    school_year_id: '' as string | number,
+    as_of_date: '',
+    female_count: 0,
+    non_binary_count: 0,
+    genderqueer_count: 0,
+    male_count: 0,
 });
 
 const startEditSnapshot = (snap: ScholarshipSnapshot) => {
- editingSnapshotId.value = snap.id;
- editSnapshotForm.school_year_id = snap.schoolYearId ?? '';
- editSnapshotForm.as_of_date = snap.asOfDate ?? '';
- editSnapshotForm.female_count = snap.femaleCount;
- editSnapshotForm.male_count = snap.maleCount;
+    editingSnapshotId.value = snap.id;
+    editSnapshotForm.school_year_id = snap.schoolYearId ?? '';
+    editSnapshotForm.as_of_date = snap.asOfDate ?? '';
+    editSnapshotForm.female_count = snap.femaleCount;
+    editSnapshotForm.non_binary_count = snap.nonBinaryCount;
+    editSnapshotForm.genderqueer_count = snap.genderqueerCount;
+    editSnapshotForm.male_count = snap.maleCount;
 };
 
 const cancelEditSnapshot = () => {
@@ -285,23 +297,31 @@ const cancelEditSnapshot = () => {
 };
 
 const rstlForm = useForm({
- breakdowns: props.reportYear.rstlMonthly.map((row) => ({
- report_month_id: row.reportMonthId,
- female_count: row.femaleCount,
- female_led_count: row.femaleLedCount,
- male_count: row.maleCount,
- male_led_count: row.maleLedCount,
- })),
+    breakdowns: props.reportYear.rstlMonthly.map((row) => ({
+        report_month_id: row.reportMonthId,
+        female_count: row.femaleCount,
+        female_led_count: row.femaleLedCount,
+        non_binary_count: row.nonBinaryCount,
+        genderqueer_count: row.genderqueerCount,
+        non_binary_led_count: row.nonBinaryLedCount,
+        genderqueer_led_count: row.genderqueerLedCount,
+        male_count: row.maleCount,
+        male_led_count: row.maleLedCount,
+    })),
 });
 
 const fundingForm = useForm({
- summaries: props.reportYear.programFunding.map((row) => ({
- funding_program_id: row.fundingProgramId,
- female_projects: row.femaleProjects,
- female_amount: row.femaleAmount,
- male_projects: row.maleProjects,
- male_amount: row.maleAmount,
- })),
+    summaries: props.reportYear.programFunding.map((row) => ({
+        funding_program_id: row.fundingProgramId,
+        female_projects: row.femaleProjects,
+        female_amount: row.femaleAmount,
+        non_binary_projects: row.nonBinaryProjects,
+        non_binary_amount: row.nonBinaryAmount,
+        genderqueer_projects: row.genderqueerProjects,
+        genderqueer_amount: row.genderqueerAmount,
+        male_projects: row.maleProjects,
+        male_amount: row.maleAmount,
+    })),
 });
 
 const snapshotMetadataForm = () =>
@@ -313,10 +333,12 @@ const snapshotMetadataForm = () =>
  });
 
 const snapshotGfpsMembershipForm = () =>
- cloneSnapshot({
-  female_count: gfpsMembershipForm.female_count,
-  male_count: gfpsMembershipForm.male_count,
- });
+    cloneSnapshot({
+        female_count: gfpsMembershipForm.female_count,
+        non_binary_count: gfpsMembershipForm.non_binary_count,
+        genderqueer_count: gfpsMembershipForm.genderqueer_count,
+        male_count: gfpsMembershipForm.male_count,
+    });
 
 // (snapshotScholarshipForm removed — snapshots use store/update, not diff-patch)
 
@@ -387,9 +409,9 @@ const updateMetadata = () => {
 };
 
 const updateGfpsMembership = () => {
- const patch = diffObjectPatch(originalGfpsMembership.value, snapshotGfpsMembershipForm(), ['female_count', 'male_count'], {
-  numeric: ['female_count', 'male_count'],
- });
+    const patch = diffObjectPatch(originalGfpsMembership.value, snapshotGfpsMembershipForm(), ['female_count', 'non_binary_count', 'genderqueer_count', 'male_count'], {
+        numeric: ['female_count', 'non_binary_count', 'genderqueer_count', 'male_count'],
+    });
 
  if (!hasPatch(patch)) {
   showSaveNotice('No changes to save.');
@@ -411,10 +433,10 @@ const updateGfpsMembership = () => {
 
 const updateGfpsAssemblies = () => {
  const attendances = diffRowPatches(
-  originalGfpsAssemblies.value,
-  gfpsAssembliesForm.attendances,
-  'period_id',
-  ['female_count', 'male_count'],
+        originalGfpsAssemblies.value,
+        gfpsAssembliesForm.attendances,
+        'period_id',
+        ['female_count', 'non_binary_count', 'genderqueer_count', 'male_count'],
  );
 
  if (!hasPatch(attendances)) {
@@ -437,10 +459,10 @@ const updateGfpsAssemblies = () => {
 
 const updateEmployeeStatuses = () => {
  const breakdowns = diffRowPatches(
-  originalEmployeeStatuses.value,
-  employeeStatusesForm.breakdowns,
-  'employment_status_id',
-  ['female_count', 'male_count'],
+        originalEmployeeStatuses.value,
+        employeeStatusesForm.breakdowns,
+        'employment_status_id',
+        ['female_count', 'non_binary_count', 'genderqueer_count', 'male_count'],
  );
 
  if (!hasPatch(breakdowns)) {
@@ -465,7 +487,7 @@ const storeScholarshipSnapshot = () => {
  newSnapshotForm.post(route('report-years.scholarship.store', props.reportYear.id), {
   ...patchOptions,
   onSuccess: () => {
-   newSnapshotForm.reset('female_count', 'male_count');
+            newSnapshotForm.reset('female_count', 'non_binary_count', 'genderqueer_count', 'male_count');
    newSnapshotForm.as_of_date = todayDate;
    showAddForm.value = false;
   },
@@ -502,10 +524,10 @@ const deleteScholarshipSnapshot = (snapshotId: number) => {
 
 const updateRstlMonthly = () => {
  const breakdowns = diffRowPatches(
-  originalRstlBreakdowns.value,
-  rstlForm.breakdowns,
-  'report_month_id',
-  ['female_count', 'female_led_count', 'male_count', 'male_led_count'],
+        originalRstlBreakdowns.value,
+        rstlForm.breakdowns,
+        'report_month_id',
+        ['female_count', 'female_led_count', 'non_binary_count', 'non_binary_led_count', 'genderqueer_count', 'genderqueer_led_count', 'male_count', 'male_led_count'],
  );
 
  if (!hasPatch(breakdowns)) {
@@ -528,11 +550,11 @@ const updateRstlMonthly = () => {
 
 const updateProgramFunding = () => {
  const summaries = diffRowPatches(
-  originalFundingSummaries.value,
-  fundingForm.summaries,
-  'funding_program_id',
-  ['female_projects', 'female_amount', 'male_projects', 'male_amount'],
-  { decimalFields: ['female_amount', 'male_amount'] },
+        originalFundingSummaries.value,
+        fundingForm.summaries,
+        'funding_program_id',
+        ['female_projects', 'female_amount', 'non_binary_projects', 'non_binary_amount', 'genderqueer_projects', 'genderqueer_amount', 'male_projects', 'male_amount'],
+        { decimalFields: ['female_amount', 'non_binary_amount', 'genderqueer_amount', 'male_amount'] },
  );
 
  if (!hasPatch(summaries)) {
@@ -601,15 +623,15 @@ const toNum = (v: unknown): number => {
 };
 
 const gfpsMembershipTotal = computed(() =>
- toNum(gfpsMembershipForm.female_count) + toNum(gfpsMembershipForm.male_count),
+    toNum(gfpsMembershipForm.female_count) + toNum(gfpsMembershipForm.non_binary_count) + toNum(gfpsMembershipForm.genderqueer_count) + toNum(gfpsMembershipForm.male_count),
 );
 
 const newSnapshotTotal = computed(() =>
- toNum(newSnapshotForm.female_count) + toNum(newSnapshotForm.male_count),
+    toNum(newSnapshotForm.female_count) + toNum(newSnapshotForm.non_binary_count) + toNum(newSnapshotForm.genderqueer_count) + toNum(newSnapshotForm.male_count),
 );
 
 const editSnapshotTotal = computed(() =>
- toNum(editSnapshotForm.female_count) + toNum(editSnapshotForm.male_count),
+    toNum(editSnapshotForm.female_count) + toNum(editSnapshotForm.non_binary_count) + toNum(editSnapshotForm.genderqueer_count) + toNum(editSnapshotForm.male_count),
 );
 
 const activeTab = ref('metadata');
@@ -879,7 +901,7 @@ description="Total GFPS members by sex for this reporting year. Use whole number
  <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm">
  <div class="grid gap-4 sm:grid-cols-2">
  <div class="grid gap-2">
- <Label for="gfps_female_count">Female count</Label>
+ <Label for="gfps_female_count">Female</Label>
  <Input
  id="gfps_female_count"
  v-model="gfpsMembershipForm.female_count"
@@ -892,7 +914,33 @@ description="Total GFPS members by sex for this reporting year. Use whole number
  </div>
 
  <div class="grid gap-2">
- <Label for="gfps_male_count">Male count</Label>
+ <Label for="gfps_non_binary_count">Non-binary</Label>
+ <Input
+ id="gfps_non_binary_count"
+ v-model="gfpsMembershipForm.non_binary_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="inputClass"
+ />
+ <InputError :message="gfpsMembershipForm.errors.non_binary_count" />
+ </div>
+
+ <div class="grid gap-2">
+ <Label for="gfps_genderqueer_count">Genderqueer</Label>
+ <Input
+ id="gfps_genderqueer_count"
+ v-model="gfpsMembershipForm.genderqueer_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="inputClass"
+ />
+ <InputError :message="gfpsMembershipForm.errors.genderqueer_count" />
+ </div>
+
+ <div class="grid gap-2">
+ <Label for="gfps_male_count">Male</Label>
  <Input
  id="gfps_male_count"
  v-model="gfpsMembershipForm.male_count"
@@ -1004,7 +1052,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
     <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-5 mt-6 shadow-sm">
      <div class="grid gap-4 sm:grid-cols-2">
       <div class="grid gap-2">
-       <Label for="new_female_count">Female count</Label>
+       <Label for="new_female_count">Female</Label>
        <Input
         id="new_female_count"
         v-model="newSnapshotForm.female_count"
@@ -1017,7 +1065,33 @@ description="Track scholar counts across the year. Each update is saved as a sep
       </div>
 
       <div class="grid gap-2">
-       <Label for="new_male_count">Male count</Label>
+       <Label for="new_non_binary_count">Non-binary</Label>
+       <Input
+        id="new_non_binary_count"
+        v-model="newSnapshotForm.non_binary_count"
+        type="number"
+        min="0"
+        inputmode="numeric"
+        :class="inputClass"
+       />
+       <InputError :message="newSnapshotForm.errors.non_binary_count" />
+      </div>
+
+      <div class="grid gap-2">
+       <Label for="new_genderqueer_count">Genderqueer</Label>
+       <Input
+        id="new_genderqueer_count"
+        v-model="newSnapshotForm.genderqueer_count"
+        type="number"
+        min="0"
+        inputmode="numeric"
+        :class="inputClass"
+       />
+       <InputError :message="newSnapshotForm.errors.genderqueer_count" />
+      </div>
+
+      <div class="grid gap-2">
+       <Label for="new_male_count">Male</Label>
        <Input
         id="new_male_count"
         v-model="newSnapshotForm.male_count"
@@ -1103,8 +1177,10 @@ description="Track scholar counts across the year. Each update is saved as a sep
         <div class="mt-2 text-xs text-zinc-600 flex flex-wrap gap-x-4 gap-y-1">
          <span>School Year: <span class="font-medium text-zinc-900">{{ snap.schoolYearLabel || 'No school year' }}</span></span>
          <span>F: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.femaleCount }}</span></span>
+         <span>NB: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.nonBinaryCount }}</span></span>
+         <span>GQ: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.genderqueerCount }}</span></span>
          <span>M: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.maleCount }}</span></span>
-         <span class="font-medium text-zinc-900">Total: <span class="font-bold text-zinc-950 font-mono tabular-nums">{{ snap.femaleCount + snap.maleCount }}</span></span>
+         <span class="font-medium text-zinc-900">Total: <span class="font-bold text-zinc-950 font-mono tabular-nums">{{ snap.femaleCount + snap.nonBinaryCount + snap.genderqueerCount + snap.maleCount }}</span></span>
         </div>
         <p class="mt-2 text-[10px] text-zinc-400 flex items-center gap-1.5">
          <Calendar class="size-3 text-zinc-400" />
@@ -1180,7 +1256,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
        <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 mt-4">
         <div class="grid gap-4 sm:grid-cols-2">
          <div class="grid gap-2">
-          <Label :for="`edit_female_${snap.id}`">Female count</Label>
+          <Label :for="`edit_female_${snap.id}`">Female</Label>
           <Input
            :id="`edit_female_${snap.id}`"
            v-model="editSnapshotForm.female_count"
@@ -1192,7 +1268,31 @@ description="Track scholar counts across the year. Each update is saved as a sep
           <InputError :message="editSnapshotForm.errors.female_count" />
          </div>
          <div class="grid gap-2">
-          <Label :for="`edit_male_${snap.id}`">Male count</Label>
+          <Label :for="`edit_non_binary_${snap.id}`">Non-binary</Label>
+          <Input
+           :id="`edit_non_binary_${snap.id}`"
+           v-model="editSnapshotForm.non_binary_count"
+           type="number"
+           min="0"
+           inputmode="numeric"
+           :class="inputClass"
+          />
+          <InputError :message="editSnapshotForm.errors.non_binary_count" />
+         </div>
+         <div class="grid gap-2">
+          <Label :for="`edit_genderqueer_${snap.id}`">Genderqueer</Label>
+          <Input
+           :id="`edit_genderqueer_${snap.id}`"
+           v-model="editSnapshotForm.genderqueer_count"
+           type="number"
+           min="0"
+           inputmode="numeric"
+           :class="inputClass"
+          />
+          <InputError :message="editSnapshotForm.errors.genderqueer_count" />
+         </div>
+         <div class="grid gap-2">
+          <Label :for="`edit_male_${snap.id}`">Male</Label>
           <Input
            :id="`edit_male_${snap.id}`"
            v-model="editSnapshotForm.male_count"
@@ -1267,15 +1367,17 @@ description="Attendance by assembly period. Enter headcounts by sex for each row
 
  <form class="report-form report-form--edit w-full" @submit.prevent="updateGfpsAssemblies">
  <div class="report-years-data-table">
- <div class="report-years-data-head report-years-data-head--3col">
+ <div class="report-years-data-head report-years-data-head--5col">
  <span class="report-years-data-head-label">Period</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Non-binary</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Genderqueer</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
  </div>
  <div
  v-for="(row, index) in gfpsAssembliesForm.attendances"
  :key="row.period_id"
- class="report-years-data-row report-years-data-row--3col"
+ class="report-years-data-row report-years-data-row--5col"
  >
  <div class="report-years-data-row-label">
  {{ reportYear.gfpsAssemblies[index]?.label }}
@@ -1286,6 +1388,30 @@ description="Attendance by assembly period. Enter headcounts by sex for each row
  <Input
  :id="`gfps_assembly_female_${row.period_id}`"
  v-model="row.female_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`gfps_assembly_non_binary_${row.period_id}`" class="report-years-data-cell-label md:sr-only">Non-binary count</Label>
+ <Input
+ :id="`gfps_assembly_non_binary_${row.period_id}`"
+ v-model="row.non_binary_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`gfps_assembly_genderqueer_${row.period_id}`" class="report-years-data-cell-label md:sr-only">Genderqueer count</Label>
+ <Input
+ :id="`gfps_assembly_genderqueer_${row.period_id}`"
+ v-model="row.genderqueer_count"
  type="number"
  min="0"
  inputmode="numeric"
@@ -1347,15 +1473,17 @@ description="Workforce headcounts by employment status and sex. Use the same def
 
  <form class="report-form report-form--edit w-full" @submit.prevent="updateEmployeeStatuses">
  <div class="report-years-data-table">
- <div class="report-years-data-head report-years-data-head--3col">
+ <div class="report-years-data-head report-years-data-head--5col">
  <span class="report-years-data-head-label">Employment status</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Non-binary</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Genderqueer</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
  </div>
  <div
  v-for="(row, index) in employeeStatusesForm.breakdowns"
  :key="row.employment_status_id"
- class="report-years-data-row report-years-data-row--3col"
+ class="report-years-data-row report-years-data-row--5col"
  >
  <div class="report-years-data-row-label">
  {{ reportYear.employeeStatuses[index]?.label }}
@@ -1366,6 +1494,30 @@ description="Workforce headcounts by employment status and sex. Use the same def
  <Input
  :id="`employee_female_${row.employment_status_id}`"
  v-model="row.female_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`employee_non_binary_${row.employment_status_id}`" class="report-years-data-cell-label md:sr-only">Non-binary count</Label>
+ <Input
+ :id="`employee_non_binary_${row.employment_status_id}`"
+ v-model="row.non_binary_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`employee_genderqueer_${row.employment_status_id}`" class="report-years-data-cell-label md:sr-only">Genderqueer count</Label>
+ <Input
+ :id="`employee_genderqueer_${row.employment_status_id}`"
+ v-model="row.genderqueer_count"
  type="number"
  min="0"
  inputmode="numeric"
@@ -1428,17 +1580,21 @@ description="Monthly RSTL activity: clients or visits by sex, plus female-led an
  <form class="report-form report-form--edit w-full" @submit.prevent="updateRstlMonthly">
  <div class="report-years-data-table-scroll">
  <div class="report-years-data-table report-years-data-table--wide report-years-data-table--rstl">
- <div class="report-years-data-head report-years-data-head--5col">
+ <div class="report-years-data-head report-years-data-head--9col">
  <span class="report-years-data-head-label">Month</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Female-led</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Non-binary</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">NB-led</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">Genderqueer</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">GQ-led</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Male-led</span>
  </div>
  <div
  v-for="(row, index) in rstlForm.breakdowns"
  :key="row.report_month_id"
- class="report-years-data-row report-years-data-row--5col"
+ class="report-years-data-row report-years-data-row--9col"
  >
  <div class="report-years-data-row-label">
  {{ reportYear.rstlMonthly[index]?.label }}
@@ -1461,6 +1617,54 @@ description="Monthly RSTL activity: clients or visits by sex, plus female-led an
  <Input
  :id="`rstl_female_led_${row.report_month_id}`"
  v-model="row.female_led_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`rstl_non_binary_${row.report_month_id}`" class="report-years-data-cell-label md:sr-only">Non-binary</Label>
+ <Input
+ :id="`rstl_non_binary_${row.report_month_id}`"
+ v-model="row.non_binary_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`rstl_non_binary_led_${row.report_month_id}`" class="report-years-data-cell-label md:sr-only">Non-binary-led</Label>
+ <Input
+ :id="`rstl_non_binary_led_${row.report_month_id}`"
+ v-model="row.non_binary_led_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`rstl_genderqueer_${row.report_month_id}`" class="report-years-data-cell-label md:sr-only">Genderqueer</Label>
+ <Input
+ :id="`rstl_genderqueer_${row.report_month_id}`"
+ v-model="row.genderqueer_count"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`rstl_genderqueer_led_${row.report_month_id}`" class="report-years-data-cell-label md:sr-only">Genderqueer-led</Label>
+ <Input
+ :id="`rstl_genderqueer_led_${row.report_month_id}`"
+ v-model="row.genderqueer_led_count"
  type="number"
  min="0"
  inputmode="numeric"
@@ -1582,6 +1786,58 @@ description="Projects and funding amounts by program, split by sex. Amounts use 
  </div>
 
  <div class="report-years-data-cell">
+ <Label :for="`funding_non_binary_projects_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">NB projects</Label>
+ <Input
+ :id="`funding_non_binary_projects_${item.row.funding_program_id}`"
+ v-model="item.row.non_binary_projects"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`funding_non_binary_amount_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">NB amount</Label>
+ <Input
+ :id="`funding_non_binary_amount_${item.row.funding_program_id}`"
+ v-model="item.row.non_binary_amount"
+ type="number"
+ min="0"
+ step="0.01"
+ inputmode="decimal"
+ placeholder="0.00"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`funding_genderqueer_projects_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">GQ projects</Label>
+ <Input
+ :id="`funding_genderqueer_projects_${item.row.funding_program_id}`"
+ v-model="item.row.genderqueer_projects"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`funding_genderqueer_amount_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">GQ amount</Label>
+ <Input
+ :id="`funding_genderqueer_amount_${item.row.funding_program_id}`"
+ v-model="item.row.genderqueer_amount"
+ type="number"
+ min="0"
+ step="0.01"
+ inputmode="decimal"
+ placeholder="0.00"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
  <Label :for="`funding_male_projects_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">Male projects</Label>
  <Input
  :id="`funding_male_projects_${item.row.funding_program_id}`"
@@ -1619,6 +1875,10 @@ description="Projects and funding amounts by program, split by sex. Amounts use 
  <span class="report-years-data-head-label">Program</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Female projects</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Female amount</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">NB projects</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">NB amount</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">GQ projects</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">GQ amount</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Male projects</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Male amount</span>
  </div>
@@ -1648,6 +1908,58 @@ description="Projects and funding amounts by program, split by sex. Amounts use 
  <Input
  :id="`funding_female_amount_${item.row.funding_program_id}`"
  v-model="item.row.female_amount"
+ type="number"
+ min="0"
+ step="0.01"
+ inputmode="decimal"
+ placeholder="0.00"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`funding_non_binary_projects_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">NB projects</Label>
+ <Input
+ :id="`funding_non_binary_projects_${item.row.funding_program_id}`"
+ v-model="item.row.non_binary_projects"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`funding_non_binary_amount_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">NB amount</Label>
+ <Input
+ :id="`funding_non_binary_amount_${item.row.funding_program_id}`"
+ v-model="item.row.non_binary_amount"
+ type="number"
+ min="0"
+ step="0.01"
+ inputmode="decimal"
+ placeholder="0.00"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`funding_genderqueer_projects_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">GQ projects</Label>
+ <Input
+ :id="`funding_genderqueer_projects_${item.row.funding_program_id}`"
+ v-model="item.row.genderqueer_projects"
+ type="number"
+ min="0"
+ inputmode="numeric"
+ :class="tableInputClass"
+ />
+ </div>
+
+ <div class="report-years-data-cell">
+ <Label :for="`funding_genderqueer_amount_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">GQ amount</Label>
+ <Input
+ :id="`funding_genderqueer_amount_${item.row.funding_program_id}`"
+ v-model="item.row.genderqueer_amount"
  type="number"
  min="0"
  step="0.01"

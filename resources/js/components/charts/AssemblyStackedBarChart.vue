@@ -15,6 +15,8 @@ import VueApexCharts from 'vue3-apexcharts';
 interface AssemblyData {
     label: string;
     female: number;
+    nonBinary: number;
+    genderqueer: number;
     male: number;
 }
 
@@ -36,6 +38,14 @@ const series = computed(() => [
         data: props.data.map((entry) => entry.female),
     },
     {
+        name: 'Non-binary',
+        data: props.data.map((entry) => entry.nonBinary),
+    },
+    {
+        name: 'Genderqueer',
+        data: props.data.map((entry) => entry.genderqueer),
+    },
+    {
         name: 'Male',
         data: props.data.map((entry) => entry.male),
     },
@@ -48,7 +58,7 @@ const chartOptions = computed<ApexOptions>(() => {
     const colors = palette.value;
     const maxValue = Math.max(
         5,
-        ...props.data.flatMap((entry) => [entry.female + entry.male]),
+        ...props.data.flatMap((entry) => [entry.female + entry.nonBinary + entry.genderqueer + entry.male]),
     );
     const yMax = Math.ceil(maxValue / 5) * 5;
 
@@ -81,7 +91,7 @@ const chartOptions = computed<ApexOptions>(() => {
                   },
               }
             : {}),
-        colors: [colors.female, colors.male],
+        colors: [colors.female, colors.nonBinary, colors.genderqueer, colors.male],
         xaxis: {
             categories: props.data.map((entry) => entry.label),
             labels: {

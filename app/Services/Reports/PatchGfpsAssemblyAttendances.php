@@ -7,7 +7,7 @@ use App\Models\ReportYear;
 
 final class PatchGfpsAssemblyAttendances
 {
-    private const VALUE_FIELDS = ['female_count', 'male_count'];
+    private const VALUE_FIELDS = ['female_count', 'non_binary_count', 'genderqueer_count', 'male_count'];
 
     public function __construct(private SparseRowPatcher $patcher) {}
 

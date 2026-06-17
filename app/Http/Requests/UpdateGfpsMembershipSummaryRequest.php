@@ -28,6 +28,8 @@ class UpdateGfpsMembershipSummaryRequest extends FormRequest
         return [
             'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'female_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'non_binary_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            'genderqueer_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
             'male_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
         ];
     }
@@ -39,7 +41,7 @@ class UpdateGfpsMembershipSummaryRequest extends FormRequest
                 return;
             }
 
-            $this->assertHasAtLeastOneField($validator, $this->all(), ['female_count', 'male_count']);
+            $this->assertHasAtLeastOneField($validator, $this->all(), ['female_count', 'non_binary_count', 'genderqueer_count', 'male_count']);
         });
     }
 }

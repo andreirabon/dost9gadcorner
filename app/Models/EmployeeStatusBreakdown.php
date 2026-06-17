@@ -17,6 +17,8 @@ class EmployeeStatusBreakdown extends Model
         'report_year_id',
         'employment_status_id',
         'female_count',
+        'non_binary_count',
+        'genderqueer_count',
         'male_count',
     ];
 

@@ -10,6 +10,10 @@ final class PatchRstlMonthlyBreakdowns
     private const VALUE_FIELDS = [
         'female_count',
         'female_led_count',
+        'non_binary_count',
+        'genderqueer_count',
+        'non_binary_led_count',
+        'genderqueer_led_count',
         'male_count',
         'male_led_count',
     ];

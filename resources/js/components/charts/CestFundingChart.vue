@@ -13,10 +13,14 @@ import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
 
 interface CestFundingData {
-    maleProjects: number;
-    maleAmount: number;
     femaleProjects: number;
     femaleAmount: number;
+    nonBinaryProjects: number;
+    nonBinaryAmount: number;
+    genderqueerProjects: number;
+    genderqueerAmount: number;
+    maleProjects: number;
+    maleAmount: number;
 }
 
 interface Props {
@@ -53,11 +57,11 @@ const formatCompactCurrency = (value: number): string => {
 const series = computed(() => [
     {
         name: 'No. of Projects',
-        data: [props.data.maleProjects, props.data.femaleProjects],
+        data: [props.data.femaleProjects, props.data.nonBinaryProjects, props.data.genderqueerProjects, props.data.maleProjects],
     },
     {
         name: 'Amount Funded',
-        data: [props.data.maleAmount, props.data.femaleAmount],
+        data: [props.data.femaleAmount, props.data.nonBinaryAmount, props.data.genderqueerAmount, props.data.maleAmount],
     },
 ]);
 
@@ -97,7 +101,7 @@ const chartOptions = computed<ApexOptions>(() => {
             : {}),
         colors: [colors.female, colors.male],
         xaxis: {
-            categories: ['Male', 'Female'],
+            categories: ['Female', 'Non-binary', 'Genderqueer', 'Male'],
             labels: {
                 style: {
                     fontFamily: REPORT_CHART_FONT_FAMILY,

@@ -17,7 +17,7 @@ final class PatchGfpsMembershipSummary
             $reportYear,
             'gfpsMembershipSummary',
             $patch,
-            ['female_count', 'male_count'],
+            ['female_count', 'non_binary_count', 'genderqueer_count', 'male_count'],
         );
     }
 }

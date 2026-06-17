@@ -19,6 +19,8 @@ class ScholarshipSummary extends Model
         'as_of_date',
         'female_count',
         'male_count',
+        'non_binary_count',
+        'genderqueer_count',
         'last_edited_by',
         'last_edited_at',
     ];

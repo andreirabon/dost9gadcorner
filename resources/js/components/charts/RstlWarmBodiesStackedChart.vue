@@ -16,6 +16,10 @@ interface RstlWarmBodiesData {
     label: string;
     female: number;
     femaleLed: number;
+    nonBinary: number;
+    nonBinaryLed: number;
+    genderqueer: number;
+    genderqueerLed: number;
     male: number;
     maleLed: number;
 }
@@ -42,6 +46,22 @@ const series = computed(() => [
         data: props.data.map((entry) => entry.femaleLed),
     },
     {
+        name: 'Non-binary',
+        data: props.data.map((entry) => entry.nonBinary),
+    },
+    {
+        name: 'Non-binary-led',
+        data: props.data.map((entry) => entry.nonBinaryLed),
+    },
+    {
+        name: 'Genderqueer',
+        data: props.data.map((entry) => entry.genderqueer),
+    },
+    {
+        name: 'Genderqueer-led',
+        data: props.data.map((entry) => entry.genderqueerLed),
+    },
+    {
         name: 'Male',
         data: props.data.map((entry) => entry.male),
     },
@@ -58,7 +78,7 @@ const chartOptions = computed<ApexOptions>(() => {
     const colors = palette.value;
     const maxValue = Math.max(
         5,
-        ...props.data.map((entry) => entry.female + entry.femaleLed + entry.male + entry.maleLed),
+        ...props.data.map((entry) => entry.female + entry.femaleLed + entry.nonBinary + entry.nonBinaryLed + entry.genderqueer + entry.genderqueerLed + entry.male + entry.maleLed),
     );
     const yMax = Math.ceil(maxValue / 5) * 5;
 
@@ -91,7 +111,7 @@ const chartOptions = computed<ApexOptions>(() => {
                   },
               }
             : {}),
-        colors: [colors.female, colors.femaleSoft, colors.male, colors.maleSoft],
+        colors: [colors.female, colors.femaleSoft, colors.nonBinary, colors.nonBinarySoft, colors.genderqueer, colors.genderqueerSoft, colors.male, colors.maleSoft],
         xaxis: {
             categories: props.data.map((entry) => entry.label),
             labels: {

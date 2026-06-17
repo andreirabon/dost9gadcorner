@@ -1,17 +1,23 @@
 export interface GfpsMembershipData {
     femaleCount: number;
+    nonBinaryCount: number;
+    genderqueerCount: number;
     maleCount: number;
 }
 
 export interface GfpsAssemblyDataRow {
     label: string;
     female: number;
+    nonBinary: number;
+    genderqueer: number;
     male: number;
 }
 
 export interface EmployeeStatusDataRow {
     label: string;
     female: number;
+    nonBinary: number;
+    genderqueer: number;
     male: number;
 }
 
@@ -19,6 +25,8 @@ export interface ScholarshipSummaryData {
     schoolYearLabel: string;
     asOfDate: string | null;
     femaleCount: number;
+    nonBinaryCount: number;
+    genderqueerCount: number;
     maleCount: number;
 }
 
@@ -26,6 +34,8 @@ export interface EditableScholarshipSummary {
     schoolYearId: number | null;
     asOfDate: string | null;
     femaleCount: number;
+    nonBinaryCount: number;
+    genderqueerCount: number;
     maleCount: number;
 }
 
@@ -35,6 +45,8 @@ export interface ScholarshipSnapshot {
     schoolYearLabel: string;
     asOfDate: string | null;
     femaleCount: number;
+    nonBinaryCount: number;
+    genderqueerCount: number;
     maleCount: number;
     createdAt: string | null;
     updatedAt: string | null;
@@ -51,6 +63,10 @@ export interface RstlMonthlyDataRow {
     label: string;
     female: number;
     femaleLed: number;
+    nonBinary: number;
+    genderqueer: number;
+    nonBinaryLed: number;
+    genderqueerLed: number;
     male: number;
     maleLed: number;
 }
@@ -60,6 +76,10 @@ export interface FundingSummaryData {
     maleAmount: number;
     femaleProjects: number;
     femaleAmount: number;
+    nonBinaryProjects: number;
+    nonBinaryAmount: number;
+    genderqueerProjects: number;
+    genderqueerAmount: number;
 }
 
 export interface FundingCategorySummaryData extends FundingSummaryData {
@@ -84,6 +104,8 @@ export interface EditableGfpsAssemblyRow {
     periodId: number;
     label: string;
     femaleCount: number;
+    nonBinaryCount: number;
+    genderqueerCount: number;
     maleCount: number;
 }
 
@@ -91,6 +113,8 @@ export interface EditableEmployeeStatusRow {
     employmentStatusId: number;
     label: string;
     femaleCount: number;
+    nonBinaryCount: number;
+    genderqueerCount: number;
     maleCount: number;
 }
 
@@ -99,6 +123,10 @@ export interface EditableRstlMonthlyRow {
     label: string;
     femaleCount: number;
     femaleLedCount: number;
+    nonBinaryCount: number;
+    genderqueerCount: number;
+    nonBinaryLedCount: number;
+    genderqueerLedCount: number;
     maleCount: number;
     maleLedCount: number;
 }
@@ -109,6 +137,10 @@ export interface EditableProgramFundingRow {
     slug: string;
     femaleProjects: number;
     femaleAmount: number;
+    nonBinaryProjects: number;
+    nonBinaryAmount: number;
+    genderqueerProjects: number;
+    genderqueerAmount: number;
     maleProjects: number;
     maleAmount: number;
 }
