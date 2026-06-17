@@ -13,7 +13,7 @@ import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import { configureEcho } from '@laravel/echo-vue';
 import Pusher from 'pusher-js';
-window.Pusher = Pusher;
+(window as any).Pusher = Pusher; // ponytail: simple bypass for missing window type
 
 const broadcaster = import.meta.env.VITE_BROADCAST_CONNECTION === 'reverb' ? 'reverb' : 'null';
 
