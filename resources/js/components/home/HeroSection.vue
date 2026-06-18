@@ -19,7 +19,7 @@ let heroVisibilityObserver: IntersectionObserver | null = null;
 let hasPrimedSecondVideo = false;
 
 /** Lower = more faded video (e.g. opacity-10, opacity-15, opacity-20). */
-const heroVideoActiveOpacityClass = 'opacity-60';
+const heroVideoActiveOpacityClass = 'opacity-40';
 
 const heroVideoClass =
     'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:opacity-0! motion-reduce:transition-none';
