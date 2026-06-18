@@ -37,7 +37,12 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        if (! $request->authenticate()) {
+            // ponytail: silent redirect — no flash, no error, no validation message.
+            // The form resets the password field via onFinish, user just stays on login.
+            return redirect()->route('login');
+        }
+
         $request->session()->regenerate();
 
         $user = $request->user();

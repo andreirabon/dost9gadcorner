@@ -201,8 +201,8 @@ defineEmits<{
         </div>
 
         <div class="px-page-gutter relative z-10 mx-auto w-full max-w-5xl text-center">
-            <div class="flex flex-col items-center gap-[clamp(1.5rem,3vh,2.5rem)] py-[clamp(2rem,5vh,4rem)]">
-                <div
+            <div class="flex flex-col items-center gap-4 py-8">
+                <!-- <div
                     class="flex flex-row flex-nowrap items-center justify-center gap-6 sm:gap-8 md:gap-10"
                     aria-label="DOST and GAD logos"
                 >
@@ -221,7 +221,7 @@ defineEmits<{
                         loading="eager"
                         decoding="async"
                     />
-                </div>
+                </div> -->
 
                 <div class="flex flex-col items-center">
                     <p class="mb-1.5 text-sm font-semibold tracking-widest text-fuchsia-300/90 uppercase md:mb-2">

@@ -4,6 +4,7 @@ import { SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
 import { useInitials } from '@/composables/useInitials';
 import { type User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import { LogOut } from '@lucide/vue';
 
 import { computed } from 'vue';
 
@@ -21,37 +22,51 @@ function handleLogout(): void {
 <template>
     <SidebarMenu>
         <SidebarMenuItem>
-            <div class="flex w-full flex-col gap-3">
+            <div class="flex w-full flex-col gap-2.5">
 
+                <!-- Expanded: user info card -->
                 <div
-                    class="group-data-[collapsible=icon]:hidden rounded-2xl border border-blue-200/15 bg-blue-950/35 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_36px_-22px_rgba(0,0,0,0.65)]"
+                    class="sidebar-user-card group-data-[collapsible=icon]:hidden"
                 >
-                    <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <!-- Avatar -->
+                        <Avatar class="size-9 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)]">
+                            <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="displayHandle" />
+                            <AvatarFallback class="rounded-xl bg-blue-800/60 text-[11px] font-semibold text-blue-100">
+                                {{ getInitials(displayHandle) }}
+                            </AvatarFallback>
+                        </Avatar>
+
+                        <!-- Name + role -->
                         <div class="min-w-0 flex-1 text-left">
-                            <p class="text-[10px] font-semibold uppercase tracking-widest text-blue-200/55">Signed in as</p>
                             <p
-                                class="mt-0.5 truncate text-[13.5px] font-medium leading-snug tracking-tight text-blue-50"
+                                class="truncate text-[13px] font-semibold leading-tight tracking-[-0.01em] text-blue-50"
                                 :title="displayHandle"
                             >
                                 {{ displayHandle }}
                             </p>
+                            <p class="mt-0.5 text-[11px] font-medium text-blue-200/45">Signed in</p>
                         </div>
+
+                        <!-- Logout -->
                         <Link
-                            class="inline-flex h-8 items-center justify-center rounded-lg border border-red-300/25 bg-red-500/10 px-2.5 text-xs font-semibold text-red-200 shadow-sm transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-red-200/40 hover:bg-red-500/20 hover:text-red-100 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/55"
+                            class="sidebar-logout-btn"
                             method="post"
                             :href="route('logout')"
                             as="button"
+                            title="Log out"
                             @click="handleLogout"
                         >
-                            Log out
+                            <LogOut class="size-3.5" :stroke-width="1.8" aria-hidden="true" />
                         </Link>
                     </div>
                 </div>
 
+                <!-- Collapsed: avatar only -->
                 <div class="hidden justify-center py-1 group-data-[collapsible=icon]:flex">
-                    <Avatar class="size-8 shrink-0 overflow-hidden rounded-lg ring-1 ring-white/15">
+                    <Avatar class="size-9 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)]">
                         <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="displayHandle" />
-                        <AvatarFallback class="rounded-lg bg-white/15 text-xs font-semibold text-white">
+                        <AvatarFallback class="rounded-xl bg-blue-800/60 text-[11px] font-semibold text-blue-100">
                             {{ getInitials(displayHandle) }}
                         </AvatarFallback>
                     </Avatar>

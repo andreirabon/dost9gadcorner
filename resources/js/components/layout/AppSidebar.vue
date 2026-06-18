@@ -2,11 +2,10 @@
 import AppLogo from '@/components/layout/AppLogo.vue';
 import NavMain from '@/components/layout/NavMain.vue';
 import NavUser from '@/components/layout/NavUser.vue';
-import { Button } from '@/components/ui/button';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { ChevronsLeft, ChevronsRight, FileChartColumnIncreasing } from '@lucide/vue';
+import { ArrowLeft, ChevronsLeft, ChevronsRight, FileChartColumnIncreasing } from '@lucide/vue';
 import { computed } from 'vue';
 
 const page = usePage();
@@ -33,13 +32,14 @@ const mainNavItems = computed((): NavItem[] => {
     <Sidebar
         collapsible="icon"
         variant="sidebar"
-        class="border-r border-sidebar-border/70 bg-sidebar text-sidebar-foreground shadow-[inset_-1px_0_0_rgba(255,255,255,0.06)]"
+        class="sidebar-shell border-r border-white/[0.06] text-sidebar-foreground"
     >
+        <!-- Header: logo + collapse toggle -->
         <SidebarHeader
-            class="border-b border-sidebar-border/70 px-3 pt-4 pb-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3 group-data-[collapsible=icon]:pb-2"
+            class="border-b border-white/[0.07] px-3.5 pt-5 pb-4 group-data-[collapsible=icon]:px-2.5 group-data-[collapsible=icon]:pt-4 group-data-[collapsible=icon]:pb-3"
         >
             <div
-                class="flex items-start justify-between gap-2 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3"
+                class="flex items-start justify-between gap-2.5 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-3"
             >
                 <SidebarMenu
                     class="min-w-0 flex-1 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:max-w-full group-data-[collapsible=icon]:flex-none group-data-[collapsible=icon]:justify-center"
@@ -53,18 +53,16 @@ const mainNavItems = computed((): NavItem[] => {
                         >
                             <Link
                                 :href="route('index')"
-                                class="flex min-w-0 cursor-pointer rounded-lg py-0.5 pr-1 text-left transition-colors hover:bg-white/5 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:pr-0"
+                                class="flex min-w-0 cursor-pointer rounded-xl py-1 pr-1.5 text-left transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-white/[0.04] active:scale-[0.98] group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:pr-0"
                             >
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <Button
+                <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    class="h-9 w-9 shrink-0 rounded-md border border-blue-300/20 bg-blue-900/40 text-blue-100/70 shadow-sm transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-blue-200/35 hover:bg-blue-800/55 hover:text-blue-50 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-blue-300/50 focus-visible:outline-none group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
+                    class="sidebar-collapse-btn shrink-0 rounded-lg p-2 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.93] focus-visible:ring-2 focus-visible:ring-blue-300/40 focus-visible:outline-none group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:p-2.5"
                     :aria-label="
                         isMobile
                             ? 'Close sidebar'
@@ -82,17 +80,32 @@ const mainNavItems = computed((): NavItem[] => {
                     "
                     @click="toggleSidebar"
                 >
-                    <ChevronsLeft v-if="!isIconOnly" class="size-5" :stroke-width="2" aria-hidden="true" />
-                    <ChevronsRight v-else class="size-5" :stroke-width="2" aria-hidden="true" />
-                </Button>
+                    <ChevronsLeft v-if="!isIconOnly" class="size-[18px]" :stroke-width="1.8" aria-hidden="true" />
+                    <ChevronsRight v-else class="size-[18px]" :stroke-width="1.8" aria-hidden="true" />
+                </button>
             </div>
         </SidebarHeader>
 
-        <SidebarContent class="px-3 py-4">
+        <!-- Main navigation -->
+        <SidebarContent class="px-3 py-5 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter class="border-t border-sidebar-border/70 p-2.5">
+        <!-- Footer: back link + user card -->
+        <SidebarFooter class="mt-auto space-y-2 border-t border-white/[0.07] p-3 group-data-[collapsible=icon]:p-2">
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton as-child size="default" tooltip="Go back to public site">
+                        <Link
+                            :href="route('index')"
+                            class="sidebar-back-link flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
+                        >
+                            <ArrowLeft class="size-4 shrink-0" :stroke-width="1.8" aria-hidden="true" />
+                            <span class="truncate">Public site</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
             <NavUser />
         </SidebarFooter>
         <SidebarRail />

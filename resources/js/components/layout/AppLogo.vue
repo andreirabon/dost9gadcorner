@@ -10,13 +10,14 @@ defineOptions({
             <img
                 src="/dostlogo.png"
                 alt="DOST"
-                class="h-10 w-auto max-w-11 object-contain object-left group-data-[collapsible=icon]:object-center drop-shadow-md"
+                class="h-10 w-auto max-w-11 object-contain object-left drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)] group-data-[collapsible=icon]:object-center"
                 loading="eager"
                 decoding="async"
             />
         </div>
-        <div class="group-data-[collapsible=icon]:hidden min-w-0 flex-1 text-left leading-tight mt-0.5">
-            <span class="block text-[15px] font-semibold tracking-tight text-blue-50">GAD Database</span>
+        <div class="group-data-[collapsible=icon]:hidden min-w-0 flex-1 text-left leading-tight">
+            <span class="block text-[15px] font-semibold tracking-[-0.02em] text-blue-50">GAD Database</span>
+            <span class="block text-[10.5px] font-medium tracking-[0.04em] text-blue-200/40">DOST Region IX</span>
         </div>
     </div>
 </template>

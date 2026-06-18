@@ -164,6 +164,8 @@ test('authenticated user can view and update normalized report sections', functi
             'as_of_date' => '2025-01-13',
             'female_count' => 64,
             'male_count' => 114,
+            'non_binary_count' => 0,
+            'genderqueer_count' => 0,
         ])
         ->assertRedirect();
 
@@ -206,6 +208,8 @@ test('authenticated user can view and update normalized report sections', functi
         'school_year_id' => $schoolYear->id,
         'female_count' => 64,
         'male_count' => 114,
+        'non_binary_count' => 0,
+        'genderqueer_count' => 0,
     ]);
 });
 
@@ -242,6 +246,8 @@ test('scholarship user can list report years and edit scholarship but not other 
             'as_of_date' => '2025-01-13',
             'female_count' => 10,
             'male_count' => 20,
+            'non_binary_count' => 0,
+            'genderqueer_count' => 0,
         ])
         ->assertRedirect();
 });
@@ -321,12 +327,16 @@ test('authenticated user can update scholarship snapshot', function () {
         'as_of_date' => '2025-01-13',
         'female_count' => 10,
         'male_count' => 20,
+        'non_binary_count' => 0,
+        'genderqueer_count' => 0,
     ]);
 
     $this->actingAs($user)
         ->patch("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}", [
             'female_count' => 15,
             'male_count' => 25,
+            'non_binary_count' => 1,
+            'genderqueer_count' => 1,
         ], [
             'X-Expected-Updated-At' => $snapshot->updated_at?->toIso8601String()
         ])
@@ -350,6 +360,8 @@ test('scholarship user can delete scholarship snapshot', function () {
         'as_of_date' => '2025-01-13',
         'female_count' => 10,
         'male_count' => 20,
+        'non_binary_count' => 0,
+        'genderqueer_count' => 0,
     ]);
 
     $this->actingAs($user)
@@ -372,6 +384,8 @@ test('non-scholarship non-admin user cannot delete scholarship snapshot', functi
         'as_of_date' => '2025-01-13',
         'female_count' => 10,
         'male_count' => 20,
+        'non_binary_count' => 0,
+        'genderqueer_count' => 0,
     ]);
 
     $this->actingAs($user)
@@ -397,6 +411,8 @@ test('cannot store scholarship snapshot with future as_of_date', function () {
             'as_of_date' => $futureDate,
             'female_count' => 10,
             'male_count' => 20,
+            'non_binary_count' => 0,
+            'genderqueer_count' => 0,
         ])
         ->assertInvalid(['as_of_date']);
 });
@@ -412,6 +428,8 @@ test('cannot update scholarship snapshot with future as_of_date', function () {
         'as_of_date' => '2025-01-13',
         'female_count' => 10,
         'male_count' => 20,
+        'non_binary_count' => 0,
+        'genderqueer_count' => 0,
     ]);
 
     $futureDate = now('Asia/Manila')->addDay()->toDateString();

@@ -50,11 +50,12 @@ test('login rejects invalid username format', function () {
     ])->assertSessionHasErrors('username');
 });
 
-test('login rejects unknown username with generic message', function () {
+test('login silently redirects on unknown username with no error revealed', function () {
     $this->post(route('login.store'), [
         'username' => 'nonexistent_user_xyz',
         'password' => 'password',
-    ])->assertSessionHasErrors('username');
+    ])->assertRedirect(route('login'))
+      ->assertSessionHasNoErrors();
 });
 
 test('login rejects password longer than 255 characters', function () {
