@@ -38,22 +38,46 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
 
 <template>
     <header
-        class="pt-safe sticky top-0 z-40 border-b border-white/5 bg-[#0e0716]/80 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] supports-[backdrop-filter]:bg-[#0e0716]/65 transition-all duration-300"
+        class="sticky top-0 z-40 flex h-14 w-full items-center border-b border-white/10 bg-[#0e0716]/60 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] supports-[backdrop-filter]:bg-[#0e0716]/50 transition-[background-color,border-color,backdrop-filter] duration-200 ease-out sm:h-16"
         role="banner"
     >
-        <div class="px-safe mx-auto flex min-h-14 max-w-7xl items-center justify-between gap-3 sm:min-h-16 sm:gap-4">
-            <Link
-                :href="route('index')"
-                class="cursor-pointer text-lg font-semibold tracking-tighter text-purple-50 transition-all duration-200 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
-            >
-               Gender and Development Corner
-            </Link>
+        <div class="px-safe mx-auto grid w-full max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-4">
+            <!-- Left Column: Logos -->
+            <div class="flex items-center justify-start gap-3 sm:gap-4">
+                <img src="/dostlogo.png" alt="DOST Logo" class="h-8 w-auto object-contain sm:h-10" />
+                <img src="/gadlogo.png" alt="GAD Logo" class="h-8 w-auto object-contain sm:h-10" />
+            </div>
 
-            <nav class="flex items-center gap-2 sm:gap-3" aria-label="Site">
+            <!-- Middle Column: Shortcut Links -->
+            <nav class="hidden lg:flex items-center justify-center">
+                <div class="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl">
+                    <a
+                        href="/#gad-strategic-framework"
+                        class="touch-target inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[13px] font-medium whitespace-nowrap text-white/70 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-purple-600 hover:text-white active:scale-[0.97]"
+                    >
+                        Strategic Framework
+                    </a>
+                    <a
+                        href="/#org-chart"
+                        class="touch-target inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[13px] font-medium whitespace-nowrap text-white/70 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-purple-600 hover:text-white active:scale-[0.97]"
+                    >
+                        Organizational Chart
+                    </a>
+                    <a
+                        href="/#yearly"
+                        class="touch-target inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[13px] font-medium whitespace-nowrap text-white/70 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-purple-600 hover:text-white active:scale-[0.97]"
+                    >
+                        Sex-Disaggregated Data Reports
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Right Column: Navigation & Auth -->
+            <nav class="flex items-center justify-end gap-2 sm:gap-3" aria-label="Site">
                 <Link
                     v-if="!user"
                     :href="route('login')"
-                    class="cursor-pointer rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-purple-100 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
+                    class="cursor-pointer inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-950/35 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-blue-500 hover:shadow-blue-950/50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
                 >
                     Log in
                 </Link>
@@ -64,10 +88,10 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                             <Button
                                 type="button"
                                 variant="outline"
-                                class="group cursor-pointer rounded-full border border-violet-500/30 bg-violet-600/90 px-4 py-2 text-sm font-medium text-white shadow-md shadow-violet-900/20 transition-all duration-200 hover:bg-violet-500 hover:border-violet-400/50 hover:shadow-violet-900/40 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] sm:px-5"
+                                class="group cursor-pointer rounded-full border border-violet-500/30 bg-violet-600/90 px-4 py-2 text-sm font-medium text-white shadow-md shadow-violet-900/20 transition-[transform,background-color,border-color,box-shadow] duration-150 ease-out hover:bg-violet-500 hover:border-violet-400/50 hover:shadow-violet-900/40 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] sm:px-5"
                             >
                                 Reports
-                                <ChevronDown class="ml-1 size-4 opacity-70 transition-transform duration-200 group-data-[state=open]:rotate-180" aria-hidden="true" />
+                                <ChevronDown class="ml-1 size-4 opacity-70 transition-transform duration-150 ease-out group-data-[state=open]:rotate-180" aria-hidden="true" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-56" :side-offset="8">
@@ -103,7 +127,7 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                         :href="route('logout')"
                         method="post"
                         as="button"
-                        class="cursor-pointer rounded-full border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-red-400 transition-all duration-200 hover:text-red-300 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
+                        class="cursor-pointer rounded-full border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-red-400 transition-[transform,color] duration-150 ease-out hover:text-red-300 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716]"
                         @click="flushLogout"
                     >
                         Log out
@@ -115,7 +139,7 @@ const userMenuLabel = computed(() => user.value?.username?.trim() || '—');
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                class="touch-target relative h-10 w-10 cursor-pointer rounded-full p-1 text-white transition-transform duration-200 hover:bg-white/10 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] sm:h-9 sm:w-9"
+                                class="touch-target relative h-10 w-10 cursor-pointer rounded-full p-1 text-white transition-[transform,background-color] duration-150 ease-out hover:bg-white/10 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0716] sm:h-9 sm:w-9"
                             >
                                 <Avatar class="size-8 overflow-hidden rounded-full border border-white/15">
                                     <AvatarImage v-if="user.avatar" :src="user.avatar" :alt="userMenuLabel" />

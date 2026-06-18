@@ -156,14 +156,13 @@ const chartOptions = computed<ApexOptions>(() => {
             enabled: true,
             formatter: (value: number) => (value === 0 ? '' : `${value}`),
             style: {
-                colors: [ui.dataLabelColor],
                 fontFamily: REPORT_CHART_FONT_FAMILY,
-                fontSize: '12px',
+                fontSize: '11px',
                 fontWeight: 600,
             },
         },
         stroke: {
-            width: 1,
+            width: 0,
         },
         tooltip: reportChartTooltip({
             y: {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ArrowRight } from '@lucide/vue';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 defineOptions({
@@ -20,7 +19,7 @@ let heroVisibilityObserver: IntersectionObserver | null = null;
 let hasPrimedSecondVideo = false;
 
 /** Lower = more faded video (e.g. opacity-10, opacity-15, opacity-20). */
-const heroVideoActiveOpacityClass = 'opacity-10';
+const heroVideoActiveOpacityClass = 'opacity-15';
 
 const heroVideoClass =
     'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:opacity-0! motion-reduce:transition-none';
@@ -240,14 +239,14 @@ defineEmits<{
                 </div>
 
                 <div class="mt-4 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <button
+                    <!-- <button
                         type="button"
                         @click="$emit('scrollToYears')"
                         class="hero-cta touch-target inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-purple-400/50 bg-purple-600 px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-purple-950/40 transition-[transform,background-color,border-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none"
                     >
                         Sex Disaggregated Data Reports
                         <ArrowRight class="hero-cta-icon size-4 shrink-0" aria-hidden="true" :stroke-width="2.5" />
-                    </button>
+                    </button> -->
                 </div>
             </div>
         </div>

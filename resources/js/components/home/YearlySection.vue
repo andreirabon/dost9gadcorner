@@ -18,13 +18,13 @@ const sortedYears = computed(() => [...props.years].sort((a, b) => Number(b.year
 const reportCount = computed(() => props.years.length);
 
 const headerIntroCardClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-10';
+    'relative overflow-hidden rounded-2xl border border-purple-400/35 bg-purple-900/55 p-4 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-5';
 
 const reportsPanelClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/40 p-5 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-6 md:p-8';
+    'relative overflow-hidden rounded-2xl border border-purple-400/35 bg-purple-900/40 p-4 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-5 md:p-6';
 
 const emptyStateClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-dashed border-purple-400/30 bg-purple-950/50 px-8 py-14 text-center shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/5 sm:py-16';
+    'relative overflow-hidden rounded-2xl border border-dashed border-purple-400/30 bg-purple-950/50 px-6 py-8 text-center shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/5 sm:py-10';
 </script>
 
 <template>
@@ -41,7 +41,7 @@ const emptyStateClass =
                     class="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fuchsia-300/35 to-transparent"
                     aria-hidden="true"
                 />
-                <div class="relative z-10 flex flex-col gap-5 text-center lg:items-start lg:text-left">
+                <div class="relative z-10 flex flex-col gap-2 sm:gap-3 text-center lg:items-start lg:text-left">
                     <p
                         class="mx-auto inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-950/50 px-3.5 py-1.5 text-[0.6875rem] font-semibold tracking-[0.16em] text-fuchsia-100/90 uppercase ring-1 ring-white/10 lg:mx-0"
                     >

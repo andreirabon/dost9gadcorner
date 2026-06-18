@@ -313,14 +313,14 @@ const rstlForm = useForm({
 const fundingForm = useForm({
     summaries: props.reportYear.programFunding.map((row) => ({
         funding_program_id: row.fundingProgramId,
-        female_projects: row.femaleProjects,
-        female_amount: row.femaleAmount,
-        non_binary_projects: row.nonBinaryProjects,
-        non_binary_amount: row.nonBinaryAmount,
-        genderqueer_projects: row.genderqueerProjects,
-        genderqueer_amount: row.genderqueerAmount,
-        male_projects: row.maleProjects,
-        male_amount: row.maleAmount,
+        female_projects: row.femaleProjects ?? 0,
+        female_amount: row.femaleAmount ?? 0,
+        non_binary_projects: row.nonBinaryProjects ?? 0,
+        non_binary_amount: row.nonBinaryAmount ?? 0,
+        genderqueer_projects: row.genderqueerProjects ?? 0,
+        genderqueer_amount: row.genderqueerAmount ?? 0,
+        male_projects: row.maleProjects ?? 0,
+        male_amount: row.maleAmount ?? 0,
     })),
 });
 
@@ -575,8 +575,8 @@ const updateProgramFunding = () => {
    });
 };
 
-const inputClass = 'report-field w-full';
-const tableInputClass = 'report-field report-years-data-input w-full';
+const inputClass = 'report-field w-full transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]';
+const tableInputClass = 'report-field report-years-data-input w-full transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]';
 
 const isSetupFundingSlug = (slug: string): boolean => slug === 'setup' || slug.startsWith('setup-');
 const isCestFundingSlug = (slug: string): boolean => slug === 'cest' || slug.startsWith('cest-');
@@ -725,7 +725,7 @@ v-for="tab in visibleTabs"
 type="button"
 role="tab"
 :aria-selected="activeTab === tab.id"
-class="report-years-tab"
+class="report-years-tab transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-[0.98] active:scale-[0.95]"
 :class="{ 'is-active': activeTab === tab.id, 'has-recent-update': hasRecentUpdate(tab.id) }"
 @click="activeTab = tab.id; dismissRecentUpdate(tab.id)"
 >
@@ -767,7 +767,7 @@ role="status"
 <span class="flex-1">This section was recently updated by another user.</span>
 <button
 type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900"
+class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
 @click="dismissRecentUpdate('metadata')"
 >
 Dismiss
@@ -803,7 +803,7 @@ description="Calendar year, publication status, and the title and description re
 
  <div v-if="abilities.updateFullReport" class="grid gap-2">
  <Label for="status">Status</Label>
- <select id="status" v-model="metadataForm.status" name="status" class="report-select">
+ <select id="status" v-model="metadataForm.status" name="status" class="report-select transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]">
  <option value="pending">Pending</option>
  <option value="published">Published</option>
  </select>
@@ -847,7 +847,7 @@ description="Calendar year, publication status, and the title and description re
  v-model="metadataForm.description"
  name="description"
  rows="4"
- class="report-textarea"
+ class="report-textarea transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
  :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
  />
  <p class="text-xs text-black">
@@ -859,7 +859,7 @@ description="Calendar year, publication status, and the title and description re
  <InputError :message="metadataPatchError" />
 
  <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2">
- <Button type="submit" :disabled="metadataSaving" class="report-save-btn">
+ <Button type="submit" :disabled="metadataSaving" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save metadata
  </Button>
@@ -881,7 +881,7 @@ role="status"
 <span class="flex-1">This section was recently updated by another user.</span>
 <button
 type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900"
+class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
 @click="dismissRecentUpdate('gfps_membership')"
 >
 Dismiss
@@ -958,7 +958,7 @@ description="Total GFPS members by sex for this reporting year. Use whole number
  </div>
 
  <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2">
- <Button type="submit" class="report-save-btn" :disabled="gfpsMembershipForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="gfpsMembershipForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save GFPS membership
  </Button>
@@ -980,7 +980,7 @@ role="status"
 <span class="flex-1">This section was recently updated by another user.</span>
 <button
 type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900"
+class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
 @click="dismissRecentUpdate('scholarship')"
 >
 Dismiss
@@ -998,7 +998,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
     <Button
      type="button"
      variant="outline"
-     class="flex items-center gap-2 border-emerald-200 bg-emerald-50/20 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-[transform,background-color,border-color,color] duration-200 ease-out active:scale-[0.98]"
+     class="flex items-center gap-2 border-emerald-200 bg-emerald-50/20 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
      @click="showAddForm = true"
     >
      <Plus class="size-4 text-emerald-600 animate-pulse" aria-hidden="true" />
@@ -1019,7 +1019,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
      </div>
      <button
       type="button"
-      class="text-xs text-zinc-400 hover:text-zinc-700 underline transition-colors"
+      class="text-xs text-zinc-400 hover:text-zinc-700 underline transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
       @click="showAddForm = false"
      >
       Cancel
@@ -1113,14 +1113,14 @@ description="Track scholar counts across the year. Each update is saved as a sep
     </div>
 
     <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-4 mt-6">
-     <Button type="submit" class="report-save-btn flex items-center gap-2 active:scale-[0.98] transition-[transform,background-color,color] duration-150 ease-out" :disabled="newSnapshotForm.processing">
+     <Button type="submit" class="report-save-btn flex items-center gap-2 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]" :disabled="newSnapshotForm.processing">
       <Plus class="size-4" :stroke-width="2.5" aria-hidden="true" />
       Save new snapshot
      </Button>
      <Button
       type="button"
       variant="ghost"
-      class="text-zinc-500 hover:text-zinc-800 active:scale-[0.98] transition-[transform,background-color,color] duration-150 ease-out"
+      class="text-zinc-500 hover:text-zinc-800 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
       @click="showAddForm = false"
      >
       Cancel
@@ -1145,7 +1145,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
     <div
      v-for="(snap, index) in reportYear.scholarshipSnapshots"
      :key="snap.id"
-     class="relative rounded-2xl border p-5 transition-all duration-200 hover:border-zinc-300 hover:shadow-sm"
+     class="relative rounded-2xl border p-5 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-zinc-300 hover:shadow-sm hover:-translate-y-0.5"
      :class="index === 0 ? 'border-emerald-200 bg-emerald-50/30 shadow-[0_8px_30px_rgb(0,0,0,0.01)]' : 'border-zinc-200 bg-white'"
     >
      <!-- Timeline node indicator dot -->
@@ -1176,11 +1176,11 @@ description="Track scholar counts across the year. Each update is saved as a sep
         </div>
         <div class="mt-2 text-xs text-zinc-600 flex flex-wrap gap-x-4 gap-y-1">
          <span>School Year: <span class="font-medium text-zinc-900">{{ snap.schoolYearLabel || 'No school year' }}</span></span>
-         <span>F: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.femaleCount }}</span></span>
-         <span>NB: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.nonBinaryCount }}</span></span>
-         <span>GQ: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.genderqueerCount }}</span></span>
-         <span>M: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.maleCount }}</span></span>
-         <span class="font-medium text-zinc-900">Total: <span class="font-bold text-zinc-950 font-mono tabular-nums">{{ snap.femaleCount + snap.nonBinaryCount + snap.genderqueerCount + snap.maleCount }}</span></span>
+         <span>F: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.femaleCount ?? 0 }}</span></span>
+         <span>NB: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.nonBinaryCount ?? 0 }}</span></span>
+         <span>GQ: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.genderqueerCount ?? 0 }}</span></span>
+         <span>M: <span class="font-semibold text-zinc-950 font-mono tabular-nums">{{ snap.maleCount ?? 0 }}</span></span>
+         <span class="font-medium text-zinc-900">Total: <span class="font-bold text-zinc-950 font-mono tabular-nums">{{ Number(snap.femaleCount ?? 0) + Number(snap.nonBinaryCount ?? 0) + Number(snap.genderqueerCount ?? 0) + Number(snap.maleCount ?? 0) }}</span></span>
         </div>
         <p class="mt-2 text-[10px] text-zinc-400 flex items-center gap-1.5">
          <Calendar class="size-3 text-zinc-400" />
@@ -1198,7 +1198,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
         <button
          v-if="abilities.updateScholarship"
          type="button"
-         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-[transform,background-color,color] duration-150 ease-out active:scale-95"
+         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
          @click="startEditSnapshot(snap)"
         >
          <Pencil class="size-3.5" aria-hidden="true" />
@@ -1207,7 +1207,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
         <button
          v-if="abilities.deleteScholarship"
          type="button"
-         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-[transform,background-color,color] duration-150 ease-out active:scale-95"
+         class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
          @click="deleteScholarshipSnapshot(snap.id)"
         >
          <Trash2 class="size-3.5" aria-hidden="true" />
@@ -1225,7 +1225,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
          <Pencil class="size-4 text-zinc-500" aria-hidden="true" />
          Editing Snapshot
         </span>
-        <button type="button" class="text-zinc-400 hover:text-zinc-700" @click="cancelEditSnapshot">
+        <button type="button" class="text-zinc-400 hover:text-zinc-700 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]" @click="cancelEditSnapshot">
          <X class="size-4" />
         </button>
        </div>
@@ -1236,7 +1236,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
          <select
           :id="`edit_school_year_${snap.id}`"
           v-model="editSnapshotForm.school_year_id"
-          class="report-select"
+          class="report-select transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
          >
           <option value="" disabled>Select school year…</option>
           <option v-for="sy in schoolYears" :key="sy.id" :value="sy.id">
@@ -1314,14 +1314,14 @@ description="Track scholar counts across the year. Each update is saved as a sep
        </div>
 
        <div class="flex flex-wrap items-center gap-3 border-zinc-200/80 border-t pt-4 mt-6">
-        <Button type="submit" class="report-save-btn active:scale-[0.98] transition-[transform,background-color,color] duration-150 ease-out" :disabled="editSnapshotForm.processing">
+        <Button type="submit" class="report-save-btn active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]" :disabled="editSnapshotForm.processing">
          <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
          Save changes
         </Button>
         <Button
          type="button"
          variant="ghost"
-         class="text-zinc-500 hover:text-zinc-800 active:scale-[0.98] transition-[transform,background-color,color] duration-150 ease-out"
+         class="text-zinc-500 hover:text-zinc-800 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
          @click="cancelEditSnapshot"
         >
          Cancel
@@ -1352,7 +1352,7 @@ role="status"
 <span class="flex-1">This section was recently updated by another user.</span>
 <button
 type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900"
+class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
 @click="dismissRecentUpdate('gfps_assemblies')"
 >
 Dismiss
@@ -1436,7 +1436,7 @@ description="Attendance by assembly period. Enter headcounts by sex for each row
  <InputError :message="gfpsAssembliesForm.errors.attendances" />
 
  <div class="report-years-form-actions">
- <Button type="submit" class="report-save-btn" :disabled="gfpsAssembliesForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="gfpsAssembliesForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save assemblies
  </Button>
@@ -1458,7 +1458,7 @@ role="status"
 <span class="flex-1">This section was recently updated by another user.</span>
 <button
 type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900"
+class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
 @click="dismissRecentUpdate('employee_status')"
 >
 Dismiss
@@ -1542,7 +1542,7 @@ description="Workforce headcounts by employment status and sex. Use the same def
  <InputError :message="employeeStatusesForm.errors.breakdowns" />
 
  <div class="report-years-form-actions">
- <Button type="submit" class="report-save-btn" :disabled="employeeStatusesForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="employeeStatusesForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save employee status
  </Button>
@@ -1564,7 +1564,7 @@ role="status"
 <span class="flex-1">This section was recently updated by another user.</span>
 <button
 type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900"
+class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
 @click="dismissRecentUpdate('rstl_monthly')"
 >
 Dismiss
@@ -1702,7 +1702,7 @@ description="Monthly RSTL activity: clients or visits by sex, plus female-led an
  <InputError :message="rstlForm.errors.breakdowns" />
 
  <div class="report-years-form-actions">
- <Button type="submit" class="report-save-btn" :disabled="rstlForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="rstlForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save RSTL
  </Button>
@@ -1724,7 +1724,7 @@ role="status"
 <span class="flex-1">This section was recently updated by another user.</span>
 <button
 type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900"
+class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
 @click="dismissRecentUpdate('program_funding')"
 >
 Dismiss
@@ -1747,6 +1747,10 @@ description="Projects and funding amounts by program, split by sex. Amounts use 
  <span class="report-years-data-head-label">Program</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Female projects</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Female amount</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">NB projects</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">NB amount</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">GQ projects</span>
+ <span class="report-years-data-head-label report-years-data-head-label--center">GQ amount</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Male projects</span>
  <span class="report-years-data-head-label report-years-data-head-label--center">Male amount</span>
  </div>
@@ -2003,7 +2007,7 @@ description="Projects and funding amounts by program, split by sex. Amounts use 
  <InputError :message="fundingForm.errors.summaries" />
 
  <div class="report-years-form-actions">
- <Button type="submit" class="report-save-btn" :disabled="fundingForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="fundingForm.processing">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save program funding
  </Button>

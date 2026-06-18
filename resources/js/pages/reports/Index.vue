@@ -189,7 +189,7 @@ function confirmDeleteReportYear(): void {
                 <Link
                     v-if="canCreate"
                     :href="route('report-years.create')"
-                    class="report-years-btn-primary"
+                    class="report-years-btn-primary transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
                 >
                     <Plus class="size-4" :stroke-width="2.5" aria-hidden="true" />
                     Create new year
@@ -210,7 +210,7 @@ function confirmDeleteReportYear(): void {
                 <Link
                     v-if="canCreate"
                     :href="route('report-years.create')"
-                    class="report-years-btn-primary mt-6"
+                    class="report-years-btn-primary mt-6 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
                 >
                     <Plus class="size-4" :stroke-width="2" aria-hidden="true" />
                     Create report year
@@ -226,7 +226,7 @@ function confirmDeleteReportYear(): void {
                             type="button"
                             role="tab"
                             :aria-selected="statusTab === tab.id"
-                            class="report-years-filter-tab"
+                            class="report-years-filter-tab transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-[0.98] active:scale-[0.95]"
                             :class="{ 'is-active': statusTab === tab.id }"
                             @click="statusTab = tab.id"
                         >
@@ -246,7 +246,7 @@ function confirmDeleteReportYear(): void {
                         </div>
                         <button
                             type="button"
-                            class="report-years-btn-icon"
+                            class="report-years-btn-icon transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
                             aria-label="Reset filters"
                             @click="resetFilters"
                         >
@@ -272,7 +272,7 @@ function confirmDeleteReportYear(): void {
                                     No reports found matching your criteria.
                                     <button
                                         type="button"
-                                        class="ml-1 font-medium text-blue-700 underline underline-offset-4 hover:text-blue-800"
+                                        class="ml-1 font-medium text-blue-700 underline underline-offset-4 hover:text-blue-800 transition-colors duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
                                         @click="resetFilters"
                                     >
                                         Clear filters
@@ -313,7 +313,7 @@ function confirmDeleteReportYear(): void {
                                                 <Link
                                                     :href="route('report-years.edit', reportYear.id)"
                                                     prefetch
-                                                    class="report-years-row-action inline-flex items-center justify-center"
+                                                    class="report-years-row-action inline-flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
                                                     :aria-label="`Edit report year ${reportYear.year}`"
                                                 >
                                                     <Pencil class="size-4" :stroke-width="2" aria-hidden="true" />
@@ -325,7 +325,7 @@ function confirmDeleteReportYear(): void {
                                             <TooltipTrigger as-child>
                                                 <button
                                                     type="button"
-                                                    class="report-years-row-action report-years-row-action--danger inline-flex items-center justify-center"
+                                                    class="report-years-row-action report-years-row-action--danger inline-flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
                                                     :aria-label="`Delete Report Year ${reportYear.year}`"
                                                     @click="openDeleteDialog(reportYear)"
                                                 >
@@ -349,7 +349,7 @@ function confirmDeleteReportYear(): void {
                     <div v-if="filteredYears.length > 0" class="report-years-pagination">
                         <button
                             type="button"
-                            class="report-years-page-btn"
+                            class="report-years-page-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
                             :disabled="currentPage <= 1"
                             aria-label="First page"
                             @click="goPage(1)"
@@ -358,7 +358,7 @@ function confirmDeleteReportYear(): void {
                         </button>
                         <button
                             type="button"
-                            class="report-years-page-btn"
+                            class="report-years-page-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
                             :disabled="currentPage <= 1"
                             aria-label="Previous page"
                             @click="goPage(currentPage - 1)"
@@ -368,7 +368,7 @@ function confirmDeleteReportYear(): void {
                         <span class="report-years-page-indicator">{{ currentPage }}</span>
                         <button
                             type="button"
-                            class="report-years-page-btn"
+                            class="report-years-page-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
                             :disabled="currentPage >= totalPages"
                             aria-label="Next page"
                             @click="goPage(currentPage + 1)"
@@ -377,7 +377,7 @@ function confirmDeleteReportYear(): void {
                         </button>
                         <button
                             type="button"
-                            class="report-years-page-btn"
+                            class="report-years-page-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
                             :disabled="currentPage >= totalPages"
                             aria-label="Last page"
                             @click="goPage(totalPages)"
@@ -405,7 +405,7 @@ function confirmDeleteReportYear(): void {
                 <DialogFooter class="report-years-dialog-footer mt-6 gap-3">
                     <button
                         type="button"
-                        class="report-years-btn-secondary"
+                        class="report-years-btn-secondary transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
                         :disabled="deleteProcessing"
                         @click="onDeleteDialogOpenChange(false)"
                     >
@@ -413,7 +413,7 @@ function confirmDeleteReportYear(): void {
                     </button>
                     <button
                         type="button"
-                        class="report-years-btn-danger"
+                        class="report-years-btn-danger transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
                         :disabled="deleteProcessing"
                         @click="confirmDeleteReportYear"
                     >

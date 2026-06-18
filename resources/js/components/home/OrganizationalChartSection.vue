@@ -13,10 +13,10 @@ const gfpsTree = computed(() => buildOrgTree(getGfpsNodes()));
 const moveTree = computed(() => buildOrgTree(getMoveNodes()));
 
 const headerIntroCardClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-10';
+    'relative overflow-hidden rounded-2xl border border-purple-400/35 bg-purple-900/55 p-4 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-5';
 
 const chartPanelClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint]';
+    'relative overflow-hidden rounded-2xl border border-purple-400/35 bg-purple-900/55 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint]';
 </script>
 
 <template>
@@ -33,7 +33,7 @@ const chartPanelClass =
                     class="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fuchsia-300/35 to-transparent"
                     aria-hidden="true"
                 />
-                <div class="relative z-10 flex flex-col gap-5 text-center lg:items-start lg:text-left">
+                <div class="relative z-10 flex flex-col gap-2 sm:gap-3 text-center lg:items-start lg:text-left">
                     <p
                         class="mx-auto inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-950/50 px-3.5 py-1.5 text-[0.6875rem] font-semibold tracking-[0.16em] text-fuchsia-100/90 uppercase ring-1 ring-white/10 lg:mx-0"
                     >
@@ -65,8 +65,8 @@ const chartPanelClass =
                 </div>
             </article>
 
-            <div class="mt-6 flex flex-col gap-6 sm:mt-8 lg:gap-8">
-                <article aria-labelledby="gfps-org-heading" class="flex flex-col gap-4 sm:gap-5">
+            <div class="mt-4 flex flex-col gap-4 sm:mt-6 lg:gap-6">
+                <article aria-labelledby="gfps-org-heading" class="flex flex-col gap-2 sm:gap-3">
                     <header class="flex flex-col gap-3 text-center lg:items-start lg:text-left">
                         <p
                             class="mx-auto inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-950/45 px-3 py-1 text-[0.6875rem] font-semibold tracking-[0.12em] text-purple-100/90 uppercase ring-1 ring-white/10 lg:mx-0"
@@ -80,7 +80,7 @@ const chartPanelClass =
                             Gender and Development Focal Point System
                         </h3>
                     </header>
-                    <div :class="[chartPanelClass, 'px-4 py-5 sm:px-6 sm:py-6']">
+                    <div :class="[chartPanelClass, 'p-4 sm:p-5']">
                         <ul class="org-tree__root m-0 w-full list-none space-y-6 p-0 lg:space-y-8">
                             <li v-for="root in gfpsTree" :key="root.id" class="list-none">
                                 <OrgTreeBranch :node="root" :depth="0" />
@@ -89,7 +89,7 @@ const chartPanelClass =
                     </div>
                 </article>
 
-                <article aria-labelledby="move-org-heading" class="flex flex-col gap-4 sm:gap-5">
+                <article aria-labelledby="move-org-heading" class="flex flex-col gap-2 sm:gap-3">
                     <header class="flex flex-col gap-3 text-center lg:items-start lg:text-left">
                         <p
                             class="mx-auto inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-950/45 px-3 py-1 text-[0.6875rem] font-semibold tracking-[0.12em] text-purple-100/90 uppercase ring-1 ring-white/10 lg:mx-0"
@@ -103,7 +103,7 @@ const chartPanelClass =
                             Men Opposed to Violence Against Women Everywhere
                         </h3>
                     </header>
-                    <div :class="[chartPanelClass, 'px-4 py-5 sm:px-6 sm:py-6']">
+                    <div :class="[chartPanelClass, 'p-4 sm:p-5']">
                         <ul class="org-tree__root m-0 w-full max-w-3xl list-none space-y-6 p-0 lg:space-y-8">
                             <li v-for="root in moveTree" :key="root.id" class="list-none">
                                 <OrgTreeBranch :node="root" :depth="0" />

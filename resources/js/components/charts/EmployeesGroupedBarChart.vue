@@ -131,8 +131,9 @@ const chartOptions = computed<ApexOptions>(() => {
         dataLabels: {
             enabled: true,
             formatter: (value: number) => (value === 0 ? '' : `${value}`),
+            offsetY: -20,
             style: {
-                colors: [ui.dataLabelColor],
+                colors: [ui.foreColor],
                 fontFamily: REPORT_CHART_FONT_FAMILY,
                 fontSize: '12px',
                 fontWeight: 600,
@@ -148,7 +149,7 @@ const chartOptions = computed<ApexOptions>(() => {
             borderColor: ui.gridBorder,
             strokeDashArray: 4,
             padding: {
-                top: 0,
+                top: 20,
                 right: 8,
                 bottom: 0,
                 left: 8,
@@ -160,9 +161,10 @@ const chartOptions = computed<ApexOptions>(() => {
         plotOptions: {
             bar: {
                 borderRadius: 3,
+                borderRadiusApplication: 'end',
                 columnWidth: '58%',
                 dataLabels: {
-                    position: 'center',
+                    position: 'top',
                 },
             },
         },

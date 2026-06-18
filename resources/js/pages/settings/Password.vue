@@ -66,7 +66,7 @@ const updatePassword = () => {
                             ref="currentPasswordInput"
                             v-model="form.current_password"
                             type="password"
-                            class="mt-1 block h-11 w-full border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-slate-400 focus-visible:ring-2 focus-visible:ring-slate-300/80"
+                            class="mt-1 block h-11 w-full border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-slate-400 focus-visible:ring-2 focus-visible:ring-slate-300/80 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
                             autocomplete="current-password"
                             placeholder="Current password"
                         />
@@ -80,7 +80,7 @@ const updatePassword = () => {
                             ref="passwordInput"
                             v-model="form.password"
                             type="password"
-                            class="mt-1 block h-11 w-full border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-slate-400 focus-visible:ring-2 focus-visible:ring-slate-300/80"
+                            class="mt-1 block h-11 w-full border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-slate-400 focus-visible:ring-2 focus-visible:ring-slate-300/80 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
                             autocomplete="new-password"
                             placeholder="New password"
                         />
@@ -93,7 +93,7 @@ const updatePassword = () => {
                             id="password_confirmation"
                             v-model="form.password_confirmation"
                             type="password"
-                            class="mt-1 block h-11 w-full border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-slate-400 focus-visible:ring-2 focus-visible:ring-slate-300/80"
+                            class="mt-1 block h-11 w-full border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-slate-400 focus-visible:ring-2 focus-visible:ring-slate-300/80 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
                             autocomplete="new-password"
                             placeholder="Confirm password"
                         />
@@ -103,7 +103,7 @@ const updatePassword = () => {
                     <div class="flex items-center gap-4">
                         <Button
                             :disabled="form.processing"
-                            class="h-10 cursor-pointer rounded-xl border border-blue-800/15 bg-blue-700 px-5 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-out hover:bg-blue-600 active:scale-[0.97]"
+                            class="h-10 cursor-pointer rounded-xl border border-blue-800/15 bg-blue-700 px-5 text-sm font-semibold text-white transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-blue-600 active:scale-[0.97]"
                         >
                             Save password
                         </Button>

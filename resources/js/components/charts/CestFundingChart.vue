@@ -162,11 +162,12 @@ const chartOptions = computed<ApexOptions>(() => {
 
                 return `${value}`;
             },
+            offsetY: -20,
             style: {
                 fontFamily: REPORT_CHART_FONT_FAMILY,
                 fontSize: '12px',
                 fontWeight: 600,
-                colors: [ui.dataLabelColor],
+                colors: [ui.foreColor],
             },
         },
         legend: {
@@ -203,9 +204,10 @@ const chartOptions = computed<ApexOptions>(() => {
         plotOptions: {
             bar: {
                 borderRadius: 4,
+                borderRadiusApplication: 'end',
                 columnWidth: '52%',
                 dataLabels: {
-                    position: 'center',
+                    position: 'top',
                 },
             },
         },
@@ -217,7 +219,7 @@ const chartOptions = computed<ApexOptions>(() => {
             strokeDashArray: 4,
             xaxis: { lines: { show: false } },
             padding: {
-                top: 0,
+                top: 20,
                 right: 8,
                 bottom: 0,
                 left: 8,

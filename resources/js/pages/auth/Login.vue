@@ -174,7 +174,7 @@ const submit = (): void => {
                                         autocapitalize="none"
                                         autocorrect="off"
                                         spellcheck="false"
-                                        class="h-11 border-white/15 bg-slate-950/65 pr-3 pl-10 text-sm text-slate-50 transition-colors duration-200 placeholder:text-slate-400/70 focus-visible:border-blue-400/60 focus-visible:bg-slate-950 focus-visible:ring-4 focus-visible:ring-blue-500/20"
+                                        class="h-11 border-white/15 bg-slate-950/65 pr-3 pl-10 text-sm text-slate-50 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] placeholder:text-slate-400/70 focus-visible:border-blue-400/60 focus-visible:bg-slate-950 focus-visible:ring-4 focus-visible:ring-blue-500/20"
                                         placeholder="Enter your username"
                                     />
                                 </div>
@@ -196,12 +196,12 @@ const submit = (): void => {
                                         name="password"
                                         required
                                         autocomplete="current-password"
-                                        class="h-11 border-white/15 bg-slate-950/65 pr-10 pl-10 text-sm text-slate-50 transition-colors duration-200 placeholder:text-slate-400/70 focus-visible:border-blue-400/60 focus-visible:bg-slate-950 focus-visible:ring-4 focus-visible:ring-blue-500/20"
+                                        class="h-11 border-white/15 bg-slate-950/65 pr-10 pl-10 text-sm text-slate-50 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] placeholder:text-slate-400/70 focus-visible:border-blue-400/60 focus-visible:bg-slate-950 focus-visible:ring-4 focus-visible:ring-blue-500/20"
                                         placeholder="Enter your password"
                                     />
                                     <button
                                         type="button"
-                                        class="absolute top-1/2 right-2 inline-flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-slate-400 transition-colors duration-200 hover:bg-slate-800/70 hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
+                                        class="absolute top-1/2 right-2 inline-flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-slate-400 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-slate-800/70 hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 active:scale-[0.97]"
                                         :aria-pressed="showPassword"
                                         :aria-label="showPassword ? 'Hide password' : 'Show password'"
                                         @click="showPassword = !showPassword"
@@ -215,7 +215,7 @@ const submit = (): void => {
 
                             <Button
                                 type="submit"
-                                class="h-11 w-full cursor-pointer rounded-xl border border-blue-300/35 bg-blue-600 text-[14px] font-semibold text-white shadow-lg shadow-blue-950/35 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out hover:border-blue-200/50 hover:bg-blue-500 hover:shadow-blue-950/50 active:scale-[0.97] disabled:opacity-50"
+                                class="group h-11 w-full cursor-pointer rounded-xl border border-blue-300/35 bg-blue-600 text-[14px] font-semibold text-white shadow-lg shadow-blue-950/35 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-blue-200/50 hover:bg-blue-500 hover:shadow-blue-950/50 active:scale-[0.97] disabled:opacity-50"
                                 :disabled="form.processing"
                             >
                                 Sign In
@@ -224,9 +224,9 @@ const submit = (): void => {
                         <div class="mt-6 border-t border-white/10 pt-5 text-center lg:mt-auto">
                         <Link
                             :href="route('index')"
-                            class="inline-flex cursor-pointer items-center justify-center gap-1.5 text-[13px] font-medium text-slate-300/80 transition-colors duration-200 hover:text-slate-100"
+                            class="group inline-flex cursor-pointer items-center justify-center gap-1.5 text-[13px] font-medium text-slate-300/80 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-slate-100"
                         >
-                            <ArrowLeft class="size-3.5 shrink-0 text-current" stroke-width="2" aria-hidden="true" />
+                            <ArrowLeft class="size-3.5 shrink-0 text-current transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:-translate-x-1" stroke-width="2" aria-hidden="true" />
                             Return to public site
                         </Link>
                     </div>

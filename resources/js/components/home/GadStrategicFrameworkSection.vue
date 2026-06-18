@@ -10,10 +10,10 @@ const MANDATE_TEXT =
     'DOST IX shall promote equal access and participation of women and men in science, research, innovation, and technology transfer; address region-specific gender issues, particularly among marginalized sectors; ensure a safe and respectful workplace; and institutionalize GAD mechanisms.';
 
 const bentoCardClass =
-    'group relative flex flex-col justify-between overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] transition-[border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none lg:p-10 [@media(hover:hover)_and_(pointer:fine)]:hover:border-purple-400/50 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-purple-900/65';
+    'group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-purple-400/35 bg-purple-900/55 p-4 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] transition-[border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none lg:p-5 [@media(hover:hover)_and_(pointer:fine)]:hover:border-purple-400/50 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-purple-900/65';
 
 const headerIntroCardClass =
-    'relative overflow-hidden rounded-[2.5rem] border border-purple-400/35 bg-purple-900/55 p-8 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-10';
+    'relative overflow-hidden rounded-2xl border border-purple-400/35 bg-purple-900/55 p-4 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)] ring-1 ring-white/10 contain-[paint] sm:p-5';
 </script>
 
 <template>
@@ -31,7 +31,7 @@ const headerIntroCardClass =
                         class="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-fuchsia-300/35 to-transparent"
                         aria-hidden="true"
                     />
-                    <div class="relative z-10 flex flex-col gap-5 text-center lg:items-start lg:text-left">
+                    <div class="relative z-10 flex flex-col gap-2 sm:gap-3 text-center lg:items-start lg:text-left">
                         <p
                             class="mx-auto inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-950/50 px-3.5 py-1.5 text-[0.6875rem] font-semibold tracking-[0.16em] text-fuchsia-100/90 uppercase ring-1 ring-white/10 lg:mx-0"
                         >
@@ -54,7 +54,7 @@ const headerIntroCardClass =
                     </div>
                 </article>
                 <article :class="[bentoCardClass, 'md:col-span-2']">
-                    <div class="relative z-10 mb-6 md:mb-8">
+                    <div class="relative z-10 mb-3 md:mb-4">
                         <h3 class="font-sans text-4xl font-bold tracking-tighter text-purple-100 sm:text-5xl lg:text-6xl">
                             Mandate.
                         </h3>
@@ -67,7 +67,7 @@ const headerIntroCardClass =
                 </article>
 
                 <article :class="bentoCardClass">
-                    <div class="relative z-10 mb-6 flex flex-col items-start gap-6 md:mb-8">
+                    <div class="relative z-10 mb-3 flex flex-col items-start gap-4 md:mb-4">
                         <h3 class="font-sans text-4xl font-bold tracking-tighter text-purple-100 sm:text-5xl">Vision.</h3>
                     </div>
                     <div class="relative z-10">
@@ -78,7 +78,7 @@ const headerIntroCardClass =
                 </article>
 
                 <article :class="bentoCardClass">
-                    <div class="relative z-10 mb-6 flex flex-col items-start gap-6 md:mb-8">
+                    <div class="relative z-10 mb-3 flex flex-col items-start gap-4 md:mb-4">
                         <h3 class="font-sans text-4xl font-bold tracking-tighter text-purple-100 sm:text-5xl">Mission.</h3>
                     </div>
                     <div class="relative z-10">
@@ -89,7 +89,7 @@ const headerIntroCardClass =
                 </article>
 
                 <article :class="[bentoCardClass, 'md:col-span-2']">
-                    <div class="relative z-10 mb-8 md:mb-10">
+                    <div class="relative z-10 mb-3 md:mb-4">
                         <h3 class="font-sans text-4xl font-bold tracking-tighter text-purple-100 sm:text-5xl lg:text-6xl">Goals.</h3>
                     </div>
                     <div class="relative z-10">

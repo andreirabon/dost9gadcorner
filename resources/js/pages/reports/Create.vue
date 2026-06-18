@@ -57,7 +57,7 @@ const submit = () => {
                                 :min="REPORT_YEAR_FIELD_LIMITS.yearMin"
                                 :max="REPORT_YEAR_FIELD_LIMITS.yearMax"
                                 inputmode="numeric"
-                                class="report-field h-11 w-full"
+                                class="report-field h-11 w-full transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
                             />
                             <InputError :message="form.errors.year" />
                         </div>
@@ -69,7 +69,7 @@ const submit = () => {
                                     id="status"
                                     v-model="form.status"
                                     name="status"
-                                    class="report-select h-11 w-full appearance-none pr-10"
+                                    class="report-select h-11 w-full appearance-none pr-10 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
                                 >
                                     <option value="pending">Pending (draft)</option>
                                     <option value="published">Published (public)</option>
@@ -104,7 +104,7 @@ const submit = () => {
                             type="text"
                             placeholder="e.g., Annual regional review"
                             :maxlength="REPORT_YEAR_FIELD_LIMITS.title"
-                            class="report-field h-11 w-full"
+                            class="report-field h-11 w-full transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
                         />
                         <div class="flex justify-between gap-2">
                             <InputError :message="form.errors.title" />
@@ -126,7 +126,7 @@ const submit = () => {
                             rows="3"
                             placeholder="Brief summary of this reporting period..."
                             :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
-                            class="report-textarea w-full resize-y"
+                            class="report-textarea w-full resize-y transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
                         />
                         <div class="flex justify-between gap-2">
                             <InputError :message="form.errors.description" />
@@ -142,14 +142,14 @@ const submit = () => {
                         </p>
                         <button
                             type="button"
-                            class="report-years-btn-secondary"
+                            class="report-years-btn-secondary transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
                             @click="() => form.reset()"
                         >
                             Reset
                         </button>
                         <button
                             type="submit"
-                            class="report-years-btn-primary disabled:opacity-50"
+                            class="report-years-btn-primary transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] disabled:opacity-50"
                             :disabled="form.processing"
                         >
                             <Loader2 v-if="form.processing" class="mr-2 size-4 animate-spin" />
