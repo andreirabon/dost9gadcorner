@@ -5,7 +5,7 @@ import NavUser from '@/components/layout/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, useSidebar } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, ChevronsLeft, ChevronsRight, FileChartColumnIncreasing } from '@lucide/vue';
+import { ArrowLeft, ChevronsLeft, ChevronsRight, FileChartColumnIncreasing, Printer } from '@lucide/vue';
 import { computed } from 'vue';
 
 const page = usePage();
@@ -21,6 +21,12 @@ const mainNavItems = computed((): NavItem[] => {
             title: 'Sex Disaggregated Data Report',
             href: '/report-years',
             icon: FileChartColumnIncreasing,
+        });
+
+        items.push({
+            title: 'Print Report',
+            href: '/print-report',
+            icon: Printer,
         });
     }
 

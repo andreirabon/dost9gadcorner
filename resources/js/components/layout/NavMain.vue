@@ -44,13 +44,25 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
                     :tooltip="item.title"
                     class="sidebar-nav-item"
                 >
-                    <Link
-                        :href="item.href"
-                        class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 group-data-[collapsible=icon]:justify-center"
-                    >
-                        <component :is="item.icon" class="size-[18px] shrink-0" :stroke-width="1.8" />
-                        <span class="group-data-[collapsible=icon]:hidden">{{ item.title }}</span>
-                    </Link>
+                    <template v-if="item.onClick">
+                        <button
+                            type="button"
+                            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 group-data-[collapsible=icon]:justify-center"
+                            @click="item.onClick"
+                        >
+                            <component :is="item.icon" class="size-[18px] shrink-0" :stroke-width="1.8" />
+                            <span class="group-data-[collapsible=icon]:hidden">{{ item.title }}</span>
+                        </button>
+                    </template>
+                    <template v-else>
+                        <Link
+                            :href="item.href"
+                            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 group-data-[collapsible=icon]:justify-center"
+                        >
+                            <component :is="item.icon" class="size-[18px] shrink-0" :stroke-width="1.8" />
+                            <span class="group-data-[collapsible=icon]:hidden">{{ item.title }}</span>
+                        </Link>
+                    </template>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>

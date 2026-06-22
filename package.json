@@ -42,6 +42,7 @@
         "d3-org-chart": "^3.1.1",
         "gsap": "^3.15.0",
         "laravel-vite-plugin": "^2.1.0",
+        "puppeteer": "^25.1.0",
         "reka-ui": "^2.9.8",
         "tailwind-merge": "^3.6.0",
         "tailwindcss": "^4.3.0",

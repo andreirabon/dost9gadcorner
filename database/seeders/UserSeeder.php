@@ -9,13 +9,6 @@ use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
-    /** Default when `PRIMARY_ADMIN_PASSWORD` is unset (override via `.env` in production). */
-    private const DEFAULT_PRIMARY_ADMIN_PASSWORD = 'UploadIloveYou2026';
-
-    /** Default when `LOCAL_SAMPLE_PASSWORD` is unset. */
-    private const DEFAULT_LOCAL_SAMPLE_PASSWORD = 'UploadIHateYou2026';
-
-    private const PRIMARY_ADMIN_USERNAME = 'ARR';
 
     public function run(): void
     {
@@ -28,11 +21,12 @@ class UserSeeder extends Seeder
 
     private function seedPrimaryAdministrator(): void
     {
-        $password = $this->passwordFromEnv('PRIMARY_ADMIN_PASSWORD', self::DEFAULT_PRIMARY_ADMIN_PASSWORD);
+        $password = $this->passwordFromEnv('PRIMARY_ADMIN_PASSWORD', 'password');
+        $username = env('PRIMARY_ADMIN_USERNAME', 'admin');
 
-        Model::unguarded(function () use ($password): void {
+        Model::unguarded(function () use ($password, $username): void {
             User::query()->updateOrCreate(
-                ['username' => self::PRIMARY_ADMIN_USERNAME],
+                ['username' => $username],
                 [
                     'password' => $password,
                     'role' => UserRole::ADMINISTRATOR,
@@ -43,7 +37,7 @@ class UserSeeder extends Seeder
 
     private function seedLocalSampleAccounts(): void
     {
-        $password = $this->passwordFromEnv('LOCAL_SAMPLE_PASSWORD', self::DEFAULT_LOCAL_SAMPLE_PASSWORD);
+        $password = $this->passwordFromEnv('LOCAL_SAMPLE_PASSWORD', 'password');
 
         $rows = [
             ['username' => 'GADStaff', 'role' => UserRole::GAD],
