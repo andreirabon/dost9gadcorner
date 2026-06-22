@@ -46,39 +46,37 @@ const sumFundingRows = (rows: FundingCategorySummaryData[]): FundingSummaryData 
     );
 
 const setupFundingRows = computed<FundingCategorySummaryData[]>(() => {
-    if (setupFundingBreakdown.value.length > 0) {
-        return setupFundingBreakdown.value;
+    let rows = setupFundingBreakdown.value;
+
+    if (rows.length === 0 && (setupFundingData.value.maleProjects > 0 || setupFundingData.value.femaleProjects > 0)) {
+        rows = [
+            {
+                label: 'SETUP',
+                slug: 'setup',
+                ...setupFundingData.value,
+            },
+        ];
     }
 
-    if (setupFundingData.value.maleProjects === 0 && setupFundingData.value.femaleProjects === 0) {
-        return [];
-    }
-
-    return [
-        {
-            label: 'SETUP',
-            slug: 'setup',
-            ...setupFundingData.value,
-        },
-    ];
+    return rows;
 });
 
+
+
 const cestFundingRows = computed<FundingCategorySummaryData[]>(() => {
-    if (cestFundingBreakdown.value.length > 0) {
-        return cestFundingBreakdown.value;
+    let rows = cestFundingBreakdown.value;
+
+    if (rows.length === 0 && (cestFundingData.value.maleProjects > 0 || cestFundingData.value.femaleProjects > 0)) {
+        rows = [
+            {
+                label: 'CEST',
+                slug: 'cest',
+                ...cestFundingData.value,
+            },
+        ];
     }
 
-    if (cestFundingData.value.maleProjects === 0 && cestFundingData.value.femaleProjects === 0) {
-        return [];
-    }
-
-    return [
-        {
-            label: 'CEST',
-            slug: 'cest',
-            ...cestFundingData.value,
-        },
-    ];
+    return rows;
 });
 
 const selectedSetupCategorySlug = ref<string | null>(null);

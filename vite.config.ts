@@ -9,6 +9,12 @@ export default defineConfig({
         // ApexCharts minifies to ~520 kB; default 500 kB warning is noisy for legitimate heavy vendors.
         chunkSizeWarningLimit: 640,
         rollupOptions: {
+            onwarn(warning, defaultHandler) {
+                // Ignore noisy warnings from dependencies
+                if (warning.code === 'INVALID_ANNOTATION') return;
+                if (warning.code === 'EMPTY_BUNDLE') return;
+                defaultHandler(warning);
+            },
             output: {
                 manualChunks: {
                     'vendor-gsap': ['gsap', 'gsap/ScrollTrigger'],

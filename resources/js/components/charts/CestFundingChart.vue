@@ -158,12 +158,11 @@ const chartOptions = computed<ApexOptions>(() => {
 
                 return `${value}`;
             },
-            offsetY: -20,
+            offsetY: 0,
             style: {
                 fontFamily: REPORT_CHART_FONT_FAMILY,
                 fontSize: '12px',
                 fontWeight: 600,
-                colors: [ui.foreColor],
             },
         },
         legend: {
@@ -203,12 +202,14 @@ const chartOptions = computed<ApexOptions>(() => {
                 borderRadiusApplication: 'end',
                 columnWidth: '52%',
                 dataLabels: {
-                    position: 'top',
+                    position: 'center',
                 },
             },
         },
         stroke: {
-            width: 1,
+            show: true,
+            width: 2,
+            colors: [ui.chartBackground],
         },
         grid: {
             borderColor: ui.gridBorder,

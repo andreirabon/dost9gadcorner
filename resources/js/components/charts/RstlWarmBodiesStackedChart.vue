@@ -142,7 +142,9 @@ const chartOptions = computed<ApexOptions>(() => {
             },
         },
         stroke: {
-            width: 0,
+            show: true,
+            width: 2,
+            colors: [ui.chartBackground],
         },
         tooltip: reportChartTooltip({
             y: {

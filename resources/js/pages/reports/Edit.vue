@@ -567,8 +567,38 @@ const fundingRows = computed(() =>
  })),
 );
 
-const setupFundingRows = computed(() => fundingRows.value.filter((item) => isSetupFundingSlug(item.slug)));
-const cestFundingRows = computed(() => fundingRows.value.filter((item) => isCestFundingSlug(item.slug)));
+const setupFundingRows = computed(() => {
+    const username = page.props.auth.user?.username?.toLowerCase();
+    
+    return fundingRows.value.filter((item) => {
+        if (!isSetupFundingSlug(item.slug)) {
+            return false;
+        }
+
+        if (username === 'toszcic' && item.slug !== 'setup-zc-ic') return false;
+        if (username === 'toszsp' && item.slug !== 'setup-zsp') return false;
+        if (username === 'toszds' && item.slug !== 'setup-zds') return false;
+        if (username === 'toszdn' && item.slug !== 'setup-zdn') return false;
+
+        return true;
+    });
+});
+const cestFundingRows = computed(() => {
+    const username = page.props.auth.user?.username?.toLowerCase();
+    
+    return fundingRows.value.filter((item) => {
+        if (!isCestFundingSlug(item.slug)) {
+            return false;
+        }
+
+        if (username === 'toszcic' && item.slug !== 'cest-zc-ic') return false;
+        if (username === 'toszsp' && item.slug !== 'cest-zsp') return false;
+        if (username === 'toszds' && item.slug !== 'cest-zds') return false;
+        if (username === 'toszdn' && item.slug !== 'cest-zdn') return false;
+
+        return true;
+    });
+});
 
 const isPublished = computed(() => props.reportYear.status === 'published');
 

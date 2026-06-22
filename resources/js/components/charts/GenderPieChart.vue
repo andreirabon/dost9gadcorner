@@ -72,15 +72,15 @@ const chartOptions = computed<ApexOptions>(() => {
                 fontFamily: REPORT_CHART_FONT_FAMILY,
                 fontSize: '13px',
                 fontWeight: 600,
-                colors: [ui.dataLabelColor],
             },
             dropShadow: {
                 enabled: false,
             },
         },
         stroke: {
+            show: true,
             width: 2,
-            colors: [colors.stroke[0], colors.stroke[1]],
+            colors: [ui.chartBackground],
         },
         plotOptions: {
             pie: {
