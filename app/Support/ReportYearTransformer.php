@@ -40,6 +40,7 @@ class ReportYearTransformer
         return [
             'id' => $reportYear->id,
             'year' => (string) $reportYear->year,
+            'title' => (string) $reportYear->title,
             'href' => route('reports.show', $reportYear),
             'description' => $reportYear->description,
             'status' => $reportYear->status,

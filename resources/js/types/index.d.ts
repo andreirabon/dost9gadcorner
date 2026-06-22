@@ -17,6 +17,7 @@ export interface NavItem {
     icon?: LucideIcon;
     isActive?: boolean;
     onClick?: () => void;
+    badge?: string;
 }
 
 export interface ProjectItem {

@@ -51,7 +51,8 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
                             @click="item.onClick"
                         >
                             <component :is="item.icon" class="size-[18px] shrink-0" :stroke-width="1.8" />
-                            <span class="group-data-[collapsible=icon]:hidden">{{ item.title }}</span>
+                            <span class="group-data-[collapsible=icon]:hidden flex-1 text-left">{{ item.title }}</span>
+                            <span v-if="item.badge" class="group-data-[collapsible=icon]:hidden ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary">{{ item.badge }}</span>
                         </button>
                     </template>
                     <template v-else>
@@ -60,7 +61,8 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
                             class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 group-data-[collapsible=icon]:justify-center"
                         >
                             <component :is="item.icon" class="size-[18px] shrink-0" :stroke-width="1.8" />
-                            <span class="group-data-[collapsible=icon]:hidden">{{ item.title }}</span>
+                            <span class="group-data-[collapsible=icon]:hidden flex-1 text-left">{{ item.title }}</span>
+                            <span v-if="item.badge" class="group-data-[collapsible=icon]:hidden ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary">{{ item.badge }}</span>
                         </Link>
                     </template>
                 </SidebarMenuButton>

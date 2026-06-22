@@ -1,0 +1,1 @@
+import{p as s,ak as a,af as t,j as o,g as r,a2 as n,Q as c}from"./app-gsgXIlgv.js";const i={class:"text-sm text-red-600"},_=s({__name:"InputError",props:{message:{}},setup(e){return(m,p)=>a((c(),o("div",null,[r("p",i,n(e.message),1)],512)),[[t,e.message]])}});export{_};

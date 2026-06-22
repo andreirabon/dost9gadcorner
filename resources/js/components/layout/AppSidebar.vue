@@ -27,6 +27,7 @@ const mainNavItems = computed((): NavItem[] => {
             title: 'Print Report',
             href: '/print-report',
             icon: Printer,
+            badge: 'WIP',
         });
     }
 

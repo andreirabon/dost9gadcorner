@@ -41,9 +41,10 @@ Route::middleware('auth')
         Route::patch('/{reportYear}/program-funding', [ReportYearManagementController::class, 'updateProgramFunding'])->name('program-funding.update');
     });
 
-Route::get('/print-report', function () {
-    return inertia('reports/Print');
-})->middleware('auth')->name('print-report');
+use App\Http\Controllers\ReportPrintController;
+
+Route::get('/print-report', [ReportPrintController::class, 'index'])->middleware('auth')->name('print-report');
+Route::get('/print-report/generate', [ReportPrintController::class, 'generate'])->middleware('auth')->name('print-report.generate');
 
 Route::middleware('auth')
     ->prefix('settings')
