@@ -22,10 +22,6 @@ const emptyFundingData: FundingSummaryData = {
     maleAmount: 0,
     femaleProjects: 0,
     femaleAmount: 0,
-    nonBinaryProjects: 0,
-    nonBinaryAmount: 0,
-    genderqueerProjects: 0,
-    genderqueerAmount: 0,
 };
 
 const reportData = computed<ReportYearData | null>(() => props.year.reportData ?? null);
@@ -45,10 +41,6 @@ const sumFundingRows = (rows: FundingCategorySummaryData[]): FundingSummaryData 
             maleAmount: carry.maleAmount + row.maleAmount,
             femaleProjects: carry.femaleProjects + row.femaleProjects,
             femaleAmount: carry.femaleAmount + row.femaleAmount,
-            nonBinaryProjects: carry.nonBinaryProjects + row.nonBinaryProjects,
-            nonBinaryAmount: carry.nonBinaryAmount + row.nonBinaryAmount,
-            genderqueerProjects: carry.genderqueerProjects + row.genderqueerProjects,
-            genderqueerAmount: carry.genderqueerAmount + row.genderqueerAmount,
         }),
         { ...emptyFundingData },
     );
@@ -157,55 +149,42 @@ const isYearDataPending = computed(() => props.year.status !== 'published' || re
 
 const gfpsStats = computed(() => {
     const femaleCount = reportData.value?.gfpsMembership.femaleCount ?? 0;
-    const nonBinaryCount = reportData.value?.gfpsMembership.nonBinaryCount ?? 0;
-    const genderqueerCount = reportData.value?.gfpsMembership.genderqueerCount ?? 0;
     const maleCount = reportData.value?.gfpsMembership.maleCount ?? 0;
-    const totalMembers = femaleCount + nonBinaryCount + genderqueerCount + maleCount;
+    const totalMembers = femaleCount + maleCount;
 
     return {
         totalMembers,
         femaleCount,
-        nonBinaryCount,
-        genderqueerCount,
         maleCount,
         femalePercentage: percentage(femaleCount, totalMembers),
-        nonBinaryPercentage: percentage(nonBinaryCount, totalMembers),
-        genderqueerPercentage: percentage(genderqueerCount, totalMembers),
         malePercentage: percentage(maleCount, totalMembers),
     };
 });
 
 const employeesStats = computed(() => {
     const femaleCount = employeesData.value.reduce((sum, row) => sum + row.female, 0);
-    const nonBinaryCount = employeesData.value.reduce((sum, row) => sum + row.nonBinary, 0);
-    const genderqueerCount = employeesData.value.reduce((sum, row) => sum + row.genderqueer, 0);
     const maleCount = employeesData.value.reduce((sum, row) => sum + row.male, 0);
+    const totalEmployees = femaleCount + maleCount;
 
     return {
-        totalEmployees: femaleCount + nonBinaryCount + genderqueerCount + maleCount,
+        totalEmployees,
         femaleCount,
-        nonBinaryCount,
-        genderqueerCount,
         maleCount,
+        femalePercentage: percentage(femaleCount, totalEmployees),
+        malePercentage: percentage(maleCount, totalEmployees),
     };
 });
 
 const scholarsStats = computed(() => {
     const femaleCount = reportData.value?.scholarship.femaleCount ?? 0;
-    const nonBinaryCount = reportData.value?.scholarship.nonBinaryCount ?? 0;
-    const genderqueerCount = reportData.value?.scholarship.genderqueerCount ?? 0;
     const maleCount = reportData.value?.scholarship.maleCount ?? 0;
-    const totalScholars = femaleCount + nonBinaryCount + genderqueerCount + maleCount;
+    const totalScholars = femaleCount + maleCount;
 
     return {
         totalScholars,
         femaleCount,
-        nonBinaryCount,
-        genderqueerCount,
         maleCount,
         femalePercentage: percentage(femaleCount, totalScholars),
-        nonBinaryPercentage: percentage(nonBinaryCount, totalScholars),
-        genderqueerPercentage: percentage(genderqueerCount, totalScholars),
         malePercentage: percentage(maleCount, totalScholars),
         schoolYearLabel: reportData.value?.scholarship.schoolYearLabel ?? '',
         asOfDate: reportData.value?.scholarship.asOfDate ?? null,
@@ -226,16 +205,15 @@ const isHistoryExpanded = (idx: number): boolean => {
 
 const rstlStats = computed(() => {
     const totalFemale = rstlWarmBodiesData.value.reduce((sum, row) => sum + row.female + row.femaleLed, 0);
-    const totalNonBinary = rstlWarmBodiesData.value.reduce((sum, row) => sum + row.nonBinary + row.nonBinaryLed, 0);
-    const totalGenderqueer = rstlWarmBodiesData.value.reduce((sum, row) => sum + row.genderqueer + row.genderqueerLed, 0);
     const totalMale = rstlWarmBodiesData.value.reduce((sum, row) => sum + row.male + row.maleLed, 0);
+    const totalCustomers = totalFemale + totalMale;
 
     return {
-        totalCustomers: totalFemale + totalNonBinary + totalGenderqueer + totalMale,
+        totalCustomers,
         femaleCount: totalFemale,
-        nonBinaryCount: totalNonBinary,
-        genderqueerCount: totalGenderqueer,
         maleCount: totalMale,
+        femalePercentage: percentage(totalFemale, totalCustomers),
+        malePercentage: percentage(totalMale, totalCustomers),
     };
 });
 
@@ -243,12 +221,10 @@ const setupStats = computed(() => {
     const totals = sumFundingRows(setupFundingRows.value);
 
     return {
-        totalProjects: totals.maleProjects + totals.femaleProjects + totals.nonBinaryProjects + totals.genderqueerProjects,
-        totalAmount: totals.maleAmount + totals.femaleAmount + totals.nonBinaryAmount + totals.genderqueerAmount,
+        totalProjects: totals.maleProjects + totals.femaleProjects,
+        totalAmount: totals.maleAmount + totals.femaleAmount,
         maleProjects: totals.maleProjects,
         femaleProjects: totals.femaleProjects,
-        nonBinaryProjects: totals.nonBinaryProjects,
-        genderqueerProjects: totals.genderqueerProjects,
     };
 });
 
@@ -256,12 +232,10 @@ const cestStats = computed(() => {
     const totals = sumFundingRows(cestFundingRows.value);
 
     return {
-        totalProjects: totals.maleProjects + totals.femaleProjects + totals.nonBinaryProjects + totals.genderqueerProjects,
-        totalAmount: totals.maleAmount + totals.femaleAmount + totals.nonBinaryAmount + totals.genderqueerAmount,
+        totalProjects: totals.maleProjects + totals.femaleProjects,
+        totalAmount: totals.maleAmount + totals.femaleAmount,
         maleProjects: totals.maleProjects,
         femaleProjects: totals.femaleProjects,
-        nonBinaryProjects: totals.nonBinaryProjects,
-        genderqueerProjects: totals.genderqueerProjects,
     };
 });
 
@@ -269,13 +243,6 @@ const totalFemaleAcrossPrograms = computed(
     () => gfpsStats.value.femaleCount + employeesStats.value.femaleCount + scholarsStats.value.femaleCount + rstlStats.value.femaleCount,
 );
 
-const totalNonBinaryAcrossPrograms = computed(
-    () => gfpsStats.value.nonBinaryCount + employeesStats.value.nonBinaryCount + scholarsStats.value.nonBinaryCount + rstlStats.value.nonBinaryCount,
-);
-
-const totalGenderqueerAcrossPrograms = computed(
-    () => gfpsStats.value.genderqueerCount + employeesStats.value.genderqueerCount + scholarsStats.value.genderqueerCount + rstlStats.value.genderqueerCount,
-);
 
 const totalMaleAcrossPrograms = computed(
     () => gfpsStats.value.maleCount + employeesStats.value.maleCount + scholarsStats.value.maleCount + rstlStats.value.maleCount,
@@ -520,14 +487,6 @@ onMounted(() => {
                             <p class="report-view-metric-value">{{ formatCompactNumber(totalFemaleAcrossPrograms) }}</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Non-binary (all sections)</p>
-                            <p class="report-view-metric-value">{{ formatCompactNumber(totalNonBinaryAcrossPrograms) }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Genderqueer (all sections)</p>
-                            <p class="report-view-metric-value">{{ formatCompactNumber(totalGenderqueerAcrossPrograms) }}</p>
-                        </div>
-                        <div class="report-view-metric">
                             <p class="report-view-metric-label">Total Male (all sections)</p>
                             <p class="report-view-metric-value">{{ formatCompactNumber(totalMaleAcrossPrograms) }}</p>
                         </div>
@@ -582,16 +541,6 @@ onMounted(() => {
                             <p class="report-view-metric-meta">{{ gfpsStats.femalePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label">Non-binary Members</p>
-                            <p class="report-view-metric-value">{{ gfpsStats.nonBinaryCount }}</p>
-                            <p class="report-view-metric-meta">{{ gfpsStats.nonBinaryPercentage }}%</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Genderqueer Members</p>
-                            <p class="report-view-metric-value">{{ gfpsStats.genderqueerCount }}</p>
-                            <p class="report-view-metric-meta">{{ gfpsStats.genderqueerPercentage }}%</p>
-                        </div>
-                        <div class="report-view-metric">
                             <p class="report-view-metric-label">Male Members</p>
                             <p class="report-view-metric-value">{{ gfpsStats.maleCount }}</p>
                             <p class="report-view-metric-meta">{{ gfpsStats.malePercentage }}%</p>
@@ -605,7 +554,7 @@ onMounted(() => {
                                 <p class="report-view-block-desc">Distribution of GFPS members</p>
                             </div>
                             <div class="report-chart-panel">
-                                <GenderPieChart :female-count="gfpsStats.femaleCount" :non-binary-count="gfpsStats.nonBinaryCount" :genderqueer-count="gfpsStats.genderqueerCount" :male-count="gfpsStats.maleCount" />
+                                <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
                             </div>
                         </div>
 
@@ -635,18 +584,12 @@ onMounted(() => {
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Female Employees</p>
                             <p class="report-view-metric-value">{{ employeesStats.femaleCount }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Non-binary Employees</p>
-                            <p class="report-view-metric-value">{{ employeesStats.nonBinaryCount }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Genderqueer Employees</p>
-                            <p class="report-view-metric-value">{{ employeesStats.genderqueerCount }}</p>
+                            <p class="report-view-metric-meta">{{ employeesStats.femalePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Male Employees</p>
                             <p class="report-view-metric-value">{{ employeesStats.maleCount }}</p>
+                            <p class="report-view-metric-meta">{{ employeesStats.malePercentage }}%</p>
                         </div>
                     </div>
 
@@ -678,16 +621,6 @@ onMounted(() => {
                             <p class="report-view-metric-meta">{{ scholarsStats.femalePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
-                            <p class="report-view-metric-label">Non-binary Scholars</p>
-                            <p class="report-view-metric-value">{{ scholarsStats.nonBinaryCount }}</p>
-                            <p class="report-view-metric-meta">{{ scholarsStats.nonBinaryPercentage }}%</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Genderqueer Scholars</p>
-                            <p class="report-view-metric-value">{{ scholarsStats.genderqueerCount }}</p>
-                            <p class="report-view-metric-meta">{{ scholarsStats.genderqueerPercentage }}%</p>
-                        </div>
-                        <div class="report-view-metric">
                             <p class="report-view-metric-label">Male Scholars</p>
                             <p class="report-view-metric-value">{{ scholarsStats.maleCount }}</p>
                             <p class="report-view-metric-meta">{{ scholarsStats.malePercentage }}%</p>
@@ -703,7 +636,7 @@ onMounted(() => {
                             </p>
                         </div>
                         <div class="report-chart-panel">
-                            <ScholarsPieChart :female-count="scholarsStats.femaleCount" :non-binary-count="scholarsStats.nonBinaryCount" :genderqueer-count="scholarsStats.genderqueerCount" :male-count="scholarsStats.maleCount" />
+                            <ScholarsPieChart :female-count="scholarsStats.femaleCount" :male-count="scholarsStats.maleCount" />
                         </div>
                     </div>
 
@@ -811,18 +744,12 @@ onMounted(() => {
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Female</p>
                             <p class="report-view-metric-value">{{ rstlStats.femaleCount }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Non-binary</p>
-                            <p class="report-view-metric-value">{{ rstlStats.nonBinaryCount }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Genderqueer</p>
-                            <p class="report-view-metric-value">{{ rstlStats.genderqueerCount }}</p>
+                            <p class="report-view-metric-meta">{{ rstlStats.femalePercentage }}%</p>
                         </div>
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Male</p>
                             <p class="report-view-metric-value">{{ rstlStats.maleCount }}</p>
+                            <p class="report-view-metric-meta">{{ rstlStats.malePercentage }}%</p>
                         </div>
                     </div>
 
@@ -916,14 +843,6 @@ onMounted(() => {
                             <p class="report-view-metric-label">Female-led Projects</p>
                             <p class="report-view-metric-value">{{ setupStats.femaleProjects }}</p>
                         </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">NB-led Projects</p>
-                            <p class="report-view-metric-value">{{ setupStats.nonBinaryProjects }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">GQ-led Projects</p>
-                            <p class="report-view-metric-value">{{ setupStats.genderqueerProjects }}</p>
-                        </div>
                     </div>
 
                     <div v-if="setupFundingRows.length === 0" class="report-view-block">
@@ -977,14 +896,6 @@ onMounted(() => {
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Female-led Projects</p>
                             <p class="report-view-metric-value">{{ cestStats.femaleProjects }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">NB-led Projects</p>
-                            <p class="report-view-metric-value">{{ cestStats.nonBinaryProjects }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">GQ-led Projects</p>
-                            <p class="report-view-metric-value">{{ cestStats.genderqueerProjects }}</p>
                         </div>
                     </div>
 

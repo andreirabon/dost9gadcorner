@@ -14,8 +14,6 @@ import VueApexCharts from 'vue3-apexcharts';
 
 interface Props {
     femaleCount: number;
-    nonBinaryCount: number;
-    genderqueerCount: number;
     maleCount: number;
 }
 
@@ -24,9 +22,9 @@ const props = defineProps<Props>();
 const appearance = useReportChartAppearance();
 const chartAnimations = useReportChartMotion();
 
-const totalCount = computed(() => props.femaleCount + props.nonBinaryCount + props.genderqueerCount + props.maleCount);
+const totalCount = computed(() => props.femaleCount + props.maleCount);
 
-const series = computed(() => [props.femaleCount, props.nonBinaryCount, props.genderqueerCount, props.maleCount]);
+const series = computed(() => [props.femaleCount, props.maleCount]);
 
 const palette = computed(() => reportDisaggPalette(appearance.value));
 
@@ -46,8 +44,8 @@ const chartOptions = computed<ApexOptions>(() => {
             nonce: reportChartCspNonce(),
             animations: chartAnimations.value,
         },
-        labels: ['Female', 'Non-binary', 'Genderqueer', 'Male'],
-        colors: [colors.female, colors.nonBinary, colors.genderqueer, colors.male],
+        labels: ['Female', 'Male'],
+        colors: [colors.female, colors.male],
         legend: {
             position: 'bottom',
             horizontalAlign: 'center',
@@ -66,7 +64,7 @@ const chartOptions = computed<ApexOptions>(() => {
                 vertical: 4,
             },
         },
-        tooltip: reportChartPieTooltip(['Female', 'Non-binary', 'Genderqueer', 'Male']),
+        tooltip: reportChartPieTooltip(['Female', 'Male']),
         dataLabels: {
             enabled: totalCount.value > 0,
             formatter: (value: number) => `${Math.round(value)}%`,
@@ -82,7 +80,7 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         stroke: {
             width: 2,
-            colors: [...colors.stroke],
+            colors: [colors.stroke[0], colors.stroke[1]],
         },
         plotOptions: {
             pie: {

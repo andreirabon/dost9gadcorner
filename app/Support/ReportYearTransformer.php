@@ -48,8 +48,6 @@ class ReportYearTransformer
                 : [
                     'gfpsMembership' => [
                         'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),
-                        'nonBinaryCount' => (int) ($reportYear->gfpsMembershipSummary?->non_binary_count ?? 0),
-                        'genderqueerCount' => (int) ($reportYear->gfpsMembershipSummary?->genderqueer_count ?? 0),
                         'maleCount' => (int) ($reportYear->gfpsMembershipSummary?->male_count ?? 0),
                     ],
                     'gfpsAssemblies' => $this->transformGfpsAssemblyAttendances($reportYear),
@@ -58,8 +56,6 @@ class ReportYearTransformer
                         'schoolYearLabel' => (string) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->schoolYear?->name ?? ''),
                         'asOfDate' => $reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->as_of_date?->toDateString(),
                         'femaleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->female_count ?? 0),
-                        'nonBinaryCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->non_binary_count ?? 0),
-                        'genderqueerCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->genderqueer_count ?? 0),
                         'maleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->male_count ?? 0),
                     ],
                     'scholarshipHistory' => $reportYear->scholarshipSnapshots
@@ -69,8 +65,6 @@ class ReportYearTransformer
                             'schoolYearLabel' => (string) ($s->schoolYear?->name ?? ''),
                             'asOfDate' => $s->as_of_date?->toDateString(),
                             'femaleCount' => (int) $s->female_count,
-                            'nonBinaryCount' => (int) $s->non_binary_count,
-                            'genderqueerCount' => (int) $s->genderqueer_count,
                             'maleCount' => (int) $s->male_count,
                         ])
                         ->all(),
@@ -84,7 +78,7 @@ class ReportYearTransformer
     }
 
     /**
-     * @return array<int, array{label: string, female: int, nonBinary: int, genderqueer: int, male: int}>
+     * @return array<int, array{label: string, female: int, male: int}>
      */
     private function transformGfpsAssemblyAttendances(ReportYear $reportYear): array
     {
@@ -93,8 +87,6 @@ class ReportYearTransformer
             ->map(fn ($attendance): array => [
                 'label' => (string) $attendance->gfpsAssemblyPeriod?->name,
                 'female' => (int) $attendance->female_count,
-                'nonBinary' => (int) $attendance->non_binary_count,
-                'genderqueer' => (int) $attendance->genderqueer_count,
                 'male' => (int) $attendance->male_count,
             ])
             ->values()
@@ -102,7 +94,7 @@ class ReportYearTransformer
     }
 
     /**
-     * @return array<int, array{label: string, female: int, nonBinary: int, genderqueer: int, male: int}>
+     * @return array<int, array{label: string, female: int, male: int}>
      */
     private function transformEmployeeStatusBreakdowns(ReportYear $reportYear): array
     {
@@ -111,8 +103,6 @@ class ReportYearTransformer
             ->map(fn ($breakdown): array => [
                 'label' => (string) $breakdown->employmentStatus?->name,
                 'female' => (int) $breakdown->female_count,
-                'nonBinary' => (int) $breakdown->non_binary_count,
-                'genderqueer' => (int) $breakdown->genderqueer_count,
                 'male' => (int) $breakdown->male_count,
             ])
             ->values()
@@ -120,7 +110,7 @@ class ReportYearTransformer
     }
 
     /**
-     * @return array<int, array{label: string, female: int, femaleLed: int, nonBinary: int, genderqueer: int, nonBinaryLed: int, genderqueerLed: int, male: int, maleLed: int}>
+     * @return array<int, array{label: string, female: int, femaleLed: int, male: int, maleLed: int}>
      */
     private function transformRstlMonthlyBreakdowns(ReportYear $reportYear): array
     {
@@ -130,10 +120,6 @@ class ReportYearTransformer
                 'label' => (string) $breakdown->reportMonth?->name,
                 'female' => (int) $breakdown->female_count,
                 'femaleLed' => (int) $breakdown->female_led_count,
-                'nonBinary' => (int) $breakdown->non_binary_count,
-                'genderqueer' => (int) $breakdown->genderqueer_count,
-                'nonBinaryLed' => (int) $breakdown->non_binary_led_count,
-                'genderqueerLed' => (int) $breakdown->genderqueer_led_count,
                 'male' => (int) $breakdown->male_count,
                 'maleLed' => (int) $breakdown->male_led_count,
             ])
@@ -142,7 +128,7 @@ class ReportYearTransformer
     }
 
     /**
-     * @return array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float, nonBinaryProjects: int, nonBinaryAmount: float, genderqueerProjects: int, genderqueerAmount: float}>
+     * @return array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}>
      */
     private function transformFundingBreakdown(ReportYear $reportYear, string $prefix): array
     {
@@ -168,10 +154,6 @@ class ReportYearTransformer
                     'maleAmount' => (float) ($summary?->male_amount ?? 0),
                     'femaleProjects' => (int) ($summary?->female_projects ?? 0),
                     'femaleAmount' => (float) ($summary?->female_amount ?? 0),
-                    'nonBinaryProjects' => (int) ($summary?->non_binary_projects ?? 0),
-                    'nonBinaryAmount' => (float) ($summary?->non_binary_amount ?? 0),
-                    'genderqueerProjects' => (int) ($summary?->genderqueer_projects ?? 0),
-                    'genderqueerAmount' => (float) ($summary?->genderqueer_amount ?? 0),
                 ];
             })
             ->values()
@@ -179,8 +161,8 @@ class ReportYearTransformer
     }
 
     /**
-     * @param  array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float, nonBinaryProjects: int, nonBinaryAmount: float, genderqueerProjects: int, genderqueerAmount: float}>  $rows
-     * @return array{maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float, nonBinaryProjects: int, nonBinaryAmount: float, genderqueerProjects: int, genderqueerAmount: float}
+     * @param  array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}>  $rows
+     * @return array{maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}
      */
     private function sumFundingBreakdown(array $rows): array
     {
@@ -189,10 +171,6 @@ class ReportYearTransformer
             $carry['maleAmount'] += $row['maleAmount'];
             $carry['femaleProjects'] += $row['femaleProjects'];
             $carry['femaleAmount'] += $row['femaleAmount'];
-            $carry['nonBinaryProjects'] += $row['nonBinaryProjects'];
-            $carry['nonBinaryAmount'] += $row['nonBinaryAmount'];
-            $carry['genderqueerProjects'] += $row['genderqueerProjects'];
-            $carry['genderqueerAmount'] += $row['genderqueerAmount'];
 
             return $carry;
         }, [
@@ -200,10 +178,6 @@ class ReportYearTransformer
             'maleAmount' => 0.0,
             'femaleProjects' => 0,
             'femaleAmount' => 0.0,
-            'nonBinaryProjects' => 0,
-            'nonBinaryAmount' => 0.0,
-            'genderqueerProjects' => 0,
-            'genderqueerAmount' => 0.0,
         ]);
     }
 }

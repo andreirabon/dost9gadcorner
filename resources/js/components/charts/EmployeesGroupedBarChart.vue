@@ -15,8 +15,6 @@ import VueApexCharts from 'vue3-apexcharts';
 interface EmployeeData {
     label: string;
     female: number;
-    nonBinary: number;
-    genderqueer: number;
     male: number;
 }
 
@@ -38,14 +36,6 @@ const series = computed(() => [
         data: props.data.map((entry) => entry.female),
     },
     {
-        name: 'Non-binary',
-        data: props.data.map((entry) => entry.nonBinary),
-    },
-    {
-        name: 'Genderqueer',
-        data: props.data.map((entry) => entry.genderqueer),
-    },
-    {
         name: 'Male',
         data: props.data.map((entry) => entry.male),
     },
@@ -56,7 +46,7 @@ const palette = computed(() => reportDisaggPalette(appearance.value));
 const chartOptions = computed<ApexOptions>(() => {
     const ui = reportChartUi(appearance.value);
     const colors = palette.value;
-    const maxValue = Math.max(5, ...props.data.flatMap((entry) => [entry.female, entry.nonBinary, entry.genderqueer, entry.male]));
+    const maxValue = Math.max(5, ...props.data.flatMap((entry) => [entry.female, entry.male]));
     const yMax = Math.ceil(maxValue / 5) * 5;
 
     return {
@@ -87,7 +77,7 @@ const chartOptions = computed<ApexOptions>(() => {
                   },
               }
             : {}),
-        colors: [colors.female, colors.nonBinary, colors.genderqueer, colors.male],
+        colors: [colors.female, colors.male],
         xaxis: {
             categories: props.data.map((entry) => entry.label),
             labels: {

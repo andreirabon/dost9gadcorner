@@ -32,10 +32,6 @@ class UpdateRstlMonthlyBreakdownsRequest extends FormRequest
             'breakdowns.*.report_month_id' => ['required', 'integer', Rule::exists('report_months', 'id')],
             'breakdowns.*.female_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
             'breakdowns.*.female_led_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'breakdowns.*.non_binary_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'breakdowns.*.genderqueer_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'breakdowns.*.non_binary_led_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'breakdowns.*.genderqueer_led_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
             'breakdowns.*.male_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
             'breakdowns.*.male_led_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
         ];
@@ -55,7 +51,7 @@ class UpdateRstlMonthlyBreakdownsRequest extends FormRequest
                 $validator,
                 $breakdowns,
                 'report_month_id',
-                ['female_count', 'female_led_count', 'non_binary_count', 'genderqueer_count', 'non_binary_led_count', 'genderqueer_led_count', 'male_count', 'male_led_count'],
+                ['female_count', 'female_led_count', 'male_count', 'male_led_count'],
                 'breakdowns',
             );
         });

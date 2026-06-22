@@ -32,10 +32,6 @@ class UpdateProgramFundingSummariesRequest extends FormRequest
             'summaries.*.funding_program_id' => ['required', 'integer', Rule::exists('funding_programs', 'id')],
             'summaries.*.female_projects' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
             'summaries.*.female_amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
-            'summaries.*.non_binary_projects' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.non_binary_amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
-            'summaries.*.genderqueer_projects' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.genderqueer_amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
             'summaries.*.male_projects' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
             'summaries.*.male_amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
         ];
@@ -55,7 +51,7 @@ class UpdateProgramFundingSummariesRequest extends FormRequest
                 $validator,
                 $summaries,
                 'funding_program_id',
-                ['female_projects', 'female_amount', 'non_binary_projects', 'non_binary_amount', 'genderqueer_projects', 'genderqueer_amount', 'male_projects', 'male_amount'],
+                ['female_projects', 'female_amount', 'male_projects', 'male_amount'],
                 'summaries',
             );
         });

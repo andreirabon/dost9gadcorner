@@ -1743,7 +1743,7 @@
     }
 
     .report-years-data-head--funding {
-        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(8,minmax(6.25rem,9rem))];
+        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,9rem))];
     }
 
     .report-years-data-head-label {
@@ -1795,7 +1795,7 @@
     }
 
     .report-years-data-row--funding {
-        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(8,minmax(6.25rem,9rem))];
+        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,9rem))];
     }
 
     .report-years-data-row-label {

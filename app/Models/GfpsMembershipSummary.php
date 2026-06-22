@@ -16,8 +16,6 @@ class GfpsMembershipSummary extends Model
     protected $fillable = [
         'report_year_id',
         'female_count',
-        'non_binary_count',
-        'genderqueer_count',
         'male_count',
     ];
 

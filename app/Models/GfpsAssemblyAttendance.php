@@ -17,8 +17,6 @@ class GfpsAssemblyAttendance extends Model
         'report_year_id',
         'gfps_assembly_period_id',
         'female_count',
-        'non_binary_count',
-        'genderqueer_count',
         'male_count',
     ];
 

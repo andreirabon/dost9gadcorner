@@ -10,10 +10,6 @@ final class PatchProgramFundingSummaries
     private const VALUE_FIELDS = [
         'female_projects',
         'female_amount',
-        'non_binary_projects',
-        'non_binary_amount',
-        'genderqueer_projects',
-        'genderqueer_amount',
         'male_projects',
         'male_amount',
     ];
