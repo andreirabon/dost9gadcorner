@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\ReportYear;
+use App\Support\ReportYearTransformer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Facades\Pdf;
-use App\Support\ReportYearTransformer;
 
 class ReportPrintController extends Controller
 {
@@ -26,7 +27,6 @@ class ReportPrintController extends Controller
     {
         $validated = $request->validate([
             'report_year_id' => ['required', 'exists:report_years,id'],
-            'with_charts' => ['required', 'boolean'],
         ]);
 
         $reportYear = ReportYear::with([
@@ -42,9 +42,11 @@ class ReportPrintController extends Controller
 
         return Pdf::view('pdf.report', [
             'year' => $data,
-            'withCharts' => $request->boolean('with_charts'),
         ])
-        ->format('a4')
-        ->name('report-' . $reportYear->year . '.pdf');
+            ->format('a4')
+            ->name('report-'.$reportYear->year.'.pdf')
+            ->withBrowsershot(function (Browsershot $browsershot): void {
+                $browsershot->waitUntilNetworkIdle();
+            });
     }
 }

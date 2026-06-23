@@ -43,7 +43,7 @@ export default defineConfig({
     },
     plugins: [
         laravel({
-            input: ['resources/js/app.ts'],
+            input: ['resources/js/app.ts', 'resources/css/pdf.css'],
             ssr: 'resources/js/ssr.ts',
             refresh: true,
             // Use Herd/Valet TLS so the dev server URL matches https://*.test:5173 (same as @vite scripts).

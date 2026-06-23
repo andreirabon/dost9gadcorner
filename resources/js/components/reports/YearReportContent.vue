@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import ReportBackArrowIcon from '@/components/reports/ReportBackArrowIcon.vue';
-import { Link } from '@inertiajs/vue3';
 import type { YearItem } from '@/types';
 import type { FundingCategorySummaryData, FundingSummaryData, GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow, ScholarshipSummaryData } from '@/types/reports';
+import { Link } from '@inertiajs/vue3';
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
 
 const AssemblyStackedBarChart = defineAsyncComponent(() => import('@/components/charts/AssemblyStackedBarChart.vue'));
@@ -248,7 +248,6 @@ const totalMaleAcrossPrograms = computed(
 
 const combinedFundingAmount = computed(() => setupStats.value.totalAmount + cestStats.value.totalAmount);
 const combinedProjectsCount = computed(() => setupStats.value.totalProjects + cestStats.value.totalProjects);
-const combinedFundingCategories = computed(() => setupFundingRows.value.length + cestFundingRows.value.length);
 
 type TabType = 'Overview' | 'GFPS' | 'DOST IX Employees' | 'Scholarship' | 'RSTL' | 'Program Funding' | 'SETUP' | 'CEST';
 const tabs: TabType[] = ['Overview', 'GFPS', 'DOST IX Employees', 'Scholarship', 'RSTL', 'Program Funding', 'SETUP', 'CEST'];
@@ -310,67 +309,96 @@ const overviewPrograms = computed<
     Array<{
         tab: Exclude<TabType, 'Overview'>;
         title: string;
-        primaryLabel: string;
-        primaryValue: string | number;
-        secondaryLabel: string;
-        secondaryValue: string | number;
+        metrics: Array<{
+            label: string;
+            value: string | number;
+            meta?: string;
+        }>;
     }>
 >(() => [
     {
         tab: 'GFPS',
         title: 'GFPS',
-        primaryLabel: 'Members',
-        primaryValue: gfpsStats.value.totalMembers,
-        secondaryLabel: 'Female share',
-        secondaryValue: `${gfpsStats.value.femalePercentage}%`,
+        metrics: [
+            { label: 'Total Members', value: gfpsStats.value.totalMembers },
+            { label: 'GFPS Assemblies', value: assemblyData.value.length, meta: 'Quarterly' },
+            { label: 'Female Members', value: gfpsStats.value.femaleCount, meta: `${gfpsStats.value.femalePercentage}%` },
+            { label: 'Male Members', value: gfpsStats.value.maleCount, meta: `${gfpsStats.value.malePercentage}%` },
+        ],
     },
     {
         tab: 'DOST IX Employees',
-        title: 'Employees',
-        primaryLabel: 'Total employees',
-        primaryValue: employeesStats.value.totalEmployees,
-        secondaryLabel: 'Female count',
-        secondaryValue: employeesStats.value.femaleCount,
+        title: 'DOST IX Employees',
+        metrics: [
+            { label: 'Employment Types', value: employeesData.value.length, meta: 'Categories' },
+            { label: 'Total Employees', value: employeesStats.value.totalEmployees },
+            { label: 'Female Employees', value: employeesStats.value.femaleCount, meta: `${employeesStats.value.femalePercentage}%` },
+            { label: 'Male Employees', value: employeesStats.value.maleCount, meta: `${employeesStats.value.malePercentage}%` },
+        ],
     },
     {
         tab: 'Scholarship',
         title: 'Scholarship',
-        primaryLabel: 'On-going scholars',
-        primaryValue: scholarsStats.value.totalScholars,
-        secondaryLabel: 'Female count',
-        secondaryValue: scholarsStats.value.femaleCount,
+        metrics: [
+            { label: 'Total Scholars', value: scholarsStats.value.totalScholars },
+            {
+                label: 'School Year',
+                value: scholarsStats.value.schoolYearLabel || 'Not set',
+                meta: scholarsStats.value.asOfDate ?? 'No date set',
+            },
+            { label: 'Female Scholars', value: scholarsStats.value.femaleCount, meta: `${scholarsStats.value.femalePercentage}%` },
+            { label: 'Male Scholars', value: scholarsStats.value.maleCount, meta: `${scholarsStats.value.malePercentage}%` },
+        ],
     },
     {
         tab: 'RSTL',
         title: 'RSTL',
-        primaryLabel: 'Total customers',
-        primaryValue: rstlStats.value.totalCustomers,
-        secondaryLabel: 'Female count',
-        secondaryValue: rstlStats.value.femaleCount,
+        metrics: [
+            { label: 'Total Customers', value: rstlStats.value.totalCustomers },
+            { label: 'Period', value: props.year.year, meta: 'Full Year' },
+            { label: 'Female', value: rstlStats.value.femaleCount, meta: `${rstlStats.value.femalePercentage}%` },
+            { label: 'Male', value: rstlStats.value.maleCount, meta: `${rstlStats.value.malePercentage}%` },
+        ],
     },
     {
         tab: 'Program Funding',
         title: 'Program Funding',
-        primaryLabel: 'Funding categories',
-        primaryValue: combinedFundingCategories.value,
-        secondaryLabel: 'Combined funding',
-        secondaryValue: formatCurrency(combinedFundingAmount.value),
+        metrics: [
+            { label: 'Combined Projects', value: combinedProjectsCount.value },
+            { label: 'Combined Funding', value: formatCurrency(combinedFundingAmount.value) },
+            {
+                label: 'SETUP Funding',
+                value: formatCurrency(setupStats.value.totalAmount),
+                meta: `${setupFundingRows.value.length} Categories`,
+            },
+            {
+                label: 'CEST Funding',
+                value: formatCurrency(cestStats.value.totalAmount),
+                meta: `${cestFundingRows.value.length} Categories`,
+            },
+        ],
     },
     {
         tab: 'SETUP',
         title: 'SETUP',
-        primaryLabel: 'Projects',
-        primaryValue: setupStats.value.totalProjects,
-        secondaryLabel: 'Funding',
-        secondaryValue: formatCurrency(setupStats.value.totalAmount),
+        metrics: [
+            { label: 'Categories', value: setupFundingRows.value.length },
+            { label: 'Total Projects', value: setupStats.value.totalProjects },
+            { label: 'Total Funding', value: formatCurrency(setupStats.value.totalAmount) },
+            { label: 'Male-led Projects', value: setupStats.value.maleProjects },
+            { label: 'Female-led Projects', value: setupStats.value.femaleProjects },
+        ],
     },
     {
         tab: 'CEST',
         title: 'CEST',
-        primaryLabel: 'Projects',
-        primaryValue: cestStats.value.totalProjects,
-        secondaryLabel: 'Funding',
-        secondaryValue: formatCurrency(cestStats.value.totalAmount),
+        metrics: [
+            { label: 'Categories', value: cestFundingRows.value.length },
+            { label: 'Total Projects', value: cestStats.value.totalProjects },
+            { label: 'Total Funding', value: formatCurrency(cestStats.value.totalAmount) },
+            { label: 'Male-led Projects', value: cestStats.value.maleProjects },
+            { label: 'Female-led Projects', value: cestStats.value.femaleProjects },
+        ],
     },
 ]);
 
@@ -513,10 +541,15 @@ onMounted(() => {
                                 @click="selectTab(program.tab)"
                             >
                                 <p class="report-view-quick-title">{{ program.title }}</p>
-                                <p class="report-view-quick-label">{{ program.primaryLabel }}</p>
-                                <p class="report-view-quick-value">{{ program.primaryValue }}</p>
-                                <p class="report-view-quick-label">{{ program.secondaryLabel }}</p>
-                                <p class="report-view-quick-value-sm">{{ program.secondaryValue }}</p>
+                                <div
+                                    v-for="(metric, metricIndex) in program.metrics"
+                                    :key="`${program.tab}-${metricIndex}`"
+                                    :class="metricIndex > 0 ? 'mt-2 border-t border-purple-500/10 pt-2 report-light:border-slate-200/80' : ''"
+                                >
+                                    <p class="report-view-quick-label">{{ metric.label }}</p>
+                                    <p class="report-view-quick-value-sm">{{ metric.value }}</p>
+                                    <p v-if="metric.meta" class="text-[10px] text-purple-300/60 report-light:text-slate-500">{{ metric.meta }}</p>
+                                </div>
                             </button>
                         </div>
                     </div>
@@ -820,7 +853,7 @@ onMounted(() => {
                 </div>
 
                 <div v-else-if="activeTab === 'SETUP'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
+                    <div class="report-view-metrics report-view-metrics--five-up">
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Categories</p>
                             <p class="report-view-metric-value">{{ setupFundingRows.length }}</p>
@@ -874,7 +907,7 @@ onMounted(() => {
                 </div>
 
                 <div v-else-if="activeTab === 'CEST'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
+                    <div class="report-view-metrics report-view-metrics--five-up">
                         <div class="report-view-metric">
                             <p class="report-view-metric-label">Categories</p>
                             <p class="report-view-metric-value">{{ cestFundingRows.length }}</p>
