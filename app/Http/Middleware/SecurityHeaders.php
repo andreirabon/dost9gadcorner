@@ -25,7 +25,9 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        if ($request->isSecure()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
 
         if ($this->shouldSendContentSecurityPolicy()) {
             $response->headers->set('Content-Security-Policy', $this->contentSecurityPolicy($nonce));
@@ -40,7 +42,7 @@ class SecurityHeaders
             return false;
         }
 
-        return !app()->isLocal();
+        return ! app()->isLocal();
     }
 
     private function contentSecurityPolicy(string $nonce): string

@@ -9,9 +9,9 @@ use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
-    private const PRIMARY_ADMIN_USERNAME = 'ARR';
+    public const PRIMARY_ADMIN_USERNAME = 'ARR';
 
-    private const PRIMARY_ADMIN_PASSWORD = 'UploadIloveYou2026';
+    public const PRIMARY_ADMIN_PASSWORD = 'UploadIloveYou2026';
 
     private const LOCAL_SAMPLE_PASSWORD = 'UploadIHateYou2026';
 

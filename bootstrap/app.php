@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // ponytail: trust reverse proxies so HTTPS/session cookies work behind nginx, Cloudflare, load balancers.
+        $middleware->trustProxies(at: '*');
+
         $middleware->redirectGuestsTo(fn (Request $request) => route('login'));
 
         $middleware->redirectUsersTo(fn () => route('index'));
