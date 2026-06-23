@@ -25,9 +25,7 @@ import {
     Search,
     Trash2,
 } from '@lucide/vue';
-import { computed, ref, watch, onUnmounted } from 'vue';
-import { echo } from '@laravel/echo-vue';
-import { useToast } from '@/components/ui/toast/use-toast';
+import { computed, ref, watch } from 'vue';
 
 interface Props {
     reportYears: ManagedReportYearListItem[];
@@ -39,39 +37,11 @@ const page = usePage();
 const canCreate = computed(() => page.props.auth.user?.can?.createReportYears === true);
 const canDelete = computed(() => page.props.auth.user?.can?.deleteReportYears === true);
 
-const { toast } = useToast();
-
 const localReportYears = ref<ManagedReportYearListItem[]>([...props.reportYears]);
 
 watch(() => props.reportYears, (newVal) => {
     localReportYears.value = [...newVal];
 }, { deep: true });
-
-echo().private('report-years')
-    .listen('ReportYearCreated', (e: any) => {
-        localReportYears.value.unshift(e.reportYear);
-        toast({ title: 'Report Year Added', description: `Year ${e.reportYear.year} was created.` });
-    })
-    .listen('ReportYearUpdated', (e: any) => {
-        const index = localReportYears.value.findIndex(r => r.id === e.reportYear.id);
-        if (index !== -1) {
-            localReportYears.value[index] = e.reportYear;
-            localReportYears.value[index]._justUpdated = true;
-            setTimeout(() => {
-                if (localReportYears.value[index]) {
-                    localReportYears.value[index]._justUpdated = false;
-                }
-            }, 2000);
-        }
-    })
-    .listen('ReportYearDeleted', (e: any) => {
-        localReportYears.value = localReportYears.value.filter(r => r.id !== e.id);
-        toast({ title: 'Report Year Deleted', description: 'A report year was removed.', type: 'error' });
-    });
-
-onUnmounted(() => {
-    echo().leave('report-years');
-});
 
 const searchQuery = ref('');
 const statusTab = ref<'all' | 'published' | 'pending'>('all');

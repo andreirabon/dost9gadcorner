@@ -12,7 +12,6 @@ import { cloneSnapshot, diffObjectPatch, diffRowPatches, hasPatch, normalizeNume
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { EditableReportYear, LookupSchoolYear, ReportYearEditAbilities, ScholarshipSnapshot, SectionTimestamps } from '@/types/reports';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { echo } from '@laravel/echo-vue';
 import {
     Calendar,
     CheckCircle2,
@@ -129,56 +128,10 @@ const getInitial = (username?: string): string => {
     return username ? username.charAt(0).toUpperCase() : '?';
 };
 
-const presenceChannelName = `report-year.edit.${props.reportYear.id}`;
-
-// Initialize WebSockets
-echo().join(presenceChannelName)
-    .here((users: Editor[]) => {
-        currentEditors.value = users;
-    })
-    .joining((user: Editor) => {
-        currentEditors.value.push(user);
-        toast({ title: 'User joined', description: `${user.username} is now viewing this report.` });
-    })
-    .leaving((user: Editor) => {
-        currentEditors.value = currentEditors.value.filter(u => String(u.id) !== String(user.id));
-    });
-
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id as number | null);
 
-echo().private('report-years')
-    .listen('ReportYearUpdated', (e: { reportYear: { id: number }; userId: number | null; section: string | null }) => {
-        if (e.reportYear.id !== props.reportYear.id || e.userId === currentUserId.value) {
-            return;
-        }
-
-        // Only notify if the updated section is visible to the current user
-        if (e.section && !visibleTabs.value.some(t => t.id === e.section)) {
-            return;
-        }
-
-        // Store current timestamps before they change (for post-refresh comparison)
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sectionTs.value));
-
-        const sectionLabel = e.section
-            ? visibleTabs.value.find(t => t.id === e.section)?.name ?? e.section
-            : null;
-
-        toast({
-            title: 'Report Updated',
-            description: sectionLabel
-                ? `Another user has saved changes to "${sectionLabel}". You may want to refresh to see the latest data.`
-                : 'Another user has saved changes to this report. You may want to refresh to see the latest data.',
-            type: 'warning',
-            duration: 8000,
-        });
-    });
-
-// Prevent memory leaks / ghost users on navigation
 onUnmounted(() => {
-    echo().leave(presenceChannelName);
-    echo().leave('report-years');
     localStorage.removeItem(STORAGE_KEY);
 });
 
@@ -569,7 +522,7 @@ const fundingRows = computed(() =>
 
 const setupFundingRows = computed(() => {
     const username = page.props.auth.user?.username?.toLowerCase();
-    
+
     return fundingRows.value.filter((item) => {
         if (!isSetupFundingSlug(item.slug)) {
             return false;
@@ -585,7 +538,7 @@ const setupFundingRows = computed(() => {
 });
 const cestFundingRows = computed(() => {
     const username = page.props.auth.user?.username?.toLowerCase();
-    
+
     return fundingRows.value.filter((item) => {
         if (!isCestFundingSlug(item.slug)) {
             return false;
