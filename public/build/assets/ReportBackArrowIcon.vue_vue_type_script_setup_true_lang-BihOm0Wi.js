@@ -1,0 +1,1 @@
+import{A as r}from"./arrow-left-CfFc6cMI.js";import{o as e,g as o,a8 as a,P as s}from"./app-5Qz1un_z.js";const _=e({__name:"ReportBackArrowIcon",setup(t){return(n,c)=>(s(),o(a(r),{class:"size-4 shrink-0","stroke-width":2,"aria-hidden":"true"}))}});export{_};
