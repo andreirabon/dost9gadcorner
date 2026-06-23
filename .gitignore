@@ -27,6 +27,7 @@ yarn-error.log
 AGENTS.md
 boost.json
 skills-lock.json
+/public/hot
 
 # Agent/AI related files (with @ prefix)
 @.agent

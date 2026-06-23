@@ -13,15 +13,25 @@ class UserSeeder extends Seeder
 
     public const PRIMARY_ADMIN_PASSWORD = 'UploadIloveYou2026';
 
-    private const LOCAL_SAMPLE_PASSWORD = 'UploadIHateYou2026';
+    public const STAFF_PASSWORD = 'UploadIHateYou2026';
+
+    /** @var list<array{username: string, role: UserRole}> */
+    public const STAFF_ACCOUNTS = [
+        ['username' => 'GADStaff', 'role' => UserRole::GAD],
+        ['username' => 'ScholarshipStaff', 'role' => UserRole::SCHOLARSHIP],
+        ['username' => 'HRStaff', 'role' => UserRole::HR],
+        ['username' => 'RSTLStaff', 'role' => UserRole::RSTL],
+        ['username' => 'TOSStaff', 'role' => UserRole::TOS],
+        ['username' => 'toszcic', 'role' => UserRole::TOS],
+        ['username' => 'toszsp', 'role' => UserRole::TOS],
+        ['username' => 'toszds', 'role' => UserRole::TOS],
+        ['username' => 'toszdn', 'role' => UserRole::TOS],
+    ];
 
     public function run(): void
     {
         $this->seedPrimaryAdministrator();
-
-        if (app()->environment('local')) {
-            $this->seedLocalSampleAccounts();
-        }
+        $this->seedStaffAccounts();
     }
 
     private function seedPrimaryAdministrator(): void
@@ -37,28 +47,14 @@ class UserSeeder extends Seeder
         });
     }
 
-    private function seedLocalSampleAccounts(): void
+    private function seedStaffAccounts(): void
     {
-        $password = self::LOCAL_SAMPLE_PASSWORD;
-
-        $rows = [
-            ['username' => 'GADStaff', 'role' => UserRole::GAD],
-            ['username' => 'ScholarshipStaff', 'role' => UserRole::SCHOLARSHIP],
-            ['username' => 'HRStaff', 'role' => UserRole::HR],
-            ['username' => 'RSTLStaff', 'role' => UserRole::RSTL],
-            ['username' => 'TOSStaff', 'role' => UserRole::TOS],
-            ['username' => 'toszcic', 'role' => UserRole::TOS],
-            ['username' => 'toszsp', 'role' => UserRole::TOS],
-            ['username' => 'toszds', 'role' => UserRole::TOS],
-            ['username' => 'toszdn', 'role' => UserRole::TOS],
-        ];
-
-        Model::unguarded(function () use ($rows, $password): void {
-            foreach ($rows as $row) {
+        Model::unguarded(function (): void {
+            foreach (self::STAFF_ACCOUNTS as $row) {
                 User::query()->updateOrCreate(
                     ['username' => $row['username']],
                     [
-                        'password' => $password,
+                        'password' => self::STAFF_PASSWORD,
                         'role' => $row['role'],
                     ],
                 );

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use RuntimeException;
@@ -27,9 +28,18 @@ class AppServiceProvider extends ServiceProvider
             );
         }
 
+        $rootUrl = config('app.url');
+
+        if (is_string($rootUrl) && $rootUrl !== '') {
+            URL::forceRootUrl($rootUrl);
+
+            if ($this->app->isProduction() && str_starts_with($rootUrl, 'https://')) {
+                URL::forceScheme('https');
+            }
+        }
+
         // ponytail: minimum bar for password complexity.
         // Upgrade path: ->uncompromised() adds Have I Been Pwned check (needs network).
         Password::defaults(fn () => Password::min(8)->letters()->numbers());
     }
 }
-

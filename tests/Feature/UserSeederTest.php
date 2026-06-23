@@ -41,3 +41,12 @@ test('user seeder updates existing primary admin password', function () {
     expect(Hash::check('UploadIloveYou2026', $user->password))->toBeTrue()
         ->and(Hash::check('old-password', $user->password))->toBeFalse();
 });
+
+test('staff account can log in after seeding', function () {
+    (new UserSeeder)->run();
+
+    $this->post(route('login.store'), [
+        'username' => 'GADStaff',
+        'password' => UserSeeder::STAFF_PASSWORD,
+    ])->assertRedirect(route('report-years.index'));
+});
