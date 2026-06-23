@@ -9,6 +9,11 @@ use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
+    private const PRIMARY_ADMIN_USERNAME = 'ARR';
+
+    private const PRIMARY_ADMIN_PASSWORD = 'UploadIloveYou2026';
+
+    private const LOCAL_SAMPLE_PASSWORD = 'UploadIHateYou2026';
 
     public function run(): void
     {
@@ -21,14 +26,11 @@ class UserSeeder extends Seeder
 
     private function seedPrimaryAdministrator(): void
     {
-        $password = $this->passwordFromEnv('PRIMARY_ADMIN_PASSWORD', 'password');
-        $username = env('PRIMARY_ADMIN_USERNAME', 'admin');
-
-        Model::unguarded(function () use ($password, $username): void {
+        Model::unguarded(function (): void {
             User::query()->updateOrCreate(
-                ['username' => $username],
+                ['username' => self::PRIMARY_ADMIN_USERNAME],
                 [
-                    'password' => $password,
+                    'password' => self::PRIMARY_ADMIN_PASSWORD,
                     'role' => UserRole::ADMINISTRATOR,
                 ],
             );
@@ -37,7 +39,7 @@ class UserSeeder extends Seeder
 
     private function seedLocalSampleAccounts(): void
     {
-        $password = $this->passwordFromEnv('LOCAL_SAMPLE_PASSWORD', 'password');
+        $password = self::LOCAL_SAMPLE_PASSWORD;
 
         $rows = [
             ['username' => 'GADStaff', 'role' => UserRole::GAD],
@@ -62,12 +64,5 @@ class UserSeeder extends Seeder
                 );
             }
         });
-    }
-
-    private function passwordFromEnv(string $key, string $default): string
-    {
-        $value = env($key);
-
-        return (is_string($value) && $value !== '') ? $value : $default;
     }
 }
