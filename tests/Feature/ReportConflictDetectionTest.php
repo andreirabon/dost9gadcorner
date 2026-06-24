@@ -1,20 +1,16 @@
 <?php
 
-use App\Events\ReportYearCreated;
-use App\Events\ReportYearDeleted;
-use App\Events\ReportYearUpdated;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\User;
 use Database\Seeders\ReportLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(ReportLookupSeeder::class);
-    Event::fake([ReportYearCreated::class, ReportYearUpdated::class, ReportYearDeleted::class]);
 });
 
 test('stale metadata save is rejected with conflict error', function () {
@@ -168,7 +164,7 @@ test('stale rstl monthly save is rejected for multi-row section', function () {
         ->assertRedirect();
 
     $maxUpdatedAt = $reportYear->rstlMonthlyBreakdowns()->max('updated_at');
-    $originalUpdatedAt = \Illuminate\Support\Carbon::parse($maxUpdatedAt)->toIso8601String();
+    $originalUpdatedAt = Carbon::parse($maxUpdatedAt)->toIso8601String();
 
     // Simulate another user modifying the same data
     $breakdown = $reportYear->rstlMonthlyBreakdowns()
@@ -219,7 +215,7 @@ test('fresh rstl monthly save succeeds for multi-row section', function () {
         ->assertRedirect();
 
     $maxUpdatedAt = $reportYear->rstlMonthlyBreakdowns()->max('updated_at');
-    $currentUpdatedAt = \Illuminate\Support\Carbon::parse($maxUpdatedAt)->toIso8601String();
+    $currentUpdatedAt = Carbon::parse($maxUpdatedAt)->toIso8601String();
 
     // Save with the correct timestamp
     $this->actingAs($user)
@@ -270,4 +266,3 @@ test('numeric counts above maximum bounds are rejected', function () {
         ])
         ->assertSessionHasErrors(['female_count']);
 });
-

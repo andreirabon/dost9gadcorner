@@ -18,16 +18,10 @@ import {
     Pencil,
     Plus,
     Save,
-    Sparkles,
     Trash2,
     X,
 } from '@lucide/vue';
-import { computed, onUnmounted, ref, watch } from 'vue';
-
-interface Editor {
-    id: number;
-    username: string;
-}
+import { computed, ref, watch } from 'vue';
 
 interface Props {
  reportYear: EditableReportYear;
@@ -41,54 +35,6 @@ const props = defineProps<Props>();
 const { toast } = useToast();
 
 const sectionTs = ref<SectionTimestamps>({ ...props.sectionTimestamps });
-
-// Track which sections were recently updated by another user
-const STORAGE_KEY = `report-year-${props.reportYear.id}-section-timestamps`;
-const canUseBrowserStorage = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
-const RECENT_UPDATE_TIMEOUT_MS = 2 * 60 * 1000;
-
-function computeRecentlyUpdatedSections(): Set<string> {
- if (!canUseBrowserStorage) return new Set<string>();
-
- const stored = localStorage.getItem(STORAGE_KEY);
- if (!stored) return new Set<string>();
-
- try {
-  const storedTimestamps: SectionTimestamps = JSON.parse(stored);
-  const updated = new Set<string>();
-
-  // Compare stored timestamps with current - any differences mean that section was updated
-  const mappings: [keyof SectionTimestamps, string][] = [
-   ['metadata', 'metadata'],
-   ['gfpsMembership', 'gfps_membership'],
-   ['gfpsAssemblies', 'gfps_assemblies'],
-   ['employeeStatuses', 'employee_status'],
-   ['scholarship', 'scholarship'],
-   ['rstlMonthly', 'rstl_monthly'],
-   ['programFunding', 'program_funding'],
-  ];
-
-  for (const [tsKey, tabId] of mappings) {
-   const storedVal = storedTimestamps[tsKey];
-   const currentVal = props.sectionTimestamps[tsKey];
-   if (storedVal !== currentVal) {
-    updated.add(tabId);
-   }
-  }
-
-  return updated;
- } catch {
-  return new Set<string>();
- }
-}
-
-const recentlyUpdatedSections = ref<Set<string>>(computeRecentlyUpdatedSections());
-
-const dismissRecentUpdate = (tabId: string) => {
- recentlyUpdatedSections.value.delete(tabId);
-};
-
-const hasRecentUpdate = (tabId: string): boolean => recentlyUpdatedSections.value.has(tabId);
 
 watch(() => props.sectionTimestamps, (fresh) => {
  sectionTs.value = { ...fresh };
@@ -111,49 +57,7 @@ const handleConflictError = (errors: Record<string, string>): boolean => {
  return false;
 };
 
-const currentEditors = ref<Editor[]>([]);
-
-const getAvatarColor = (username: string): string => {
-    const colors = [
-        'bg-blue-100 text-blue-700', 'bg-rose-100 text-rose-700',
-        'bg-emerald-100 text-emerald-700', 'bg-amber-100 text-amber-700',
-        'bg-purple-100 text-purple-700', 'bg-fuchsia-100 text-fuchsia-700',
-        'bg-indigo-100 text-indigo-700', 'bg-teal-100 text-teal-700',
-        'bg-orange-100 text-orange-700', 'bg-cyan-100 text-cyan-700',
-    ];
-    let hash = 0;
-    for (let i = 0; i < username.length; i++) {
-        hash = username.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-};
-
-const getInitial = (username?: string): string => {
-    return username ? username.charAt(0).toUpperCase() : '?';
-};
-
 const page = usePage();
-const currentUserId = computed(() => page.props.auth?.user?.id as number | null);
-
-onUnmounted(() => {
- if (!canUseBrowserStorage) {
-  return;
- }
-
- localStorage.removeItem(STORAGE_KEY);
-});
-
-// Clear recently updated indicators after 2 minutes
-if (canUseBrowserStorage) {
- const recentUpdateTimeoutId = setTimeout(() => {
-  recentlyUpdatedSections.value.clear();
-  localStorage.removeItem(STORAGE_KEY);
- }, RECENT_UPDATE_TIMEOUT_MS);
-
- onUnmounted(() => {
-  clearTimeout(recentUpdateTimeoutId);
- });
-}
 
 const tabDefs = [
  { id: 'metadata', name: 'Metadata' },
@@ -638,12 +542,7 @@ watch(
  <div class="report-years-edit-hero">
  <div class="report-years-edit-hero-top">
  <div class="report-years-edit-hero-badges">
- <div v-if="currentEditors.length > 1" class="flex space-x-1.5 mr-2">
- <div v-for="editor in currentEditors" :key="editor.id" class="flex h-6 items-center justify-center rounded-full px-2.5 text-[10px] font-bold shadow-sm" :class="getAvatarColor(editor.username ?? '')" :title="editor.username ?? 'Unknown User'">
- {{ editor.username }}
- </div>
- </div>
- <span v-else class="report-years-edit-meta-chip">Currently Editing</span>
+ <span class="report-years-edit-meta-chip">Currently Editing</span>
  <span
  class="report-years-status-badge"
  :class="isPublished ? 'report-years-status-badge--published' : 'report-years-status-badge--pending'"
@@ -701,21 +600,10 @@ type="button"
 role="tab"
 :aria-selected="activeTab === tab.id"
 class="report-years-tab transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-[0.98] active:scale-[0.95]"
-:class="{ 'is-active': activeTab === tab.id, 'has-recent-update': hasRecentUpdate(tab.id) }"
-@click="activeTab = tab.id; dismissRecentUpdate(tab.id)"
+:class="{ 'is-active': activeTab === tab.id }"
+@click="activeTab = tab.id"
 >
-<Sparkles
-v-if="hasRecentUpdate(tab.id)"
-class="mr-1.5 size-3.5 text-amber-500"
-aria-hidden="true"
-/>
 {{ tab.name }}
-<span
-v-if="hasRecentUpdate(tab.id)"
-class="ml-1.5 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800"
->
-    Updated
-</span>
 </button>
  </nav>
  </div>
@@ -733,22 +621,6 @@ class="ml-1.5 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 tex
 
  <div class="w-full animate-fade-in-up delay-1">
 <section v-show="activeTab === 'metadata'" class="report-panel" role="tabpanel">
-<div
-v-if="hasRecentUpdate('metadata')"
-class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-role="status"
->
-<Sparkles class="size-4 shrink-0 text-amber-500" aria-hidden="true" />
-<span class="flex-1">This section was recently updated by another user.</span>
-<button
-type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
-@click="dismissRecentUpdate('metadata')"
->
-Dismiss
-</button>
-</div>
-
 <HeadingSmall
 variant="report"
 title="Metadata"
@@ -847,22 +719,6 @@ description="Calendar year, publication status, and the title and description re
  </section>
 
 <section v-show="activeTab === 'gfps_membership'" class="report-panel" role="tabpanel">
-<div
-v-if="hasRecentUpdate('gfps_membership')"
-class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-role="status"
->
-<Sparkles class="size-4 shrink-0 text-amber-500" aria-hidden="true" />
-<span class="flex-1">This section was recently updated by another user.</span>
-<button
-type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
-@click="dismissRecentUpdate('gfps_membership')"
->
-Dismiss
-</button>
-</div>
-
 <HeadingSmall
 variant="report"
 title="GFPS membership"
@@ -921,22 +777,6 @@ description="Total GFPS members by sex for this reporting year. Use whole number
  </section>
 
 <section v-show="activeTab === 'scholarship'" class="report-panel" role="tabpanel">
-<div
-v-if="hasRecentUpdate('scholarship')"
-class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-role="status"
->
-<Sparkles class="size-4 shrink-0 text-amber-500" aria-hidden="true" />
-<span class="flex-1">This section was recently updated by another user.</span>
-<button
-type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
-@click="dismissRecentUpdate('scholarship')"
->
-Dismiss
-</button>
-</div>
-
 <HeadingSmall
 variant="report"
 title="Scholarship"
@@ -1242,22 +1082,6 @@ description="Track scholar counts across the year. Each update is saved as a sep
  </section>
 
 <section v-show="activeTab === 'gfps_assemblies'" class="report-panel" role="tabpanel">
-<div
-v-if="hasRecentUpdate('gfps_assemblies')"
-class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-role="status"
->
-<Sparkles class="size-4 shrink-0 text-amber-500" aria-hidden="true" />
-<span class="flex-1">This section was recently updated by another user.</span>
-<button
-type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
-@click="dismissRecentUpdate('gfps_assemblies')"
->
-Dismiss
-</button>
-</div>
-
 <HeadingSmall
 variant="report"
 title="GFPS assemblies"
@@ -1323,22 +1147,6 @@ description="Attendance by assembly period. Enter headcounts by sex for each row
  </section>
 
 <section v-show="activeTab === 'employee_status'" class="report-panel" role="tabpanel">
-<div
-v-if="hasRecentUpdate('employee_status')"
-class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-role="status"
->
-<Sparkles class="size-4 shrink-0 text-amber-500" aria-hidden="true" />
-<span class="flex-1">This section was recently updated by another user.</span>
-<button
-type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
-@click="dismissRecentUpdate('employee_status')"
->
-Dismiss
-</button>
-</div>
-
 <HeadingSmall
 variant="report"
 title="Employee status"
@@ -1404,22 +1212,6 @@ description="Workforce headcounts by employment status and sex. Use the same def
  </section>
 
 <section v-show="activeTab === 'rstl_monthly'" class="report-panel" role="tabpanel">
-<div
-v-if="hasRecentUpdate('rstl_monthly')"
-class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-role="status"
->
-<Sparkles class="size-4 shrink-0 text-amber-500" aria-hidden="true" />
-<span class="flex-1">This section was recently updated by another user.</span>
-<button
-type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
-@click="dismissRecentUpdate('rstl_monthly')"
->
-Dismiss
-</button>
-</div>
-
 <HeadingSmall
 variant="report"
 title="RSTL by month"
@@ -1513,22 +1305,6 @@ description="Monthly RSTL activity: clients or visits by sex, plus female-led an
  </section>
 
 <section v-show="activeTab === 'program_funding'" class="report-panel" role="tabpanel">
-<div
-v-if="hasRecentUpdate('program_funding')"
-class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
-role="status"
->
-<Sparkles class="size-4 shrink-0 text-amber-500" aria-hidden="true" />
-<span class="flex-1">This section was recently updated by another user.</span>
-<button
-type="button"
-class="shrink-0 text-amber-700 underline hover:text-amber-900 transition-all duration-300 active:scale-[0.95]"
-@click="dismissRecentUpdate('program_funding')"
->
-Dismiss
-</button>
-</div>
-
 <HeadingSmall
 variant="report"
 title="Program funding"

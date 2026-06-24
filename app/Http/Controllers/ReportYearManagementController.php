@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ReportYearCreated;
-use App\Events\ReportYearDeleted;
-use App\Events\ReportYearUpdated;
 use App\Http\Requests\StoreReportYearRequest;
+use App\Http\Requests\StoreScholarshipSnapshotRequest;
 use App\Http\Requests\UpdateEmployeeStatusBreakdownsRequest;
 use App\Http\Requests\UpdateGfpsAssemblyAttendancesRequest;
 use App\Http\Requests\UpdateGfpsMembershipSummaryRequest;
@@ -13,7 +11,6 @@ use App\Http\Requests\UpdateProgramFundingSummariesRequest;
 use App\Http\Requests\UpdateReportYearMetadataRequest;
 use App\Http\Requests\UpdateReportYearRequest;
 use App\Http\Requests\UpdateRstlMonthlyBreakdownsRequest;
-use App\Http\Requests\StoreScholarshipSnapshotRequest;
 use App\Http\Requests\UpdateScholarshipSnapshotRequest;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
@@ -21,6 +18,7 @@ use App\Models\GfpsAssemblyPeriod;
 use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
+use App\Models\ScholarshipSummary;
 use App\Models\SchoolYear;
 use App\Services\Reports\ConflictGuard;
 use App\Services\Reports\PatchEmployeeStatusBreakdowns;
@@ -29,7 +27,6 @@ use App\Services\Reports\PatchGfpsMembershipSummary;
 use App\Services\Reports\PatchProgramFundingSummaries;
 use App\Services\Reports\PatchReportYearAttributes;
 use App\Services\Reports\PatchRstlMonthlyBreakdowns;
-use App\Models\ScholarshipSummary;
 use App\Services\Reports\SparseRecordPatcher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -84,8 +81,6 @@ class ReportYearManagementController extends Controller
         $validated['published_at'] = $validated['status'] === ReportYear::STATUS_PUBLISHED ? now() : null;
 
         $reportYear = ReportYear::query()->create($validated);
-
-        ReportYearCreated::dispatch($reportYear);
 
         return to_route('report-years.edit', $reportYear);
     }
@@ -172,8 +167,6 @@ class ReportYearManagementController extends Controller
 
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description', 'status']);
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'metadata');
-
         return back();
     }
 
@@ -183,8 +176,6 @@ class ReportYearManagementController extends Controller
 
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description']);
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'metadata');
-
         return back();
     }
 
@@ -192,10 +183,7 @@ class ReportYearManagementController extends Controller
     {
         $this->authorize('delete', $reportYear);
 
-        $id = $reportYear->id;
         $reportYear->delete();
-
-        ReportYearDeleted::dispatch($id);
 
         return to_route('report-years.index');
     }
@@ -206,8 +194,6 @@ class ReportYearManagementController extends Controller
 
         $patchGfpsMembership->apply($reportYear, $request->validated());
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'gfps_membership');
-
         return back();
     }
 
@@ -216,8 +202,6 @@ class ReportYearManagementController extends Controller
         $conflictGuard->assertRelationFresh($reportYear, 'gfpsAssemblyAttendances', $this->expectedUpdatedAt($request));
 
         $patchGfpsAssemblies->apply($reportYear, $request->validated('attendances'));
-
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'gfps_assemblies');
 
         return back();
     }
@@ -228,16 +212,12 @@ class ReportYearManagementController extends Controller
 
         $patchEmployeeStatuses->apply($reportYear, $request->validated('breakdowns'));
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'employee_status');
-
         return back();
     }
 
     public function storeScholarshipSnapshot(StoreScholarshipSnapshotRequest $request, ReportYear $reportYear): RedirectResponse
     {
         $reportYear->scholarshipSnapshots()->create($request->validated());
-
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'scholarship');
 
         return back();
     }
@@ -255,8 +235,6 @@ class ReportYearManagementController extends Controller
             'last_edited_at' => now(),
         ]);
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'scholarship');
-
         return back();
     }
 
@@ -267,8 +245,6 @@ class ReportYearManagementController extends Controller
 
         $scholarship->delete();
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'scholarship');
-
         return back();
     }
 
@@ -278,8 +254,6 @@ class ReportYearManagementController extends Controller
 
         $patchRstlMonthly->apply($reportYear, $request->validated('breakdowns'));
 
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'rstl_monthly');
-
         return back();
     }
 
@@ -288,8 +262,6 @@ class ReportYearManagementController extends Controller
         $conflictGuard->assertRelationFresh($reportYear, 'programFundingSummaries', $this->expectedUpdatedAt($request));
 
         $patchProgramFunding->apply($reportYear, $request->validated('summaries'));
-
-        ReportYearUpdated::dispatch($reportYear, auth()->id(), 'program_funding');
 
         return back();
     }
