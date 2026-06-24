@@ -4,7 +4,7 @@ import laravel from 'laravel-vite-plugin';
 import path from 'path';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
     build: {
         // ApexCharts minifies to ~520 kB; default 500 kB warning is noisy for legitimate heavy vendors.
         chunkSizeWarningLimit: 640,
@@ -15,12 +15,14 @@ export default defineConfig({
                 if (warning.code === 'EMPTY_BUNDLE') return;
                 defaultHandler(warning);
             },
-            output: {
-                manualChunks: {
-                    'vendor-gsap': ['gsap', 'gsap/ScrollTrigger'],
-                    'vendor-d3': ['d3-org-chart', 'd3-selection'],
-                },
-            },
+            output: isSsrBuild
+                ? undefined
+                : {
+                      manualChunks: {
+                          'vendor-gsap': ['gsap', 'gsap/ScrollTrigger'],
+                          'vendor-d3': ['d3-org-chart', 'd3-selection'],
+                      },
+                  },
         },
     },
     // d3-org-chart ships ESM from `src/`; skipping the pre-bundle avoids occasional broken/empty
@@ -51,4 +53,4 @@ export default defineConfig({
             },
         }),
     ],
-});
+}));

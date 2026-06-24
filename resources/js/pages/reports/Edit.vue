@@ -44,8 +44,12 @@ const sectionTs = ref<SectionTimestamps>({ ...props.sectionTimestamps });
 
 // Track which sections were recently updated by another user
 const STORAGE_KEY = `report-year-${props.reportYear.id}-section-timestamps`;
+const canUseBrowserStorage = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+const RECENT_UPDATE_TIMEOUT_MS = 2 * 60 * 1000;
 
 function computeRecentlyUpdatedSections(): Set<string> {
+ if (!canUseBrowserStorage) return new Set<string>();
+
  const stored = localStorage.getItem(STORAGE_KEY);
  if (!stored) return new Set<string>();
 
@@ -132,14 +136,24 @@ const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id as number | null);
 
 onUnmounted(() => {
-    localStorage.removeItem(STORAGE_KEY);
+ if (!canUseBrowserStorage) {
+  return;
+ }
+
+ localStorage.removeItem(STORAGE_KEY);
 });
 
 // Clear recently updated indicators after 2 minutes
-setTimeout(() => {
- recentlyUpdatedSections.value.clear();
- localStorage.removeItem(STORAGE_KEY);
-}, 2 * 60 * 1000);
+if (canUseBrowserStorage) {
+ const recentUpdateTimeoutId = setTimeout(() => {
+  recentlyUpdatedSections.value.clear();
+  localStorage.removeItem(STORAGE_KEY);
+ }, RECENT_UPDATE_TIMEOUT_MS);
+
+ onUnmounted(() => {
+  clearTimeout(recentUpdateTimeoutId);
+ });
+}
 
 const tabDefs = [
  { id: 'metadata', name: 'Metadata' },
