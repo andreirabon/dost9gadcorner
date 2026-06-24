@@ -1071,6 +1071,36 @@
         transition: height 200ms cubic-bezier(0.23, 1, 0.32, 1);
     }
 
+    .report-chart-frame--pie {
+        height: clamp(220px, 32vh, 360px);
+        min-height: 220px;
+        max-height: 360px;
+    }
+
+    .report-chart-frame--bar {
+        height: clamp(260px, 38vh, 480px);
+        min-height: 260px;
+        max-height: 480px;
+    }
+
+    .report-chart-frame--tall {
+        height: clamp(300px, 44vh, 560px);
+        min-height: 300px;
+        max-height: 560px;
+    }
+
+    .report-chart-frame--rows-md {
+        min-height: 340px;
+    }
+
+    .report-chart-frame--rows-lg {
+        min-height: 420px;
+    }
+
+    .report-chart-frame--rows-xl {
+        min-height: 500px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .report-chart-frame {
             transition: none;
@@ -2153,7 +2183,35 @@
         opacity: 0;
         transform: translateY(6px);
         animation: tabReveal 350ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
-        animation-delay: calc(var(--tab-index, 0) * 40ms + 120ms);
+        animation-delay: 120ms;
+    }
+
+    .report-view-tab:nth-child(2) {
+        animation-delay: 160ms;
+    }
+
+    .report-view-tab:nth-child(3) {
+        animation-delay: 200ms;
+    }
+
+    .report-view-tab:nth-child(4) {
+        animation-delay: 240ms;
+    }
+
+    .report-view-tab:nth-child(5) {
+        animation-delay: 280ms;
+    }
+
+    .report-view-tab:nth-child(6) {
+        animation-delay: 320ms;
+    }
+
+    .report-view-tab:nth-child(7) {
+        animation-delay: 360ms;
+    }
+
+    .report-view-tab:nth-child(8) {
+        animation-delay: 400ms;
     }
 
     .report-view-page.report-theme-light .report-view-tab {

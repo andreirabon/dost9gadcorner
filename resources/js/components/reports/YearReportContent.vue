@@ -465,12 +465,11 @@ onMounted(() => {
                 <div v-if="!isYearDataPending" class="report-view-tabs-container">
                     <div class="report-view-tabs" role="tablist" aria-label="Report sections">
                         <button
-                            v-for="(tab, idx) in tabs"
+                            v-for="tab in tabs"
                             :key="tab"
                             @click="selectTab(tab)"
                             @keydown="handleTabKeydown"
                             :class="['report-view-tab', { 'is-active': activeTab === tab }]"
-                            :style="{ '--tab-index': idx }"
                             role="tab"
                             :aria-selected="activeTab === tab"
                             type="button"
