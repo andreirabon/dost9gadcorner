@@ -14,9 +14,145 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
+/**
+ * @return list<string>
+ */
+function staffReportsZiggyRouteNames(): array
+{
+    return [
+        'index',
+        'logout',
+        'print-report',
+        'print-report.generate',
+        'report-years.create',
+        'report-years.destroy',
+        'report-years.edit',
+        'report-years.employee-statuses.update',
+        'report-years.gfps-assemblies.update',
+        'report-years.gfps-membership.update',
+        'report-years.index',
+        'report-years.metadata.update',
+        'report-years.program-funding.update',
+        'report-years.rstl-monthly.update',
+        'report-years.scholarship.destroy',
+        'report-years.scholarship.store',
+        'report-years.scholarship.update',
+        'report-years.store',
+        'report-years.update',
+    ];
+}
+
+test('report year create page sends no-store and staff-reports ziggy routes', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get('/report-years/create');
+
+    expect($response->headers->get('Cache-Control'))->toContain('no-store');
+
+    $response
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('reports/Create')
+            ->where('ziggy.routes', function ($routes): bool {
+                $names = collect($routes)->keys()->sort()->values()->all();
+
+                return $names === staffReportsZiggyRouteNames();
+            })
+            ->missing('ziggy.routes.settings.profile.edit')
+        );
+});
+
+test('report year edit page sends no-store and staff-reports ziggy routes', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2026]);
+
+    $response = $this->actingAs($user)->get("/report-years/{$reportYear->id}/edit");
+
+    expect($response->headers->get('Cache-Control'))->toContain('no-store');
+
+    $response
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('reports/Edit')
+            ->has('reportYear')
+            ->has('abilities')
+            ->where('ziggy.routes', function ($routes): bool {
+                $names = collect($routes)->keys()->sort()->values()->all();
+
+                return $names === staffReportsZiggyRouteNames();
+            })
+            ->missing('ziggy.routes.settings.profile.edit')
+        );
+});
+
+test('report management and print pages send no-store cache headers', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2026]);
+
+    $reportYearsIndex = $this->actingAs($user)->get('/report-years');
+    expect($reportYearsIndex->headers->get('Cache-Control'))->toContain('no-store');
+
+    $reportYearsCreate = $this->actingAs($user)->get('/report-years/create');
+    expect($reportYearsCreate->headers->get('Cache-Control'))->toContain('no-store');
+
+    $reportYearsEdit = $this->actingAs($user)->get("/report-years/{$reportYear->id}/edit");
+    expect($reportYearsEdit->headers->get('Cache-Control'))->toContain('no-store');
+
+    $printIndex = $this->actingAs($user)->get('/print-report');
+    expect($printIndex->headers->get('Cache-Control'))->toContain('no-store');
+
+    $printGenerate = $this->actingAs($user)->get('/print-report/generate?report_year_id='.$reportYear->id);
+    $printGenerate->assertOk();
+    expect($printGenerate->headers->get('Cache-Control'))->toContain('no-store');
+});
+
 test('guest user is redirected to login when opening report management', function () {
     $this->get('/report-years')
         ->assertRedirect(route('login'));
+});
+
+test('guest is redirected to login when opening print report', function () {
+    $this->get('/print-report')
+        ->assertRedirect(route('login'));
+
+    $this->get('/print-report/generate?report_year_id=1')
+        ->assertRedirect(route('login'));
+});
+
+test('user without report access cannot open print report', function () {
+    $user = User::factory()->create(['role' => UserRole::None]);
+
+    $this->actingAs($user)
+        ->get('/print-report')
+        ->assertForbidden();
+});
+
+test('user without report access cannot generate print report pdf', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::None]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026]);
+
+    $this->actingAs($user)
+        ->get('/print-report/generate?report_year_id='.$reportYear->id)
+        ->assertForbidden();
+});
+
+test('authorized user receives a pdf when generating print report', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create(['year' => 2026]);
+
+    $response = $this->actingAs($user)->get('/print-report/generate?report_year_id='.$reportYear->id);
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Type'))->toContain('application/pdf');
+    expect(strlen((string) $response->getContent()))->toBeGreaterThan(1000);
 });
 
 test('non-admin user cannot access report management', function () {
@@ -333,7 +469,7 @@ test('authenticated user can update scholarship snapshot', function () {
             'male_count' => 25,
 
         ], [
-            'X-Expected-Updated-At' => $snapshot->updated_at?->toIso8601String()
+            'X-Expected-Updated-At' => $snapshot->updated_at?->toIso8601String(),
         ])
         ->assertRedirect();
 
@@ -429,9 +565,7 @@ test('cannot update scholarship snapshot with future as_of_date', function () {
         ->patch("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}", [
             'as_of_date' => $futureDate,
         ], [
-            'X-Expected-Updated-At' => $snapshot->updated_at?->toIso8601String()
+            'X-Expected-Updated-At' => $snapshot->updated_at?->toIso8601String(),
         ])
         ->assertInvalid(['as_of_date']);
 });
-
-

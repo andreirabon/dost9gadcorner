@@ -61,10 +61,27 @@ class HandleInertiaRequests extends Middleware
                 'user' => $authUser,
             ],
             'ziggy' => [
-                ...(new Ziggy)->toArray(),
+                ...(new Ziggy($this->resolveZiggyGroup($request)))->toArray(),
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    private function resolveZiggyGroup(Request $request): ?string
+    {
+        if ($request->user() === null) {
+            return 'guest';
+        }
+
+        if ($request->routeIs(['report-years.*', 'print-report', 'print-report.generate'])) {
+            return 'staff-reports';
+        }
+
+        if ($request->routeIs('settings.*')) {
+            return 'staff-settings';
+        }
+
+        return null;
     }
 }

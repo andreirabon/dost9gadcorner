@@ -23,11 +23,30 @@ class PdfImage
      */
     public static function dataUri(string $publicRelativePath, int $boxHeight = 80): ?array
     {
-        $source = public_path($publicRelativePath);
+        $publicRelativePath = str_replace('\\', '/', $publicRelativePath);
 
-        if (! is_file($source)) {
+        if (
+            $publicRelativePath === ''
+            || str_contains($publicRelativePath, '..')
+            || str_starts_with($publicRelativePath, '/')
+        ) {
             return null;
         }
+
+        $source = public_path($publicRelativePath);
+        $resolvedSource = realpath($source);
+        $resolvedPublicRoot = realpath(public_path());
+
+        if (
+            $resolvedSource === false
+            || $resolvedPublicRoot === false
+            || ! is_file($resolvedSource)
+            || ! str_starts_with($resolvedSource, $resolvedPublicRoot.DIRECTORY_SEPARATOR)
+        ) {
+            return null;
+        }
+
+        $source = $resolvedSource;
 
         $dimensions = @getimagesize($source);
 
@@ -45,17 +64,21 @@ class PdfImage
         $cacheFile = $cacheDir.DIRECTORY_SEPARATOR.$cacheKey.'.jpg';
 
         if (! is_file($cacheFile)) {
+            if (! extension_loaded('gd')) {
+                return null;
+            }
+
             $jpeg = self::renderFlattenedJpeg($source, $dimensions['mime'] ?? '', $srcWidth, $srcHeight, $targetWidth, $targetHeight);
 
             if ($jpeg === null) {
                 return null;
             }
 
-            if (! is_dir($cacheDir)) {
-                @mkdir($cacheDir, 0755, true);
+            if (! is_dir($cacheDir) && ! mkdir($cacheDir, 0755, true) && ! is_dir($cacheDir)) {
+                return null;
             }
 
-            @file_put_contents($cacheFile, $jpeg);
+            file_put_contents($cacheFile, $jpeg, LOCK_EX);
         } else {
             $jpeg = (string) file_get_contents($cacheFile);
         }

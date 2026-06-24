@@ -2,15 +2,19 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ReportPrintController;
 use App\Http\Controllers\ReportYearManagementController;
 use App\Http\Controllers\ReportYearPublicController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Middleware\NoCacheHeaders;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [HomeController::class, 'index'])->name('index');
+Route::get('/', [HomeController::class, 'index'])
+    ->middleware(NoCacheHeaders::class)
+    ->name('index');
 
-Route::middleware([\App\Http\Middleware\NoCacheHeaders::class, 'guest'])->group(function (): void {
+Route::middleware([NoCacheHeaders::class, 'guest'])->group(function (): void {
     Route::get('open', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('open', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 });
@@ -18,9 +22,11 @@ Route::middleware([\App\Http\Middleware\NoCacheHeaders::class, 'guest'])->group(
 Route::get('close', fn () => redirect('/'))->name('logout.fallback');
 Route::post('close', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
 
-Route::get('/reports/{reportYear}', [ReportYearPublicController::class, 'show'])->name('reports.show');
+Route::get('/reports/{reportYear}', [ReportYearPublicController::class, 'show'])
+    ->middleware(NoCacheHeaders::class)
+    ->name('reports.show');
 
-Route::middleware('auth')
+Route::middleware(['auth', NoCacheHeaders::class])
     ->prefix('report-years')
     ->name('report-years.')
     ->group(function (): void {
@@ -41,10 +47,10 @@ Route::middleware('auth')
         Route::patch('/{reportYear}/program-funding', [ReportYearManagementController::class, 'updateProgramFunding'])->name('program-funding.update');
     });
 
-use App\Http\Controllers\ReportPrintController;
-
-Route::get('/print-report', [ReportPrintController::class, 'index'])->middleware('auth')->name('print-report');
-Route::get('/print-report/generate', [ReportPrintController::class, 'generate'])->middleware('auth')->name('print-report.generate');
+Route::middleware(['auth', NoCacheHeaders::class])->group(function (): void {
+    Route::get('/print-report', [ReportPrintController::class, 'index'])->name('print-report');
+    Route::get('/print-report/generate', [ReportPrintController::class, 'generate'])->name('print-report.generate');
+});
 
 Route::middleware('auth')
     ->prefix('settings')

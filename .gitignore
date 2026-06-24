@@ -2,6 +2,7 @@
 /node_modules
 /storage/*.key
 /storage/pail
+/storage/app/pdf-cache
 /vendor
 .env
 .env.backup

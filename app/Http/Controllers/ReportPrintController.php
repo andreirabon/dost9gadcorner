@@ -14,6 +14,8 @@ class ReportPrintController extends Controller
 {
     public function index(): Response
     {
+        $this->authorize('viewAny', ReportYear::class);
+
         $years = ReportYear::query()
             ->orderBy('year', 'desc')
             ->get(['id', 'year', 'title']);
@@ -26,7 +28,7 @@ class ReportPrintController extends Controller
     public function generate(Request $request, ReportYearTransformer $transformer): HttpResponse
     {
         $validated = $request->validate([
-            'report_year_id' => ['required', 'exists:report_years,id'],
+            'report_year_id' => ['required', 'integer', 'exists:report_years,id'],
         ]);
 
         $reportYear = ReportYear::with([
@@ -38,12 +40,16 @@ class ReportPrintController extends Controller
             'programFundingSummaries.fundingProgram',
         ])->findOrFail($validated['report_year_id']);
 
+        $this->authorize('view', $reportYear);
+
         $data = $transformer->toDetailArray($reportYear);
 
         $pdf = Pdf::loadView('pdf.report', [
             'year' => $data,
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->stream('report-'.$reportYear->year.'.pdf');
+        $filename = 'report-'.preg_replace('/[^0-9A-Za-z_-]+/', '', (string) $reportYear->year).'.pdf';
+
+        return $pdf->stream($filename);
     }
 }

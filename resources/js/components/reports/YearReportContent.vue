@@ -143,7 +143,7 @@ const percentage = (value: number, total: number): number => {
     return Number(((value / total) * 100).toFixed(1));
 };
 
-const isYearDataPending = computed(() => props.year.status !== 'published' || reportData.value === null);
+const isYearDataPending = computed(() => reportData.value === null);
 
 const gfpsStats = computed(() => {
     const femaleCount = reportData.value?.gfpsMembership.femaleCount ?? 0;
@@ -252,7 +252,7 @@ const combinedProjectsCount = computed(() => setupStats.value.totalProjects + ce
 type TabType = 'Overview' | 'GFPS' | 'DOST IX Employees' | 'Scholarship' | 'RSTL' | 'Program Funding' | 'SETUP' | 'CEST';
 const tabs: TabType[] = ['Overview', 'GFPS', 'DOST IX Employees', 'Scholarship', 'RSTL', 'Program Funding', 'SETUP', 'CEST'];
 const activeTab = ref<TabType>('Overview');
-const tabStorageKey = 'year-report-last-tab';
+const tabStorageKey = computed(() => `year-report-last-tab:${props.year.id}`);
 
 const isValidTab = (value: string): value is TabType => tabs.includes(value as TabType);
 
@@ -266,7 +266,7 @@ const formatCompactNumber = (value: number): string => {
 const selectTab = (tab: TabType) => {
     activeTab.value = tab;
     if (typeof window !== 'undefined') {
-        localStorage.setItem(tabStorageKey, tab);
+        localStorage.setItem(tabStorageKey.value, tab);
     }
 };
 
@@ -413,7 +413,7 @@ const formatCurrency = (value: number): string => {
 
 onMounted(() => {
     if (typeof window !== 'undefined') {
-        const storedTab = localStorage.getItem(tabStorageKey);
+        const storedTab = localStorage.getItem(tabStorageKey.value);
         if (storedTab !== null && isValidTab(storedTab)) {
             activeTab.value = storedTab;
         } else {

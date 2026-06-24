@@ -91,7 +91,11 @@ test('homepage lists only published report years and hides draft report pages', 
     $setupCategoryCount = FundingProgram::query()->where('slug', 'like', 'setup-%')->count();
     $cestCategoryCount = FundingProgram::query()->where('slug', 'like', 'cest-%')->count();
 
-    $this->get('/')
+    $homepageResponse = $this->get('/');
+
+    expect($homepageResponse->headers->get('Cache-Control'))->toContain('no-store');
+
+    $homepageResponse
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Index')
@@ -99,15 +103,29 @@ test('homepage lists only published report years and hides draft report pages', 
             ->where('years.0.id', $publishedYear->id)
             ->where('years.0.year', '2025')
             ->where('years.0.href', route('reports.show', $publishedYear))
+            ->missing('years.0.status')
             ->missing('years.0.reportData')
+            ->where('ziggy.routes', function ($routes): bool {
+                $names = collect($routes)->keys()->sort()->values()->all();
+
+                return $names === ['index', 'login', 'login.store', 'reports.show'];
+            })
         );
 
-    $this->get(route('reports.show', $publishedYear))
+    $reportShowResponse = $this->get(route('reports.show', $publishedYear));
+
+    expect($reportShowResponse->headers->get('Cache-Control'))->toContain('no-store');
+
+    $reportShowResponse
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->component('reports/Show')
             ->where('year.id', $publishedYear->id)
             ->where('year.year', '2025')
+            ->missing('year.title')
+            ->missing('year.description')
+            ->missing('year.status')
+            ->missing('year.href')
             ->where('year.reportData.gfpsMembership.femaleCount', 22)
             ->where('year.reportData.gfpsAssemblies.0.label', '1st Assembly')
             ->where('year.reportData.employeeStatuses.0.label', 'Plantilla')
@@ -116,6 +134,11 @@ test('homepage lists only published report years and hides draft report pages', 
             ->where('year.reportData.cestFunding.femaleProjects', 8 * $cestCategoryCount)
             ->has('year.reportData.setupFundingBreakdown', $setupCategoryCount)
             ->has('year.reportData.cestFundingBreakdown', $cestCategoryCount)
+            ->where('ziggy.routes', function ($routes): bool {
+                $names = collect($routes)->keys()->sort()->values()->all();
+
+                return $names === ['index', 'login', 'login.store', 'reports.show'];
+            })
         );
 
     $this->get(route('reports.show', $pendingYear))->assertNotFound();

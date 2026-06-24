@@ -21,22 +21,30 @@ class ReportYearTransformer
             'year' => (string) $reportYear->year,
             'href' => route('reports.show', $reportYear),
             'description' => $reportYear->description,
-            'status' => $reportYear->status,
         ];
     }
 
     /**
-     * Full payload for the public report detail page.
+     * Minimal payload for the public report detail Inertia page.
+     *
+     * @return array<string, mixed>
+     */
+    public function toPublicDetailArray(ReportYear $reportYear): array
+    {
+        return [
+            'id' => $reportYear->id,
+            'year' => (string) $reportYear->year,
+            'reportData' => $this->transformReportData($reportYear),
+        ];
+    }
+
+    /**
+     * Full payload for PDF generation and other internal consumers.
      *
      * @return array<string, mixed>
      */
     public function toDetailArray(ReportYear $reportYear): array
     {
-        $setupFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'setup');
-        $cestFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'cest');
-        $setupFundingSummary = $this->sumFundingBreakdown($setupFundingBreakdown);
-        $cestFundingSummary = $this->sumFundingBreakdown($cestFundingBreakdown);
-
         return [
             'id' => $reportYear->id,
             'year' => (string) $reportYear->year,
@@ -44,37 +52,52 @@ class ReportYearTransformer
             'href' => route('reports.show', $reportYear),
             'description' => $reportYear->description,
             'status' => $reportYear->status,
-            'reportData' => $reportYear->status === ReportYear::STATUS_PENDING
-                ? null
-                : [
-                    'gfpsMembership' => [
-                        'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),
-                        'maleCount' => (int) ($reportYear->gfpsMembershipSummary?->male_count ?? 0),
-                    ],
-                    'gfpsAssemblies' => $this->transformGfpsAssemblyAttendances($reportYear),
-                    'employeeStatuses' => $this->transformEmployeeStatusBreakdowns($reportYear),
-                    'scholarship' => [
-                        'schoolYearLabel' => (string) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->schoolYear?->name ?? ''),
-                        'asOfDate' => $reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->as_of_date?->toDateString(),
-                        'femaleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->female_count ?? 0),
-                        'maleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->male_count ?? 0),
-                    ],
-                    'scholarshipHistory' => $reportYear->scholarshipSnapshots
-                        ->sortByDesc('as_of_date')
-                        ->values()
-                        ->map(fn ($s) => [
-                            'schoolYearLabel' => (string) ($s->schoolYear?->name ?? ''),
-                            'asOfDate' => $s->as_of_date?->toDateString(),
-                            'femaleCount' => (int) $s->female_count,
-                            'maleCount' => (int) $s->male_count,
-                        ])
-                        ->all(),
-                    'rstlMonthly' => $this->transformRstlMonthlyBreakdowns($reportYear),
-                    'setupFunding' => $setupFundingSummary,
-                    'cestFunding' => $cestFundingSummary,
-                    'setupFundingBreakdown' => $setupFundingBreakdown,
-                    'cestFundingBreakdown' => $cestFundingBreakdown,
-                ],
+            'reportData' => $this->transformReportData($reportYear),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function transformReportData(ReportYear $reportYear): ?array
+    {
+        if ($reportYear->status === ReportYear::STATUS_PENDING) {
+            return null;
+        }
+
+        $setupFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'setup');
+        $cestFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'cest');
+        $setupFundingSummary = $this->sumFundingBreakdown($setupFundingBreakdown);
+        $cestFundingSummary = $this->sumFundingBreakdown($cestFundingBreakdown);
+
+        return [
+            'gfpsMembership' => [
+                'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),
+                'maleCount' => (int) ($reportYear->gfpsMembershipSummary?->male_count ?? 0),
+            ],
+            'gfpsAssemblies' => $this->transformGfpsAssemblyAttendances($reportYear),
+            'employeeStatuses' => $this->transformEmployeeStatusBreakdowns($reportYear),
+            'scholarship' => [
+                'schoolYearLabel' => (string) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->schoolYear?->name ?? ''),
+                'asOfDate' => $reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->as_of_date?->toDateString(),
+                'femaleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->female_count ?? 0),
+                'maleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->male_count ?? 0),
+            ],
+            'scholarshipHistory' => $reportYear->scholarshipSnapshots
+                ->sortByDesc('as_of_date')
+                ->values()
+                ->map(fn ($s) => [
+                    'schoolYearLabel' => (string) ($s->schoolYear?->name ?? ''),
+                    'asOfDate' => $s->as_of_date?->toDateString(),
+                    'femaleCount' => (int) $s->female_count,
+                    'maleCount' => (int) $s->male_count,
+                ])
+                ->all(),
+            'rstlMonthly' => $this->transformRstlMonthlyBreakdowns($reportYear),
+            'setupFunding' => $setupFundingSummary,
+            'cestFunding' => $cestFundingSummary,
+            'setupFundingBreakdown' => $setupFundingBreakdown,
+            'cestFundingBreakdown' => $cestFundingBreakdown,
         ];
     }
 

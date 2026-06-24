@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
@@ -40,14 +39,14 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate. Returns true on success, false on wrong credentials.
-     * Throws only for rate-limit lockout — never reveals whether credentials were correct.
-     *
-     * @throws ValidationException  only when rate-limited
+     * Attempt to authenticate. Returns true on success, false on wrong credentials or lockout.
+     * Never reveals whether credentials were correct or the account is rate-limited.
      */
     public function authenticate(): bool
     {
-        $this->ensureIsNotRateLimited();
+        if ($this->isRateLimited()) {
+            return false;
+        }
 
         // ponytail: hardcode remember=false — no "remember me" UI exists,
         // so accepting the POST param silently would let attackers persist sessions.
@@ -71,10 +70,7 @@ class LoginRequest extends FormRequest
         return true;
     }
 
-    /**
-     * @throws ValidationException
-     */
-    public function ensureIsNotRateLimited(): void
+    private function isRateLimited(): bool
     {
         // ponytail: two-layer rate limit.
         // Layer 1: per username+ip (5 attempts) — stops one machine hammering.
@@ -84,7 +80,7 @@ class LoginRequest extends FormRequest
         $perUserExceeded = RateLimiter::tooManyAttempts($this->usernameThrottleKey(), 15);
 
         if (! $perIpExceeded && ! $perUserExceeded) {
-            return;
+            return false;
         }
 
         event(new Lockout($this));
@@ -95,15 +91,7 @@ class LoginRequest extends FormRequest
             'reason' => $perUserExceeded ? 'username_global' : 'ip',
         ]);
 
-        $key = $perUserExceeded ? $this->usernameThrottleKey() : $this->throttleKey();
-        $seconds = RateLimiter::availableIn($key);
-
-        throw ValidationException::withMessages([
-            'username' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
+        return true;
     }
 
     /**
@@ -122,4 +110,3 @@ class LoginRequest extends FormRequest
         return 'login_user|'.Str::transliterate(Str::lower($this->string('username')));
     }
 }
-

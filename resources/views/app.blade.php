@@ -28,7 +28,14 @@
 
     {{-- Removed Google Fonts --}}
 
-    @routes(null, $cspNonce)
+    @php
+        $ziggyGroup = auth()->check()
+            ? (request()->routeIs(['report-years.*', 'print-report', 'print-report.generate'])
+                ? 'staff-reports'
+                : (request()->routeIs('settings.*') ? 'staff-settings' : null))
+            : 'guest';
+    @endphp
+    @routes($ziggyGroup, $cspNonce)
     @vite('resources/js/app.ts')
     @inertiaHead
 </head>

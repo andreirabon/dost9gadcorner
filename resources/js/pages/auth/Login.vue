@@ -170,6 +170,7 @@ const submit = (): void => {
                                         type="text"
                                         name="username"
                                         required
+                                        maxlength="255"
                                         autocomplete="username"
                                         autocapitalize="none"
                                         autocorrect="off"
@@ -195,6 +196,7 @@ const submit = (): void => {
                                         :type="showPassword ? 'text' : 'password'"
                                         name="password"
                                         required
+                                        maxlength="255"
                                         autocomplete="current-password"
                                         class="h-11 border-white/15 bg-slate-950/65 pr-10 pl-10 text-sm text-slate-50 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] placeholder:text-slate-400/70 focus-visible:border-blue-400/60 focus-visible:bg-slate-950 focus-visible:ring-4 focus-visible:ring-blue-500/20"
                                         placeholder="Enter your password"

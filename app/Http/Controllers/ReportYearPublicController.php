@@ -27,7 +27,7 @@ class ReportYearPublicController extends Controller
         ]);
 
         return Inertia::render('reports/Show', [
-            'year' => $this->reportYearTransformer->toDetailArray($reportYear),
+            'year' => $this->reportYearTransformer->toPublicDetailArray($reportYear),
         ]);
     }
 }

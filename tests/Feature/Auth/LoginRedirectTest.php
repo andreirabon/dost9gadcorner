@@ -55,7 +55,39 @@ test('login silently redirects on unknown username with no error revealed', func
         'username' => 'nonexistent_user_xyz',
         'password' => 'password',
     ])->assertRedirect(route('login'))
-      ->assertSessionHasNoErrors();
+        ->assertSessionHasNoErrors();
+});
+
+test('login silently redirects when rate limited with no error revealed', function () {
+    $user = User::factory()->create([
+        'password' => 'password',
+    ]);
+
+    for ($attempt = 0; $attempt < 5; $attempt++) {
+        $this->post(route('login.store'), [
+            'username' => $user->username,
+            'password' => 'wrong-password',
+        ])->assertRedirect(route('login'));
+    }
+
+    $this->post(route('login.store'), [
+        'username' => $user->username,
+        'password' => 'password',
+    ])->assertRedirect(route('login'))
+        ->assertSessionHasNoErrors();
+});
+
+test('guest login page exposes only public ziggy routes', function () {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('auth/Login')
+            ->where('ziggy.routes', function ($routes): bool {
+                $names = collect($routes)->keys()->sort()->values()->all();
+
+                return $names === ['index', 'login', 'login.store', 'reports.show'];
+            })
+        );
 });
 
 test('login rejects password longer than 255 characters', function () {
