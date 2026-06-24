@@ -27,6 +27,7 @@ AGENTS.md
 boost.json
 skills-lock.json
 /public/hot
+/bootstrap/ssr
 
 # Agent/AI related files (with @ prefix)
 @.agent
