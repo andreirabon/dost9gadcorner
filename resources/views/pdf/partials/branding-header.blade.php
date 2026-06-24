@@ -1,10 +1,42 @@
-<div class="mb-6 flex items-center justify-between avoid-break border-b border-slate-200 pb-4">
-    <div class="flex items-center gap-3">
-        <img src="{{ asset('dostlogo.png') }}" alt="Department of Science and Technology" class="h-10 w-auto" />
-        <img src="{{ asset('gadlogo.png') }}" alt="Gender and Development" class="h-10 w-auto" />
-    </div>
-    <div class="text-right">
-        <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-700">DOST Region IX</p>
-        <p class="text-[11px] text-slate-500">Gender and Development Corner</p>
-    </div>
-</div>
+@php
+    // dompdf renders alpha PNGs via an in-memory per-pixel soft mask, which
+    // exhausts memory on large source logos. App\Support\PdfImage downscales and
+    // flattens each logo onto white, emits a (cached) alpha-free JPEG data URI,
+    // and returns the print display size. Render at 2x for crisp output, show at 1x.
+    $logoHeight = 34; // px (display)
+    $brandLogos = [];
+
+    foreach (['dostlogo.png', 'gadlogo.png'] as $logoFile) {
+        $logo = \App\Support\PdfImage::dataUri($logoFile, $logoHeight * 2);
+
+        if ($logo === null) {
+            continue;
+        }
+
+        $brandLogos[] = [
+            'src' => $logo['src'],
+            'width' => (int) round($logo['width'] / 2),
+            'height' => (int) round($logo['height'] / 2),
+        ];
+    }
+@endphp
+
+<table class="brand">
+    <tr>
+        <td>
+            @foreach($brandLogos as $logo)
+                <img
+                    class="brand-logo"
+                    src="{{ $logo['src'] }}"
+                    width="{{ $logo['width'] }}"
+                    height="{{ $logo['height'] }}"
+                    alt=""
+                />
+            @endforeach
+        </td>
+        <td class="brand-org">
+            <div class="org-1">DOST Region IX</div>
+            <div class="org-2">Gender and Development Corner</div>
+        </td>
+    </tr>
+</table>

@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\ReportYear;
 use App\Support\ReportYearTransformer;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\Browsershot\Browsershot;
-use Spatie\LaravelPdf\Facades\Pdf;
 
 class ReportPrintController extends Controller
 {
@@ -23,7 +23,7 @@ class ReportPrintController extends Controller
         ]);
     }
 
-    public function generate(Request $request, ReportYearTransformer $transformer)
+    public function generate(Request $request, ReportYearTransformer $transformer): HttpResponse
     {
         $validated = $request->validate([
             'report_year_id' => ['required', 'exists:report_years,id'],
@@ -40,13 +40,10 @@ class ReportPrintController extends Controller
 
         $data = $transformer->toDetailArray($reportYear);
 
-        return Pdf::view('pdf.report', [
+        $pdf = Pdf::loadView('pdf.report', [
             'year' => $data,
-        ])
-            ->format('a4')
-            ->name('report-'.$reportYear->year.'.pdf')
-            ->withBrowsershot(function (Browsershot $browsershot): void {
-                $browsershot->waitUntilNetworkIdle();
-            });
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('report-'.$reportYear->year.'.pdf');
     }
 }
