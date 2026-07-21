@@ -1,3 +1,4 @@
+import type { SharedPageProps } from '@inertiajs/core';
 import { createInertiaApp } from '@inertiajs/vue3';
 import createServer from '@inertiajs/vue3/server';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -8,8 +9,11 @@ import { ZiggyVue } from 'ziggy-js';
 const appName = import.meta.env.VITE_APP_NAME || 'DOST IX GAD CORNER';
 
 createServer(
-    (page) =>
-        createInertiaApp({
+    (page) => {
+        /** `createServer`'s callback types `page` with the base (unaugmented) `Page`, unlike client-side `usePage()`. */
+        const { ziggy } = page.props as unknown as SharedPageProps;
+
+        return createInertiaApp({
             page,
             render: renderToString,
             title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -18,10 +22,11 @@ createServer(
                 createSSRApp({ render: () => h(App, props) })
                     .use(plugin)
                     .use(ZiggyVue, {
-                        ...page.props.ziggy,
-                        location: new URL(page.props.ziggy.location),
+                        ...ziggy,
+                        location: new URL(ziggy.location),
                     }),
-        }),
+        });
+    },
     { cluster: true },
 );
 

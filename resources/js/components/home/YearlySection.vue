@@ -90,8 +90,8 @@ const emptyStateClass =
                     <ul
                         class="relative z-10 m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5"
                     >
-                        <li v-for="year in sortedYears" :key="year.id" class="list-none min-w-0">
-                            <YearCard v-memo="[year.id, year.href, year.description]" :year="year" />
+                        <li v-for="year in sortedYears" :key="year.id" v-memo="[year.id, year.href, year.description]" class="list-none min-w-0">
+                            <YearCard :year="year" />
                         </li>
                     </ul>
                 </article>

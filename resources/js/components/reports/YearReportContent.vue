@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import ReportBackArrowIcon from '@/components/reports/ReportBackArrowIcon.vue';
+import FundingCategoryGrid from '@/components/reports/FundingCategoryGrid.vue';
+import FundingCategorySelector from '@/components/reports/FundingCategorySelector.vue';
+import ReportChartBlock from '@/components/reports/ReportChartBlock.vue';
+import ReportMetricsGrid from '@/components/reports/ReportMetricsGrid.vue';
+import ReportOverviewQuickAccess, { type OverviewProgram } from '@/components/reports/ReportOverviewQuickAccess.vue';
+import ReportTabNav from '@/components/reports/ReportTabNav.vue';
+import ScholarshipHistoryTimeline from '@/components/reports/ScholarshipHistoryTimeline.vue';
+import { formatCurrency } from '@/helpers/formatCurrency';
+import { isValidReportTab, REPORT_TABPANEL_ID, reportTabSlug, type TabType } from '@/helpers/reportTabs';
 import type { YearItem } from '@/types';
 import type { FundingCategorySummaryData, FundingSummaryData, GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow, ScholarshipSummaryData } from '@/types/reports';
 import { Link } from '@inertiajs/vue3';
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 
 const AssemblyStackedBarChart = defineAsyncComponent(() => import('@/components/charts/AssemblyStackedBarChart.vue'));
 const CestFundingChart = defineAsyncComponent(() => import('@/components/charts/CestFundingChart.vue'));
@@ -79,62 +88,6 @@ const cestFundingRows = computed<FundingCategorySummaryData[]>(() => {
     return rows;
 });
 
-const selectedSetupCategorySlug = ref<string | null>(null);
-const selectedCestCategorySlug = ref<string | null>(null);
-
-const syncSelectedFundingCategory = (
-    rows: FundingCategorySummaryData[],
-    selectedSlug: { value: string | null },
-): void => {
-    if (rows.length === 0) {
-        selectedSlug.value = null;
-        return;
-    }
-
-    if (selectedSlug.value === null || !rows.some((row) => row.slug === selectedSlug.value)) {
-        selectedSlug.value = rows[0].slug;
-    }
-};
-
-watch(
-    setupFundingRows,
-    (rows) => {
-        syncSelectedFundingCategory(rows, selectedSetupCategorySlug);
-    },
-    { immediate: true },
-);
-
-watch(
-    cestFundingRows,
-    (rows) => {
-        syncSelectedFundingCategory(rows, selectedCestCategorySlug);
-    },
-    { immediate: true },
-);
-
-const selectedSetupCategory = computed<FundingCategorySummaryData | null>(
-    () => setupFundingRows.value.find((row) => row.slug === selectedSetupCategorySlug.value) ?? null,
-);
-
-const selectedCestCategory = computed<FundingCategorySummaryData | null>(
-    () => cestFundingRows.value.find((row) => row.slug === selectedCestCategorySlug.value) ?? null,
-);
-
-const selectSetupCategory = (slug: string): void => {
-    selectedSetupCategorySlug.value = slug;
-};
-
-const selectCestCategory = (slug: string): void => {
-    selectedCestCategorySlug.value = slug;
-};
-
-const fundingCategoryButtonClass = (isActive: boolean): string[] => [
-    'inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold tracking-wide transition-[transform,background-color,border-color,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40 active:scale-[0.97]',
-    isActive
-        ? 'border-purple-500 bg-purple-600 text-white shadow-sm'
-        : 'border-purple-400/35 bg-purple-900/55 text-purple-100 hover:border-purple-400/55 hover:bg-purple-900/75 report-light:border-slate-300 report-light:bg-slate-50 report-light:text-slate-700 report-light:hover:border-slate-400 report-light:hover:bg-slate-100',
-];
-
 const percentage = (value: number, total: number): number => {
     if (total === 0) {
         return 0;
@@ -191,31 +144,6 @@ const scholarsStats = computed(() => {
 
 const scholarshipHistory = computed<ScholarshipSummaryData[]>(() => reportData.value?.scholarshipHistory ?? []);
 
-const expandedHistoryIds = ref<Set<number>>(new Set());
-
-/** History rows always come from persisted snapshots, so `id` is present in practice; the index fallback only guards the type's shared nullability with the single `scholarship` summary. */
-const historyRowId = (entry: ScholarshipSummaryData, idx: number): number => entry.id ?? idx;
-
-watch(
-    scholarshipHistory,
-    (rows) => {
-        if (rows.length > 0) {
-            expandedHistoryIds.value = new Set([historyRowId(rows[0], 0)]);
-        }
-    },
-    { immediate: true },
-);
-
-const toggleHistoryExpand = (id: number): void => {
-    if (expandedHistoryIds.value.has(id)) {
-        expandedHistoryIds.value.delete(id);
-    } else {
-        expandedHistoryIds.value.add(id);
-    }
-};
-
-const isHistoryExpanded = (id: number): boolean => expandedHistoryIds.value.has(id);
-
 const rstlStats = computed(() => {
     const totalFemale = rstlWarmBodiesData.value.reduce((sum, row) => sum + row.female + row.femaleLed, 0);
     const totalMale = rstlWarmBodiesData.value.reduce((sum, row) => sum + row.male + row.maleLed, 0);
@@ -264,28 +192,13 @@ const totalMaleAcrossPrograms = computed(
 const combinedFundingAmount = computed(() => setupStats.value.totalAmount + cestStats.value.totalAmount);
 const combinedProjectsCount = computed(() => setupStats.value.totalProjects + cestStats.value.totalProjects);
 
-type TabType = 'Overview' | 'GFPS' | 'DOST IX Employees' | 'Scholarship' | 'RSTL' | 'Program Funding' | 'SETUP' | 'CEST';
-const tabs: TabType[] = ['Overview', 'GFPS', 'DOST IX Employees', 'Scholarship', 'RSTL', 'Program Funding', 'SETUP', 'CEST'];
 const activeTab = ref<TabType>('Overview');
 const tabStorageKey = computed(() => `year-report-last-tab:${props.year.id}`);
-
-const isValidTab = (value: string): value is TabType => tabs.includes(value as TabType);
-
-const tabSlug = (tab: TabType): string => tab.toLowerCase().replace(/\s+/g, '-');
 
 const formatCompactNumber = (value: number): string => {
     return new Intl.NumberFormat('en-PH', {
         notation: 'compact',
         maximumFractionDigits: 1,
-    }).format(value);
-};
-
-const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
     }).format(value);
 };
 
@@ -313,52 +226,7 @@ const selectTab = (tab: TabType) => {
     }
 };
 
-const selectNextTab = (direction: 1 | -1) => {
-    const currentIndex = tabs.indexOf(activeTab.value);
-    if (currentIndex === -1) {
-        return;
-    }
-
-    const nextIndex = (currentIndex + direction + tabs.length) % tabs.length;
-    selectTab(tabs[nextIndex]);
-};
-
-const handleTabKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        selectNextTab(1);
-        return;
-    }
-
-    if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        selectNextTab(-1);
-        return;
-    }
-
-    if (event.key === 'Home') {
-        event.preventDefault();
-        selectTab(tabs[0]);
-        return;
-    }
-
-    if (event.key === 'End') {
-        event.preventDefault();
-        selectTab(tabs[tabs.length - 1]);
-    }
-};
-
-const overviewPrograms = computed<
-    Array<{
-        tab: Exclude<TabType, 'Overview'>;
-        title: string;
-        metrics: Array<{
-            label: string;
-            value: string | number;
-            meta?: string;
-        }>;
-    }>
->(() => [
+const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'GFPS',
         title: 'GFPS',
@@ -448,7 +316,7 @@ const overviewPrograms = computed<
 onMounted(() => {
     if (typeof window !== 'undefined') {
         const storedTab = readLastTab(tabStorageKey.value);
-        if (storedTab !== null && isValidTab(storedTab)) {
+        if (storedTab !== null && isValidReportTab(storedTab)) {
             activeTab.value = storedTab;
         } else {
             activeTab.value = 'Overview';
@@ -497,22 +365,7 @@ onMounted(() => {
                 </div>
                 <div class="report-view-hero-divider" aria-hidden="true"></div>
                 <div v-if="!isYearDataPending" class="report-view-tabs-container">
-                    <div class="report-view-tabs" role="tablist" aria-label="Report sections">
-                        <button
-                            v-for="tab in tabs"
-                            :key="tab"
-                            :id="`report-tab-${tabSlug(tab)}`"
-                            @click="selectTab(tab)"
-                            @keydown="handleTabKeydown"
-                            :class="['report-view-tab', { 'is-active': activeTab === tab }]"
-                            role="tab"
-                            :aria-selected="activeTab === tab"
-                            aria-controls="report-tabpanel"
-                            type="button"
-                        >
-                            {{ tab }}
-                        </button>
-                    </div>
+                    <ReportTabNav :active-tab="activeTab" @select="selectTab" />
                 </div>
             </div>
         </header>
@@ -542,464 +395,188 @@ onMounted(() => {
                 <Transition name="tab-fade" mode="out-in">
                     <div
                         :key="activeTab"
-                        id="report-tabpanel"
+                        :id="REPORT_TABPANEL_ID"
                         role="tabpanel"
-                        :aria-labelledby="`report-tab-${tabSlug(activeTab)}`"
+                        :aria-labelledby="`report-tab-${reportTabSlug(activeTab)}`"
                         tabindex="0"
                         class="w-full"
                     >
                         <div v-if="activeTab === 'Overview'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Female (all sections)</p>
-                            <p class="report-view-metric-value">{{ formatCompactNumber(totalFemaleAcrossPrograms) }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Male (all sections)</p>
-                            <p class="report-view-metric-value">{{ formatCompactNumber(totalMaleAcrossPrograms) }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Combined Projects</p>
-                            <p class="report-view-metric-value">{{ combinedProjectsCount }}</p>
-                            <p class="report-view-metric-meta">SETUP + CEST</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Combined Funding</p>
-                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(combinedFundingAmount) }}</p>
-                            <p class="report-view-metric-meta">SETUP + CEST</p>
-                        </div>
-                    </div>
+                    <ReportMetricsGrid
+                        :metrics="[
+                            { label: 'Total Female (all sections)', value: formatCompactNumber(totalFemaleAcrossPrograms) },
+                            { label: 'Total Male (all sections)', value: formatCompactNumber(totalMaleAcrossPrograms) },
+                            { label: 'Combined Projects', value: combinedProjectsCount, meta: 'SETUP + CEST' },
+                            {
+                                label: 'Combined Funding',
+                                value: formatCurrency(combinedFundingAmount),
+                                meta: 'SETUP + CEST',
+                                valueClass: 'text-sm md:text-base',
+                            },
+                        ]"
+                    />
 
-                    <div class="report-view-metric">
-                        <div class="report-view-block-header">
-                            <h3 class="report-view-block-title">Quick Access</h3>
-                        </div>
-                        <div class="report-view-quick-grid">
-                            <button
-                                v-for="program in overviewPrograms"
-                                :key="program.tab"
-                                type="button"
-                                class="report-view-quick-item"
-                                @click="selectTab(program.tab)"
-                            >
-                                <p class="report-view-quick-title">{{ program.title }}</p>
-                                <div
-                                    v-for="(metric, metricIndex) in program.metrics"
-                                    :key="`${program.tab}-${metricIndex}`"
-                                    :class="metricIndex > 0 ? 'mt-2 border-t border-purple-500/10 pt-2 report-light:border-slate-200/80' : ''"
-                                >
-                                    <p class="report-view-quick-label">{{ metric.label }}</p>
-                                    <p class="report-view-quick-value-sm">{{ metric.value }}</p>
-                                    <p v-if="metric.meta" class="text-[10px] text-purple-300/60 report-light:text-slate-500">{{ metric.meta }}</p>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
+                    <ReportOverviewQuickAccess :programs="overviewPrograms" @select-tab="selectTab" />
                 </div>
 
                 <div v-else-if="activeTab === 'GFPS'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Members</p>
-                            <p class="report-view-metric-value">{{ gfpsStats.totalMembers }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">GFPS Assemblies</p>
-                            <p class="report-view-metric-value">{{ assemblyData.length }}</p>
-                            <p class="report-view-metric-meta">Quarterly</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Female Members</p>
-                            <p class="report-view-metric-value">{{ gfpsStats.femaleCount }}</p>
-                            <p class="report-view-metric-meta">{{ gfpsStats.femalePercentage }}%</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Male Members</p>
-                            <p class="report-view-metric-value">{{ gfpsStats.maleCount }}</p>
-                            <p class="report-view-metric-meta">{{ gfpsStats.malePercentage }}%</p>
-                        </div>
-                    </div>
+                    <ReportMetricsGrid
+                        :metrics="[
+                            { label: 'Total Members', value: gfpsStats.totalMembers },
+                            { label: 'GFPS Assemblies', value: assemblyData.length, meta: 'Quarterly' },
+                            { label: 'Female Members', value: gfpsStats.femaleCount, meta: `${gfpsStats.femalePercentage}%` },
+                            { label: 'Male Members', value: gfpsStats.maleCount, meta: `${gfpsStats.malePercentage}%` },
+                        ]"
+                    />
 
                     <div class="report-view-charts">
-                        <div class="report-view-block">
-                            <div class="report-view-chart-head">
-                                <h3 class="report-view-block-title">GFPS Membership by Sex</h3>
-                                <p class="report-view-block-desc">Distribution of GFPS members</p>
-                            </div>
-                            <div class="report-chart-panel">
-                                <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
-                            </div>
-                        </div>
+                        <ReportChartBlock title="GFPS Membership by Sex" description="Distribution of GFPS members">
+                            <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
+                        </ReportChartBlock>
 
-                        <div class="report-view-block">
-                            <div class="report-view-chart-head">
-                                <h3 class="report-view-block-title">GFPS Assembly Participation</h3>
-                                <p class="report-view-block-desc">Quarterly assembly attendance by sex</p>
-                            </div>
-                            <div class="report-chart-panel">
-                                <AssemblyStackedBarChart :data="assemblyData" />
-                            </div>
-                        </div>
+                        <ReportChartBlock title="GFPS Assembly Participation" description="Quarterly assembly attendance by sex">
+                            <AssemblyStackedBarChart :data="assemblyData" />
+                        </ReportChartBlock>
                     </div>
                 </div>
 
                 <div v-else-if="activeTab === 'DOST IX Employees'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Employment Types</p>
-                            <p class="report-view-metric-value">{{ employeesData.length }}</p>
-                            <p class="report-view-metric-meta">Categories</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Employees</p>
-                            <p class="report-view-metric-value">{{ employeesStats.totalEmployees }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Female Employees</p>
-                            <p class="report-view-metric-value">{{ employeesStats.femaleCount }}</p>
-                            <p class="report-view-metric-meta">{{ employeesStats.femalePercentage }}%</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Male Employees</p>
-                            <p class="report-view-metric-value">{{ employeesStats.maleCount }}</p>
-                            <p class="report-view-metric-meta">{{ employeesStats.malePercentage }}%</p>
-                        </div>
-                    </div>
+                    <ReportMetricsGrid
+                        :metrics="[
+                            { label: 'Employment Types', value: employeesData.length, meta: 'Categories' },
+                            { label: 'Total Employees', value: employeesStats.totalEmployees },
+                            { label: 'Female Employees', value: employeesStats.femaleCount, meta: `${employeesStats.femalePercentage}%` },
+                            { label: 'Male Employees', value: employeesStats.maleCount, meta: `${employeesStats.malePercentage}%` },
+                        ]"
+                    />
 
-                    <div class="report-view-block">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">Employees by Employment Status</h3>
-                            <p class="report-view-block-desc">Sex-disaggregated data as of December 31, {{ year.year }}</p>
-                        </div>
-                        <div class="report-chart-panel">
-                            <EmployeesGroupedBarChart :data="employeesData" />
-                        </div>
-                    </div>
+                    <ReportChartBlock title="Employees by Employment Status" :description="`Sex-disaggregated data as of December 31, ${year.year}`">
+                        <EmployeesGroupedBarChart :data="employeesData" />
+                    </ReportChartBlock>
                 </div>
 
                 <div v-else-if="activeTab === 'Scholarship'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Scholars</p>
-                            <p class="report-view-metric-value">{{ scholarsStats.totalScholars }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">School Year</p>
-                            <p class="report-view-metric-value">{{ scholarsStats.schoolYearLabel || 'Not set' }}</p>
-                            <p class="report-view-metric-meta">{{ scholarsStats.asOfDate ?? 'No date set' }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Female Scholars</p>
-                            <p class="report-view-metric-value">{{ scholarsStats.femaleCount }}</p>
-                            <p class="report-view-metric-meta">{{ scholarsStats.femalePercentage }}%</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Male Scholars</p>
-                            <p class="report-view-metric-value">{{ scholarsStats.maleCount }}</p>
-                            <p class="report-view-metric-meta">{{ scholarsStats.malePercentage }}%</p>
-                        </div>
-                    </div>
+                    <ReportMetricsGrid
+                        :metrics="[
+                            { label: 'Total Scholars', value: scholarsStats.totalScholars },
+                            {
+                                label: 'School Year',
+                                value: scholarsStats.schoolYearLabel || 'Not set',
+                                meta: scholarsStats.asOfDate ?? 'No date set',
+                            },
+                            { label: 'Female Scholars', value: scholarsStats.femaleCount, meta: `${scholarsStats.femalePercentage}%` },
+                            { label: 'Male Scholars', value: scholarsStats.maleCount, meta: `${scholarsStats.malePercentage}%` },
+                        ]"
+                    />
 
-                    <div class="report-view-block">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">Distribution of On-Going Scholars by Sex</h3>
-                            <p class="report-view-block-desc">
-                                {{ scholarsStats.schoolYearLabel || `School Year ${year.year}` }}
-                                <span v-if="scholarsStats.asOfDate"> • Data as of {{ scholarsStats.asOfDate }}</span>
-                            </p>
-                        </div>
-                        <div class="report-chart-panel">
-                            <ScholarsPieChart :female-count="scholarsStats.femaleCount" :male-count="scholarsStats.maleCount" />
-                        </div>
-                    </div>
+                    <ReportChartBlock title="Distribution of On-Going Scholars by Sex">
+                        <template #description>
+                            {{ scholarsStats.schoolYearLabel || `School Year ${year.year}` }}
+                            <span v-if="scholarsStats.asOfDate"> • Data as of {{ scholarsStats.asOfDate }}</span>
+                        </template>
+                        <ScholarsPieChart :female-count="scholarsStats.femaleCount" :male-count="scholarsStats.maleCount" />
+                    </ReportChartBlock>
 
-                    <!-- Scholarship History Timeline -->
-                    <div v-if="scholarshipHistory.length > 1" class="report-view-block">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">Scholar Count History</h3>
-                            <p class="report-view-block-desc">Data progression across reporting periods</p>
-                        </div>
-                        <div class="space-y-2">
-                            <button
-                                v-for="(entry, idx) in scholarshipHistory"
-                                :key="historyRowId(entry, idx)"
-                                type="button"
-                                class="w-full rounded-xl border px-4 py-3.5 text-left transition-[transform,background-color,border-color,color] duration-200 ease-out active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40"
-                                :class="isHistoryExpanded(historyRowId(entry, idx)) ? 'border-purple-400/50 bg-purple-900/30 text-purple-100 report-light:border-purple-200 report-light:bg-purple-50/70 report-light:text-purple-950' : 'border-transparent bg-purple-900/10 hover:bg-purple-900/20 text-purple-200/80 hover:text-purple-50 report-light:bg-slate-50 report-light:hover:bg-slate-100/80 report-light:border-slate-200/60 report-light:text-slate-700 report-light:hover:text-slate-900'"
-                                @click="toggleHistoryExpand(historyRowId(entry, idx))"
-                            >
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2.5">
-                                        <svg
-                                            class="size-4 shrink-0 transition-transform duration-200 text-purple-400/70 report-light:text-purple-700/60"
-                                            :class="{ 'rotate-90': isHistoryExpanded(historyRowId(entry, idx)) }"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            stroke-width="2.5"
-                                            aria-hidden="true"
-                                        >
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                        </svg>
-                                        <span
-                                            class="text-sm tracking-tight"
-                                            :class="isHistoryExpanded(historyRowId(entry, idx)) ? 'font-semibold' : 'font-medium'"
-                                        >
-                                            {{ entry.asOfDate ?? 'No date' }}
-                                        </span>
-                                        <span v-if="idx === 0" class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-emerald-400 uppercase report-light:bg-emerald-100/80 report-light:text-emerald-800">
-                                            Latest
-                                        </span>
-                                    </div>
-                                    <span
-                                        class="text-sm font-medium tabular-nums"
-                                        :class="isHistoryExpanded(historyRowId(entry, idx)) ? 'text-purple-200 report-light:text-purple-900/90' : 'text-purple-300/60 report-light:text-slate-500'"
-                                    >
-                                        <span class="font-mono">{{ entry.femaleCount + entry.maleCount }}</span> scholars
-                                    </span>
-                                </div>
-                                <Transition
-                                    enter-active-class="transition-[transform,opacity] duration-200 ease-out"
-                                    enter-from-class="transform scale-95 opacity-0"
-                                    enter-to-class="transform scale-100 opacity-100"
-                                    leave-active-class="transition-[transform,opacity] duration-150 ease-in"
-                                    leave-from-class="transform scale-100 opacity-100"
-                                    leave-to-class="transform scale-95 opacity-0"
-                                >
-                                    <div
-                                        v-if="isHistoryExpanded(historyRowId(entry, idx))"
-                                        class="mt-3.5 border-t border-purple-500/10 pt-3 text-xs report-light:border-purple-900/5"
-                                    >
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <p class="text-[10px] font-semibold tracking-wider text-purple-300/50 uppercase report-light:text-slate-400">
-                                                    School Year
-                                                </p>
-                                                <p class="mt-1.5 text-sm font-bold text-purple-100 report-light:text-slate-800">
-                                                    {{ entry.schoolYearLabel || 'No school year' }}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p class="text-[10px] font-semibold tracking-wider text-purple-300/50 uppercase report-light:text-slate-400">
-                                                    Gender Breakdown
-                                                </p>
-                                                <div class="mt-1 flex items-baseline gap-3">
-                                                    <span class="text-xs text-purple-300/70 report-light:text-slate-500">
-                                                        Female:
-                                                        <span class="text-base font-bold text-purple-100 report-light:text-slate-900 font-mono ml-0.5">{{ entry.femaleCount }}</span>
-                                                    </span>
-                                                    <span class="text-purple-500/20 report-light:text-slate-200">|</span>
-                                                    <span class="text-xs text-purple-300/70 report-light:text-slate-500">
-                                                        Male:
-                                                        <span class="text-base font-bold text-purple-100 report-light:text-slate-900 font-mono ml-0.5">{{ entry.maleCount }}</span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Transition>
-                            </button>
-                        </div>
-                    </div>
+                    <ScholarshipHistoryTimeline :history="scholarshipHistory" />
                 </div>
 
                 <div v-else-if="activeTab === 'RSTL'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Customers</p>
-                            <p class="report-view-metric-value">{{ rstlStats.totalCustomers }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Period</p>
-                            <p class="report-view-metric-value">{{ year.year }}</p>
-                            <p class="report-view-metric-meta">Full Year</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Female</p>
-                            <p class="report-view-metric-value">{{ rstlStats.femaleCount }}</p>
-                            <p class="report-view-metric-meta">{{ rstlStats.femalePercentage }}%</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Male</p>
-                            <p class="report-view-metric-value">{{ rstlStats.maleCount }}</p>
-                            <p class="report-view-metric-meta">{{ rstlStats.malePercentage }}%</p>
-                        </div>
-                    </div>
+                    <ReportMetricsGrid
+                        :metrics="[
+                            { label: 'Total Customers', value: rstlStats.totalCustomers },
+                            { label: 'Period', value: year.year, meta: 'Full Year' },
+                            { label: 'Female', value: rstlStats.femaleCount, meta: `${rstlStats.femalePercentage}%` },
+                            { label: 'Male', value: rstlStats.maleCount, meta: `${rstlStats.malePercentage}%` },
+                        ]"
+                    />
 
-                    <div class="report-view-block">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">Testing and Calibration Services</h3>
-                            <p class="report-view-block-desc">Customers by sex (warm bodies) - Monthly breakdown for {{ year.year }}</p>
-                        </div>
-                        <div class="report-chart-panel">
-                            <RstlWarmBodiesStackedChart :data="rstlWarmBodiesData" />
-                        </div>
-                    </div>
+                    <ReportChartBlock
+                        title="Testing and Calibration Services"
+                        :description="`Customers by sex (warm bodies) - Monthly breakdown for ${year.year}`"
+                    >
+                        <RstlWarmBodiesStackedChart :data="rstlWarmBodiesData" />
+                    </ReportChartBlock>
                 </div>
 
                 <div v-else-if="activeTab === 'Program Funding'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics">
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Combined Projects</p>
-                            <p class="report-view-metric-value">{{ combinedProjectsCount }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Combined Funding</p>
-                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(combinedFundingAmount) }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">SETUP Funding</p>
-                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(setupStats.totalAmount) }}</p>
-                            <p class="report-view-metric-meta">{{ setupFundingRows.length }} Categories</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">CEST Funding</p>
-                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(cestStats.totalAmount) }}</p>
-                            <p class="report-view-metric-meta">{{ cestFundingRows.length }} Categories</p>
-                        </div>
-                    </div>
+                    <ReportMetricsGrid
+                        :metrics="[
+                            { label: 'Combined Projects', value: combinedProjectsCount },
+                            { label: 'Combined Funding', value: formatCurrency(combinedFundingAmount), valueClass: 'text-sm md:text-base' },
+                            {
+                                label: 'SETUP Funding',
+                                value: formatCurrency(setupStats.totalAmount),
+                                meta: `${setupFundingRows.length} Categories`,
+                                valueClass: 'text-sm md:text-base',
+                            },
+                            {
+                                label: 'CEST Funding',
+                                value: formatCurrency(cestStats.totalAmount),
+                                meta: `${cestFundingRows.length} Categories`,
+                                valueClass: 'text-sm md:text-base',
+                            },
+                        ]"
+                    />
 
-                    <div class="report-view-block">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">SETUP Categories</h3>
-                            <p class="report-view-block-desc">Funding split by category • {{ year.year }}</p>
-                        </div>
-                        <div v-if="setupFundingRows.length === 0" class="report-view-block-desc">No SETUP category data yet.</div>
-                        <div v-else class="report-view-category-grid">
-                            <div v-for="category in setupFundingRows" :key="category.slug" class="report-view-quick-item">
-                                <p class="report-view-quick-title">{{ category.label }}</p>
-                                <p class="report-view-quick-label">Projects</p>
-                                <p class="report-view-quick-value">{{ category.maleProjects + category.femaleProjects }}</p>
-                                <p class="report-view-quick-label">Funding</p>
-                                <p class="report-view-quick-value-sm">{{ formatCurrency(category.maleAmount + category.femaleAmount) }}</p>
-                            </div>
-                        </div>
-                    </div>
+                    <FundingCategoryGrid
+                        title="SETUP Categories"
+                        :description="`Funding split by category • ${year.year}`"
+                        :categories="setupFundingRows"
+                        empty-label="No SETUP category data yet."
+                    />
 
-                    <div class="report-view-block">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">CEST Categories</h3>
-                            <p class="report-view-block-desc">Funding split by category • {{ year.year }}</p>
-                        </div>
-                        <div v-if="cestFundingRows.length === 0" class="report-view-block-desc">No CEST category data yet.</div>
-                        <div v-else class="report-view-category-grid">
-                            <div v-for="category in cestFundingRows" :key="category.slug" class="report-view-quick-item">
-                                <p class="report-view-quick-title">{{ category.label }}</p>
-                                <p class="report-view-quick-label">Projects</p>
-                                <p class="report-view-quick-value">{{ category.maleProjects + category.femaleProjects }}</p>
-                                <p class="report-view-quick-label">Funding</p>
-                                <p class="report-view-quick-value-sm">{{ formatCurrency(category.maleAmount + category.femaleAmount) }}</p>
-                            </div>
-                        </div>
-                    </div>
+                    <FundingCategoryGrid
+                        title="CEST Categories"
+                        :description="`Funding split by category • ${year.year}`"
+                        :categories="cestFundingRows"
+                        empty-label="No CEST category data yet."
+                    />
                 </div>
 
                 <div v-else-if="activeTab === 'SETUP'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics report-view-metrics--five-up">
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Categories</p>
-                            <p class="report-view-metric-value">{{ setupFundingRows.length }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Projects</p>
-                            <p class="report-view-metric-value">{{ setupStats.totalProjects }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Funding</p>
-                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(setupStats.totalAmount) }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Male-led Projects</p>
-                            <p class="report-view-metric-value">{{ setupStats.maleProjects }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Female-led Projects</p>
-                            <p class="report-view-metric-value">{{ setupStats.femaleProjects }}</p>
-                        </div>
-                    </div>
+                    <ReportMetricsGrid
+                        five-up
+                        :metrics="[
+                            { label: 'Categories', value: setupFundingRows.length },
+                            { label: 'Total Projects', value: setupStats.totalProjects },
+                            { label: 'Total Funding', value: formatCurrency(setupStats.totalAmount), valueClass: 'text-sm md:text-base' },
+                            { label: 'Male-led Projects', value: setupStats.maleProjects },
+                            { label: 'Female-led Projects', value: setupStats.femaleProjects },
+                        ]"
+                    />
 
-                    <div v-if="setupFundingRows.length === 0" class="report-view-block">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">Small Enterprise Technology Upgrading Program (SETUP)</h3>
-                            <p class="report-view-block-desc">No category data yet for {{ year.year }}</p>
-                        </div>
-                    </div>
-
-                    <div v-else class="report-view-block space-y-4">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">Small Enterprise Technology Upgrading Program (SETUP)</h3>
-                            <p class="report-view-block-desc">Select category to preview chart • {{ year.year }}</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <button
-                                v-for="category in setupFundingRows"
-                                :key="category.slug"
-                                type="button"
-                                :class="fundingCategoryButtonClass(selectedSetupCategorySlug === category.slug)"
-                                :aria-pressed="selectedSetupCategorySlug === category.slug"
-                                @click="selectSetupCategory(category.slug)"
-                            >
-                                {{ category.label }}
-                            </button>
-                        </div>
-                        <div v-if="selectedSetupCategory" class="report-chart-panel">
-                            <SetupFundingChart :data="selectedSetupCategory" :title="selectedSetupCategory.label" />
-                        </div>
-                    </div>
+                    <FundingCategorySelector
+                        title="Small Enterprise Technology Upgrading Program (SETUP)"
+                        :description="`Select category to preview chart • ${year.year}`"
+                        :empty-description="`No category data yet for ${year.year}`"
+                        :categories="setupFundingRows"
+                        v-slot="{ category }"
+                    >
+                        <SetupFundingChart :data="category" :title="category.label" />
+                    </FundingCategorySelector>
                 </div>
 
                 <div v-else-if="activeTab === 'CEST'" class="space-y-4 md:space-y-6">
-                    <div class="report-view-metrics report-view-metrics--five-up">
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Categories</p>
-                            <p class="report-view-metric-value">{{ cestFundingRows.length }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Projects</p>
-                            <p class="report-view-metric-value">{{ cestStats.totalProjects }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Total Funding</p>
-                            <p class="report-view-metric-value text-sm md:text-base">{{ formatCurrency(cestStats.totalAmount) }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Male-led Projects</p>
-                            <p class="report-view-metric-value">{{ cestStats.maleProjects }}</p>
-                        </div>
-                        <div class="report-view-metric">
-                            <p class="report-view-metric-label">Female-led Projects</p>
-                            <p class="report-view-metric-value">{{ cestStats.femaleProjects }}</p>
-                        </div>
-                    </div>
+                    <ReportMetricsGrid
+                        five-up
+                        :metrics="[
+                            { label: 'Categories', value: cestFundingRows.length },
+                            { label: 'Total Projects', value: cestStats.totalProjects },
+                            { label: 'Total Funding', value: formatCurrency(cestStats.totalAmount), valueClass: 'text-sm md:text-base' },
+                            { label: 'Male-led Projects', value: cestStats.maleProjects },
+                            { label: 'Female-led Projects', value: cestStats.femaleProjects },
+                        ]"
+                    />
 
-                    <div v-if="cestFundingRows.length === 0" class="report-view-block">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">Community Empowerment thru Science and Technology (CEST)</h3>
-                            <p class="report-view-block-desc">No category data yet for {{ year.year }}</p>
-                        </div>
-                    </div>
-
-                    <div v-else class="report-view-block space-y-4">
-                        <div class="report-view-chart-head">
-                            <h3 class="report-view-block-title">Community Empowerment thru Science and Technology (CEST)</h3>
-                            <p class="report-view-block-desc">Select category to preview chart • {{ year.year }}</p>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            <button
-                                v-for="category in cestFundingRows"
-                                :key="category.slug"
-                                type="button"
-                                :class="fundingCategoryButtonClass(selectedCestCategorySlug === category.slug)"
-                                :aria-pressed="selectedCestCategorySlug === category.slug"
-                                @click="selectCestCategory(category.slug)"
-                            >
-                                {{ category.label }}
-                            </button>
-                        </div>
-                        <div v-if="selectedCestCategory" class="report-chart-panel">
-                            <CestFundingChart :data="selectedCestCategory" :title="selectedCestCategory.label" />
-                        </div>
-                    </div>
+                    <FundingCategorySelector
+                        title="Community Empowerment thru Science and Technology (CEST)"
+                        :description="`Select category to preview chart • ${year.year}`"
+                        :empty-description="`No category data yet for ${year.year}`"
+                        :categories="cestFundingRows"
+                        v-slot="{ category }"
+                    >
+                        <CestFundingChart :data="category" :title="category.label" />
+                    </FundingCategorySelector>
                 </div>
             </div>
         </Transition>

@@ -15,12 +15,10 @@ import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import {
     Calendar,
     CheckCircle2,
-    Lock,
     Pencil,
     Plus,
     Save,
     Trash2,
-    Unlock,
     X,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -33,8 +31,6 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-
-const isLockedReadOnly = computed(() => props.reportYear.isLocked);
 
 const { toast } = useToast();
 

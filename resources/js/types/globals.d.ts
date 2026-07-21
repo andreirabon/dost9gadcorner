@@ -14,7 +14,9 @@ declare module 'vite/client' {
 }
 
 declare module '@inertiajs/core' {
-    interface PageProps extends InertiaPageProps, AppPageProps {}
+    interface InertiaConfig {
+        sharedPageProps: AppPageProps;
+    }
 }
 
 declare module 'vue' {

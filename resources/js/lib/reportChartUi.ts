@@ -162,7 +162,8 @@ function buildCartesianTooltipHtml(
 export function reportChartTooltip(overrides: ApexOptions['tooltip'] = {}): ApexOptions['tooltip'] {
     const { custom: customOverride, y, ...rest } = overrides;
     const shared = Boolean(rest.shared);
-    const yFormatter = y?.formatter;
+    // Per-series `y` formatters (array form) aren't supported by this wrapper; only the single-object form is used here.
+    const yFormatter = y && !Array.isArray(y) ? y.formatter : undefined;
 
     const formatValue = (value: number, context: TooltipFormatContext): string => {
         if (typeof yFormatter === 'function') {
@@ -183,12 +184,14 @@ export function reportChartTooltip(overrides: ApexOptions['tooltip'] = {}): Apex
         cssClass: REPORT_CHART_TOOLTIP_CLASS,
         fillSeriesColor: false,
         marker: { show: false },
+        // ApexCharts' own types omit `color` from tooltip.style even though the runtime option is real
+        // (it drives the non-custom tooltip's text color; see .report-chart-tooltip rules in app.css).
         style: {
             fontSize: '12px',
             fontFamily: REPORT_CHART_FONT_FAMILY,
             ...(rest.style ?? {}),
             color: REPORT_CHART_TOOLTIP_TEXT_COLOR,
-        },
+        } as NonNullable<ApexOptions['tooltip']>['style'] & { color?: string },
         custom:
             customOverride ??
             ((context) =>
