@@ -23,6 +23,19 @@ interface Props {
     title?: string;
 }
 
+/** On-axis floor for non-zero bars so small counts stay visible and labelable. */
+function barDisplayValue(actual: number, minDisplay: number): number {
+    if (actual <= 0) {
+        return 0;
+    }
+
+    return Math.max(actual, minDisplay);
+}
+
+function minBarDisplayValue(yMax: number): number {
+    return Math.max(3, Math.round(yMax * 0.08));
+}
+
 const props = withDefaults(defineProps<Props>(), {
     title: '',
 });
@@ -30,7 +43,7 @@ const props = withDefaults(defineProps<Props>(), {
 const appearance = useReportChartAppearance();
 const chartAnimations = useReportChartMotion();
 
-const series = computed(() => [
+const actualSeries = computed(() => [
     {
         name: 'Female',
         data: props.data.map((entry) => entry.female),
@@ -41,13 +54,39 @@ const series = computed(() => [
     },
 ]);
 
+const chartScale = computed(() => {
+    const maxValue = Math.max(5, ...props.data.flatMap((entry) => [entry.female, entry.male]));
+    const yMax = Math.ceil(maxValue / 5) * 5;
+
+    return {
+        yMax,
+        minDisplay: minBarDisplayValue(yMax),
+    };
+});
+
+const series = computed(() => {
+    const { minDisplay } = chartScale.value;
+
+    return actualSeries.value.map((entry) => ({
+        name: entry.name,
+        data: entry.data.map((value) => barDisplayValue(value, minDisplay)),
+    }));
+});
+
 const palette = computed(() => reportDisaggPalette(appearance.value));
 
 const chartOptions = computed<ApexOptions>(() => {
     const ui = reportChartUi(appearance.value);
     const colors = palette.value;
-    const maxValue = Math.max(5, ...props.data.flatMap((entry) => [entry.female, entry.male]));
-    const yMax = Math.ceil(maxValue / 5) * 5;
+    const { yMax } = chartScale.value;
+    const femaleActual = actualSeries.value[0]?.data ?? [];
+    const maleActual = actualSeries.value[1]?.data ?? [];
+
+    const actualValueAt = (seriesIndex: number, dataPointIndex: number): number => {
+        const values = seriesIndex === 0 ? femaleActual : maleActual;
+
+        return values[dataPointIndex] ?? 0;
+    };
 
     return {
         theme: {
@@ -120,7 +159,11 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         dataLabels: {
             enabled: true,
-            formatter: (value: number) => (value === 0 ? '' : `${value}`),
+            formatter: (_value: number, opts?: { seriesIndex?: number; dataPointIndex?: number }) => {
+                const actual = actualValueAt(opts?.seriesIndex ?? 0, opts?.dataPointIndex ?? 0);
+
+                return actual === 0 ? '' : `${actual}`;
+            },
             offsetY: 0,
             style: {
                 fontFamily: REPORT_CHART_FONT_FAMILY,
@@ -130,7 +173,11 @@ const chartOptions = computed<ApexOptions>(() => {
         },
         tooltip: reportChartTooltip({
             y: {
-                formatter: (value: number) => `${value}`,
+                formatter: (_value: number, opts?: { seriesIndex?: number; dataPointIndex?: number }) => {
+                    const actual = actualValueAt(opts?.seriesIndex ?? 0, opts?.dataPointIndex ?? 0);
+
+                    return `${actual}`;
+                },
             },
         }),
         grid: {

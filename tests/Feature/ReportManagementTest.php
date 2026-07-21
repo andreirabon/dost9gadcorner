@@ -14,35 +14,8 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-/**
- * @return list<string>
- */
-function staffReportsZiggyRouteNames(): array
-{
-    return [
-        'index',
-        'logout',
-        'print-report',
-        'print-report.generate',
-        'report-years.create',
-        'report-years.destroy',
-        'report-years.edit',
-        'report-years.employee-statuses.update',
-        'report-years.gfps-assemblies.update',
-        'report-years.gfps-membership.update',
-        'report-years.index',
-        'report-years.metadata.update',
-        'report-years.program-funding.update',
-        'report-years.rstl-monthly.update',
-        'report-years.scholarship.destroy',
-        'report-years.scholarship.store',
-        'report-years.scholarship.update',
-        'report-years.store',
-        'report-years.update',
-    ];
-}
 
-test('report year create page sends no-store and staff-reports ziggy routes', function () {
+test('report year create page sends no-store and ziggy routes', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->get('/report-years/create');
@@ -53,16 +26,11 @@ test('report year create page sends no-store and staff-reports ziggy routes', fu
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('reports/Create')
-            ->where('ziggy.routes', function ($routes): bool {
-                $names = collect($routes)->keys()->sort()->values()->all();
-
-                return $names === staffReportsZiggyRouteNames();
-            })
-            ->missing('ziggy.routes.settings.profile.edit')
+            ->has('ziggy.routes')
         );
 });
 
-test('report year edit page sends no-store and staff-reports ziggy routes', function () {
+test('report year edit page sends no-store and ziggy routes', function () {
     $this->seed(ReportLookupSeeder::class);
 
     $user = User::factory()->create();
@@ -78,12 +46,7 @@ test('report year edit page sends no-store and staff-reports ziggy routes', func
             ->component('reports/Edit')
             ->has('reportYear')
             ->has('abilities')
-            ->where('ziggy.routes', function ($routes): bool {
-                $names = collect($routes)->keys()->sort()->values()->all();
-
-                return $names === staffReportsZiggyRouteNames();
-            })
-            ->missing('ziggy.routes.settings.profile.edit')
+            ->has('ziggy.routes')
         );
 });
 
@@ -155,6 +118,205 @@ test('authorized user receives a pdf when generating print report', function () 
     expect(strlen((string) $response->getContent()))->toBeGreaterThan(1000);
 });
 
+test('administrator can toggle the lock state of a report year', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => false]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/toggle-lock")
+        ->assertRedirect();
+
+    expect($reportYear->fresh()->is_locked)->toBeTrue();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/toggle-lock")
+        ->assertRedirect();
+
+    expect($reportYear->fresh()->is_locked)->toBeFalse();
+});
+
+test('gad user can toggle the lock state of a report year', function () {
+    $user = User::factory()->create(['role' => UserRole::GAD]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => false]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/toggle-lock")
+        ->assertRedirect();
+
+    expect($reportYear->fresh()->is_locked)->toBeTrue();
+});
+
+test('user without lock permission cannot toggle the lock state', function () {
+    $user = User::factory()->create(['role' => UserRole::HR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => false]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/toggle-lock")
+        ->assertForbidden();
+
+    expect($reportYear->fresh()->is_locked)->toBeFalse();
+});
+
+test('guest cannot toggle the lock state', function () {
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => false]);
+
+    $this->patch("/report-years/{$reportYear->id}/toggle-lock")
+        ->assertRedirect(route('login'));
+
+    expect($reportYear->fresh()->is_locked)->toBeFalse();
+});
+
+test('locked report year rejects metadata updates', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}", ['title' => 'New title'])
+        ->assertForbidden();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/metadata", ['title' => 'New title'])
+        ->assertForbidden();
+
+    expect($reportYear->fresh()->title)->not->toBe('New title');
+});
+
+test('locked report year rejects deletion', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+
+    $this->actingAs($user)
+        ->delete("/report-years/{$reportYear->id}")
+        ->assertForbidden();
+
+    expect(ReportYear::query()->whereKey($reportYear->id)->exists())->toBeTrue();
+});
+
+test('unauthorized user is forbidden from deleting even when unlocked, before the lock check runs', function () {
+    $user = User::factory()->create(['role' => UserRole::HR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+
+    $this->actingAs($user)
+        ->delete("/report-years/{$reportYear->id}")
+        ->assertForbidden();
+
+    expect(ReportYear::query()->whereKey($reportYear->id)->exists())->toBeTrue();
+});
+
+test('index page exposes canToggleLock and isLocked to the frontend', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+
+    $this->actingAs($user)
+        ->get('/report-years')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('reports/Index')
+            ->where('canToggleLock', true)
+            ->where('reportYears.0.isLocked', true)
+        );
+});
+
+test('locked report year rejects gfps membership updates', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/gfps-membership", [
+            'female_count' => 22,
+            'male_count' => 6,
+        ])
+        ->assertForbidden();
+
+    expect($reportYear->fresh()->gfpsMembershipSummary)->toBeNull();
+});
+
+test('locked report year rejects gfps assembly attendance updates', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+    $period = GfpsAssemblyPeriod::query()->orderBy('sort_order')->firstOrFail();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/gfps-assemblies", [
+            'attendances' => [
+                ['period_id' => $period->id, 'female_count' => 10, 'male_count' => 3],
+            ],
+        ])
+        ->assertForbidden();
+
+    expect($reportYear->fresh()->gfpsAssemblyAttendances)->toBeEmpty();
+});
+
+test('locked report year rejects employee status breakdown updates', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+    $status = EmploymentStatus::query()->orderBy('sort_order')->firstOrFail();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/employee-statuses", [
+            'breakdowns' => [
+                ['employment_status_id' => $status->id, 'female_count' => 5, 'male_count' => 7],
+            ],
+        ])
+        ->assertForbidden();
+
+    expect($reportYear->fresh()->employeeStatusBreakdowns)->toBeEmpty();
+});
+
+test('locked report year rejects rstl monthly breakdown updates', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+    $month = ReportMonth::query()->orderBy('month_number')->firstOrFail();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/rstl-monthly", [
+            'breakdowns' => [
+                [
+                    'report_month_id' => $month->id,
+                    'female_count' => 1,
+                    'female_led_count' => 2,
+                    'male_count' => 3,
+                    'male_led_count' => 4,
+                ],
+            ],
+        ])
+        ->assertForbidden();
+
+    expect($reportYear->fresh()->rstlMonthlyBreakdowns)->toBeEmpty();
+});
+
+test('locked report year rejects program funding summary updates', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+    $program = FundingProgram::query()->orderBy('sort_order')->firstOrFail();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/program-funding", [
+            'summaries' => [
+                [
+                    'funding_program_id' => $program->id,
+                    'female_projects' => 8,
+                    'female_amount' => 1000.50,
+                    'male_projects' => 12,
+                    'male_amount' => 2000.75,
+                ],
+            ],
+        ])
+        ->assertForbidden();
+
+    expect($reportYear->fresh()->programFundingSummaries)->toBeEmpty();
+});
+
 test('non-admin user cannot access report management', function () {
     $user = User::factory()->create(['role' => UserRole::None]);
 
@@ -186,6 +348,16 @@ test('admin can open new report year form', function () {
             ->component('reports/Create'));
 });
 
+test('gad user can open new report year form', function () {
+    $user = User::factory()->create(['role' => UserRole::GAD]);
+
+    $this->actingAs($user)
+        ->get('/report-years/create')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('reports/Create'));
+});
+
 test('authenticated user can create a report year shell', function () {
     $this->seed(ReportLookupSeeder::class);
 
@@ -208,6 +380,24 @@ test('authenticated user can create a report year shell', function () {
         'title' => '2027 report',
         'status' => ReportYear::STATUS_PUBLISHED,
     ]);
+});
+
+test('gad user can create a report year shell', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::GAD]);
+
+    $response = $this->actingAs($user)
+        ->post('/report-years', [
+            'year' => 2028,
+            'title' => '2028 report',
+            'description' => 'Pending annual report',
+            'status' => ReportYear::STATUS_PENDING,
+        ]);
+
+    $reportYear = ReportYear::query()->where('year', 2028)->firstOrFail();
+
+    $response->assertRedirect(route('report-years.edit', $reportYear, false));
 });
 
 test('guest cannot delete a report year', function () {
@@ -524,6 +714,67 @@ test('non-scholarship non-admin user cannot delete scholarship snapshot', functi
     $this->assertDatabaseHas('scholarship_summaries', [
         'id' => $snapshot->id,
     ]);
+});
+
+test('locked report year rejects new scholarship snapshots', function () {
+    $this->seed(ReportLookupSeeder::class);
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $this->actingAs($user)
+        ->post("/report-years/{$reportYear->id}/scholarship", [
+            'school_year_id' => $schoolYear->id,
+            'as_of_date' => '2025-01-13',
+            'female_count' => 10,
+            'male_count' => 20,
+        ])
+        ->assertForbidden();
+
+    expect($reportYear->fresh()->scholarshipSnapshots)->toBeEmpty();
+});
+
+test('locked report year rejects scholarship snapshot updates', function () {
+    $this->seed(ReportLookupSeeder::class);
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $snapshot = $reportYear->scholarshipSnapshots()->create([
+        'school_year_id' => $schoolYear->id,
+        'as_of_date' => '2025-01-13',
+        'female_count' => 10,
+        'male_count' => 20,
+    ]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}", [
+            'female_count' => 15,
+            'male_count' => 25,
+        ])
+        ->assertForbidden();
+
+    expect($snapshot->fresh()->female_count)->toBe(10);
+});
+
+test('locked report year rejects scholarship snapshot deletion', function () {
+    $this->seed(ReportLookupSeeder::class);
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => true]);
+    $schoolYear = SchoolYear::query()->where('name', '2025-2026')->first();
+
+    $snapshot = $reportYear->scholarshipSnapshots()->create([
+        'school_year_id' => $schoolYear->id,
+        'as_of_date' => '2025-01-13',
+        'female_count' => 10,
+        'male_count' => 20,
+    ]);
+
+    $this->actingAs($user)
+        ->delete("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}")
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('scholarship_summaries', ['id' => $snapshot->id]);
 });
 
 test('cannot store scholarship snapshot with future as_of_date', function () {

@@ -15,10 +15,12 @@ import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import {
     Calendar,
     CheckCircle2,
+    Lock,
     Pencil,
     Plus,
     Save,
     Trash2,
+    Unlock,
     X,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -31,6 +33,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const isLockedReadOnly = computed(() => props.reportYear.isLocked);
 
 const { toast } = useToast();
 
@@ -619,6 +623,15 @@ class="report-years-tab transition-all duration-300 ease-[cubic-bezier(0.23,1,0.
  </p>
  </header>
 
+ <div
+ v-if="reportYear.isLocked"
+ class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+ role="status"
+ >
+ <p class="font-medium">This report year is locked.</p>
+ <p class="mt-1 text-amber-800">Unlock it from the report years list to edit sections or delete data.</p>
+ </div>
+
  <div class="w-full animate-fade-in-up delay-1">
 <section v-show="activeTab === 'metadata'" class="report-panel" role="tabpanel">
 <HeadingSmall
@@ -706,7 +719,7 @@ description="Calendar year, publication status, and the title and description re
  <InputError :message="metadataPatchError" />
 
  <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2">
- <Button type="submit" :disabled="metadataSaving" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]">
+ <Button type="submit" :disabled="metadataSaving || reportYear.isLocked" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save metadata
  </Button>
@@ -764,7 +777,7 @@ description="Total GFPS members by sex for this reporting year. Use whole number
  </div>
 
  <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-2">
- <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="gfpsMembershipForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="gfpsMembershipForm.processing || reportYear.isLocked">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save GFPS membership
  </Button>
@@ -878,7 +891,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
     </div>
 
     <div class="flex flex-wrap items-center gap-4 border-zinc-200/80 border-t pt-4 mt-6">
-     <Button type="submit" class="report-save-btn flex items-center gap-2 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]" :disabled="newSnapshotForm.processing">
+     <Button type="submit" class="report-save-btn flex items-center gap-2 active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]" :disabled="newSnapshotForm.processing || reportYear.isLocked">
       <Plus class="size-4" :stroke-width="2.5" aria-hidden="true" />
       Save new snapshot
      </Button>
@@ -1053,7 +1066,7 @@ description="Track scholar counts across the year. Each update is saved as a sep
        </div>
 
        <div class="flex flex-wrap items-center gap-3 border-zinc-200/80 border-t pt-4 mt-6">
-        <Button type="submit" class="report-save-btn active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]" :disabled="editSnapshotForm.processing">
+        <Button type="submit" class="report-save-btn active:scale-[0.97] transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]" :disabled="editSnapshotForm.processing || reportYear.isLocked">
          <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
          Save changes
         </Button>
@@ -1134,7 +1147,7 @@ description="Attendance by assembly period. Enter headcounts by sex for each row
  <InputError :message="gfpsAssembliesForm.errors.attendances" />
 
  <div class="report-years-form-actions">
- <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="gfpsAssembliesForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="gfpsAssembliesForm.processing || reportYear.isLocked">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save assemblies
  </Button>
@@ -1199,7 +1212,7 @@ description="Workforce headcounts by employment status and sex. Use the same def
  <InputError :message="employeeStatusesForm.errors.breakdowns" />
 
  <div class="report-years-form-actions">
- <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="employeeStatusesForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="employeeStatusesForm.processing || reportYear.isLocked">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save employee status
  </Button>
@@ -1292,7 +1305,7 @@ description="Monthly RSTL activity: clients or visits by sex, plus female-led an
  <InputError :message="rstlForm.errors.breakdowns" />
 
  <div class="report-years-form-actions">
- <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="rstlForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="rstlForm.processing || reportYear.isLocked">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save RSTL
  </Button>
@@ -1473,7 +1486,7 @@ description="Projects and funding amounts by program, split by sex. Amounts use 
  <InputError :message="fundingForm.errors.summaries" />
 
  <div class="report-years-form-actions">
- <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="fundingForm.processing">
+ <Button type="submit" class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]" :disabled="fundingForm.processing || reportYear.isLocked">
  <Save class="size-4" :stroke-width="2.5" aria-hidden="true" />
  Save program funding
  </Button>

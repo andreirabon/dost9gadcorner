@@ -35,7 +35,7 @@ class AuthenticatedSessionController extends Controller
         return Str::limit(trim(strip_tags($status)), 500, '');
     }
 
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): SymfonyResponse
     {
         if (! $request->authenticate()) {
             // ponytail: silent redirect — no flash, no error, no validation message.
@@ -53,10 +53,10 @@ class AuthenticatedSessionController extends Controller
         $intended = $request->session()->pull('url.intended');
 
         if ($this->isSafeInternalRedirectTarget($intended)) {
-            return redirect()->to($intended);
+            return Inertia::location($intended);
         }
 
-        return redirect()->to($default);
+        return Inertia::location($default);
     }
 
     /**
@@ -90,13 +90,13 @@ class AuthenticatedSessionController extends Controller
         return strcasecmp((string) $parsed['host'], (string) $appParsed['host']) === 0;
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): SymfonyResponse
     {
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return Inertia::location(route('login'));
     }
 }

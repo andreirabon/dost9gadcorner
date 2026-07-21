@@ -19,16 +19,19 @@ import {
     ChevronsLeft,
     ChevronsRight,
     FileChartColumnIncreasing,
+    Lock,
     Pencil,
     Plus,
     RefreshCw,
     Search,
     Trash2,
+    Unlock,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 interface Props {
     reportYears: ManagedReportYearListItem[];
+    canToggleLock: boolean;
 }
 
 const props = defineProps<Props>();
@@ -256,7 +259,10 @@ function confirmDeleteReportYear(): void {
                                 :class="{ 'bg-blue-50/70 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.2)]': (reportYear as any)._justUpdated }"
                             >
                                 <td>
-                                    <span class="report-years-table-year">{{ reportYear.year }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="report-years-table-year">{{ reportYear.year }}</span>
+                                        <Lock v-if="reportYear.isLocked" class="size-3 text-amber-600" aria-hidden="true" />
+                                    </div>
                                 </td>
                                 <td>
                                     <span class="line-clamp-1">{{ reportYear.title ?? '—' }}</span>
@@ -278,6 +284,21 @@ function confirmDeleteReportYear(): void {
                                 </td>
                                 <td>
                                     <div class="report-years-row-actions">
+                                        <Tooltip v-if="canToggleLock">
+                                            <TooltipTrigger as-child>
+                                                <button
+                                                    type="button"
+                                                    class="report-years-row-action inline-flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
+                                                    :class="reportYear.isLocked ? 'text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100' : ''"
+                                                    :aria-label="`${reportYear.isLocked ? 'Unlock' : 'Lock'} Report Year ${reportYear.year}`"
+                                                    @click="router.patch(route('report-years.toggle-lock', reportYear.id), {}, { preserveScroll: true })"
+                                                >
+                                                    <Lock v-if="reportYear.isLocked" class="size-4" aria-hidden="true" />
+                                                    <Unlock v-else class="size-4" aria-hidden="true" />
+                                                </button>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">{{ reportYear.isLocked ? 'Unlock' : 'Lock' }}</TooltipContent>
+                                        </Tooltip>
                                         <Tooltip>
                                             <TooltipTrigger as-child>
                                                 <Link
@@ -291,7 +312,7 @@ function confirmDeleteReportYear(): void {
                                             </TooltipTrigger>
                                             <TooltipContent side="top">Edit</TooltipContent>
                                         </Tooltip>
-                                        <Tooltip v-if="canDelete">
+                                        <Tooltip v-if="canDelete && !reportYear.isLocked">
                                             <TooltipTrigger as-child>
                                                 <button
                                                     type="button"

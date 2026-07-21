@@ -64,15 +64,21 @@ class ReportYearManagementController extends Controller
                     'description' => $reportYear->description,
                     'status' => $reportYear->status,
                     'publishedAt' => $reportYear->published_at?->toIso8601String(),
+                    'isLocked' => $reportYear->is_locked,
                 ]),
+            'canToggleLock' => request()->user()?->can('toggleLock', ReportYear::class) ?? false,
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', ReportYear::class);
 
-        return Inertia::render('reports/Create');
+        return Inertia::render('reports/Create', [
+            'abilities' => [
+                'publish' => $request->user()?->can('publish', ReportYear::class) ?? false,
+            ],
+        ]);
     }
 
     public function store(StoreReportYearRequest $request): RedirectResponse
@@ -109,6 +115,7 @@ class ReportYearManagementController extends Controller
             'updateEmployeeStatuses' => $user->can('updateEmployeeStatuses', $reportYear),
             'updateRstlMonthly' => $user->can('updateRstlMonthly', $reportYear),
             'updateProgramFunding' => $user->can('updateProgramFunding', $reportYear),
+            'toggleLock' => $user->can('toggleLock', $reportYear),
         ];
 
         return Inertia::render('reports/Edit', [
@@ -133,6 +140,7 @@ class ReportYearManagementController extends Controller
                 'description' => $reportYear->description,
                 'status' => $reportYear->status,
                 'publishedAt' => $reportYear->published_at?->toIso8601String(),
+                'isLocked' => $reportYear->is_locked,
                 'coverImageUrl' => null,
                 'gfpsMembership' => [
                     'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),
@@ -163,6 +171,7 @@ class ReportYearManagementController extends Controller
 
     public function update(UpdateReportYearRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
 
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description', 'status']);
@@ -172,6 +181,7 @@ class ReportYearManagementController extends Controller
 
     public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
 
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description']);
@@ -182,6 +192,7 @@ class ReportYearManagementController extends Controller
     public function destroy(ReportYear $reportYear): RedirectResponse
     {
         $this->authorize('delete', $reportYear);
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
 
         $reportYear->delete();
 
@@ -190,6 +201,7 @@ class ReportYearManagementController extends Controller
 
     public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, PatchGfpsMembershipSummary $patchGfpsMembership, ConflictGuard $conflictGuard): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear->gfpsMembershipSummary, $this->expectedUpdatedAt($request));
 
         $patchGfpsMembership->apply($reportYear, $request->validated());
@@ -199,6 +211,7 @@ class ReportYearManagementController extends Controller
 
     public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear, PatchGfpsAssemblyAttendances $patchGfpsAssemblies, ConflictGuard $conflictGuard): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertRelationFresh($reportYear, 'gfpsAssemblyAttendances', $this->expectedUpdatedAt($request));
 
         $patchGfpsAssemblies->apply($reportYear, $request->validated('attendances'));
@@ -208,6 +221,7 @@ class ReportYearManagementController extends Controller
 
     public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, PatchEmployeeStatusBreakdowns $patchEmployeeStatuses, ConflictGuard $conflictGuard): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertRelationFresh($reportYear, 'employeeStatusBreakdowns', $this->expectedUpdatedAt($request));
 
         $patchEmployeeStatuses->apply($reportYear, $request->validated('breakdowns'));
@@ -217,6 +231,7 @@ class ReportYearManagementController extends Controller
 
     public function storeScholarshipSnapshot(StoreScholarshipSnapshotRequest $request, ReportYear $reportYear): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $reportYear->scholarshipSnapshots()->create($request->validated());
 
         return back();
@@ -224,6 +239,7 @@ class ReportYearManagementController extends Controller
 
     public function updateScholarshipSnapshot(UpdateScholarshipSnapshotRequest $request, ReportYear $reportYear, ScholarshipSummary $scholarship, SparseRecordPatcher $patcher, ConflictGuard $conflictGuard): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         abort_unless($scholarship->report_year_id === $reportYear->id, 404);
 
         $conflictGuard->assertFresh($scholarship, $this->expectedUpdatedAt($request));
@@ -240,6 +256,7 @@ class ReportYearManagementController extends Controller
 
     public function destroyScholarshipSnapshot(Request $request, ReportYear $reportYear, ScholarshipSummary $scholarship): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $this->authorize('deleteScholarship', $reportYear);
         abort_unless($scholarship->report_year_id === $reportYear->id, 404);
 
@@ -250,6 +267,7 @@ class ReportYearManagementController extends Controller
 
     public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear, PatchRstlMonthlyBreakdowns $patchRstlMonthly, ConflictGuard $conflictGuard): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertRelationFresh($reportYear, 'rstlMonthlyBreakdowns', $this->expectedUpdatedAt($request));
 
         $patchRstlMonthly->apply($reportYear, $request->validated('breakdowns'));
@@ -259,9 +277,19 @@ class ReportYearManagementController extends Controller
 
     public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, PatchProgramFundingSummaries $patchProgramFunding, ConflictGuard $conflictGuard): RedirectResponse
     {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertRelationFresh($reportYear, 'programFundingSummaries', $this->expectedUpdatedAt($request));
 
         $patchProgramFunding->apply($reportYear, $request->validated('summaries'));
+
+        return back();
+    }
+
+    public function toggleLock(Request $request, ReportYear $reportYear): RedirectResponse
+    {
+        $this->authorize('toggleLock', $reportYear);
+
+        $reportYear->update(['is_locked' => !$reportYear->is_locked]);
 
         return back();
     }

@@ -74,14 +74,6 @@ class HandleInertiaRequests extends Middleware
             return 'guest';
         }
 
-        if ($request->routeIs(['report-years.*', 'print-report', 'print-report.generate'])) {
-            return 'staff-reports';
-        }
-
-        if ($request->routeIs('settings.*')) {
-            return 'staff-settings';
-        }
-
         return null;
     }
 }

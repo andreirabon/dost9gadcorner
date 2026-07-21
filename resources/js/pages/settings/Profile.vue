@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 
-import DeleteUser from '@/components/settings/DeleteUser.vue';
 import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -35,8 +34,6 @@ const user = usePage().props.auth.user! as User;
                     </p>
                 </div>
             </div>
-
-            <DeleteUser />
         </SettingsLayout>
     </AppLayout>
 </template>

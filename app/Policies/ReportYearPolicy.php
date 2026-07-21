@@ -20,12 +20,22 @@ class ReportYearPolicy
 
     public function create(User $user): bool
     {
-        return $this->isAdministrator($user);
+        return $this->isAdministrator($user) || $this->isRole($user, UserRole::GAD);
     }
 
     public function update(User $user, ReportYear $reportYear): bool
     {
         return $this->isAdministrator($user);
+    }
+
+    public function publish(User $user): bool
+    {
+        return $this->isAdministrator($user);
+    }
+
+    public function toggleLock(User $user, ?ReportYear $reportYear = null): bool
+    {
+        return $this->isAdministrator($user) || $this->isRole($user, UserRole::GAD);
     }
 
     public function updateMetadata(User $user, ReportYear $reportYear): bool

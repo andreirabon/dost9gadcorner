@@ -8,6 +8,12 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { Loader2 } from '@lucide/vue';
 
+const props = defineProps<{
+    abilities?: {
+        publish: boolean;
+    };
+}>();
+
 const currentYear = new Date().getFullYear();
 
 const form = useForm({
@@ -69,7 +75,8 @@ const submit = () => {
                                     id="status"
                                     v-model="form.status"
                                     name="status"
-                                    class="report-select h-11 w-full appearance-none pr-10 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01]"
+                                    class="report-select h-11 w-full appearance-none pr-10 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    :disabled="!props.abilities?.publish"
                                 >
                                     <option value="pending">Pending (draft)</option>
                                     <option value="published">Published (public)</option>

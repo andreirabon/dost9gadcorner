@@ -16,6 +16,7 @@ export interface EmployeeStatusDataRow {
 }
 
 export interface ScholarshipSummaryData {
+    id: number | null;
     schoolYearLabel: string;
     asOfDate: string | null;
     femaleCount: number;
@@ -123,6 +124,7 @@ export interface ReportYearEditAbilities {
     updateEmployeeStatuses: boolean;
     updateRstlMonthly: boolean;
     updateProgramFunding: boolean;
+    toggleLock: boolean;
 }
 
 export interface EditableReportYear {
@@ -140,6 +142,7 @@ export interface EditableReportYear {
     scholarshipSnapshots: ScholarshipSnapshot[];
     rstlMonthly: EditableRstlMonthlyRow[];
     programFunding: EditableProgramFundingRow[];
+    isLocked: boolean;
 }
 
 export interface ManagedReportYearListItem {
@@ -149,6 +152,7 @@ export interface ManagedReportYearListItem {
     description: string | null;
     status: 'pending' | 'published';
     publishedAt: string | null;
+    isLocked: boolean;
 }
 
 export interface SectionTimestamps {

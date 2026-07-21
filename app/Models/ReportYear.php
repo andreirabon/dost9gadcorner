@@ -26,6 +26,7 @@ class ReportYear extends Model
         'description',
         'status',
         'published_at',
+        'is_locked',
     ];
 
     /**
@@ -35,6 +36,7 @@ class ReportYear extends Model
     {
         return [
             'published_at' => 'datetime',
+            'is_locked' => 'boolean',
         ];
     }
 

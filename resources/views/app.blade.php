@@ -29,11 +29,7 @@
     {{-- Removed Google Fonts --}}
 
     @php
-        $ziggyGroup = auth()->check()
-            ? (request()->routeIs(['report-years.*', 'print-report', 'print-report.generate'])
-                ? 'staff-reports'
-                : (request()->routeIs('settings.*') ? 'staff-settings' : null))
-            : 'guest';
+        $ziggyGroup = auth()->check() ? null : 'guest';
     @endphp
     @routes($ziggyGroup, $cspNonce)
     @vite('resources/js/app.ts')

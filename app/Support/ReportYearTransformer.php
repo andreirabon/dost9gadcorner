@@ -78,6 +78,7 @@ class ReportYearTransformer
             'gfpsAssemblies' => $this->transformGfpsAssemblyAttendances($reportYear),
             'employeeStatuses' => $this->transformEmployeeStatusBreakdowns($reportYear),
             'scholarship' => [
+                'id' => $reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->id,
                 'schoolYearLabel' => (string) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->schoolYear?->name ?? ''),
                 'asOfDate' => $reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->as_of_date?->toDateString(),
                 'femaleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->female_count ?? 0),
@@ -87,6 +88,7 @@ class ReportYearTransformer
                 ->sortByDesc('as_of_date')
                 ->values()
                 ->map(fn ($s) => [
+                    'id' => $s->id,
                     'schoolYearLabel' => (string) ($s->schoolYear?->name ?? ''),
                     'asOfDate' => $s->as_of_date?->toDateString(),
                     'femaleCount' => (int) $s->female_count,
