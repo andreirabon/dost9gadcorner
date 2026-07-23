@@ -42,7 +42,9 @@ const getTabValue = (tab: string | TabItem): string => {
         <!-- Header Section -->
         <div class="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-2 sm:gap-3">
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md sm:h-10 sm:w-10">
+                <div
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md sm:h-10 sm:w-10"
+                >
                     <svg class="h-4 w-4 text-white sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path
                             stroke-linecap="round"
@@ -123,7 +125,7 @@ const getTabValue = (tab: string | TabItem): string => {
                         type="button"
                         @click="selectQuarter(quarter)"
                         :class="[
-                            'touch-target flex-1 rounded-md border-2 px-2 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 focus-visible:outline-none sm:px-3',
+                            'touch-target flex-1 rounded-md border-2 px-2 py-2 text-xs font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-1 focus-visible:outline-none sm:px-3 sm:text-sm',
                             activeQuarter === quarter
                                 ? 'border-orange-600 bg-orange-500 text-white shadow-sm'
                                 : 'border-orange-300 text-orange-700 hover:border-orange-400 hover:bg-white/70 hover:text-orange-900',
@@ -140,7 +142,9 @@ const getTabValue = (tab: string | TabItem): string => {
         <div class="mt-4 rounded-lg border border-gray-100 bg-gradient-to-r from-gray-50 to-white p-3 sm:mt-6 sm:p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="flex items-center gap-2 sm:gap-3">
-                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 sm:h-8 sm:w-8">
+                    <div
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 sm:h-8 sm:w-8"
+                    >
                         <svg class="h-3.5 w-3.5 text-white sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -151,13 +155,17 @@ const getTabValue = (tab: string | TabItem): string => {
                     </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-800 sm:px-3 sm:py-1">
+                    <span
+                        class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-800 sm:px-3 sm:py-1"
+                    >
                         {{ activeTab }}
                     </span>
                     <svg class="hidden h-3 w-3 text-gray-400 sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
-                    <span class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-800 sm:px-3 sm:py-1">
+                    <span
+                        class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-800 sm:px-3 sm:py-1"
+                    >
                         {{ activeQuarter }}
                     </span>
                 </div>

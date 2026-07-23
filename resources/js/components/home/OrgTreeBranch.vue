@@ -23,14 +23,7 @@ const props = withDefaults(
 
 const hasChildren = computed(() => props.node.children.length > 0);
 
-const isOpen = ref(
-    props.defaultOpen ??
-        (props.depth === 0
-            ? false
-            : props.node.children.length > 6
-              ? false
-              : props.depth < 2),
-);
+const isOpen = ref(props.defaultOpen ?? (props.depth === 0 ? false : props.node.children.length > 6 ? false : props.depth < 2));
 
 const level = computed(() => Math.min(props.depth, 3));
 
@@ -46,23 +39,23 @@ const levelClass = computed(() => {
         case 1:
             return {
                 card: 'border border-purple-400/32 bg-purple-900/40 ring-1 ring-white/8',
-                name: 'text-xs font-semibold tracking-tight text-purple-50 sm:text-sm',
-                title: 'text-[11px] leading-snug text-purple-200/75 sm:text-xs',
-                roleOnly: 'text-xs font-medium leading-snug text-purple-100/90 sm:text-sm',
+                name: 'text-sm font-semibold tracking-tight text-purple-50 sm:text-base',
+                title: 'text-xs leading-snug text-purple-200/75 sm:text-sm',
+                roleOnly: 'text-sm font-medium leading-snug text-purple-100/90 sm:text-base',
             };
         case 2:
             return {
                 card: 'border border-purple-400/28 bg-purple-950/45 ring-1 ring-white/6',
-                name: 'text-[11px] font-semibold text-purple-50 sm:text-xs',
-                title: 'text-[10px] leading-snug text-purple-200/70 sm:text-[11px]',
-                roleOnly: 'text-[11px] font-medium leading-snug text-purple-100/85 sm:text-xs',
+                name: 'text-xs font-semibold text-purple-50 sm:text-sm',
+                title: 'text-[11px] leading-snug text-purple-200/70 sm:text-xs',
+                roleOnly: 'text-xs font-medium leading-snug text-purple-100/85 sm:text-sm',
             };
         default:
             return {
                 card: 'border border-purple-500/25 bg-purple-950/40 ring-1 ring-white/5',
-                name: 'text-[10px] font-medium text-purple-100 sm:text-[11px]',
-                title: 'text-[9px] leading-snug text-purple-200/65 sm:text-[10px]',
-                roleOnly: 'text-[10px] font-medium leading-snug text-purple-200/80 sm:text-[11px]',
+                name: 'text-xs font-medium text-purple-100 sm:text-sm',
+                title: 'text-[11px] leading-snug text-purple-200/65 sm:text-xs',
+                roleOnly: 'text-xs font-medium leading-snug text-purple-200/80 sm:text-sm',
             };
     }
 });
@@ -93,9 +86,7 @@ const toggleLabel = computed(() => {
         return '';
     }
 
-    return isOpen.value
-        ? `Collapse ${positionLabel.value || props.node.name}`
-        : `Expand ${positionLabel.value || props.node.name}`;
+    return isOpen.value ? `Collapse ${positionLabel.value || props.node.name}` : `Expand ${positionLabel.value || props.node.name}`;
 });
 
 function toggleOpen(): void {
@@ -119,7 +110,7 @@ function toggleOpen(): void {
             <div v-if="hasChildren" class="flex w-full items-stretch gap-0">
                 <button
                     type="button"
-                    class="touch-target flex shrink-0 items-center justify-center self-stretch rounded-l-xl border-r border-purple-400/25 px-3 text-purple-100 transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-purple-800/50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950"
+                    class="touch-target flex shrink-0 items-center justify-center self-stretch rounded-l-xl border-r border-purple-400/25 px-3 text-purple-100 transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-purple-800/50 focus-visible:ring-2 focus-visible:ring-fuchsia-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none active:scale-[0.97]"
                     :aria-expanded="isOpen"
                     :aria-controls="childrenPanelId"
                     :aria-label="toggleLabel"
@@ -158,26 +149,18 @@ function toggleOpen(): void {
             </template>
         </div>
 
-        <div
-            v-if="hasChildren"
-            :id="childrenPanelId"
-            v-show="isOpen"
-            class="org-branch-children"
-        >
+        <div v-if="hasChildren" :id="childrenPanelId" v-show="isOpen" class="org-branch-children">
             <ul
                 v-if="wideChildLayout"
-                class="m-0 mt-4 grid list-none grid-cols-1 gap-2.5 border-l-2 border-dotted border-purple-400/45 pl-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:pl-5"
+                class="m-0 mt-4 grid list-none grid-cols-1 gap-2.5 border-l-2 border-dotted border-purple-400/45 pl-4 sm:grid-cols-2 sm:pl-5 lg:grid-cols-3 xl:grid-cols-4"
             >
-                <li v-for="child in node.children" :key="child.id" class="list-none min-w-0">
+                <li v-for="child in node.children" :key="child.id" class="min-w-0 list-none">
                     <OrgTreeBranch :node="child" :depth="depth + 1" :parent-name="node.name" />
                 </li>
             </ul>
 
-            <ul
-                v-else
-                class="m-0 mt-3 list-none space-y-3 border-l-2 border-purple-400/40 pl-3 sm:mt-4 sm:space-y-4 sm:pl-5"
-            >
-                <li v-for="child in node.children" :key="child.id" class="list-none min-w-0">
+            <ul v-else class="m-0 mt-3 list-none space-y-3 border-l-2 border-purple-400/40 pl-3 sm:mt-4 sm:space-y-4 sm:pl-5">
+                <li v-for="child in node.children" :key="child.id" class="min-w-0 list-none">
                     <OrgTreeBranch :node="child" :depth="depth + 1" :parent-name="node.name" />
                 </li>
             </ul>

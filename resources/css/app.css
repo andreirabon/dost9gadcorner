@@ -336,7 +336,7 @@
         font-weight: 500;
         letter-spacing: -0.005em;
         white-space: nowrap;
-        color: rgba(255, 255, 255, 0.55);
+        color: rgba(255, 255, 255, 0.8);
         transition:
             background-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
             color 200ms cubic-bezier(0.23, 1, 0.32, 1),
@@ -1016,11 +1016,11 @@
 
     /* Form field names vs values: labels are caption-style; values stay body (overrides ui/Label defaults) */
     .report-form :is([data-slot='label'], label) {
-        @apply text-[13px]! font-medium! tracking-normal! text-purple-100! normal-case! antialiased;
+        @apply text-sm! font-medium! tracking-normal! text-purple-100! normal-case! antialiased;
     }
 
     .report-field {
-        @apply h-11 rounded-xl border-white/10 bg-black/20 px-3 text-sm text-purple-50 transition-colors placeholder:text-purple-300/30 focus-visible:border-violet-500 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-violet-500/20;
+        @apply h-11 rounded-xl border-white/10 bg-black/20 px-3 text-base text-purple-50 transition-colors placeholder:text-purple-300/30 focus-visible:border-violet-500 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-violet-500/20;
     }
 
     .report-row {
@@ -1032,11 +1032,11 @@
     }
 
     .report-textarea {
-        @apply min-h-24 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-purple-50 shadow-sm transition-colors placeholder:text-purple-300/30 focus:border-violet-500 focus:bg-black/40 focus:ring-4 focus:ring-violet-500/20 focus:outline-none;
+        @apply min-h-24 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-base text-purple-50 shadow-sm transition-colors placeholder:text-purple-300/30 focus:border-violet-500 focus:bg-black/40 focus:ring-4 focus:ring-violet-500/20 focus:outline-none;
     }
 
     .report-select {
-        @apply relative h-11 w-full rounded-xl border border-white/10 bg-black/20 py-1 pr-8 pl-3 text-sm text-purple-50 shadow-sm transition-colors focus:border-violet-500 focus:bg-black/40 focus:ring-4 focus:ring-violet-500/20 focus:outline-none;
+        @apply relative h-11 w-full rounded-xl border border-white/10 bg-black/20 py-1 pr-8 pl-3 text-base text-purple-50 shadow-sm transition-colors focus:border-violet-500 focus:bg-black/40 focus:ring-4 focus:ring-violet-500/20 focus:outline-none;
     }
 
     .report-form .report-field,
@@ -1050,7 +1050,7 @@
     }
 
     .report-data-head {
-        @apply hidden border-b border-white/10 bg-purple-900/30 px-4 py-3 text-[11px] font-semibold tracking-widest text-violet-400 uppercase md:grid md:gap-4;
+        @apply hidden border-b border-white/10 bg-purple-900/30 px-4 py-3 text-xs font-semibold tracking-widest text-violet-400 uppercase md:grid md:gap-4;
     }
 
     .report-data-row {
@@ -1190,7 +1190,7 @@
     }
 
     .report-years-inner--edit .report-years-edit-hero .report-years-lede {
-        @apply mt-1.5 text-[11px] leading-snug;
+        @apply mt-1.5 leading-snug;
     }
 
     .report-years-inner--edit .report-years-tab-bar {
@@ -1367,7 +1367,7 @@
     }
 
     .report-years-table th {
-        @apply px-6 py-4 text-xs font-semibold tracking-widest text-slate-500 uppercase;
+        @apply px-6 py-4 text-sm font-semibold tracking-widest text-slate-500 uppercase;
     }
 
     .report-years-table tbody {
@@ -1387,7 +1387,7 @@
     }
 
     .report-years-status {
-        @apply inline-flex items-center gap-2 text-[13px] font-medium text-black capitalize;
+        @apply inline-flex items-center gap-2 text-sm font-medium text-black capitalize;
     }
 
     .report-years-status-dot {
@@ -1700,7 +1700,7 @@
     }
 
     .report-years-page .report-form :is([data-slot='label'], label) {
-        @apply text-[13px]! font-medium! tracking-normal! text-black! normal-case!;
+        @apply text-sm! font-medium! tracking-normal! text-black! normal-case!;
     }
 
     .report-years-page .report-field,
@@ -1775,7 +1775,7 @@
     }
 
     .report-years-data-head-label {
-        @apply bg-slate-100 px-4 py-3 text-[11px] font-semibold tracking-[0.14em] text-black uppercase;
+        @apply bg-slate-100 px-4 py-3 text-xs font-semibold tracking-[0.14em] text-black uppercase;
     }
 
     .report-years-data-head-label--center {
@@ -1827,7 +1827,7 @@
     }
 
     .report-years-data-row-label {
-        @apply flex items-center bg-white text-sm font-semibold text-black md:px-4 md:py-3.5;
+        @apply flex items-center bg-white text-base font-semibold text-black md:px-4 md:py-3.5;
     }
 
     .report-years-data-cell {
@@ -1835,7 +1835,7 @@
     }
 
     .report-years-data-cell-label {
-        @apply text-xs font-medium text-black;
+        @apply text-sm font-medium text-black;
     }
 
     .report-years-page .report-years-data-input {
@@ -2277,7 +2277,7 @@
     }
 
     .report-view-metrics--five-up .report-view-metric-label {
-        @apply text-[11px] leading-snug;
+        @apply leading-snug;
     }
 
     .report-view-metric {
@@ -2285,7 +2285,7 @@
     }
 
     .report-view-metric-label {
-        @apply text-xs font-light font-medium text-purple-200/80 report-light:text-black;
+        @apply text-xs font-medium text-purple-200/80 report-light:text-black;
     }
 
     .report-view-metric-value {
@@ -2319,7 +2319,7 @@
     }
 
     .report-view-disagg-legend {
-        @apply flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-purple-200/85 report-light:text-slate-600;
+        @apply flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-purple-200/85 report-light:text-slate-600;
     }
 
     .report-view-disagg-legend-item {
@@ -2327,7 +2327,7 @@
     }
 
     .report-view-metric-meta {
-        @apply text-xs text-purple-300/50 report-light:text-black;
+        @apply text-xs text-purple-200/80 report-light:text-black;
     }
 
     .report-view-block {
@@ -2343,7 +2343,7 @@
     }
 
     .report-view-block-desc {
-        @apply text-xs font-light text-purple-200/80 report-light:text-black;
+        @apply text-xs font-normal text-purple-200/80 report-light:text-black;
     }
 
     .report-view-quick-grid {
@@ -2359,11 +2359,11 @@
     }
 
     .report-view-quick-title {
-        @apply text-xs font-medium tracking-wide text-purple-50 uppercase report-light:text-black;
+        @apply text-sm font-medium tracking-wide text-purple-50 uppercase report-light:text-black;
     }
 
     .report-view-quick-label {
-        @apply mt-1 text-xs font-light text-purple-200/80 report-light:text-black;
+        @apply mt-1 text-xs font-normal text-purple-200/80 report-light:text-black;
     }
 
     .report-view-quick-value {
@@ -2395,7 +2395,7 @@
     }
 
     .report-view-empty-desc {
-        @apply max-w-md text-sm leading-relaxed font-light text-purple-200/80 md:text-base report-light:text-black;
+        @apply max-w-md text-sm leading-relaxed font-normal text-purple-200/80 md:text-base report-light:text-black;
     }
 
     .report-view-loading {
@@ -2407,7 +2407,7 @@
     }
 
     .report-view-loading-label {
-        @apply text-sm font-light text-purple-200/80 report-light:text-black;
+        @apply text-sm font-normal text-purple-200/80 report-light:text-black;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -2544,9 +2544,52 @@
 }
 
 /* NProgress CSS (Inertia loader) */
-#nprogress { pointer-events: none; }
-#nprogress .bar { background: #4B5563; position: fixed; z-index: 1031; top: 0; left: 0; width: 100%; height: 2px; }
-#nprogress .peg { display: block; position: absolute; right: 0px; width: 100px; height: 100%; box-shadow: 0 0 10px #4B5563, 0 0 5px #4B5563; opacity: 1.0; transform: rotate(3deg) translate(0px, -4px); }
-#nprogress .spinner { display: block; position: fixed; z-index: 1031; top: 15px; right: 15px; }
-#nprogress .spinner-icon { width: 18px; height: 18px; box-sizing: border-box; border: solid 2px transparent; border-top-color: #4B5563; border-left-color: #4B5563; border-radius: 50%; animation: nprogress-spinner 400ms linear infinite; }
-@keyframes nprogress-spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+#nprogress {
+    pointer-events: none;
+}
+#nprogress .bar {
+    background: #4b5563;
+    position: fixed;
+    z-index: 1031;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+}
+#nprogress .peg {
+    display: block;
+    position: absolute;
+    right: 0px;
+    width: 100px;
+    height: 100%;
+    box-shadow:
+        0 0 10px #4b5563,
+        0 0 5px #4b5563;
+    opacity: 1;
+    transform: rotate(3deg) translate(0px, -4px);
+}
+#nprogress .spinner {
+    display: block;
+    position: fixed;
+    z-index: 1031;
+    top: 15px;
+    right: 15px;
+}
+#nprogress .spinner-icon {
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+    border: solid 2px transparent;
+    border-top-color: #4b5563;
+    border-left-color: #4b5563;
+    border-radius: 50%;
+    animation: nprogress-spinner 400ms linear infinite;
+}
+@keyframes nprogress-spinner {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
