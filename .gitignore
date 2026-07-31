@@ -1,3 +1,4 @@
+/prevses
 /.phpunit.cache
 /node_modules
 /storage/*.key
@@ -37,6 +38,9 @@ skills-lock.json
 @AGENTS.md
 @boost.json
 @PRODUCT.md
+
+# Claude Code local overrides (machine-specific, not shared)
+/.claude/settings.local.json
 
 # Playwright
 node_modules/

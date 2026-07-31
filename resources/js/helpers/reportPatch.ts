@@ -78,12 +78,7 @@ export function diffRowPatches(
  * Fields listed in `options.numeric` are compared by value so that 2025 and
  * "2025" match; everything else is compared as a string.
  */
-export function diffObjectPatch(
-    original: Row,
-    current: Row,
-    fields: readonly string[],
-    options: { numeric?: readonly string[] } = {},
-): Row | null {
+export function diffObjectPatch(original: Row, current: Row, fields: readonly string[], options: { numeric?: readonly string[] } = {}): Row | null {
     const numericFields = new Set(options.numeric ?? []);
     const patch: Row = {};
     let changed = false;

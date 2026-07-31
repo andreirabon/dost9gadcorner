@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useReportSectionSave } from '@/composables/useReportSectionSave';
@@ -330,10 +330,12 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                                             <span class="font-medium text-zinc-900">{{ snap.schoolYearLabel || 'No school year' }}</span></span
                                         >
                                         <span
-                                            >F: <span class="font-mono font-semibold text-zinc-950 tabular-nums">{{ snap.femaleCount ?? 0 }}</span></span
+                                            >F:
+                                            <span class="font-mono font-semibold text-zinc-950 tabular-nums">{{ snap.femaleCount ?? 0 }}</span></span
                                         >
                                         <span
-                                            >M: <span class="font-mono font-semibold text-zinc-950 tabular-nums">{{ snap.maleCount ?? 0 }}</span></span
+                                            >M:
+                                            <span class="font-mono font-semibold text-zinc-950 tabular-nums">{{ snap.maleCount ?? 0 }}</span></span
                                         >
                                         <span class="font-medium text-zinc-900"
                                             >Total:
