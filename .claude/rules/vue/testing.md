@@ -7,6 +7,11 @@ paths:
 
 > This file extends [common/testing.md](../common/testing.md) with Vue specific content.
 
+> **Applicability to this project.** Pinia is not installed, so the Pinia section
+> below does not apply. Component tests live beside the component as
+> `*.spec.ts` and run with `npm test` (Vitest + happy-dom). Server behaviour is
+> covered by Pest under `tests/Feature`.
+
 ## Stack
 
 - Vitest (Vite-native runner) plus `@vue/test-utils`. `create-vue` scaffolds `@vitejs/plugin-vue`.
@@ -21,17 +26,19 @@ paths:
 ## What to Test
 
 - Test the public interface only: props, emitted events, slots, rendered output.
-- Do not assert private state or internal methods (including `wrapper.vm.someDataProp`), and do not rely solely on snapshots.
+- Do not assert private state or internal methods, and do not rely solely on snapshots.
 
-## Mixins
+## Shared Logic
 
-- This project is Options API only (see [coding-style.md](coding-style.md)) — there are no composables to unit-test in isolation the way a Composition API `useXxx` function would be. Test a mixin's behavior through a small host component that consumes it via `mixins: [...]`, asserting on the rendered output, emitted events, and public `wrapper.vm` surface the mixin contributes (a method or computed the component template actually calls).
-- If a mixin's logic is complex enough to want true unit-level isolation, that's usually a sign it should be a plain, mixin-independent utility function (import and test directly) that the mixin then simply calls — not a reason to reach for a composable.
+- Plain helper modules unit-test directly: import the function, assert on the return value. No mounting.
+- Mixins are only meaningful merged into a component. Test them through a throwaway host component (`mount(defineComponent({ mixins: [useTimer], template: '<div/>' }))`), then assert on `wrapper.vm`.
+- Mixin cleanup is a real test case: `wrapper.unmount()` and assert the timer/listener is gone.
 
 ## Pinia
 
 - In components: `createTestingPinia()` from `@pinia/testing`, passed via `global.plugins`. Actions are stubbed by default, set `stubActions: false` to run them. `createSpy: vi.fn` is required under Vitest (no Jest globals).
 - In isolation: `beforeEach(() => setActivePinia(createPinia()))` gives a fresh store per test and prevents state leakage.
+- Components using `mapState` / `mapActions` read through the same testing pinia — no extra wiring.
 
 ## Mount Config
 

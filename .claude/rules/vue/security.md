@@ -33,15 +33,10 @@ paths:
 - Anything in `import.meta.env.VITE_*` ships to the browser. Keep API keys and tokens server-side.
 - Use httpOnly cookies for session tokens. Never bundle credentials into the client.
 
-```vue
-<!-- unsafe -->
-<div v-html="userBio" />
-<!-- safe: sanitize in a computed, Options API style -->
-<div v-html="safeBio" />
-```
+Sanitize in a `computed`, not inline in the template — one place to audit, and it is cached.
 
-```ts
-// Options API — sanitize via a computed property, never inline in the template
+```vue
+<script lang="ts">
 import { defineComponent } from 'vue'
 import DOMPurify from 'dompurify'
 
@@ -53,9 +48,15 @@ export default defineComponent({
     },
   },
 })
-```
+</script>
 
-This project is Options API only (see [coding-style.md](coding-style.md)); every rule above applies identically regardless of API style — these are template/runtime-level vectors, not Composition vs. Options concerns. The only difference is where sanitization lives: a `computed` option, not a `computed()` call inside `setup()`.
+<template>
+  <!-- unsafe -->
+  <div v-html="userBio" />
+  <!-- safe -->
+  <div v-html="safeBio" />
+</template>
+```
 
 ## Reference
 

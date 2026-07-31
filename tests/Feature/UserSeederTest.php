@@ -15,7 +15,7 @@ test('user seeder creates primary admin account', function () {
 
     expect($user)->not->toBeNull()
         ->and($user->role)->toBe(UserRole::ADMINISTRATOR)
-        ->and(Hash::check('UploadIloveYou2026', $user->password))->toBeTrue();
+        ->and(Hash::check(config('auth.seed.admin_password'), $user->password))->toBeTrue();
 });
 
 test('primary admin can log in after seeding', function () {
@@ -23,7 +23,7 @@ test('primary admin can log in after seeding', function () {
 
     $this->post(route('login.store'), [
         'username' => 'ARR',
-        'password' => 'UploadIloveYou2026',
+        'password' => config('auth.seed.admin_password'),
     ])->assertRedirect(route('report-years.index'));
 });
 
@@ -38,7 +38,7 @@ test('user seeder updates existing primary admin password', function () {
 
     $user = User::query()->where('username', 'ARR')->first();
 
-    expect(Hash::check('UploadIloveYou2026', $user->password))->toBeTrue()
+    expect(Hash::check(config('auth.seed.admin_password'), $user->password))->toBeTrue()
         ->and(Hash::check('old-password', $user->password))->toBeFalse();
 });
 
@@ -47,6 +47,6 @@ test('staff account can log in after seeding', function () {
 
     $this->post(route('login.store'), [
         'username' => 'GADStaff',
-        'password' => UserSeeder::STAFF_PASSWORD,
+        'password' => config('auth.seed.staff_password'),
     ])->assertRedirect(route('report-years.index'));
 });

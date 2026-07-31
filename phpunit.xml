@@ -27,6 +27,8 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SEED_ADMIN_PASSWORD" value="test-admin-password"/>
+        <env name="SEED_STAFF_PASSWORD" value="test-staff-password"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>

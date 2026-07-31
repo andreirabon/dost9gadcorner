@@ -4,6 +4,7 @@ namespace App\Services\Reports;
 
 use App\Models\ReportYear;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 final class ConflictGuard
@@ -72,7 +73,7 @@ final class ConflictGuard
             throw self::conflict();
         }
 
-        $actualTimestamp = \Illuminate\Support\Carbon::parse($maxUpdatedAt)->toIso8601String();
+        $actualTimestamp = Carbon::parse($maxUpdatedAt)->toIso8601String();
 
         if ($actualTimestamp !== $expectedUpdatedAt) {
             throw self::conflict();

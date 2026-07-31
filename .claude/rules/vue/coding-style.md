@@ -7,69 +7,92 @@ paths:
 
 > This file extends [common/coding-style.md](../common/coding-style.md) with Vue specific content.
 
-## Options API Only
+## Stack reality
 
-This project standardizes on the **Options API exclusively**. Never use `<script setup>`, the `setup()` component option, or free-function reactivity APIs (`ref`, `reactive`, `computed()`, `watch()`, `watchEffect()`, `onMounted()`, `provide()`/`inject()` as functions). Every component exports an options object — ideally wrapped in `defineComponent({...})` for TypeScript inference — using `data()`, `computed`, `methods`, `watch`, `props`, `emits`, and lifecycle hook keys (`created`, `mounted`, `beforeUnmount`, etc).
-
-The only sanctioned exception is a narrowly-scoped `setup()` call to consume a third-party API that ships no Options API equivalent at all (e.g. certain Nuxt-only composables). Justify it with a comment, keep it to the minimum surface needed, and never use it to restructure the component's core logic.
+This project is Vue 3 + TypeScript + Inertia v2, built with Vite and styled with
+Tailwind v4. There is **no vue-router** and **no Pinia** — routing is server-side
+through Inertia, and page state lives in the component or in Inertia page props.
+Do not introduce either without approval.
 
 ## SFC Structure
 
-- `<script lang="ts">` exporting `defineComponent({...})`. No `<script setup>`.
-- Block order inside a `.vue` file: `<script>`, then `<template>`, then `<style scoped>`. One component per file.
-- Naming: component files PascalCase (`AuctionCard.vue`), mixin files camelCase prefixed with what they do (`sortableMixin.ts`, not `useSortable.ts` — the `use` prefix signals a composable and is reserved for the Composition API convention this project doesn't use).
-- Format with Prettier plus ESLint flat config using `eslint-plugin-vue` (`vue/vue3-recommended`). Type-check with `vue-tsc`.
+- Always `<script setup lang="ts">`. That is what all 162 components use; do not
+  add `defineComponent` / Options API components to this codebase.
+- Block order inside a `.vue` file: `<script setup>`, then `<template>`, then
+  `<style scoped>`. One component per file, and a single root element in the
+  template (Inertia requires it).
+- Naming: component files PascalCase (`ReportMetricCard.vue`), shared logic
+  modules camelCase (`reportPatch.ts`), composables `use*` (`useReportChartHeight.ts`).
+- Format with Prettier, lint with `eslint-plugin-vue` flat config, type-check
+  with `vue-tsc --noEmit`. `npm run lint` must exit 0.
 
-## Reactivity Discipline (Options API)
+## Reactivity Discipline
 
-- `data()` must always return a **new object** — never a shared module-level object literal, and never an arrow function that closes over external mutable state. Each component instance needs its own copy.
-- Use regular `function`/method shorthand for every `methods`, `computed`, and `watch` entry that needs `this`. Arrow functions do not bind `this` to the component instance and will read `undefined`.
-- `computed` getters must be pure: no side effects, no async, no DOM access. A computed needing both read and write (e.g. for `v-model`) uses the `{ get() {...}, set(value) {...} }` object form.
-- `watch` entries are declarative (`watch: { propName(newVal, oldVal) {...} }`) or, for dynamic/nested paths, string-keyed (`watch: { 'form.address.city'(newVal) {...} }`). Prefer the declarative option over imperative `this.$watch(...)` calls in `created()` unless the watched source is only known at runtime.
-- Reach for `deep: true` on a `watch` entry only when watching an object/array as a whole and caring about nested mutations — watching a specific nested path string already tracks that leaf without `deep`.
+- `ref()` for values you reassign, `reactive()` sparingly for grouped state.
+  Read and write refs through `.value` in script, unwrapped in template.
+- `computed()` getters must be pure: no side effects, no async, no DOM access.
+  Prefer `computed` over `watch` for anything derived.
+- Writable computed uses `{ get, set }` — required for any `v-model` bound to a
+  computed. See `deleteSnapshotDialogOpen` in `pages/reports/Edit.vue`.
+- Reach for `watch` / `watchEffect` only for side effects (syncing props into
+  local state, imperative DOM work). Clean up timers and listeners in
+  `onBeforeUnmount`.
+- Non-reactive helpers (chart instances, observers) belong in a plain `let` or a
+  `shallowRef`, never a deep `reactive` — proxying them can break the library.
 
-## Lifecycle and DOM
+## Props, Emits, Templates
 
-- All lifecycle logic lives in the corresponding Options API hook key: `created`, `mounted`, `beforeUnmount`, etc. — never `onMounted()`/`onUnmounted()` free functions.
-- Clean up timers, listeners, and subscriptions in `beforeUnmount`.
-- Read or measure the DOM only after `await this.$nextTick()`.
+- Type props with `defineProps<Props>()` and a local `interface Props`. Use
+  `withDefaults` for optional props.
+- Declare emitted events with `defineEmits<{ ... }>()`.
+- Two-way binding is `defineModel()`, or `modelValue` + `update:modelValue`.
+- Put a `:key` on every `v-for` — a stable unique primitive, never the array
+  index, never an object.
+- Never put `v-if` and `v-for` on the same element. Wrap with `<template v-for>`
+  plus an inner `v-if`, or precompute a filtered list in a `computed`.
 
-## Props, Emits, Two-Way Binding, and Templates
+## Inertia
 
-- Declare `props` as an object with `type` and `required`/`default` per key (avoid the bare-array `props: ['id']` form except for the simplest internal components). Declare `emits` as an array or validated object.
-- There is no `defineModel` macro in the Options API. Two-way binding (`v-model`) is wired manually: accept a `modelValue` prop, declare `emits: ['update:modelValue']`, and expose a `computed` with `get`/`set` that reads the prop and emits `update:modelValue` on write.
-- Put a `:key` on every `v-for`, a stable unique primitive. Never the array index, never an object.
-- Never put `v-if` and `v-for` on the same element. Wrap with `<template v-for>` plus an inner `v-if`, or precompute a filtered list via a `computed`.
+- Navigate with `router.visit/patch/post/delete` or `<Link>`; never `window.location`.
+- Prefer `useForm` for form state. For sparse PATCH payloads use the helpers in
+  `helpers/reportPatch.ts` with `form.transform(...)`.
+- Always pass `preserveScroll` on in-page saves so the view does not jump.
+- Handle `onError` on every mutating request. A request with no error branch
+  fails silently for the user.
+- Server-derived permissions arrive as props (`abilities`, `editableFundingSlugs`).
+  Treat them as presentation only — authorization is enforced on the server.
 
 ```vue
-<script lang="ts">
-import { defineComponent, type PropType } from 'vue'
+<script setup lang="ts">
+import { router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
-export default defineComponent({
-  name: 'CounterInput',
-  props: {
-    modelValue: { type: Number as PropType<number>, required: true },
-  },
-  emits: ['update:modelValue'],
-  computed: {
-    count: {
-      get(): number {
-        return this.modelValue
-      },
-      set(value: number) {
-        this.$emit('update:modelValue', value)
-      },
-    },
-  },
-})
+interface Props {
+    reportYearId: number;
+    isLocked: boolean;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<{ saved: [id: number] }>();
+
+const femaleCount = ref(0);
+const canSave = computed(() => !props.isLocked && femaleCount.value >= 0);
+
+function save(): void {
+    router.patch(
+        route('report-years.gfps-membership.update', props.reportYearId),
+        { female_count: femaleCount.value },
+        {
+            preserveScroll: true,
+            onSuccess: () => emit('saved', props.reportYearId),
+            onError: (errors) => showNotice(Object.values(errors)[0]),
+        },
+    );
+}
 </script>
-
-<template>
-  <input type="number" v-model.number="count" />
-</template>
 ```
 
 ## Reference
 
-- ECC skills: `frontend-patterns`, `vite-patterns`.
-- Docs: <https://vuejs.org/guide/typescript/options-api.html> · <https://vuejs.org/guide/essentials/reactivity-fundamentals.html> · <https://eslint.vuejs.org/>
+- ECC skills: `inertia-vue-development`, `frontend-patterns`, `vite-patterns`.
+- Docs: <https://vuejs.org/api/sfc-script-setup.html> · <https://inertiajs.com/> · <https://eslint.vuejs.org/>

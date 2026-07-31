@@ -27,24 +27,6 @@ Run on `*.vue`, `*.ts`, and `*.tsx` after edits. Scope to changed files where po
 
 - Optional: enforce Feature-Sliced Design slice boundaries with `@feature-sliced/steiger` or `eslint-plugin-boundaries` to block deep cross-slice imports.
 
-## Composition API Drift Guard
-
-This project is Options API only (see [coding-style.md](coding-style.md)). Wire a `PreToolUse` or `PostToolUse` hook that rejects `<script setup>` and free-function reactivity imports on edited `.vue`/`.ts` files, since no bundled `eslint-plugin-vue` rule bans this outright:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "command": "grep -l '<script setup' \"$FILE_PATH\" 2>/dev/null && { echo '[Hook] BLOCKED: <script setup> found — this project is Options API only'; exit 2; } || true",
-        "description": "Reject Composition API <script setup> on Vue files"
-      }
-    ]
-  }
-}
-```
-
 ## Sequencing
 
 ```bash

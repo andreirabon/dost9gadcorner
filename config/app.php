@@ -56,6 +56,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Trusted Proxies
+    |--------------------------------------------------------------------------
+    |
+    | Comma-separated proxy addresses or CIDR ranges whose X-Forwarded-* headers
+    | this application will believe. Whatever is trusted here decides what
+    | $request->ip() returns, and that IP backs the per-IP login throttle.
+    |
+    | Narrow this to your actual load balancer or reverse proxy. "*" trusts every
+    | upstream hop and is only safe when the app cannot be reached except through
+    | a proxy that overwrites X-Forwarded-For itself. An empty value trusts none.
+    |
+    */
+
+    'trusted_proxies' => env('TRUSTED_PROXIES', '*'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

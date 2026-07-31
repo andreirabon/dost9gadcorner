@@ -1,0 +1,21 @@
+parameters:
+    level: 1
+    paths:
+        - app
+        - database
+        - config
+        - bootstrap/app.php
+
+    tmpDir: storage/framework/cache/phpstan
+
+    ignoreErrors:
+        # Facade @method docblocks are not resolved without larastan. URL::forceRootUrl()
+        # is a real method on the underlying UrlGenerator.
+        -
+            identifier: staticMethod.notFound
+            message: '#Call to an undefined static method Illuminate\\Support\\Facades\\URL::#'
+
+# Level 1 is deliberate. Levels 2+ need larastan to understand Eloquent: without
+# it, level 5 reports 190 errors of which 124 are "undefined property" on model
+# attributes that exist at runtime. Raising the level is worth doing, but it
+# needs larastan/larastan added first — a dependency change.

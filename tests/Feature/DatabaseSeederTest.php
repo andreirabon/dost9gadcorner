@@ -23,7 +23,7 @@ test('user seeder creates admin and all staff accounts', function () {
 
         expect($user)->not->toBeNull()
             ->and($user->role)->toBe($account['role'])
-            ->and(Hash::check(UserSeeder::STAFF_PASSWORD, $user->password))->toBeTrue();
+            ->and(Hash::check(config('auth.seed.staff_password'), $user->password))->toBeTrue();
     }
 });
 
@@ -55,6 +55,6 @@ test('full db:seed runs in production when force flag is passed', function () {
     $this->artisan('db:seed', ['--force' => true])
         ->assertSuccessful();
 
-    expect(ReportYear::query()->where('year', 2025)->exists())->toBeTrue()
-        ->and(User::query()->count())->toBe(count(UserSeeder::STAFF_ACCOUNTS) + 1);
+    // Demo report data is deliberately excluded in production — see DemoDataSeedingTest.
+    expect(User::query()->count())->toBe(count(UserSeeder::STAFF_ACCOUNTS) + 1);
 });

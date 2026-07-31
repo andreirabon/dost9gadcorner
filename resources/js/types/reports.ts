@@ -142,6 +142,11 @@ export interface EditableReportYear {
     scholarshipSnapshots: ScholarshipSnapshot[];
     rstlMonthly: EditableRstlMonthlyRow[];
     programFunding: EditableProgramFundingRow[];
+    /**
+     * Funding program slugs this user may edit, or null when unrestricted.
+     * Presentation only — the server rejects out-of-scope writes regardless.
+     */
+    editableFundingSlugs: string[] | null;
     isLocked: boolean;
 }
 

@@ -13,7 +13,7 @@ test('production check passes with seeded admin and built assets', function () {
 
     expect(Artisan::output())
         ->toContain('Primary admin password')
-        ->toContain('matches seeder');
+        ->toContain('set');
 });
 
 test('production check fails when admin user is missing', function () {

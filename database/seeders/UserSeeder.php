@@ -6,14 +6,11 @@ use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
 class UserSeeder extends Seeder
 {
     public const PRIMARY_ADMIN_USERNAME = 'ARR';
-
-    public const PRIMARY_ADMIN_PASSWORD = 'UploadIloveYou2026';
-
-    public const STAFF_PASSWORD = 'UploadIHateYou2026';
 
     /** @var list<array{username: string, role: UserRole}> */
     public const STAFF_ACCOUNTS = [
@@ -30,31 +27,51 @@ class UserSeeder extends Seeder
 
     public function run(): void
     {
-        $this->seedPrimaryAdministrator();
-        $this->seedStaffAccounts();
+        $adminPassword = $this->requiredPassword('auth.seed.admin_password', 'SEED_ADMIN_PASSWORD');
+        $staffPassword = $this->requiredPassword('auth.seed.staff_password', 'SEED_STAFF_PASSWORD');
+
+        $this->seedPrimaryAdministrator($adminPassword);
+        $this->seedStaffAccounts($staffPassword);
     }
 
-    private function seedPrimaryAdministrator(): void
+    /**
+     * Read a seed password from config, refusing to fall back to a default.
+     *
+     * A missing value is a deployment mistake, not something to paper over: any
+     * default here would become a publicly known production credential.
+     */
+    private function requiredPassword(string $configKey, string $envKey): string
     {
-        Model::unguarded(function (): void {
+        $password = config($configKey);
+
+        if (! is_string($password) || trim($password) === '') {
+            throw new RuntimeException("{$envKey} is not set. Add it to .env before seeding accounts.");
+        }
+
+        return $password;
+    }
+
+    private function seedPrimaryAdministrator(string $password): void
+    {
+        Model::unguarded(function () use ($password): void {
             User::query()->updateOrCreate(
                 ['username' => self::PRIMARY_ADMIN_USERNAME],
                 [
-                    'password' => self::PRIMARY_ADMIN_PASSWORD,
+                    'password' => $password,
                     'role' => UserRole::ADMINISTRATOR,
                 ],
             );
         });
     }
 
-    private function seedStaffAccounts(): void
+    private function seedStaffAccounts(string $password): void
     {
-        Model::unguarded(function (): void {
+        Model::unguarded(function () use ($password): void {
             foreach (self::STAFF_ACCOUNTS as $row) {
                 User::query()->updateOrCreate(
                     ['username' => $row['username']],
                     [
-                        'password' => self::STAFF_PASSWORD,
+                        'password' => $password,
                         'role' => $row['role'],
                     ],
                 );

@@ -32,8 +32,13 @@ final class SparseRecordPatcher
     /**
      * @param  array<string, mixed>  $patch
      * @param  list<string>  $allowedFields
+     * @param  array<string, mixed>  $alsoSet  Written alongside the patch in the
+     *                                         same save, and only when the patch
+     *                                         actually changes something. Use it
+     *                                         for audit stamps so a no-op patch
+     *                                         cannot bump `updated_at`.
      */
-    public function applyToModel(Model $model, array $patch, array $allowedFields): void
+    public function applyToModel(Model $model, array $patch, array $allowedFields, array $alsoSet = []): void
     {
         $attributes = $this->onlyAllowedFields($patch, $allowedFields);
 
@@ -41,7 +46,7 @@ final class SparseRecordPatcher
             return;
         }
 
-        $model->fill($attributes)->save();
+        $model->fill([...$attributes, ...$alsoSet])->save();
     }
 
     /**

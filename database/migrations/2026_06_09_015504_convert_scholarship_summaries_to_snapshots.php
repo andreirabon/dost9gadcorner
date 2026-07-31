@@ -16,7 +16,7 @@ return new class extends Migration
 
             // Edit-tracking columns
             $table->foreignId('last_edited_by')->nullable()->after('male_count')
-                  ->constrained('users')->nullOnDelete();
+                ->constrained('users')->nullOnDelete();
             $table->timestamp('last_edited_at')->nullable()->after('last_edited_by');
 
             // Index for efficient ordering

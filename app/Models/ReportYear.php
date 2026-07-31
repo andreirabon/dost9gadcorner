@@ -55,9 +55,20 @@ class ReportYear extends Model
         return $this->hasMany(EmployeeStatusBreakdown::class);
     }
 
+    /**
+     * Snapshots newest first: by as_of_date, then by id for same-day entries.
+     *
+     * Ordered here so every consumer agrees on which snapshot is "latest".
+     * Sorting the loaded collection instead is what previously went wrong:
+     * chained sortByDesc() calls do not compose, the last one simply wins.
+     *
+     * Undated snapshots sort last, since NULL orders below any date in DESC.
+     */
     public function scholarshipSnapshots(): HasMany
     {
-        return $this->hasMany(ScholarshipSummary::class);
+        return $this->hasMany(ScholarshipSummary::class)
+            ->orderByDesc('as_of_date')
+            ->orderByDesc('id');
     }
 
     /**

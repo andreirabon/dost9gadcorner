@@ -28,6 +28,7 @@ use App\Services\Reports\PatchProgramFundingSummaries;
 use App\Services\Reports\PatchReportYearAttributes;
 use App\Services\Reports\PatchRstlMonthlyBreakdowns;
 use App\Services\Reports\SparseRecordPatcher;
+use App\Support\FundingProgramScope;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -149,8 +150,6 @@ class ReportYearManagementController extends Controller
                 'gfpsAssemblies' => $this->editableGfpsAssemblyRows($reportYear),
                 'employeeStatuses' => $this->editableEmployeeStatusRows($reportYear),
                 'scholarshipSnapshots' => $reportYear->scholarshipSnapshots
-                    ->sortByDesc('as_of_date')->sortByDesc('id')
-                    ->values()
                     ->map(fn (ScholarshipSummary $s) => [
                         'id' => $s->id,
                         'schoolYearId' => $s->school_year_id,
@@ -165,6 +164,9 @@ class ReportYearManagementController extends Controller
                     ]),
                 'rstlMonthly' => $this->editableRstlMonthlyRows($reportYear),
                 'programFunding' => $this->editableProgramFundingRows($reportYear),
+                // null means unrestricted. The screen hides rows outside this
+                // list; the server rejects writes to them regardless.
+                'editableFundingSlugs' => FundingProgramScope::allowedSlugsFor($user),
             ],
         ]);
     }
@@ -232,7 +234,15 @@ class ReportYearManagementController extends Controller
     public function storeScholarshipSnapshot(StoreScholarshipSnapshotRequest $request, ReportYear $reportYear): RedirectResponse
     {
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $reportYear->scholarshipSnapshots()->create($request->validated());
+
+        // Stamped from the session, never from the payload: the history column
+        // would otherwise sit blank for created rows and show a name only for
+        // edited ones, which reads as a bug rather than as "never edited".
+        $reportYear->scholarshipSnapshots()->create([
+            ...$request->validated(),
+            'last_edited_by' => $request->user()?->id,
+            'last_edited_at' => now(),
+        ]);
 
         return back();
     }
@@ -244,12 +254,18 @@ class ReportYearManagementController extends Controller
 
         $conflictGuard->assertFresh($scholarship, $this->expectedUpdatedAt($request));
 
-        $patcher->applyToModel($scholarship, $request->validated(), ['school_year_id', 'as_of_date', 'female_count', 'male_count']);
-
-        $scholarship->update([
-            'last_edited_by' => auth()->id(),
-            'last_edited_at' => now(),
-        ]);
+        // Audit stamps ride along in the same save. Writing them separately bumped
+        // updated_at twice, so the timestamp the client just synced against was
+        // already stale by the time the response came back.
+        $patcher->applyToModel(
+            $scholarship,
+            $request->validated(),
+            ['school_year_id', 'as_of_date', 'female_count', 'male_count'],
+            [
+                'last_edited_by' => $request->user()?->id,
+                'last_edited_at' => now(),
+            ],
+        );
 
         return back();
     }
@@ -289,7 +305,7 @@ class ReportYearManagementController extends Controller
     {
         $this->authorize('toggleLock', $reportYear);
 
-        $reportYear->update(['is_locked' => !$reportYear->is_locked]);
+        $reportYear->update(['is_locked' => ! $reportYear->is_locked]);
 
         return back();
     }

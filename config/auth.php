@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+
 return [
 
     /*
@@ -62,7 +64,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => env('AUTH_MODEL', User::class),
         ],
 
         // 'users' => [
@@ -111,5 +113,21 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Seeded Account Passwords
+    |--------------------------------------------------------------------------
+    |
+    | UserSeeder reads the initial admin and staff passwords from here. There is
+    | deliberately no default: seeding aborts when these are unset so a known
+    | password can never be baked into the repository or shipped to a server.
+    |
+    */
+
+    'seed' => [
+        'admin_password' => env('SEED_ADMIN_PASSWORD'),
+        'staff_password' => env('SEED_STAFF_PASSWORD'),
+    ],
 
 ];

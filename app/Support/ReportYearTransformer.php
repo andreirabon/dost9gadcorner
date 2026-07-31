@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\FundingProgram;
 use App\Models\ProgramFundingSummary;
 use App\Models\ReportYear;
+use App\Models\ScholarshipSummary;
 use Illuminate\Support\Collection;
 
 class ReportYearTransformer
@@ -65,6 +66,8 @@ class ReportYearTransformer
             return null;
         }
 
+        $latestScholarship = $reportYear->scholarshipSnapshots->first();
+
         $setupFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'setup');
         $cestFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'cest');
         $setupFundingSummary = $this->sumFundingBreakdown($setupFundingBreakdown);
@@ -77,29 +80,38 @@ class ReportYearTransformer
             ],
             'gfpsAssemblies' => $this->transformGfpsAssemblyAttendances($reportYear),
             'employeeStatuses' => $this->transformEmployeeStatusBreakdowns($reportYear),
-            'scholarship' => [
-                'id' => $reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->id,
-                'schoolYearLabel' => (string) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->schoolYear?->name ?? ''),
-                'asOfDate' => $reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->as_of_date?->toDateString(),
-                'femaleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->female_count ?? 0),
-                'maleCount' => (int) ($reportYear->scholarshipSnapshots->sortByDesc('as_of_date')->first()?->male_count ?? 0),
-            ],
+            // The relation is already ordered newest-first, so the head of the
+            // collection is the latest snapshot. Resolve it once.
+            'scholarship' => $this->transformLatestScholarship($latestScholarship),
             'scholarshipHistory' => $reportYear->scholarshipSnapshots
-                ->sortByDesc('as_of_date')
-                ->values()
-                ->map(fn ($s) => [
+                ->map(fn (ScholarshipSummary $s): array => [
                     'id' => $s->id,
                     'schoolYearLabel' => (string) ($s->schoolYear?->name ?? ''),
                     'asOfDate' => $s->as_of_date?->toDateString(),
                     'femaleCount' => (int) $s->female_count,
                     'maleCount' => (int) $s->male_count,
                 ])
+                ->values()
                 ->all(),
             'rstlMonthly' => $this->transformRstlMonthlyBreakdowns($reportYear),
             'setupFunding' => $setupFundingSummary,
             'cestFunding' => $cestFundingSummary,
             'setupFundingBreakdown' => $setupFundingBreakdown,
             'cestFundingBreakdown' => $cestFundingBreakdown,
+        ];
+    }
+
+    /**
+     * @return array{id: int|null, schoolYearLabel: string, asOfDate: string|null, femaleCount: int, maleCount: int}
+     */
+    private function transformLatestScholarship(?ScholarshipSummary $snapshot): array
+    {
+        return [
+            'id' => $snapshot?->id,
+            'schoolYearLabel' => (string) ($snapshot?->schoolYear?->name ?? ''),
+            'asOfDate' => $snapshot?->as_of_date?->toDateString(),
+            'femaleCount' => (int) ($snapshot?->female_count ?? 0),
+            'maleCount' => (int) ($snapshot?->male_count ?? 0),
         ];
     }
 

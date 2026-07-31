@@ -7,7 +7,9 @@ metadata:
 
 # UI To Vue
 
-Batch-convert UI design screenshots into Vue 3 Composition API component code.
+Batch-convert UI design screenshots into Vue 3 component code.
+
+> **Options API conversion required.** `ui-to-vue-converter` is a third-party CLI that emits `<script setup>` Composition API components, and its output style is not configurable. Treat every generated file as a draft: rewrite each one to `export default defineComponent({ ... })` before committing. See `skills/vue-patterns` for the target shape.
 
 ## When to Use
 
@@ -112,6 +114,7 @@ If a local config file is required, keep it out of version control:
 
 ## Output Review Checklist
 
+- [ ] Every generated component was rewritten from `<script setup>` to `defineComponent` Options API — `rg -l 'script setup'` over the output directory returns nothing.
 - [ ] Page components were generated under `views/` or the chosen output directory.
 - [ ] Repeated UI regions were extracted into `components/` only when reuse is clear.
 - [ ] Router output is compatible with the target project's router style.

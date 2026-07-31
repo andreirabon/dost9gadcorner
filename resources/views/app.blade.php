@@ -23,8 +23,9 @@
 
     <title inertia>{{ config('app.name') }}</title>
 
-    <link rel="icon" href="/gadlogo.png" type="image/png">
-    <link rel="apple-touch-icon" href="/gadlogo.png">
+    {{-- Downscaled from gadlogo.png (546 kB), which was being fetched on every page just to draw a 16px icon. --}}
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="64x64">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     {{-- Removed Google Fonts --}}
 

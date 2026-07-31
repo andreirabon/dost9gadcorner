@@ -51,9 +51,17 @@ class SecurityHeaders
 
         $directives = [
             $directive('default-src', "'self'"),
-            $directive('script-src', "'self' 'nonce-{$nonce}' https://fonts.googleapis.com"),
-            $directive('style-src', "'self' 'nonce-{$nonce}' https://fonts.googleapis.com"),
-            $directive('font-src', "'self' https://fonts.gstatic.com data:"),
+            $directive('script-src', "'self' 'nonce-{$nonce}'"),
+            // Styles cannot use the nonce: a nonce never applies to a `style`
+            // attribute, and its mere presence makes browsers ignore
+            // 'unsafe-inline'. Vue :style bindings and ApexCharts both emit
+            // inline styles, so a nonce here blocks the sidebar and every chart.
+            // style-src-attr would be tighter but Firefox ignores it and falls
+            // back to style-src, which reintroduces the breakage.
+            $directive('style-src', "'self' 'unsafe-inline'"),
+            // Fonts ship in the bundle via @fontsource; Google Fonts was removed
+            // from the layout, so its origins no longer belong in the policy.
+            $directive('font-src', "'self' data:"),
             $directive('img-src', "'self' data: blob:"),
             $directive('connect-src', "'self'"),
             $directive('frame-ancestors', "'none'"),

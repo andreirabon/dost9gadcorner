@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Support\TrustedProxies;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -27,6 +29,15 @@ class AppServiceProvider extends ServiceProvider
                 'Laravel Boost is a dev dependency and must not be installed in production. Run composer install --no-dev before deploying.'
             );
         }
+
+        // Trust reverse proxies so HTTPS/session cookies work behind nginx, Cloudflare,
+        // or a load balancer. Set here rather than in bootstrap/app.php because config
+        // is not bound that early, so a cached config would silently fall back to "*".
+        //
+        // Narrow TRUSTED_PROXIES to the real proxy addresses where you can: a trusted
+        // proxy's X-Forwarded-For becomes $request->ip(), and that IP backs the per-IP
+        // login throttle in LoginRequest.
+        TrustProxies::at(TrustedProxies::parse(config('app.trusted_proxies')));
 
         $rootUrl = config('app.url');
 

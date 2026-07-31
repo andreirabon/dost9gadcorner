@@ -14,7 +14,6 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
-
 test('report year create page sends no-store and ziggy routes', function () {
     $user = User::factory()->create();
 

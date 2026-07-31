@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Database\Seeders\UserSeeder;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 
 class AuthDoctorCommand extends Command
@@ -45,7 +44,7 @@ class AuthDoctorCommand extends Command
         }
 
         $this->newLine();
-        $this->components->info('All checks passed. Seeded logins: ARR + staff accounts (see UserSeeder).');
+        $this->components->info('All checks passed. Account passwords come from SEED_ADMIN_PASSWORD / SEED_STAFF_PASSWORD.');
 
         return self::SUCCESS;
     }
@@ -162,12 +161,11 @@ class AuthDoctorCommand extends Command
         if ($admin === null) {
             $this->components->error('Primary admin "'.UserSeeder::PRIMARY_ADMIN_USERNAME.'" not found. Run: php artisan production:check --fix');
             $failures++;
-        } elseif (Hash::check(UserSeeder::PRIMARY_ADMIN_PASSWORD, $admin->password)) {
-            $this->components->twoColumnDetail('Primary admin password', 'matches seeder');
-        } else {
-            $this->components->error('Primary admin password does NOT match seeder.');
-            $this->line('Run: php artisan production:check --fix');
+        } elseif (! is_string($admin->password) || $admin->password === '') {
+            $this->components->error('Primary admin has no password set. Run: php artisan production:check --fix');
             $failures++;
+        } else {
+            $this->components->twoColumnDetail('Primary admin password', 'set');
         }
 
         if (app()->isProduction() && $users->count() < count(UserSeeder::STAFF_ACCOUNTS) + 1) {

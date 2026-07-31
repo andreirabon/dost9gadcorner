@@ -12,14 +12,12 @@ export default defineConfig(({ isSsrBuild }) => ({
             onwarn(warning, defaultHandler) {
                 // Ignore noisy warnings from dependencies
                 if (warning.code === 'INVALID_ANNOTATION') return;
-                if (warning.code === 'EMPTY_BUNDLE') return;
                 defaultHandler(warning);
             },
             output: isSsrBuild
                 ? undefined
                 : {
                       manualChunks: {
-                          'vendor-gsap': ['gsap', 'gsap/ScrollTrigger'],
                           'vendor-d3': ['d3-org-chart', 'd3-selection'],
                       },
                   },

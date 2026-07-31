@@ -30,14 +30,14 @@ return new class extends Migration
         Schema::table('rstl_monthly_breakdowns', function (Blueprint $table) {
             $table->dropColumn([
                 'non_binary_count', 'non_binary_led_count',
-                'genderqueer_count', 'genderqueer_led_count'
+                'genderqueer_count', 'genderqueer_led_count',
             ]);
         });
 
         Schema::table('program_funding_summaries', function (Blueprint $table) {
             $table->dropColumn([
                 'non_binary_projects', 'non_binary_amount',
-                'genderqueer_projects', 'genderqueer_amount'
+                'genderqueer_projects', 'genderqueer_amount',
             ]);
         });
     }

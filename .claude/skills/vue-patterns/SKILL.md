@@ -1,18 +1,20 @@
 ---
 name: vue-patterns
-description: Vue.js 3 Composition API patterns, component architecture, reactivity best practices, Pinia state management, Vue Router navigation, and Nuxt SSR patterns. Activates for Vue, Nuxt, Vite, or Pinia projects.
+description: Vue.js 3 Options API patterns, component architecture, reactivity best practices, Pinia state management, Vue Router navigation, and SSR patterns. Activates for Vue, Nuxt, Vite, or Pinia projects.
 origin: ECC
 ---
 
 # Vue.js Patterns and Best Practices
 
-Comprehensive guide for Vue.js 3 development using Composition API (`<script setup>`), covering component design, reactivity, state management, routing, testing, and SSR patterns. Nuxt-specific guidance is included where it differs from vanilla Vue.
+Comprehensive guide for Vue.js 3 development using the **Options API** (`export default defineComponent({ ... })`), covering component design, reactivity, state management, routing, testing, and SSR patterns.
+
+> **House rule: Options API only.** New components use `<script>` with `defineComponent`. Do not use `<script setup>`, the `setup()` option, `ref`/`reactive`/`computed()` as standalone functions, or the `defineProps`/`defineEmits`/`defineModel` macros. The one sanctioned exception is a third-party library that ships composables with no imperative equivalent — see §10.
 
 ## When to Activate
 
 Activate this skill when:
 - The project uses Vue.js (any version), Nuxt, Vite + Vue, or Pinia.
-- The user asks about Vue component architecture, composables, reactivity, or state management.
+- The user asks about Vue component architecture, shared logic, reactivity, or state management.
 - Reviewing Vue Single-File Components (`.vue` files).
 - Setting up Vue Router, Pinia stores, or Vite/Vitest configuration.
 - Discussing Vue-specific performance, security, or SSR patterns.
@@ -30,13 +32,13 @@ src/
 ├── components/       # Shared/reusable components
 │   ├── base/         # Base UI primitives (Button, Input, Modal)
 │   └── features/     # Feature-specific shared components
-├── composables/      # Reusable Composition API logic
+├── mixins/           # Shared Options API mixins
 ├── layouts/          # Page layouts (optional)
 ├── pages/            # Route-level page components
 ├── router/           # Vue Router configuration
 ├── stores/           # Pinia stores
 ├── types/            # TypeScript type definitions
-├── utils/            # Pure utility functions
+├── utils/            # Pure utility functions (preferred over mixins)
 └── App.vue           # Root component
 ```
 
@@ -45,7 +47,7 @@ src/
 | Convention | When to Use |
 |-----------|-------------|
 | `PascalCase.vue` | All components (enforced by `vue/multi-word-component-names`) |
-| `useCamelCase.ts` | Composables |
+| `camelCaseMixin.ts` | Mixins |
 | `camelCase.ts` | Utilities, API clients, types |
 | `kebab-case` directories | Route segments, feature folders |
 
@@ -56,15 +58,25 @@ src/
 ### Single-File Component Order
 
 ```vue
-<script setup lang="ts">
+<script lang="ts">
+import { defineComponent } from 'vue'
 // 1. Imports (vue → ecosystem → absolute → relative)
-// 2. Props & Emits & Slots
-// 3. Composables
-// 4. Local state (ref/reactive)
-// 5. Computed properties
-// 6. Methods
-// 7. Watchers
-// 8. Lifecycle hooks
+
+export default defineComponent({
+  name: 'MyComponent',   // 2. name
+  components: {},        // 3. components
+  mixins: [],            // 4. mixins
+  inheritAttrs: true,    // 5. inheritAttrs
+  props: {},             // 6. props
+  emits: {},             // 7. emits
+  data() { return {} },  // 8. data
+  computed: {},          // 9. computed
+  watch: {},             // 10. watch
+  created() {},          // 11. lifecycle, in call order
+  mounted() {},
+  beforeUnmount() {},
+  methods: {},           // 12. methods
+})
 </script>
 
 <template>
@@ -76,6 +88,8 @@ src/
 </style>
 ```
 
+`eslint-plugin-vue`'s `vue/order-in-components` enforces this order.
+
 ### Presentational vs Container
 
 - **Container components**: Own data fetching, state, and side effects. Render presentational components.
@@ -84,76 +98,174 @@ src/
 ### Props Best Practices
 
 ```ts
-// Type-based props with defaults
-interface Props {
-  label: string;
-  variant?: "primary" | "secondary";
-  disabled?: boolean;
-  items: Item[];
-}
+import { defineComponent, type PropType } from 'vue'
 
-const props = withDefaults(defineProps<Props>(), {
-  variant: "primary",
-  disabled: false,
-});
+export default defineComponent({
+  name: 'ItemList',
+
+  props: {
+    label: { type: String, required: true },
+    variant: {
+      type: String as PropType<'primary' | 'secondary'>,
+      default: 'primary',
+      validator: (v: string) => ['primary', 'secondary'].includes(v),
+    },
+    disabled: { type: Boolean, default: false },
+    items: { type: Array as PropType<Item[]>, default: () => [] },
+  },
+})
 ```
 
-- Always provide `type`, and `required`/`default` where appropriate.
-- Boolean props: `isXxx`, `hasXxx`, `canXxx`.
+- Always provide `type`, plus `required`/`default` where appropriate.
+- **Object and Array defaults must be factory functions** (`default: () => []`). A shared literal leaks mutations across every instance.
+- Boolean props: `isXxx`, `hasXxx`, `canXxx`. A `Boolean` prop defaults to `false` — do not give it `default: true` without a good reason, it makes the shorthand `<Comp />` misleading.
 - Never mutate props — emit events instead.
-- For v-model binding, use `defineModel()` (Vue 3.4+) or `modelValue` + `update:modelValue`.
+- For `v-model` binding, use the `modelValue` prop + `update:modelValue` emit.
 
 ### Events
 
 ```ts
-const emit = defineEmits<{
-  submit: [];
-  "update:modelValue": [value: string];
-  select: [id: string, index: number];
-}>();
+emits: {
+  submit: null,                                            // no validation
+  'update:modelValue': (value: string) => typeof value === 'string',
+  select: (id: string, index: number) => Boolean(id) && index >= 0,
+},
+
+methods: {
+  onPick(id: string, index: number): void {
+    this.$emit('select', id, index)
+  },
+},
 ```
 
-- Use kebab-case in templates (`@update:model-value`).
-- Use camelCase in script (`emit("update:modelValue", val)`).
+- Declare every event in `emits`. Undeclared events fall through to the root element as native listeners.
+- Use kebab-case in templates (`@update:model-value`), camelCase in script (`this.$emit('update:modelValue', val)`).
+
+### v-model on a Custom Component
+
+```ts
+export default defineComponent({
+  name: 'BaseInput',
+  props: { modelValue: { type: String, default: '' } },
+  emits: { 'update:modelValue': (v: string) => typeof v === 'string' },
+  computed: {
+    localValue: {
+      get(): string {
+        return this.modelValue
+      },
+      set(value: string) {
+        this.$emit('update:modelValue', value)
+      },
+    },
+  },
+})
+```
+
+```vue
+<template>
+  <input v-model="localValue" />
+</template>
+```
+
+A `computed` bound to `v-model` **must** have both `get` and `set`, or writes vanish silently.
 
 ---
 
-## 3. Composables (Reusable Logic)
+## 3. Reusable Logic
 
-### Structure
+Pick the lowest option that works.
+
+### 3a. Plain Module (preferred)
+
+Pure functions with no component state. Zero merge risk, trivially testable, tree-shakable.
 
 ```ts
-// composables/useDebounce.ts
-export function useDebounce<T>(value: MaybeRef<T>, delay: number): Ref<T> {
-  const debounced = ref(toValue(value)) as Ref<T>;
-
-  let timer: ReturnType<typeof setTimeout>;
-  watch(
-    () => toValue(value),
-    (newVal) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => { debounced.value = newVal; }, delay);
-    }
-  );
-
-  onUnmounted(() => clearTimeout(timer));
-  return readonly(debounced);
+// utils/debounce.ts
+export function debounce<T extends (...args: never[]) => void>(fn: T, delay: number) {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  const wrapped = (...args: Parameters<T>) => {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), delay)
+  }
+  wrapped.cancel = () => { if (timer) clearTimeout(timer) }
+  return wrapped
 }
 ```
 
-### Rules
+```ts
+// component
+import { debounce } from '@/utils/debounce'
 
-- Must start with `use` prefix.
-- Return reactive values (`ref`, `computed`, `reactive`), never plain primitives.
-- Accept reactive inputs via `MaybeRef` / `toRef()` / `toValue()`.
-- Clean up side effects in `onUnmounted` or watcher `onCleanup`.
-- No module-scope side effects.
+export default defineComponent({
+  created() {
+    this.search = debounce(this.runSearch, 300)
+  },
+  beforeUnmount() {
+    this.search.cancel()
+  },
+  methods: {
+    runSearch(): void { /* ... */ },
+  },
+})
+```
 
-### vs Mixins
+### 3b. Mixin
 
-Composables replace Vue 2 mixins entirely:
-- **Mixins**: Opaque data flow, source-of-truth collisions, name conflicts.
-- **Composables**: Explicit imports, clear return values, composable and tree-shakable.
+Only when the logic needs `data`, `computed`, `watch`, or lifecycle hooks.
+
+```ts
+// mixins/windowSizeMixin.ts
+import { defineComponent } from 'vue'
+
+export const windowSizeMixin = defineComponent({
+  data() {
+    return {
+      windowSize_width: window.innerWidth,
+      windowSize_height: window.innerHeight,
+    }
+  },
+  computed: {
+    windowSize_isMobile(): boolean {
+      return this.windowSize_width < 768
+    },
+  },
+  mounted() {
+    window.addEventListener('resize', this.windowSize_onResize)
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.windowSize_onResize)
+  },
+  methods: {
+    windowSize_onResize(): void {
+      this.windowSize_width = window.innerWidth
+      this.windowSize_height = window.innerHeight
+    },
+  },
+})
+```
+
+**Merge rules — know these before writing a mixin:**
+
+| Option | Merge behaviour on collision |
+|--------|------------------------------|
+| `data` | Shallow-merged; **component wins**, silently |
+| `methods`, `computed`, `components`, `directives` | **Component wins**, silently |
+| Lifecycle hooks | **Both run** — mixin first, then component |
+| `watch` on the same key | **Both run** |
+| `props`, `emits` | Merged; component wins on the same key |
+
+**Mixin rules:**
+
+- Namespace every key the mixin contributes (`windowSize_width`, not `width`), so a clash is a visible naming decision rather than a silent override.
+- One mixin, one concern. Never a `commonMixin`.
+- The mixin cleans up whatever it starts, in its own `beforeUnmount`.
+- Document any property the mixin expects the host component to define.
+- Keep the chain flat — mixins should not include mixins.
+- Wrap in `defineComponent()` so TypeScript merges the `this` type into consuming components.
+
+### 3c. `extends`
+
+A single base component, same merge rules as a mixin. Use for "this component is a specialization of that one". One parent only.
 
 ---
 
@@ -163,46 +275,76 @@ Composables replace Vue 2 mixins entirely:
 
 | Pattern | Use Case |
 |---------|----------|
-| `ref()` / `reactive()` | Local component state |
+| `data()` | Local component state |
+| `computed` | Anything derived from state or props |
 | Props + Emits | Parent-child communication |
 | Provide / Inject | Theme, config, plugin API |
 | Pinia store | Global, shared, complex state |
-| Server state composable | API data with caching (wrap `fetch`/TanStack Query) |
+| Plain API module + `data()` | Server data fetched in `created`/`mounted` |
 
-### Pinia Setup Store (Preferred)
+### Pinia Option Store (Preferred)
 
 ```ts
 // stores/useCartStore.ts
-export const useCartStore = defineStore("cart", () => {
-  const items = ref<CartItem[]>([]);
-  const isLoading = ref(false);
+import { defineStore } from 'pinia'
 
-  const totalPrice = computed(() =>
-    items.value.reduce((sum, i) => sum + i.price * i.quantity, 0)
-  );
-  const itemCount = computed(() =>
-    items.value.reduce((sum, i) => sum + i.quantity, 0)
-  );
+export const useCartStore = defineStore('cart', {
+  state: () => ({
+    items: [] as CartItem[],
+    isLoading: false,
+  }),
 
-  async function addItem(productId: string) {
-    isLoading.value = true;
-    try {
-      const item = await fetchProduct(productId);
-      const existing = items.value.find(i => i.id === item.id);
-      if (existing) existing.quantity++;
-      else items.value.push({ ...item, quantity: 1 });
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  getters: {
+    totalPrice: (state) => state.items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+    itemCount: (state) => state.items.reduce((sum, i) => sum + i.quantity, 0),
+  },
 
-  return { items, isLoading, totalPrice, itemCount, addItem };
-});
+  actions: {
+    async addItem(productId: string) {
+      this.isLoading = true
+      try {
+        const item = await fetchProduct(productId)
+        const existing = this.items.find(i => i.id === item.id)
+        if (existing) {
+          existing.quantity++
+        } else {
+          this.items.push({ ...item, quantity: 1 })
+        }
+      } finally {
+        this.isLoading = false
+      }
+    },
+  },
+})
 ```
 
-- Use Setup Store syntax (not Options Store).
+- Use **Option Store** syntax (not Setup Store). It mirrors Options API components and gets `$reset()` for free.
+- A getter needing `this` must be a regular function with an explicit return type: `total(): number { return this.items.length }`. Arrow getters only get `state`.
 - Prefer actions for business-level mutations and `$patch()` for grouped updates.
 - Every async action: handle loading + success + error.
+
+### Consuming a Store in a Component
+
+```ts
+import { mapState, mapWritableState, mapActions } from 'pinia'
+import { useCartStore } from '@/stores/useCartStore'
+
+export default defineComponent({
+  name: 'CartSummary',
+
+  computed: {
+    ...mapState(useCartStore, ['items', 'totalPrice', 'itemCount']),  // read-only
+    ...mapWritableState(useCartStore, ['isLoading']),                 // assignable
+  },
+
+  methods: {
+    ...mapActions(useCartStore, ['addItem']),
+  },
+})
+```
+
+- `mapState` covers state **and** getters, read-only. Assigning to a `mapState` key fails silently — use `mapWritableState`.
+- Rename on collision: `...mapState(useCartStore, { cartItems: 'items' })`.
 
 ---
 
@@ -213,24 +355,49 @@ export const useCartStore = defineStore("cart", () => {
 ```ts
 const routes = [
   {
-    path: "/users/:id",
-    name: "user-detail",
-    component: () => import("@/pages/UserDetail.vue"), // lazy
-    props: true, // pass params as props
+    path: '/users/:id',
+    name: 'user-detail',
+    component: () => import('@/pages/UserDetail.vue'), // lazy
+    props: true, // pass params as props — keeps the component decoupled from the router
     meta: { requiresAuth: true },
   },
-];
+]
 ```
+
+`props: true` is the cleanest Options API pattern: the param arrives as a normal prop, so a `watch` on it works with no `$route` coupling.
 
 ### Navigation Guards
 
 ```ts
-router.beforeEach((to, from) => {
-  const { isLoggedIn } = useAuthStore();
+// global
+router.beforeEach((to) => {
+  const { isLoggedIn } = useAuthStore()
   if (to.meta.requiresAuth && !isLoggedIn) {
-    return { name: "login", query: { redirect: to.fullPath } };
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
-});
+})
+```
+
+```ts
+// in-component
+export default defineComponent({
+  beforeRouteEnter(to, from, next) {
+    // `this` does NOT exist yet — the component is not created
+    next((vm) => {
+      // `vm` is loosely typed here; cast to your component type if you need strictness
+      (vm as unknown as { fetchItem(id: string): void }).fetchItem(to.params.id as string)
+    })
+  },
+
+  beforeRouteUpdate(to) {
+    // same component reused with new params — `this` IS available
+    this.fetchItem(to.params.id as string)
+  },
+
+  beforeRouteLeave() {
+    if (this.isDirty) return window.confirm('Discard unsaved changes?')
+  },
+})
 ```
 
 ### Reactive Route Params
@@ -238,16 +405,26 @@ router.beforeEach((to, from) => {
 When a component stays mounted but route params change:
 
 ```ts
-const route = useRoute();
-const id = computed(() => route.params.id as string);
-watch(id, (newId) => fetchItem(newId));
+export default defineComponent({
+  computed: {
+    id(): string {
+      return this.$route.params.id as string
+    },
+  },
+  watch: {
+    id: { handler: 'fetchItem', immediate: true },
+  },
+  methods: {
+    async fetchItem(id: string) { /* ... */ },
+  },
+})
 ```
+
+Watch the specific path, never the whole `$route` object.
 
 ---
 
 ## 6. Template Patterns
-
-### Template Syntax
 
 ```vue
 <!-- v-if/v-else-if/v-else -->
@@ -272,7 +449,18 @@ watch(id, (newId) => fetchItem(newId));
 <!-- v-model -->
 <input v-model="name" />
 <CustomInput v-model="value" v-model:title="title" />
+
+<!-- Template ref -->
+<input ref="emailInput" />
 ```
+
+```ts
+mounted() {
+  (this.$refs.emailInput as HTMLInputElement).focus()
+}
+```
+
+`this.$refs` is empty until `mounted`, and stale after the element is `v-if`-ed away.
 
 ---
 
@@ -280,14 +468,17 @@ watch(id, (newId) => fetchItem(newId));
 
 | Technique | When to Use |
 |-----------|-------------|
+| `computed` over a template-called method | Anything derived from state — methods have no cache |
 | `v-memo` | List items that rarely change |
 | `v-once` | Content rendered once and static forever |
-| `shallowRef()` | Large data structures replaced wholesale |
-| `shallowReactive()` | Only top-level properties are reactive |
+| `markRaw()` in `data()` | Large read-only datasets, chart/map/client instances |
 | `v-show` over `v-if` | Frequent visibility toggles |
 | `<KeepAlive :max="10">` | Cache toggled views |
 | Lazy routes | `() => import(...)` for non-critical routes |
 | `Suspense` | Async component loading with fallback |
+| `defineAsyncComponent` | Heavy components below the fold |
+
+`data()` deep-proxies everything it returns. Non-reactive instances (Chart.js, Leaflet map, WebSocket client) belong on `this` assigned in `mounted`, or wrapped in `markRaw()`.
 
 ---
 
@@ -303,146 +494,82 @@ watch(id, (newId) => fetchItem(newId));
 ### Component Test Pattern
 
 ```ts
-import { mount } from "@vue/test-utils";
-import { createPinia, setActivePinia } from "pinia";
-import UserCard from "./UserCard.vue";
+import { mount } from '@vue/test-utils'
+import { createTestingPinia } from '@pinia/testing'
+import { vi } from 'vitest'
+import UserCard from './UserCard.vue'
 
-beforeEach(() => { setActivePinia(createPinia()); });
-
-it("renders and emits", async () => {
+it('renders and emits', async () => {
   const wrapper = mount(UserCard, {
-    props: { user: { id: "1", name: "Alice" } },
-  });
-  expect(wrapper.text()).toContain("Alice");
-  await wrapper.find("button").trigger("click");
-  expect(wrapper.emitted("select")![0]).toEqual(["1"]);
-});
+    props: { user: { id: '1', name: 'Alice' } },
+    global: { plugins: [createTestingPinia({ createSpy: vi.fn })] },
+  })
+
+  expect(wrapper.text()).toContain('Alice')
+  await wrapper.find('button').trigger('click')
+  expect(wrapper.emitted('select')![0]).toEqual(['1'])
+})
 ```
+
+### Testing a Mixin
+
+Mixins only exist merged. Mount a throwaway host:
+
+```ts
+import { defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
+import { windowSizeMixin } from '@/mixins/windowSizeMixin'
+
+const Host = defineComponent({ mixins: [windowSizeMixin], template: '<div />' })
+
+it('cleans up its resize listener on unmount', () => {
+  const remove = vi.spyOn(window, 'removeEventListener')
+  mount(Host).unmount()
+  expect(remove).toHaveBeenCalledWith('resize', expect.any(Function))
+})
+```
+
+Test the public interface — props, emitted events, slots, rendered output. Do not assert on private `data` fields, and do not rely solely on snapshots.
 
 ---
 
-## 9. Nuxt-Specific Patterns
+## 9. SSR Notes
 
-### Auto-Imports
+- `mounted` never runs on the server. It is the natural guard for `window`, `document`, and `localStorage`.
+- `created` **does** run on the server — no browser APIs there.
+- Do not start timers or subscriptions in `created`; the server never calls `beforeUnmount`, so they leak.
+- Keep secrets out of anything serialized into the client payload.
 
-Nuxt auto-imports `ref`, `computed`, `watch`, `useFetch`, `useAsyncData`, etc. Use them directly without importing. For non-Nuxt projects, always import explicitly.
+---
 
-### useAsyncData / useFetch
+## 10. The `setup()` Escape Hatch
 
-```ts
-const { data: user, pending, error, refresh } = await useAsyncData(
-  "user", // unique key for caching
-  () => $fetch(`/api/users/${id}`),
-);
-
-const { data: posts } = await useFetch("/api/posts", {
-  query: { page: 1 },
-  key: "posts-page-1", // dedupes requests
-});
-```
-
-### Server Routes
+Some libraries ship composables with no imperative equivalent (`@tanstack/vue-query`, Nuxt's `useAsyncData`/`useFetch`, `@laravel/echo-vue`). An Options API component may declare a `setup()` option alongside its other options; whatever it returns is merged and reachable as `this.x`.
 
 ```ts
-// server/api/users/[id].ts
-export default defineEventHandler(async (event) => {
-  const { id } = await getValidatedRouterParams(event, z.object({
-    id: z.string().uuid(),
-  }).parse);
-  // ... fetch and return
-});
-```
+export default defineComponent({
+  name: 'OrderFeed',
 
-### Runtime Config
+  props: { orderId: { type: Number, required: true } },
 
-```ts
-// nuxt.config.ts
-export default defineNuxtConfig({
-  runtimeConfig: {
-    // server-only
-    apiSecret: "",
-    // public (exposed to client)
-    public: {
-      apiBase: "https://api.example.com",
-    },
+  // bridge only — everything else stays Options API
+  setup(props) {
+    useEcho(`orders.${props.orderId}`, 'OrderShipped', (e) => { /* ... */ })
+    return {}
   },
-});
+
+  data() {
+    return { events: [] as OrderEvent[] }
+  },
+})
 ```
 
----
+Rules for using it:
 
-## 10. Vue 3.5+ New APIs
-
-### Reactive Props Destructure
-
-Vue 3.5 stabilized reactive props destructure — destructured variables from `defineProps()` are automatically reactive:
-
-```ts
-// Vue 3.5+: destructured props are reactive (no need for toRefs)
-const { count = 0, msg = "hello" } = defineProps<{
-  count?: number;
-  msg?: string;
-}>();
-
-// Limitation: cannot watch destructured prop directly
-watch(() => count, (newVal) => { ... }); // PASS getter required
-```
-
-### `useTemplateRef()`
-
-Replace name-matched plain refs with `useTemplateRef()` for template references:
-
-```ts
-import { useTemplateRef } from "vue";
-const inputEl = useTemplateRef<HTMLInputElement>("input");
-// "input" matches the ref="input" attribute in template, not the variable name
-```
-
-Supports dynamic ref IDs: `useTemplateRef(dynamicRefId)`.
-
-### `onWatcherCleanup()`
-
-Globally importable watcher cleanup API (Vue 3.5+). It must be called synchronously inside the watcher callback:
-
-```ts
-import { watch, onWatcherCleanup } from "vue";
-
-watch(userId, async (newId) => {
-  const controller = new AbortController();
-  onWatcherCleanup(() => controller.abort());
-  // ... fetch with signal
-});
-```
-
-### `useId()`
-
-SSR-stable unique ID generation for form elements and accessibility:
-
-```ts
-import { useId } from "vue";
-const id = useId();
-```
-
-### `defer` Teleport
-
-`<Teleport defer>` allows teleporting to targets rendered in the same cycle:
-
-```vue
-<Teleport defer to="#container">Content</Teleport>
-<div id="container"></div>
-```
-
-### Lazy Hydration (SSR)
-
-`defineAsyncComponent()` now supports `hydrate` strategy:
-
-```ts
-import { defineAsyncComponent, hydrateOnVisible } from "vue";
-const AsyncComp = defineAsyncComponent({
-  loader: () => import("./Comp.vue"),
-  hydrate: hydrateOnVisible(),
-});
-```
+- Only when the library has no imperative API. Check first — most do (Inertia has `router.poll()`, Echo has the `echo()` singleton).
+- Keep it to one thin component and comment why it exists.
+- `setup()` cannot access `this`. Props arrive as its first argument.
+- Never use it as a backdoor to write Composition API components.
 
 ---
 
@@ -450,18 +577,29 @@ const AsyncComp = defineAsyncComponent({
 
 | Anti-Pattern | Why It's Wrong | The Fix |
 |-------------|---------------|---------|
-| Destructuring `defineProps()` (Vue < 3.5) | Captures snapshot, loses reactivity | Access via `props.xxx` or use `toRefs()` |
-| `watch()` on destructured prop (Vue 3.5+) | Compile-time error — destructured props can't be watched directly | Use getter wrapper: `watch(() => count, ...)` |
-| `v-if` + `v-for` on same element | Ambiguous execution order | Use computed filtered array |
-| `v-for` key = index | Broken state on reorder | Use stable database IDs |
+| `<script setup>` / `setup()` in new code | Project standardizes on Options API | `export default defineComponent({ ... })` |
+| `data: { count: 0 }` (object, not function) | State shared across all instances | `data() { return { count: 0 } }` |
+| `this.x = []` for state never declared in `data()` | Not reactive, never re-renders | Declare it in `data()`, `null` if needed |
+| Arrow function for `data`/`computed`/`methods`/hooks | `this` is not the component | Use regular function syntax |
+| `default: []` / `default: {}` on a prop | One literal shared by every instance | Factory: `default: () => []` |
+| `v-model` on a getter-only `computed` | Writes silently discarded | `{ get, set }` object form |
+| `this.$emit` without an `emits` entry | Falls through as a native listener, skips validation | Declare in `emits` |
+| Expensive derivation in a template-called method | No caching, runs every render | Move to `computed` |
+| Chart/map/socket instance in `data()` | Deep-proxied; slow, often breaks the library | Assign in `mounted` or wrap in `markRaw()` |
+| `this` inside `beforeRouteEnter` | Instance not created yet | `next(vm => ...)` |
+| Grab-bag `commonMixin` | Unknowable merge order and ownership | One mixin per concern, namespaced keys |
+| Un-namespaced mixin keys | Silent override on collision, no warning | Prefix with the mixin name |
+| Mixin without `beforeUnmount` cleanup | Memory leak per host component | Tear down in the mixin itself |
+| Stateless logic as a mixin | Merge risk for no benefit | Plain module imported into `methods` |
+| `mapState` for a value the component writes | Assignment fails silently | `mapWritableState` or an action |
+| Pinia setup store | Mismatch with Options API, loses `$reset` | Option store (`state`/`getters`/`actions`) |
+| `v-if` + `v-for` on same element | Ambiguous execution order | Computed filtered array |
+| `v-for` key = index | Broken state on reorder | Stable database IDs |
 | Mutating props | Violates one-way data flow | Emit events or use `v-model` |
-| `v-html` with user content | XSS vulnerability | Sanitize with DOMPurify |
-| Mixins in Vue 3 | Opaque, collision-prone | Replace with composables |
-| Module-scope side effects in composable | Shared across instances | Scope in `onMounted` + `onUnmounted` |
-| `reactive()` for replaceable state | Replacement breaks reactivity | Use `ref()` instead |
-| Watcher without cleanup | Memory leaks, race conditions | Use `onCleanup` or `onWatcherCleanup()` (Vue 3.5+) |
-| Options API in new Vue 3 code | Ecosystem move to Composition API | Use `<script setup>` |
-| Plain ref for template references | No dynamic ref support, name-matching fragile | Use `useTemplateRef()` (Vue 3.5+) |
+| `v-html` with user content | XSS vulnerability | Sanitize with DOMPurify in a `computed` |
+| `this.$set` / `Vue.set` | Removed in Vue 3 | Direct assignment — Proxies handle it |
+| `beforeDestroy` / `destroyed` | Vue 2 names, never fire in Vue 3 | `beforeUnmount` / `unmounted` |
+| `$refs` read in `created` | Not populated until `mounted` | Read in `mounted` or after `$nextTick()` |
 
 ## Related Skills
 
