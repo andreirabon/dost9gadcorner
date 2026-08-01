@@ -16,7 +16,12 @@ Route::get('/', [HomeController::class, 'index'])
 
 Route::middleware([NoCacheHeaders::class, 'guest'])->group(function (): void {
     Route::get('open', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('open', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+
+    // The credential throttle in LoginRequest only runs once validation passes,
+    // so a malformed username would otherwise be an unlimited free POST.
+    Route::post('open', [AuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('login.store');
 });
 
 Route::get('close', fn () => redirect('/'))->name('logout.fallback');
@@ -50,7 +55,10 @@ Route::middleware(['auth', NoCacheHeaders::class])
 
 Route::middleware(['auth', NoCacheHeaders::class])->group(function (): void {
     Route::get('/print-report', [ReportPrintController::class, 'index'])->name('print-report');
-    Route::get('/print-report/generate', [ReportPrintController::class, 'generate'])->name('print-report.generate');
+    // Eager-loads six relations per call; cap it so one session cannot spin the DB.
+    Route::get('/print-report/generate', [ReportPrintController::class, 'generate'])
+        ->middleware('throttle:30,1')
+        ->name('print-report.generate');
 });
 
 Route::middleware('auth')
@@ -60,8 +68,15 @@ Route::middleware('auth')
         Route::redirect('/', '/settings/profile');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+        // Both endpoints verify `current_password`, which makes them password
+        // oracles for anyone who has hijacked a session. Throttle the guessing.
+        Route::delete('/profile', [ProfileController::class, 'destroy'])
+            ->middleware('throttle:6,1')
+            ->name('profile.destroy');
 
         Route::get('/password', [PasswordController::class, 'edit'])->name('password.edit');
-        Route::put('/password', [PasswordController::class, 'update'])->name('password.update');
+        Route::put('/password', [PasswordController::class, 'update'])
+            ->middleware('throttle:6,1')
+            ->name('password.update');
     });

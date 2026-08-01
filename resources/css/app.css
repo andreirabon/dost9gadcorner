@@ -1,5 +1,15 @@
-@import 'tailwindcss';
+/*
+    `source(none)` disables Tailwind's automatic project-root scan and makes the
+    @source list below the only input. Auto-detection walked into `.claude/` and
+    read prose like `[file:line]` in skill markdown as an arbitrary-property
+    utility, emitting invalid CSS (`.\[file\:line\]{file:line}`) that esbuild
+    then warned about. Declaring the real source dirs also keeps future stray
+    matches out for free.
+*/
+@import 'tailwindcss' source(none);
 
+@source '../js/**/*.{vue,ts,js}';
+@source '../views/**/*.blade.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -1690,35 +1700,75 @@
      * is left to enter without opening all seven tabs. State is also carried by
      * the sr-only text on each tab, so this is not colour-only.
      */
+    /*
+     * Three states, carried on two channels so colour is never the only signal:
+     * shape (hollow vs filled) separates empty from started, hue separates
+     * partial from complete, and each tab's sr-only text states the whole thing
+     * outright. Hues reuse the index status dots — amber-500 pending,
+     * emerald-500 published — so the two pages agree.
+     */
     .report-years-tab-mark {
         @apply size-2 shrink-0 rounded-full border;
-        border-color: var(--color-slate-500);
         background-color: transparent;
     }
 
-    .report-years-tab.has-data .report-years-tab-mark {
-        border-color: var(--color-blue-700);
-        background-color: var(--color-blue-700);
+    .report-years-tab.is-empty .report-years-tab-mark {
+        border-color: var(--color-slate-500);
     }
 
+    .report-years-tab.is-partial .report-years-tab-mark {
+        border-color: var(--color-amber-600);
+        background-color: var(--color-amber-500);
+    }
+
+    .report-years-tab.is-complete .report-years-tab-mark {
+        border-color: var(--color-emerald-600);
+        background-color: var(--color-emerald-500);
+    }
+
+    /* On the filled blue tab, hue would be unreadable — fall back to shape. */
     .report-years-tab.is-active .report-years-tab-mark {
-        @apply border-white/70;
+        @apply border-white/70 bg-transparent;
     }
 
-    .report-years-tab.is-active.has-data .report-years-tab-mark {
+    .report-years-tab.is-active:is(.is-partial, .is-complete) .report-years-tab-mark {
         @apply border-white bg-white;
     }
 
     /* Sits inside the white hero card, so it needs a tinted fill of its own to
-       read as a chip rather than as another line of body text. */
+       read as a chip rather than as another line of body text. Colour tracks
+       the tab marks; the number in the label is the non-colour channel. */
     .report-years-tab-progress {
-        @apply mt-3 inline-flex w-fit items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 tabular-nums;
+        @apply mt-3 inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-sm font-semibold tabular-nums;
     }
 
     .report-years-tab-progress::before {
-        @apply size-2 shrink-0 rounded-full;
+        @apply size-2 shrink-0 rounded-full border;
         content: '';
-        background-color: var(--color-blue-700);
+    }
+
+    .report-years-tab-progress.is-empty {
+        @apply border-slate-300 bg-slate-100 text-slate-700;
+    }
+
+    .report-years-tab-progress.is-empty::before {
+        @apply border-slate-500 bg-transparent;
+    }
+
+    .report-years-tab-progress.is-partial {
+        @apply border-amber-300 bg-amber-50 text-amber-900;
+    }
+
+    .report-years-tab-progress.is-partial::before {
+        @apply border-amber-600 bg-amber-500;
+    }
+
+    .report-years-tab-progress.is-complete {
+        @apply border-emerald-300 bg-emerald-50 text-emerald-900;
+    }
+
+    .report-years-tab-progress.is-complete::before {
+        @apply border-emerald-600 bg-emerald-500;
     }
 
     @media (hover: hover) and (pointer: fine) {

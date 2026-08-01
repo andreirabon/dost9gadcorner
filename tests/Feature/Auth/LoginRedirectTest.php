@@ -77,6 +77,51 @@ test('login silently redirects when rate limited with no error revealed', functi
         ->assertSessionHasNoErrors();
 });
 
+test('unknown username costs a password verification so timing does not leak account existence', function () {
+    $existing = User::factory()->create(['password' => 'password']);
+
+    $measure = function (string $username): float {
+        $start = microtime(true);
+        $this->post(route('login.store'), [
+            'username' => $username,
+            'password' => 'wrong-password',
+        ]);
+
+        return microtime(true) - $start;
+    };
+
+    $knownUserTime = $measure($existing->username);
+    $unknownUserTime = $measure('nonexistent_user_xyz');
+
+    // Unknown username must not resolve dramatically faster than a real one.
+    expect($unknownUserTime)->toBeGreaterThan($knownUserTime * 0.4);
+});
+
+test('session cookie is marked secure when the app env is production', function () {
+    $originalEnv = $_ENV['APP_ENV'] ?? null;
+    $originalSecure = $_ENV['SESSION_SECURE_COOKIE'] ?? null;
+
+    $_ENV['APP_ENV'] = 'production';
+    unset($_ENV['SESSION_SECURE_COOKIE']);
+
+    try {
+        $sessionConfig = require config_path('session.php');
+    } finally {
+        $originalEnv === null ? $_ENV['APP_ENV'] = 'testing' : $_ENV['APP_ENV'] = $originalEnv;
+
+        if ($originalSecure !== null) {
+            $_ENV['SESSION_SECURE_COOKIE'] = $originalSecure;
+        }
+    }
+
+    expect($sessionConfig['secure'])->toBeTrue();
+});
+
+test('session cookie is http only and same-site restricted', function () {
+    expect(config('session.http_only'))->toBeTrue();
+    expect(config('session.same_site'))->toBe('lax');
+});
+
 test('guest login page exposes only public ziggy routes', function () {
     $this->get(route('login'))
         ->assertOk()

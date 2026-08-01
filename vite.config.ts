@@ -4,7 +4,7 @@ import laravel from 'laravel-vite-plugin';
 import path from 'path';
 import { defineConfig } from 'vite';
 
-export default defineConfig(({ isSsrBuild }) => ({
+export default defineConfig(() => ({
     build: {
         // ApexCharts minifies to ~520 kB; default 500 kB warning is noisy for legitimate heavy vendors.
         chunkSizeWarningLimit: 640,
@@ -14,19 +14,7 @@ export default defineConfig(({ isSsrBuild }) => ({
                 if (warning.code === 'INVALID_ANNOTATION') return;
                 defaultHandler(warning);
             },
-            output: isSsrBuild
-                ? undefined
-                : {
-                      manualChunks: {
-                          'vendor-d3': ['d3-org-chart', 'd3-selection'],
-                      },
-                  },
         },
-    },
-    // d3-org-chart ships ESM from `src/`; skipping the pre-bundle avoids occasional broken/empty
-    // `.vite/deps` responses over HTTPS dev servers (Herd), which surface as MIME/CORS errors in the browser.
-    optimizeDeps: {
-        exclude: ['d3-org-chart'],
     },
     resolve: {
         alias: {

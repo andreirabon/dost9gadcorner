@@ -73,34 +73,70 @@ function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
 
 const visibleTabs = computed(() => tabDefs.filter((t) => tabIsVisible(t.id)));
 
+type SectionState = 'empty' | 'partial' | 'complete';
+
+const SECTION_STATE_LABEL: Record<SectionState, string> = {
+    empty: '— no data entered yet',
+    partial: '— partly entered',
+    complete: '— complete',
+};
+
 /**
- * Which sections actually hold data, so the tab bar shows what is left to
- * enter instead of making people open all seven to find out.
+ * Completion state for a multi-row section.
  *
- * Rows are always seeded from the lookup tables with zero defaults, so row
- * count proves nothing — a section counts as entered only when some figure is
- * non-zero. Reflects saved state; it refreshes when a section save reloads
- * the Inertia props.
+ * KNOWN APPROXIMATION: rows are seeded from the lookup tables with zero
+ * defaults, so the schema cannot tell "not entered yet" apart from "entered as
+ * a genuine zero". A month with no real RSTL clients therefore keeps its
+ * section on `partial` forever. Making this exact needs nullable counts or a
+ * per-section reviewed flag — a migration, not a display change.
  */
-function anyPositive<T>(rows: readonly T[], keys: readonly (keyof T)[]): boolean {
-    return rows.some((row) => keys.some((key) => Number(row[key] ?? 0) > 0));
+function rowsState<T>(rows: readonly T[], keys: readonly (keyof T)[]): SectionState {
+    if (rows.length === 0) {
+        return 'empty';
+    }
+
+    const filled = rows.filter((row) => keys.some((key) => Number(row[key] ?? 0) > 0)).length;
+
+    if (filled === 0) {
+        return 'empty';
+    }
+
+    return filled === rows.length ? 'complete' : 'partial';
 }
 
-const sectionHasData = computed<Record<string, boolean>>(() => {
+/** Single-row sections have no meaningful middle state. */
+function binaryState(hasData: boolean): SectionState {
+    return hasData ? 'complete' : 'empty';
+}
+
+/**
+ * Drives the tab marks so the bar shows what is left to enter without opening
+ * all seven. Reflects saved state; refreshes when a section save reloads props.
+ */
+const sectionState = computed<Record<string, SectionState>>(() => {
     const report = props.reportYear;
 
     return {
-        metadata: Boolean(report.title?.trim() || report.description?.trim()),
-        gfps_membership: report.gfpsMembership.femaleCount + report.gfpsMembership.maleCount > 0,
-        scholarship: report.scholarshipSnapshots.length > 0,
-        gfps_assemblies: anyPositive(report.gfpsAssemblies, ['femaleCount', 'maleCount']),
-        employee_status: anyPositive(report.employeeStatuses, ['femaleCount', 'maleCount']),
-        rstl_monthly: anyPositive(report.rstlMonthly, ['femaleCount', 'femaleLedCount', 'maleCount', 'maleLedCount']),
-        program_funding: anyPositive(report.programFunding, ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
+        metadata: binaryState(Boolean(report.title?.trim() || report.description?.trim())),
+        gfps_membership: binaryState(report.gfpsMembership.femaleCount + report.gfpsMembership.maleCount > 0),
+        scholarship: binaryState(report.scholarshipSnapshots.length > 0),
+        gfps_assemblies: rowsState(report.gfpsAssemblies, ['femaleCount', 'maleCount']),
+        employee_status: rowsState(report.employeeStatuses, ['femaleCount', 'maleCount']),
+        rstl_monthly: rowsState(report.rstlMonthly, ['femaleCount', 'femaleLedCount', 'maleCount', 'maleLedCount']),
+        program_funding: rowsState(report.programFunding, ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
     };
 });
 
-const enteredSectionCount = computed(() => visibleTabs.value.filter((tab) => sectionHasData.value[tab.id]).length);
+const enteredSectionCount = computed(() => visibleTabs.value.filter((tab) => sectionState.value[tab.id] !== 'empty').length);
+
+/** The chip mirrors the marks: nothing started, some started, or all started. */
+const overallState = computed<SectionState>(() => {
+    if (enteredSectionCount.value === 0) {
+        return 'empty';
+    }
+
+    return enteredSectionCount.value === visibleTabs.value.length ? 'complete' : 'partial';
+});
 
 const isReadOnly = computed(() => props.reportYear.isLocked);
 
@@ -204,7 +240,7 @@ watch(
                         <p class="report-years-lede">
                             Sections may be updated in any order. Save each tab when you finish. Visible tabs follow your account access.
                         </p>
-                        <p class="report-years-tab-progress" role="status" aria-live="polite">
+                        <p class="report-years-tab-progress" :class="`is-${overallState}`" role="status" aria-live="polite">
                             {{ enteredSectionCount }} of {{ visibleTabs.length }} sections have data
                         </p>
                     </div>
@@ -221,17 +257,14 @@ watch(
                                 :aria-controls="`panel-${tab.id}`"
                                 :tabindex="activeTab === tab.id ? 0 : -1"
                                 class="report-years-tab"
-                                :class="{
-                                    'is-active': activeTab === tab.id,
-                                    'has-data': sectionHasData[tab.id],
-                                }"
+                                :class="[`is-${sectionState[tab.id]}`, { 'is-active': activeTab === tab.id }]"
                                 @click="activeTab = tab.id"
                                 @keydown="onTabKeydown($event, tabIndex)"
                             >
                                 <span class="report-years-tab-mark" aria-hidden="true" />
                                 {{ tab.name }}
                                 <span class="sr-only">
-                                    {{ sectionHasData[tab.id] ? '— has data' : '— no data entered yet' }}
+                                    {{ SECTION_STATE_LABEL[sectionState[tab.id]] }}
                                 </span>
                             </button>
                         </nav>

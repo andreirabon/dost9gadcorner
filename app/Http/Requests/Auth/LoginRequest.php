@@ -6,12 +6,23 @@ use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class LoginRequest extends FormRequest
 {
+    /**
+     * Bcrypt hash of a value nobody can log in with. Verified when the submitted
+     * username matches no user, so a missing account costs the same time as a
+     * wrong password. Without it, response latency leaks which usernames exist.
+     *
+     * ponytail: fixed cost-12 hash. If config('hashing.bcrypt.rounds') changes,
+     * regenerate this constant so the timings stay matched.
+     */
+    private const TIMING_EQUALIZER_HASH = '$2y$12$2diMjqt9C.nnW2XRLcozQuBL.QYzQ9kPlNCfDz7/P.5niINGBSx9W';
+
     public function authorize(): bool
     {
         return true;
@@ -48,9 +59,18 @@ class LoginRequest extends FormRequest
             return false;
         }
 
+        $credentials = $this->only('username', 'password');
+
+        // Burn an equivalent bcrypt verification when the username matches no
+        // user, so an attacker cannot distinguish "no such account" from
+        // "wrong password" by response time.
+        if (Auth::guard('web')->getProvider()->retrieveByCredentials($credentials) === null) {
+            Hash::check((string) $this->input('password'), self::TIMING_EQUALIZER_HASH);
+        }
+
         // ponytail: hardcode remember=false — no "remember me" UI exists,
         // so accepting the POST param silently would let attackers persist sessions.
-        if (! Auth::attempt($this->only('username', 'password'), false)) {
+        if (! Auth::attempt($credentials, false)) {
             RateLimiter::hit($this->throttleKey());
             RateLimiter::hit($this->usernameThrottleKey());
 
