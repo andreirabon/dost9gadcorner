@@ -42,11 +42,7 @@ const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_cou
 
 <template>
     <section id="panel-employee_status" class="report-panel" role="tabpanel" aria-labelledby="tab-employee_status">
-        <HeadingSmall
-            variant="report"
-            title="Employee status"
-            description="Workforce headcounts by employment status and sex. Use the same definitions as HR records."
-        />
+        <HeadingSmall variant="report" title="Employee status" />
 
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
             <div class="report-years-data-table">
@@ -88,14 +84,37 @@ const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_cou
                         />
                     </div>
                 </div>
-            </div>
 
-            <div class="mt-3 flex items-center justify-between border-t border-zinc-200/60 pt-3 text-sm">
-                <span class="font-medium text-zinc-500">Totals</span>
-                <span class="flex gap-2 font-mono text-sm font-semibold text-zinc-900 tabular-nums">
-                    <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">F: {{ totals.female_count }}</span>
-                    <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">M: {{ totals.male_count }}</span>
-                </span>
+                <!-- Derived footer row: sums every employment status above it. -->
+                <div class="report-years-data-row report-years-data-row--3col report-years-data-row--total">
+                    <div class="report-years-data-row-label">Total</div>
+
+                    <div class="report-years-data-cell">
+                        <Label for="employee_total_female" class="report-years-data-cell-label md:sr-only">Total female</Label>
+                        <Input
+                            id="employee_total_female"
+                            :model-value="totals.female_count"
+                            type="text"
+                            readonly
+                            tabindex="-1"
+                            aria-live="polite"
+                            :class="[tableInputClass, 'report-derived-field']"
+                        />
+                    </div>
+
+                    <div class="report-years-data-cell">
+                        <Label for="employee_total_male" class="report-years-data-cell-label md:sr-only">Total male</Label>
+                        <Input
+                            id="employee_total_male"
+                            :model-value="totals.male_count"
+                            type="text"
+                            readonly
+                            tabindex="-1"
+                            aria-live="polite"
+                            :class="[tableInputClass, 'report-derived-field']"
+                        />
+                    </div>
+                </div>
             </div>
 
             <InputError :message="error" />

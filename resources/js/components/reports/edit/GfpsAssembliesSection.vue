@@ -6,10 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRowSection } from '@/composables/useRowSection';
 import { REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
-import { sumRowFields } from '@/helpers/reportTotals';
+import { sumFields } from '@/helpers/reportTotals';
 import type { EditableGfpsAssemblyRow } from '@/types/reports';
 import { CheckCircle2, Loader2, Save } from '@lucide/vue';
-import { computed } from 'vue';
 
 interface Props {
     reportYearId: number;
@@ -37,21 +36,25 @@ const { form, save, error } = useRowSection({
     notify: (message) => emit('notice', message),
 });
 
-const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_count']));
+/** Derived attendance for one assembly period; the cell is read-only. */
+function rowTotal(row: Record<string, unknown>): number {
+    return sumFields(row, ['female_count', 'male_count']);
+}
 </script>
 
 <template>
     <section id="panel-gfps_assemblies" class="report-panel" role="tabpanel" aria-labelledby="tab-gfps_assemblies">
-        <HeadingSmall variant="report" title="GFPS assemblies" description="Attendance by assembly period. Enter headcounts by sex for each row." />
+        <HeadingSmall variant="report" title="GFPS assemblies" />
 
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
             <div class="report-years-data-table">
-                <div class="report-years-data-head report-years-data-head--3col">
+                <div class="report-years-data-head report-years-data-head--4col">
                     <span class="report-years-data-head-label">Period</span>
                     <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>
                     <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
+                    <span class="report-years-data-head-label report-years-data-head-label--center">Total per assembly</span>
                 </div>
-                <div v-for="(row, index) in form.rows" :key="row.period_id" class="report-years-data-row report-years-data-row--3col">
+                <div v-for="(row, index) in form.rows" :key="row.period_id" class="report-years-data-row report-years-data-row--4col">
                     <div class="report-years-data-row-label">
                         {{ rows[index]?.label }}
                     </div>
@@ -81,15 +84,22 @@ const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_cou
                             :class="tableInputClass"
                         />
                     </div>
-                </div>
-            </div>
 
-            <div class="mt-3 flex items-center justify-between border-t border-zinc-200/60 pt-3 text-sm">
-                <span class="font-medium text-zinc-500">Totals</span>
-                <span class="flex gap-2 font-mono text-sm font-semibold text-zinc-900 tabular-nums">
-                    <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">F: {{ totals.female_count }}</span>
-                    <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">M: {{ totals.male_count }}</span>
-                </span>
+                    <div class="report-years-data-cell">
+                        <Label :for="`gfps_assembly_total_${row.period_id}`" class="report-years-data-cell-label md:sr-only">
+                            Total per assembly
+                        </Label>
+                        <Input
+                            :id="`gfps_assembly_total_${row.period_id}`"
+                            :model-value="rowTotal(row)"
+                            type="text"
+                            readonly
+                            tabindex="-1"
+                            aria-live="polite"
+                            :class="[tableInputClass, 'report-derived-field']"
+                        />
+                    </div>
+                </div>
             </div>
 
             <InputError :message="error" />

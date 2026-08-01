@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRowSection } from '@/composables/useRowSection';
 import { REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
-import { sumRowFields } from '@/helpers/reportTotals';
 import type { EditableProgramFundingRow } from '@/types/reports';
 import { CheckCircle2, Loader2, Save } from '@lucide/vue';
 import { computed } from 'vue';
@@ -65,37 +64,18 @@ const fundingRows = computed(() =>
 
 const setupFundingRows = computed(() => fundingRows.value.filter((item) => isSetupFundingSlug(item.slug) && isFundingSlugEditable(item.slug)));
 const cestFundingRows = computed(() => fundingRows.value.filter((item) => isCestFundingSlug(item.slug) && isFundingSlugEditable(item.slug)));
-
-const setupTotals = computed(() =>
-    sumRowFields(
-        setupFundingRows.value.map((item) => item.row),
-        VALUE_FIELDS,
-    ),
-);
-const cestTotals = computed(() =>
-    sumRowFields(
-        cestFundingRows.value.map((item) => item.row),
-        VALUE_FIELDS,
-    ),
-);
-
-const formatAmount = (n: number): string => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 </script>
 
 <template>
     <section id="panel-program_funding" class="report-panel" role="tabpanel" aria-labelledby="tab-program_funding">
-        <HeadingSmall
-            variant="report"
-            title="Program funding"
-            description="Projects and funding amounts by program, split by sex. Amounts use your organization’s currency; enter decimals as needed."
-        />
+        <HeadingSmall variant="report" title="Program funding" />
 
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
             <div class="space-y-6">
                 <div
                     v-for="group in [
-                        { key: 'setup', title: 'SETUP', rows: setupFundingRows, totals: setupTotals },
-                        { key: 'cest', title: 'CEST', rows: cestFundingRows, totals: cestTotals },
+                        { key: 'setup', title: 'SETUP', rows: setupFundingRows },
+                        { key: 'cest', title: 'CEST', rows: cestFundingRows },
                     ]"
                     :key="group.key"
                     class="space-y-2"
@@ -190,22 +170,6 @@ const formatAmount = (n: number): string => n.toLocaleString('en-US', { minimumF
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mt-3 flex items-center justify-between border-t border-zinc-200/60 pt-3 text-sm">
-                        <span class="font-medium text-zinc-500">{{ group.title }} totals</span>
-                        <span class="flex flex-wrap gap-2 font-mono text-sm font-semibold text-zinc-900 tabular-nums">
-                            <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1"
-                                >F projects: {{ group.totals.female_projects }}</span
-                            >
-                            <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1"
-                                >F amount: {{ formatAmount(group.totals.female_amount) }}</span
-                            >
-                            <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">M projects: {{ group.totals.male_projects }}</span>
-                            <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1"
-                                >M amount: {{ formatAmount(group.totals.male_amount) }}</span
-                            >
-                        </span>
                     </div>
                 </div>
             </div>

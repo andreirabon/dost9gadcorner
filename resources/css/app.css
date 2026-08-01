@@ -1112,9 +1112,43 @@
         max-width: 100%;
     }
 
-    /* GAD report years admin (/report-years) — restrained light workspace */
+    /*
+     * GAD report years admin — restrained light workspace.
+     *
+     * Surface system, shared by /report-years, /create, and /{id}/edit:
+     *   --report-ground  page ground, tinted toward the sidebar's #172554 so
+     *                    the planes on top of it read as raised
+     *   --report-plane   true white; --color-white is #fafafa project-wide and
+     *                    would not clear the ground
+     * Every card on these three pages uses the same border and shadow, so the
+     * three read as one system rather than three.
+     */
     .report-years-page {
-        @apply flex min-h-0 flex-1 flex-col bg-slate-50 text-slate-900 selection:bg-blue-200/60;
+        --report-ground: oklch(0.93 0.012 255);
+        --report-plane: #ffffff;
+        --report-plane-border: oklch(0.82 0.02 255);
+        --report-plane-shadow:
+            0 1px 2px oklch(0.3 0.05 260 / 0.04), 0 8px 24px -12px oklch(0.3 0.05 260 / 0.14);
+
+        @apply flex min-h-0 flex-1 flex-col text-slate-900 selection:bg-blue-200/60;
+        background-color: var(--report-ground);
+    }
+
+    .report-years-page :is(
+        .report-years-header,
+        .report-years-shell,
+        .report-years-empty,
+        .report-years-create-hero,
+        .report-years-edit-hero,
+        .report-years-form-card,
+        .report-panel
+    ) {
+        background-color: var(--report-plane);
+        border-color: var(--report-plane-border);
+        box-shadow: var(--report-plane-shadow);
+        /* .report-panel's base style is the dark public-view glass card; the
+           blur is inert over an opaque plane, so drop it rather than pay for it. */
+        backdrop-filter: none;
     }
 
     .report-years-inner {
@@ -1134,7 +1168,7 @@
     }
 
     .report-years-create-hero {
-        @apply w-full rounded-2xl border border-slate-200/90 bg-white p-3 shadow-sm sm:p-3.5;
+        @apply w-full rounded-2xl border p-3 sm:p-3.5;
     }
 
     .report-years-create-hero-top {
@@ -1155,6 +1189,26 @@
 
     .report-years-create-form {
         @apply flex w-full flex-col gap-4;
+    }
+
+    /*
+     * Groups the four create fields into two named sets instead of one
+     * undifferentiated column. <fieldset>/<legend> so the grouping is announced,
+     * not just drawn.
+     */
+    .report-years-fieldset {
+        @apply flex w-full min-w-0 flex-col gap-4 border-t border-slate-200 pt-5 first:border-t-0 first:pt-0;
+    }
+
+    /* <legend> renders in the fieldset's legend box, outside the flex flow, so
+       it takes its own bottom spacing — a negative margin on the hint below
+       would ride up over it instead of closing the gap. */
+    .report-years-legend {
+        @apply float-none mb-2 p-0 text-base font-semibold text-slate-900;
+    }
+
+    .report-years-fieldset-hint {
+        @apply text-sm text-slate-600;
     }
 
     .report-years-create-form .report-years-create-form-grid {
@@ -1230,10 +1284,6 @@
      * committed #172554 and drops far enough that the plane reads as raised.
      * Scoped to --index so Create/Edit keep their existing ground.
      */
-    .report-years-page--index {
-        background-color: oklch(0.93 0.012 255);
-    }
-
     /*
      * Index header card. Structure matches .report-years-create-hero /
      * .report-years-edit-hero so all three pages read as one system; border and
@@ -1241,11 +1291,7 @@
      * on a darker ground where slate-200/90 disappears.
      */
     .report-years-header {
-        @apply mb-3 flex w-full flex-col items-start justify-between gap-3 rounded-2xl border border-slate-300/70 p-4 sm:flex-row sm:items-center sm:p-5;
-        background-color: #ffffff;
-        box-shadow:
-            0 1px 2px oklch(0.3 0.05 260 / 0.04),
-            0 8px 24px -12px oklch(0.3 0.05 260 / 0.14);
+        @apply mb-3 flex w-full flex-col items-start justify-between gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:p-5;
     }
 
     .report-years-kicker {
@@ -1325,16 +1371,11 @@
     /* --color-white is #fafafa project-wide; the plane needs true white to win
        its step against the ground above. */
     .report-years-shell {
-        @apply flex flex-col overflow-hidden rounded-2xl border border-slate-300/70;
-        background-color: #ffffff;
-        box-shadow:
-            0 1px 2px oklch(0.3 0.05 260 / 0.04),
-            0 8px 24px -12px oklch(0.3 0.05 260 / 0.14);
+        @apply flex flex-col overflow-hidden rounded-2xl border;
     }
 
     .report-years-empty {
-        @apply flex flex-col items-center justify-center rounded-2xl border border-slate-300/70 px-4 py-20 text-center;
-        background-color: #ffffff;
+        @apply flex flex-col items-center justify-center rounded-2xl border px-4 py-20 text-center;
     }
 
     /* px-5 matches the table cells and footer below it so the card's inner
@@ -1559,7 +1600,7 @@
     }
 
     .report-years-form-card {
-        @apply rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8;
+        @apply rounded-2xl border p-6 sm:p-8;
     }
 
     .report-years-form-title {
@@ -1575,7 +1616,7 @@
     }
 
     .report-years-edit-hero {
-        @apply w-full rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm sm:p-5;
+        @apply w-full rounded-2xl border p-4 sm:p-5;
     }
 
     .report-years-edit-hero-badges {
@@ -1635,11 +1676,49 @@
     }
 
     .report-years-tab-nav {
-        @apply flex w-full min-w-max gap-1 rounded-full border border-slate-200 bg-slate-100/90 p-1;
+        @apply flex w-full min-w-max gap-0.5 rounded-full border border-slate-200 bg-slate-100/90 p-1;
     }
 
     .report-years-tab {
-        @apply cursor-pointer touch-manipulation rounded-full px-4 py-2 text-base font-semibold whitespace-nowrap text-slate-600 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/25 focus-visible:outline-none active:scale-[0.97];
+        /* px-3 + gap-1.5 keeps all seven tabs on one line at 1440 once the
+           status marks are added; it still scrolls below that. */
+        @apply inline-flex cursor-pointer touch-manipulation items-center gap-1.5 rounded-full px-3 py-2 text-base font-semibold whitespace-nowrap text-slate-600 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/25 focus-visible:outline-none active:scale-[0.97];
+    }
+
+    /*
+     * Filled = section holds data, hollow = still empty. Lets someone see what
+     * is left to enter without opening all seven tabs. State is also carried by
+     * the sr-only text on each tab, so this is not colour-only.
+     */
+    .report-years-tab-mark {
+        @apply size-2 shrink-0 rounded-full border;
+        border-color: var(--color-slate-500);
+        background-color: transparent;
+    }
+
+    .report-years-tab.has-data .report-years-tab-mark {
+        border-color: var(--color-blue-700);
+        background-color: var(--color-blue-700);
+    }
+
+    .report-years-tab.is-active .report-years-tab-mark {
+        @apply border-white/70;
+    }
+
+    .report-years-tab.is-active.has-data .report-years-tab-mark {
+        @apply border-white bg-white;
+    }
+
+    /* Sits inside the white hero card, so it needs a tinted fill of its own to
+       read as a chip rather than as another line of body text. */
+    .report-years-tab-progress {
+        @apply mt-3 inline-flex w-fit items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 tabular-nums;
+    }
+
+    .report-years-tab-progress::before {
+        @apply size-2 shrink-0 rounded-full;
+        content: '';
+        background-color: var(--color-blue-700);
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -1867,6 +1946,46 @@
         @apply md:grid-cols-[minmax(0,1.35fr)_minmax(7rem,9rem)_minmax(7rem,9rem)];
     }
 
+    /*
+     * Derived cells: computed from the inputs beside them, never typed into.
+     * Muted surface + default cursor so the read-only state is visible before
+     * someone clicks; `readonly` (not `disabled`) keeps the value selectable
+     * and announced.
+     */
+    /* Specificity must match `.report-years-page [data-slot='input'].report-field`
+       above, which sets bg-white! on every input in these sections. */
+    .report-years-page [data-slot='input'].report-derived-field,
+    .report-years-page .report-derived-field {
+        @apply cursor-default border-slate-300! bg-slate-100! text-center font-semibold text-slate-800! tabular-nums;
+    }
+
+    /* Derived field whose label sits above it rather than in a table header. */
+    .report-years-page .report-derived-group {
+        @apply justify-items-center text-center;
+    }
+
+    .report-years-page [data-slot='input'].report-derived-field:focus-visible {
+        @apply border-slate-300! bg-slate-100! ring-0! outline-none!;
+    }
+
+    /* Derived footer row — separated from the entered rows above it. */
+    .report-years-data-row--total {
+        @apply border-t-2 border-slate-300 bg-slate-50/80 font-semibold;
+    }
+
+    /* Label + counter on one line above a field. */
+    .report-years-page .report-field-labelrow {
+        @apply flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1;
+    }
+
+    .report-years-page .report-field-counter {
+        @apply text-sm text-slate-600 tabular-nums;
+    }
+
+    .report-years-data-head--4col {
+        @apply md:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(7rem,9rem))];
+    }
+
     .report-years-data-head--5col {
         @apply md:grid-cols-[minmax(0,1.25fr)_repeat(4,minmax(5.75rem,8rem))];
     }
@@ -1917,6 +2036,10 @@
 
     .report-years-data-row--3col {
         @apply md:grid-cols-[minmax(0,1.35fr)_minmax(7rem,9rem)_minmax(7rem,9rem)];
+    }
+
+    .report-years-data-row--4col {
+        @apply md:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(7rem,9rem))];
     }
 
     .report-years-data-row--5col {

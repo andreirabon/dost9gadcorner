@@ -143,7 +143,7 @@ function confirmDeleteReportYear(): void {
 </script>
 
 <template>
-    <AppLayout :show-footer="false" content-class="report-years-page report-years-page--index">
+    <AppLayout :show-footer="false" content-class="report-years-page">
         <Head title="GAD Database" />
 
         <div class="report-years-inner">

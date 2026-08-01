@@ -6,10 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRowSection } from '@/composables/useRowSection';
 import { REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
-import { sumRowFields } from '@/helpers/reportTotals';
 import type { EditableRstlMonthlyRow } from '@/types/reports';
 import { CheckCircle2, Loader2, Save } from '@lucide/vue';
-import { computed } from 'vue';
 
 interface Props {
     reportYearId: number;
@@ -40,17 +38,11 @@ const { form, save, error } = useRowSection({
     expectedUpdatedAt: () => props.expectedUpdatedAt,
     notify: (message) => emit('notice', message),
 });
-
-const totals = computed(() => sumRowFields(form.rows, VALUE_FIELDS));
 </script>
 
 <template>
     <section id="panel-rstl_monthly" class="report-panel" role="tabpanel" aria-labelledby="tab-rstl_monthly">
-        <HeadingSmall
-            variant="report"
-            title="RSTL by month"
-            description="Monthly RSTL activity: clients or visits by sex, plus female-led and male-led counts. Scroll horizontally on small screens if the column labels do not fit."
-        />
+        <HeadingSmall variant="report" title="RSTL by month" />
 
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
             <div class="report-years-data-table-scroll">
@@ -120,16 +112,6 @@ const totals = computed(() => sumRowFields(form.rows, VALUE_FIELDS));
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="mt-3 flex items-center justify-between border-t border-zinc-200/60 pt-3 text-sm">
-                <span class="font-medium text-zinc-500">Totals</span>
-                <span class="flex flex-wrap gap-2 font-mono text-sm font-semibold text-zinc-900 tabular-nums">
-                    <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">F: {{ totals.female_count }}</span>
-                    <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">F-led: {{ totals.female_led_count }}</span>
-                    <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">M: {{ totals.male_count }}</span>
-                    <span class="rounded-lg border border-zinc-200 bg-zinc-100 px-3 py-1">M-led: {{ totals.male_led_count }}</span>
-                </span>
             </div>
 
             <InputError :message="error" />

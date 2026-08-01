@@ -150,11 +150,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
 <template>
     <div>
         <section id="panel-scholarship" class="report-panel" role="tabpanel" aria-labelledby="tab-scholarship">
-            <HeadingSmall
-                variant="report"
-                title="Scholarship"
-                description="Track scholar counts across the year. Each update is saved as a separate snapshot — previous data is always preserved."
-            />
+            <HeadingSmall variant="report" title="Scholarship" />
 
             <Transition name="fade-slide" mode="out-in">
                 <div v-if="!showAddForm" key="btn" class="mt-6 mb-6">
@@ -313,7 +309,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
 
                         <!-- View mode -->
                         <template v-if="editingSnapshotId !== snap.id">
-                            <div class="flex items-start justify-between gap-4">
+                            <div class="flex items-center justify-between gap-4">
                                 <div class="min-w-0 flex-1">
                                     <div class="flex flex-wrap items-center gap-2">
                                         <span class="text-sm font-semibold text-zinc-900"> As of {{ snap.asOfDate ?? 'No date' }} </span>
@@ -324,17 +320,17 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                                             Latest Snapshot
                                         </span>
                                     </div>
-                                    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-600">
+                                    <div class="mt-2 flex flex-col gap-y-1 text-sm text-zinc-600">
                                         <span
                                             >School Year:
                                             <span class="font-medium text-zinc-900">{{ snap.schoolYearLabel || 'No school year' }}</span></span
                                         >
                                         <span
-                                            >F:
+                                            >Female:
                                             <span class="font-mono font-semibold text-zinc-950 tabular-nums">{{ snap.femaleCount ?? 0 }}</span></span
                                         >
                                         <span
-                                            >M:
+                                            >Male:
                                             <span class="font-mono font-semibold text-zinc-950 tabular-nums">{{ snap.maleCount ?? 0 }}</span></span
                                         >
                                         <span class="font-medium text-zinc-900"

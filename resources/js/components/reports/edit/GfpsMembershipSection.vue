@@ -70,15 +70,11 @@ const total = computed(() => toNumber(form.female_count) + toNumber(form.male_co
 
 <template>
     <section id="panel-gfps_membership" class="report-panel" role="tabpanel" aria-labelledby="tab-gfps_membership">
-        <HeadingSmall
-            variant="report"
-            title="GFPS membership"
-            description="Total GFPS members by sex for this reporting year. Use whole numbers only."
-        />
+        <HeadingSmall variant="report" title="GFPS membership" />
 
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
             <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm">
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-4 sm:grid-cols-3">
                     <div class="grid gap-2">
                         <Label for="gfps_female_count">Female</Label>
                         <Input
@@ -106,10 +102,20 @@ const total = computed(() => toNumber(form.female_count) + toNumber(form.male_co
                         />
                         <InputError :message="form.errors.male_count" />
                     </div>
+
+                    <div class="report-derived-group grid gap-2">
+                        <Label for="gfps_total_count">Total members</Label>
+                        <Input
+                            id="gfps_total_count"
+                            :model-value="total"
+                            type="text"
+                            readonly
+                            tabindex="-1"
+                            aria-live="polite"
+                            :class="[inputClass, 'report-derived-field']"
+                        />
+                    </div>
                 </div>
-                <p class="mt-1 max-w-md text-sm text-black">
-                    Total members: <span class="font-medium text-black tabular-nums">{{ total }}</span>
-                </p>
             </div>
 
             <div class="flex flex-wrap items-center gap-4 border-t border-zinc-200/80 pt-2">

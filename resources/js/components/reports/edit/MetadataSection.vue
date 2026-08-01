@@ -97,11 +97,7 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
 
 <template>
     <section id="panel-metadata" class="report-panel" role="tabpanel" aria-labelledby="tab-metadata">
-        <HeadingSmall
-            variant="report"
-            title="Metadata"
-            description="Calendar year, publication status, and the title and description readers see for this report."
-        />
+        <HeadingSmall variant="report" title="Metadata" />
 
         <form class="report-form report-form--edit w-full" autocomplete="off" @submit.prevent="save">
             <div class="grid gap-4 sm:grid-cols-[10rem_14rem]">
@@ -147,7 +143,10 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
             </div>
 
             <div class="grid gap-2">
-                <Label for="title">Title</Label>
+                <div class="report-field-labelrow">
+                    <Label for="title">Title</Label>
+                    <span class="report-field-counter">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters</span>
+                </div>
                 <Input
                     id="title"
                     v-model="form.title"
@@ -159,12 +158,16 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
                     :class="inputClass"
                     @input="emit('title-change', String(form.title ?? '').trim())"
                 />
-                <p class="text-sm text-black">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
                 <InputError :message="form.errors.title" />
             </div>
 
             <div class="grid gap-2">
-                <Label for="description">Description</Label>
+                <div class="report-field-labelrow">
+                    <Label for="description">Description</Label>
+                    <span class="report-field-counter" aria-live="polite">
+                        {{ descriptionLength }} / {{ REPORT_YEAR_FIELD_LIMITS.description }}
+                    </span>
+                </div>
                 <textarea
                     id="description"
                     v-model="form.description"
@@ -174,7 +177,6 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
                     :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
                     :disabled="isReadOnly"
                 />
-                <p class="text-sm text-black">{{ descriptionLength }} / {{ REPORT_YEAR_FIELD_LIMITS.description }}</p>
                 <InputError :message="form.errors.description" />
             </div>
 

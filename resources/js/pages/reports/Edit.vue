@@ -73,6 +73,35 @@ function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
 
 const visibleTabs = computed(() => tabDefs.filter((t) => tabIsVisible(t.id)));
 
+/**
+ * Which sections actually hold data, so the tab bar shows what is left to
+ * enter instead of making people open all seven to find out.
+ *
+ * Rows are always seeded from the lookup tables with zero defaults, so row
+ * count proves nothing — a section counts as entered only when some figure is
+ * non-zero. Reflects saved state; it refreshes when a section save reloads
+ * the Inertia props.
+ */
+function anyPositive<T>(rows: readonly T[], keys: readonly (keyof T)[]): boolean {
+    return rows.some((row) => keys.some((key) => Number(row[key] ?? 0) > 0));
+}
+
+const sectionHasData = computed<Record<string, boolean>>(() => {
+    const report = props.reportYear;
+
+    return {
+        metadata: Boolean(report.title?.trim() || report.description?.trim()),
+        gfps_membership: report.gfpsMembership.femaleCount + report.gfpsMembership.maleCount > 0,
+        scholarship: report.scholarshipSnapshots.length > 0,
+        gfps_assemblies: anyPositive(report.gfpsAssemblies, ['femaleCount', 'maleCount']),
+        employee_status: anyPositive(report.employeeStatuses, ['femaleCount', 'maleCount']),
+        rstl_monthly: anyPositive(report.rstlMonthly, ['femaleCount', 'femaleLedCount', 'maleCount', 'maleLedCount']),
+        program_funding: anyPositive(report.programFunding, ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
+    };
+});
+
+const enteredSectionCount = computed(() => visibleTabs.value.filter((tab) => sectionHasData.value[tab.id]).length);
+
 const isReadOnly = computed(() => props.reportYear.isLocked);
 
 const isPublished = computed(() => props.reportYear.status === 'published');
@@ -175,6 +204,9 @@ watch(
                         <p class="report-years-lede">
                             Sections may be updated in any order. Save each tab when you finish. Visible tabs follow your account access.
                         </p>
+                        <p class="report-years-tab-progress" role="status" aria-live="polite">
+                            {{ enteredSectionCount }} of {{ visibleTabs.length }} sections have data
+                        </p>
                     </div>
 
                     <div class="report-years-tab-bar">
@@ -188,12 +220,19 @@ watch(
                                 :aria-selected="activeTab === tab.id"
                                 :aria-controls="`panel-${tab.id}`"
                                 :tabindex="activeTab === tab.id ? 0 : -1"
-                                class="report-years-tab transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-[0.98] active:scale-[0.95]"
-                                :class="{ 'is-active': activeTab === tab.id }"
+                                class="report-years-tab"
+                                :class="{
+                                    'is-active': activeTab === tab.id,
+                                    'has-data': sectionHasData[tab.id],
+                                }"
                                 @click="activeTab = tab.id"
                                 @keydown="onTabKeydown($event, tabIndex)"
                             >
+                                <span class="report-years-tab-mark" aria-hidden="true" />
                                 {{ tab.name }}
+                                <span class="sr-only">
+                                    {{ sectionHasData[tab.id] ? '— has data' : '— no data entered yet' }}
+                                </span>
                             </button>
                         </nav>
                     </div>
