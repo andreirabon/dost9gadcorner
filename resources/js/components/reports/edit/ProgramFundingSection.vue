@@ -100,7 +100,7 @@ const formatAmount = (n: number): string => n.toLocaleString('en-US', { minimumF
                     :key="group.key"
                     class="space-y-2"
                 >
-                    <p class="text-xs font-semibold tracking-wide text-foreground uppercase">{{ group.title }}</p>
+                    <p class="text-sm font-semibold tracking-wide text-foreground uppercase">{{ group.title }}</p>
                     <div class="report-years-data-table-scroll">
                         <div class="report-years-data-table report-years-data-table--wide report-years-data-table--funding">
                             <div class="report-years-data-head report-years-data-head--funding">

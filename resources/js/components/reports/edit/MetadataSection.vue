@@ -159,7 +159,7 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
                     :class="inputClass"
                     @input="emit('title-change', String(form.title ?? '').trim())"
                 />
-                <p class="text-xs text-black">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
+                <p class="text-sm text-black">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters.</p>
                 <InputError :message="form.errors.title" />
             </div>
 
@@ -174,7 +174,7 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
                     :maxlength="REPORT_YEAR_FIELD_LIMITS.description"
                     :disabled="isReadOnly"
                 />
-                <p class="text-xs text-black">{{ descriptionLength }} / {{ REPORT_YEAR_FIELD_LIMITS.description }}</p>
+                <p class="text-sm text-black">{{ descriptionLength }} / {{ REPORT_YEAR_FIELD_LIMITS.description }}</p>
                 <InputError :message="form.errors.description" />
             </div>
 

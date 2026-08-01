@@ -1,0 +1,105 @@
+- generic [ref=f2e3]:
+  - generic [ref=f2e6]:
+    - generic [ref=f2e8]:
+      - list [ref=f2e9]:
+        - listitem [ref=f2e10]:
+          - link "GAD Database DOST Region IX" [ref=f2e11] [cursor=pointer]:
+            - /url: https://gadcorner.test/
+            - generic [ref=f2e15]:
+              - generic [ref=f2e16]: GAD Database
+              - generic [ref=f2e17]: DOST Region IX
+      - button "Collapse sidebar to icon strip" [expanded] [ref=f2e18]
+    - list [ref=f2e24]:
+      - listitem [ref=f2e25]:
+        - link "Sex Disaggregated Data Report" [ref=f2e26] [cursor=pointer]:
+          - /url: /report-years
+      - listitem [ref=f2e31]:
+        - link "Print Report" [ref=f2e32] [cursor=pointer]:
+          - /url: /print-report
+    - generic [ref=f2e38]:
+      - list [ref=f2e39]:
+        - listitem [ref=f2e40]:
+          - link "Public site" [ref=f2e41] [cursor=pointer]:
+            - /url: https://gadcorner.test/
+      - list [ref=f2e45]:
+        - listitem [ref=f2e46]:
+          - generic [ref=f2e49]:
+            - generic [ref=f2e50]: A
+            - generic [ref=f2e52]:
+              - paragraph [ref=f2e53]: ARR
+              - paragraph [ref=f2e54]: Signed in
+            - button "Log out" [ref=f2e55] [cursor=pointer]
+    - button "Toggle Sidebar" [ref=f2e59]
+  - main [ref=f2e60]:
+    - generic [ref=f2e62]:
+      - generic [ref=f2e63]:
+        - generic [ref=f2e65]:
+          - generic [ref=f2e66]:
+            - generic [ref=f2e67]:
+              - generic [ref=f2e68]:
+                - generic [ref=f2e69]: Currently Editing
+                - generic [ref=f2e70]:
+                  - generic [ref=f2e73]: Published
+                  - generic [ref=f2e74]: Jul 31, 2026, 6:44 PM
+              - link "Select Another Year" [ref=f2e75] [cursor=pointer]:
+                - /url: https://gadcorner.test/report-years
+            - heading "2025 Sex Disaggregated Data Report" [level=1] [ref=f2e78]
+            - paragraph [ref=f2e79]: Sections may be updated in any order. Save each tab when you finish. Visible tabs follow your account access.
+          - tablist "Report sections" [ref=f2e81]:
+            - tab "Metadata" [ref=f2e82] [cursor=pointer]
+            - tab "GFPS Membership" [ref=f2e83] [cursor=pointer]
+            - tab "Scholarship" [ref=f2e84] [cursor=pointer]
+            - tab "GFPS Assemblies" [ref=f2e85] [cursor=pointer]
+            - tab "Employee Status" [active] [selected] [ref=f2e86] [cursor=pointer]
+            - tab "RSTL by Month" [ref=f2e87] [cursor=pointer]
+            - tab "Program Funding" [ref=f2e88] [cursor=pointer]
+        - tabpanel "Employee Status" [ref=f2e112]:
+          - generic [ref=f2e113]:
+            - heading "Employee status" [level=3] [ref=f2e114]
+            - paragraph [ref=f2e115]: Workforce headcounts by employment status and sex. Use the same definitions as HR records.
+          - generic [ref=f2e116]:
+            - generic [ref=f2e117]:
+              - generic [ref=f2e118]:
+                - generic [ref=f2e119]: Employment status
+                - generic [ref=f2e120]: Female
+                - generic [ref=f2e121]: Male
+              - generic [ref=f2e122]:
+                - generic [ref=f2e123]: Plantilla
+                - generic [ref=f2e124]:
+                  - generic [ref=f2e125]: Female count
+                  - spinbutton "Female count" [ref=f2e126]: "16"
+                - generic [ref=f2e127]:
+                  - generic [ref=f2e128]: Male count
+                  - spinbutton "Male count" [ref=f2e129]: "17"
+              - generic [ref=f2e130]:
+                - generic [ref=f2e131]: COS
+                - generic [ref=f2e132]:
+                  - generic [ref=f2e133]: Female count
+                  - spinbutton "Female count" [ref=f2e134]: "40"
+                - generic [ref=f2e135]:
+                  - generic [ref=f2e136]: Male count
+                  - spinbutton "Male count" [ref=f2e137]: "42"
+              - generic [ref=f2e138]:
+                - generic [ref=f2e139]: Agency
+                - generic [ref=f2e140]:
+                  - generic [ref=f2e141]: Female count
+                  - spinbutton "Female count" [ref=f2e142]: "0"
+                - generic [ref=f2e143]:
+                  - generic [ref=f2e144]: Male count
+                  - spinbutton "Male count" [ref=f2e145]: "11"
+              - generic [ref=f2e146]:
+                - generic [ref=f2e147]: JO
+                - generic [ref=f2e148]:
+                  - generic [ref=f2e149]: Female count
+                  - spinbutton "Female count" [ref=f2e150]: "1"
+                - generic [ref=f2e151]:
+                  - generic [ref=f2e152]: Male count
+                  - spinbutton "Male count" [ref=f2e153]: "1"
+            - generic [ref=f2e154]:
+              - generic [ref=f2e155]: Totals
+              - generic [ref=f2e156]:
+                - generic [ref=f2e157]: "F: 57"
+                - generic [ref=f2e158]: "M: 71"
+            - button "Save employee status" [ref=f2e160] [cursor=pointer]
+      - region "Notifications (F8)":
+        - list

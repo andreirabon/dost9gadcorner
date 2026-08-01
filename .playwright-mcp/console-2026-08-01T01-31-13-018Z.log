@@ -1,0 +1,3 @@
+[     172ms] [LOG] 🔍 Browser logger active (MCP server detected). Posting to: https://gadcorner.test/_boost/browser-logs @ https://gadcorner.test/open:39
+[   18566ms] [ERROR] Failed to load resource: the server responded with a status of 409 () @ https://gadcorner.test/open:0
+[   18677ms] [LOG] 🔍 Browser logger active (MCP server detected). Posting to: https://gadcorner.test/_boost/browser-logs @ https://gadcorner.test/report-years:39

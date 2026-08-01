@@ -1006,7 +1006,7 @@
 
     /* Primary actions (save / create). Light: rgb(74,93,150). Dark: teal (same family as section icons / tabs) — !bg beats shadcn bg-primary. */
     .report-save-btn {
-        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-6 text-sm font-semibold shadow-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-6 text-base font-semibold shadow-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
         @apply !bg-violet-600 text-white shadow-lg shadow-violet-900/30 hover:!bg-violet-500 focus-visible:!ring-violet-500/50 active:scale-[0.97];
     }
 
@@ -1016,7 +1016,7 @@
 
     /* Form field names vs values: labels are caption-style; values stay body (overrides ui/Label defaults) */
     .report-form :is([data-slot='label'], label) {
-        @apply text-sm! font-medium! tracking-normal! text-purple-100! normal-case! antialiased;
+        @apply text-base! font-medium! tracking-normal! text-purple-100! normal-case! antialiased;
     }
 
     .report-field {
@@ -1050,7 +1050,7 @@
     }
 
     .report-data-head {
-        @apply hidden border-b border-white/10 bg-purple-900/30 px-4 py-3 text-xs font-semibold tracking-widest text-violet-400 uppercase md:grid md:gap-4;
+        @apply hidden border-b border-white/10 bg-purple-900/30 px-4 py-3 text-sm font-semibold tracking-widest text-violet-400 uppercase md:grid md:gap-4;
     }
 
     .report-data-row {
@@ -1189,8 +1189,15 @@
         @apply text-xl sm:text-2xl;
     }
 
+    /*
+     * Full card width instead of the shared max-w-2xl, so the sentence about
+     * tab visibility stays on one line at desktop rather than splitting.
+     * text-wrap: pretty keeps the wrap tidy at narrower widths where it must
+     * still break.
+     */
     .report-years-inner--edit .report-years-edit-hero .report-years-lede {
-        @apply mt-1.5 leading-snug;
+        @apply mt-1.5 max-w-none leading-snug;
+        text-wrap: pretty;
     }
 
     .report-years-inner--edit .report-years-tab-bar {
@@ -1217,12 +1224,32 @@
         @apply gap-4;
     }
 
+    /*
+     * Index ground. slate-50 sat 2% away from the white plane on top of it,
+     * which is why the surface read as flat. This tints toward the sidebar's
+     * committed #172554 and drops far enough that the plane reads as raised.
+     * Scoped to --index so Create/Edit keep their existing ground.
+     */
+    .report-years-page--index {
+        background-color: oklch(0.93 0.012 255);
+    }
+
+    /*
+     * Index header card. Structure matches .report-years-create-hero /
+     * .report-years-edit-hero so all three pages read as one system; border and
+     * shadow are taken from .report-years-shell instead, because the index sits
+     * on a darker ground where slate-200/90 disappears.
+     */
     .report-years-header {
-        @apply mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end;
+        @apply mb-3 flex w-full flex-col items-start justify-between gap-3 rounded-2xl border border-slate-300/70 p-4 sm:flex-row sm:items-center sm:p-5;
+        background-color: #ffffff;
+        box-shadow:
+            0 1px 2px oklch(0.3 0.05 260 / 0.04),
+            0 8px 24px -12px oklch(0.3 0.05 260 / 0.14);
     }
 
     .report-years-kicker {
-        @apply text-[0.6875rem] font-semibold tracking-[0.2em] text-blue-700 uppercase;
+        @apply text-sm font-semibold tracking-[0.2em] text-blue-700 uppercase;
     }
 
     .report-years-title {
@@ -1230,11 +1257,11 @@
     }
 
     .report-years-lede {
-        @apply mt-2 max-w-2xl text-sm leading-relaxed text-slate-600;
+        @apply mt-2 max-w-2xl text-base leading-relaxed text-slate-600;
     }
 
     .report-years-btn-primary {
-        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-base font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
         background-color: var(--color-blue-700);
     }
 
@@ -1246,7 +1273,7 @@
     }
 
     .report-years-btn-secondary {
-        @apply inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-slate-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
+        @apply inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 text-base font-medium text-slate-700 transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-slate-400/30 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -1257,7 +1284,7 @@
     }
 
     .report-years-btn-danger {
-        @apply inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-800/15 px-6 text-sm font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-red-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:opacity-50;
+        @apply inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-800/15 px-6 text-base font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-red-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:opacity-50;
         background-color: var(--color-red-600);
     }
 
@@ -1295,16 +1322,25 @@
         }
     }
 
+    /* --color-white is #fafafa project-wide; the plane needs true white to win
+       its step against the ground above. */
     .report-years-shell {
-        @apply flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white;
+        @apply flex flex-col overflow-hidden rounded-2xl border border-slate-300/70;
+        background-color: #ffffff;
+        box-shadow:
+            0 1px 2px oklch(0.3 0.05 260 / 0.04),
+            0 8px 24px -12px oklch(0.3 0.05 260 / 0.14);
     }
 
     .report-years-empty {
-        @apply flex flex-col items-center justify-center rounded-2xl border border-slate-200/90 bg-white px-4 py-20 text-center;
+        @apply flex flex-col items-center justify-center rounded-2xl border border-slate-300/70 px-4 py-20 text-center;
+        background-color: #ffffff;
     }
 
+    /* px-5 matches the table cells and footer below it so the card's inner
+       edges line up; this was px-4 and sat one step out. */
     .report-years-toolbar {
-        @apply flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between;
+        @apply flex flex-col gap-3 border-b border-slate-200 px-5 py-3 sm:flex-row sm:items-center sm:justify-between;
     }
 
     .report-years-filter-tabs {
@@ -1312,7 +1348,7 @@
     }
 
     .report-years-filter-tab {
-        @apply flex cursor-pointer touch-manipulation items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-600 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97];
+        @apply flex cursor-pointer touch-manipulation items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97];
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -1331,7 +1367,7 @@
     }
 
     .report-years-filter-count {
-        @apply rounded-full bg-slate-200/90 px-1.5 py-0.5 text-[10px] font-semibold text-black tabular-nums;
+        @apply rounded-full bg-slate-200/90 px-1.5 py-0.5 text-sm font-semibold text-black tabular-nums;
     }
 
     .report-years-search-wrap {
@@ -1346,7 +1382,9 @@
     /* Neutral search — overrides shared Input defaults */
     .report-years-page .report-years-search-wrap [data-slot='input'].report-years-search,
     .report-years-page .report-years-search {
-        @apply h-10 w-full rounded-xl border-slate-300! bg-white! pl-9 text-sm text-slate-900! shadow-none! transition-[border-color,box-shadow] duration-200 ease-out selection:bg-slate-200! selection:text-slate-900! placeholder:text-slate-400!;
+        /* pl-9 needs the override: the shared Input's own px-3 wins on source
+           order, which put the placeholder underneath the search icon. */
+        @apply h-10 w-full rounded-xl border-slate-300! bg-white! pl-9! text-base text-slate-900! shadow-none! transition-[border-color,box-shadow] duration-200 ease-out selection:bg-slate-200! selection:text-slate-900! placeholder:text-slate-500!;
     }
 
     .report-years-page .report-years-search-wrap [data-slot='input'].report-years-search:focus-visible,
@@ -1354,36 +1392,68 @@
         @apply border-slate-400! bg-white! ring-2! ring-slate-300! ring-offset-0! outline-none!;
     }
 
+    .report-years-no-match {
+        @apply px-5 py-14 text-center text-base text-slate-600;
+    }
+
+    .report-years-inline-link {
+        @apply cursor-pointer font-medium text-blue-700 underline underline-offset-4 transition-colors duration-150 ease-out hover:text-blue-800;
+    }
+
     .report-years-table-wrap {
         @apply overflow-x-auto;
     }
 
     .report-years-table {
-        @apply w-full min-w-[720px] text-left text-sm;
+        @apply w-full min-w-[680px] text-left text-base;
     }
 
     .report-years-table thead tr {
-        @apply border-b border-slate-200 bg-slate-50/80;
+        @apply border-b border-slate-200;
     }
 
     .report-years-table th {
-        @apply px-6 py-4 text-sm font-semibold tracking-widest text-slate-500 uppercase;
+        @apply px-5 py-2.5 text-sm font-semibold text-slate-600;
     }
 
     .report-years-table tbody {
-        @apply divide-y divide-slate-100;
+        @apply divide-y divide-slate-200/80;
     }
 
     .report-years-table tbody tr {
-        @apply transition-colors duration-200 hover:bg-slate-50/80;
+        @apply transition-colors duration-150 ease-out;
     }
 
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-table tbody tr:hover {
+            background-color: oklch(0.97 0.008 255);
+        }
+    }
+
+    .report-years-table tbody tr.is-highlighted {
+        @apply bg-blue-50/70;
+    }
+
+    /* ~44px rows: 12px vertical padding around a 20px line box. */
     .report-years-table td {
-        @apply px-6 py-5 align-middle text-slate-600;
+        @apply px-5 py-3 align-middle text-slate-600;
     }
 
+    /* Year is the scan anchor — every other cell is subordinate to it. */
     .report-years-table-year {
-        @apply font-medium text-slate-900 tabular-nums;
+        @apply inline-flex items-center gap-1.5 text-lg font-semibold text-slate-900 tabular-nums;
+    }
+
+    .report-years-table-lock {
+        @apply size-3.5 shrink-0 text-amber-600;
+    }
+
+    .report-years-table-title {
+        @apply line-clamp-1 rounded-sm font-medium text-slate-800 transition-colors duration-150 ease-out hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:outline-none;
+    }
+
+    .report-years-table-meta {
+        @apply text-sm text-slate-500 tabular-nums;
     }
 
     .report-years-status {
@@ -1402,32 +1472,52 @@
         @apply bg-amber-500;
     }
 
-    .report-years-row-actions {
-        @apply flex items-center gap-1;
+    /* Index-scoped only — Edit.vue shares .report-years-status at its own weight */
+    .report-years-table .report-years-status {
+        @apply text-sm font-medium text-slate-600;
     }
 
+    .report-years-row-actions {
+        @apply flex items-center justify-end gap-0.5;
+    }
+
+    /*
+     * Ghost by default so no single action reads as the primary one — colour is
+     * earned on hover/focus only. slate-500 clears 3:1 against white for icon
+     * glyphs (WCAG 2.2 SC 1.4.11).
+     */
     .report-years-row-action {
-        @apply size-9 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition-[transform,background-color,color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97];
+        @apply inline-flex size-8 cursor-pointer items-center justify-center rounded-md border border-transparent bg-transparent text-slate-500 transition-[transform,background-color,color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-slate-400/40 focus-visible:outline-none active:scale-[0.94];
     }
 
     @media (hover: hover) and (pointer: fine) {
         .report-years-row-action:hover {
-            @apply border-blue-300 bg-blue-100 text-blue-800;
+            @apply bg-slate-100 text-slate-900;
         }
     }
 
-    .report-years-row-action--danger {
-        @apply border-red-200 bg-red-50 text-red-600;
+    .report-years-row-action--locked {
+        @apply text-amber-600;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .report-years-row-action--locked:hover {
+            @apply bg-amber-50 text-amber-700;
+        }
+    }
+
+    .report-years-row-action--danger:focus-visible {
+        @apply ring-red-400/40;
     }
 
     @media (hover: hover) and (pointer: fine) {
         .report-years-row-action--danger:hover {
-            @apply border-red-300 bg-red-100 text-red-700;
+            @apply bg-red-50 text-red-600;
         }
     }
 
     .report-years-footer {
-        @apply flex flex-col gap-3 border-t border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between;
+        @apply flex flex-col gap-3 border-t border-slate-200 px-5 py-3 sm:flex-row sm:items-center sm:justify-between;
     }
 
     .report-years-footer-meta {
@@ -1453,16 +1543,31 @@
         @apply inline-flex min-w-9 items-center justify-center text-sm font-medium text-black tabular-nums;
     }
 
+    /* Keep colour/opacity feedback, drop movement (WCAG 2.2 SC 2.3.3) */
+    @media (prefers-reduced-motion: reduce) {
+        .report-years-page :is(
+            .report-years-btn-primary,
+            .report-years-btn-secondary,
+            .report-years-btn-danger,
+            .report-years-btn-icon,
+            .report-years-filter-tab,
+            .report-years-row-action,
+            .report-years-page-btn
+        ):active {
+            transform: none;
+        }
+    }
+
     .report-years-form-card {
         @apply rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8;
     }
 
     .report-years-form-title {
-        @apply text-lg font-medium tracking-tight text-black;
+        @apply text-xl font-medium tracking-tight text-black;
     }
 
     .report-years-form-lede {
-        @apply mt-1 text-sm text-black;
+        @apply mt-1 text-base text-black;
     }
 
     .report-years-edit-intro {
@@ -1478,7 +1583,7 @@
     }
 
     .report-years-edit-meta-chip {
-        @apply inline-flex items-center rounded-lg border border-orange-200/80 bg-orange-50/60 px-3 py-1.5 text-[0.6875rem] font-semibold tracking-[0.2em] text-orange-800 uppercase;
+        @apply inline-flex items-center rounded-lg border border-orange-200/80 bg-orange-50/60 px-3 py-1.5 text-sm font-semibold tracking-[0.2em] text-orange-800 uppercase;
     }
 
     .report-years-edit-hero-title {
@@ -1502,7 +1607,7 @@
     }
 
     .report-years-status-badge-label {
-        @apply text-[10px] font-semibold tracking-wide uppercase;
+        @apply text-sm font-semibold tracking-wide uppercase;
     }
 
     .report-years-status-badge-label--published {
@@ -1514,7 +1619,7 @@
     }
 
     .report-years-status-badge-detail {
-        @apply text-xs font-medium normal-case tabular-nums;
+        @apply text-sm font-medium normal-case tabular-nums;
     }
 
     .report-years-status-badge-detail--published {
@@ -1534,7 +1639,7 @@
     }
 
     .report-years-tab {
-        @apply cursor-pointer touch-manipulation rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap text-slate-600 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/25 focus-visible:outline-none active:scale-[0.97];
+        @apply cursor-pointer touch-manipulation rounded-full px-4 py-2 text-base font-semibold whitespace-nowrap text-slate-600 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/25 focus-visible:outline-none active:scale-[0.97];
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -1572,7 +1677,7 @@
     }
 
     .report-years-page .report-save-btn {
-        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-sm font-semibold text-white shadow-none transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-base font-semibold text-white shadow-none transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
         background-color: var(--color-blue-700) !important;
     }
 
@@ -1700,7 +1805,7 @@
     }
 
     .report-years-page .report-form :is([data-slot='label'], label) {
-        @apply text-sm! font-medium! tracking-normal! text-black! normal-case!;
+        @apply text-base! font-medium! tracking-normal! text-black! normal-case!;
     }
 
     .report-years-page .report-field,
@@ -1775,7 +1880,7 @@
     }
 
     .report-years-data-head-label {
-        @apply bg-slate-100 px-4 py-3 text-xs font-semibold tracking-[0.14em] text-black uppercase;
+        @apply bg-slate-100 px-4 py-3 text-sm font-semibold tracking-[0.14em] text-black uppercase;
     }
 
     .report-years-data-head-label--center {
@@ -1835,7 +1940,7 @@
     }
 
     .report-years-data-cell-label {
-        @apply text-sm font-medium text-black;
+        @apply text-base font-medium text-black;
     }
 
     .report-years-page .report-years-data-input {

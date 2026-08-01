@@ -29,6 +29,7 @@ use App\Services\Reports\PatchReportYearAttributes;
 use App\Services\Reports\PatchRstlMonthlyBreakdowns;
 use App\Services\Reports\SparseRecordPatcher;
 use App\Support\FundingProgramScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -56,6 +57,16 @@ class ReportYearManagementController extends Controller
 
         return Inertia::render('reports/Index', [
             'reportYears' => ReportYear::query()
+                ->withCount([
+                    'employeeStatusBreakdowns',
+                    'gfpsAssemblyAttendances',
+                    'gfpsMembershipSummary',
+                    'programFundingSummaries',
+                    'rstlMonthlyBreakdowns',
+                    // Relation is ordered for "latest snapshot" reads; counting does not
+                    // need that ordering, and MySQL will not sort a scalar subquery for free.
+                    'scholarshipSnapshots' => fn (Builder $query) => $query->reorder(),
+                ])
                 ->orderByDesc('year')
                 ->get()
                 ->map(fn (ReportYear $reportYear): array => [
@@ -66,6 +77,14 @@ class ReportYearManagementController extends Controller
                     'status' => $reportYear->status,
                     'publishedAt' => $reportYear->published_at?->toIso8601String(),
                     'isLocked' => $reportYear->is_locked,
+                    'sections' => [
+                        'employees' => $reportYear->employee_status_breakdowns_count > 0,
+                        'assembly' => $reportYear->gfps_assembly_attendances_count > 0,
+                        'membership' => $reportYear->gfps_membership_summary_count > 0,
+                        'funding' => $reportYear->program_funding_summaries_count > 0,
+                        'rstl' => $reportYear->rstl_monthly_breakdowns_count > 0,
+                        'scholarships' => $reportYear->scholarship_snapshots_count > 0,
+                    ],
                 ]),
             'canToggleLock' => request()->user()?->can('toggleLock', ReportYear::class) ?? false,
         ]);

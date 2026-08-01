@@ -290,7 +290,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
             <div v-if="reportYear.scholarshipSnapshots.length > 0" class="mt-8">
                 <div class="mb-4 flex items-center gap-2">
                     <span class="text-sm font-semibold text-zinc-900">Snapshot History</span>
-                    <span class="rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-700">{{
+                    <span class="rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-sm font-bold text-zinc-700">{{
                         reportYear.scholarshipSnapshots.length
                     }}</span>
                 </div>
@@ -319,7 +319,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                                         <span class="text-sm font-semibold text-zinc-900"> As of {{ snap.asOfDate ?? 'No date' }} </span>
                                         <span
                                             v-if="index === 0"
-                                            class="inline-flex items-center rounded-full bg-emerald-100/80 px-2 py-0.5 text-[10px] font-bold text-emerald-800"
+                                            class="inline-flex items-center rounded-full bg-emerald-100/80 px-2 py-0.5 text-sm font-bold text-emerald-800"
                                         >
                                             Latest Snapshot
                                         </span>
@@ -344,7 +344,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                                             }}</span></span
                                         >
                                     </div>
-                                    <p class="mt-2 flex items-center gap-1.5 text-[10px] text-zinc-400">
+                                    <p class="mt-2 flex items-center gap-1.5 text-sm text-zinc-600">
                                         <Calendar class="size-3 text-zinc-400" />
                                         <span
                                             >Added
@@ -516,7 +516,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
             <div v-else class="mt-6 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/20 p-8 text-center">
                 <Calendar class="mx-auto mb-3 size-8 text-zinc-400" />
                 <h4 class="text-sm font-semibold text-zinc-900">No snapshots recorded</h4>
-                <p class="mx-auto mt-1 max-w-sm text-xs text-zinc-500">
+                <p class="mx-auto mt-1 max-w-sm text-sm text-zinc-600">
                     No scholarship data snapshots have been added for this year yet. Click "Add New Snapshot" above to create the first record.
                 </p>
             </div>

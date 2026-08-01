@@ -150,6 +150,20 @@ export interface EditableReportYear {
     isLocked: boolean;
 }
 
+/**
+ * Which data sections of a report year already hold rows. Drives the coverage
+ * markers on the report-years index so a year's remaining data entry is
+ * visible without opening it.
+ */
+export interface ReportYearSectionCoverage {
+    employees: boolean;
+    assembly: boolean;
+    membership: boolean;
+    funding: boolean;
+    rstl: boolean;
+    scholarships: boolean;
+}
+
 export interface ManagedReportYearListItem {
     id: number;
     year: number;
@@ -158,6 +172,7 @@ export interface ManagedReportYearListItem {
     status: 'pending' | 'published';
     publishedAt: string | null;
     isLocked: boolean;
+    sections: ReportYearSectionCoverage;
 }
 
 export interface SectionTimestamps {

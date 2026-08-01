@@ -172,8 +172,8 @@ watch(
                         <h1 class="report-years-edit-hero-title">
                             {{ displayReportTitle }}
                         </h1>
-                        <p class="report-years-lede text-sm">
-                            Sections may be updated in any order. Save each tab when you finish that section. Visible tabs follow your account access.
+                        <p class="report-years-lede">
+                            Sections may be updated in any order. Save each tab when you finish. Visible tabs follow your account access.
                         </p>
                     </div>
 

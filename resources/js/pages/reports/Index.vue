@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatPublishedAt } from '@/helpers/formatPublishedAt';
@@ -42,9 +35,13 @@ const canDelete = computed(() => page.props.auth.user?.can?.deleteReportYears ==
 
 const localReportYears = ref<ManagedReportYearListItem[]>([...props.reportYears]);
 
-watch(() => props.reportYears, (newVal) => {
-    localReportYears.value = [...newVal];
-}, { deep: true });
+watch(
+    () => props.reportYears,
+    (newVal) => {
+        localReportYears.value = [...newVal];
+    },
+    { deep: true },
+);
 
 const searchQuery = ref('');
 const statusTab = ref<'all' | 'published' | 'pending'>('all');
@@ -146,24 +143,13 @@ function confirmDeleteReportYear(): void {
 </script>
 
 <template>
-    <AppLayout :show-footer="false" content-class="report-years-page">
+    <AppLayout :show-footer="false" content-class="report-years-page report-years-page--index">
         <Head title="GAD Database" />
 
         <div class="report-years-inner">
             <header class="report-years-header">
-                <div>
-                    <p class="report-years-kicker">GAD database</p>
-                    <h1 class="report-years-title">Sex Disaggregated Data Reports</h1>
-                    <p class="report-years-lede">
-                        Track, analyze, and manage region-wide gender-disaggregated datasets, human resource
-                        demographics, and institutional GAD program statistics.
-                    </p>
-                </div>
-                <Link
-                    v-if="canCreate"
-                    :href="route('report-years.create')"
-                    class="report-years-btn-primary transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
-                >
+                <h1 class="report-years-title">Sex Disaggregated Data Reports</h1>
+                <Link v-if="canCreate" :href="route('report-years.create')" class="report-years-btn-primary">
                     <Plus class="size-4" :stroke-width="2.5" aria-hidden="true" />
                     Create new year
                 </Link>
@@ -173,18 +159,10 @@ function confirmDeleteReportYear(): void {
                 <FileChartColumnIncreasing class="mb-4 size-10 text-slate-300" :stroke-width="1.5" aria-hidden="true" />
                 <h3 class="text-lg font-medium text-black">No reports found</h3>
                 <p class="mt-2 max-w-sm text-sm text-black">
-                    <template v-if="canCreate">
-                        Get started by creating a new year to track GAD metrics.
-                    </template>
-                    <template v-else>
-                        No reports have been created yet. Please check back later or contact an administrator.
-                    </template>
+                    <template v-if="canCreate"> Get started by creating a new year to track GAD metrics. </template>
+                    <template v-else> No reports have been created yet. Please check back later or contact an administrator. </template>
                 </p>
-                <Link
-                    v-if="canCreate"
-                    :href="route('report-years.create')"
-                    class="report-years-btn-primary mt-6 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
-                >
+                <Link v-if="canCreate" :href="route('report-years.create')" class="report-years-btn-primary mt-6">
                     <Plus class="size-4" :stroke-width="2" aria-hidden="true" />
                     Create report year
                 </Link>
@@ -192,14 +170,13 @@ function confirmDeleteReportYear(): void {
 
             <div v-else class="report-years-shell">
                 <div class="report-years-toolbar">
-                    <div class="report-years-filter-tabs" role="tablist" aria-label="Filter by status">
+                    <div class="report-years-filter-tabs" role="group" aria-label="Filter by status">
                         <button
                             v-for="tab in tabs"
                             :key="tab.id"
                             type="button"
-                            role="tab"
-                            :aria-selected="statusTab === tab.id"
-                            class="report-years-filter-tab transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:scale-[0.98] active:scale-[0.95]"
+                            :aria-pressed="statusTab === tab.id"
+                            class="report-years-filter-tab"
                             :class="{ 'is-active': statusTab === tab.id }"
                             @click="statusTab = tab.id"
                         >
@@ -208,21 +185,18 @@ function confirmDeleteReportYear(): void {
                         </button>
                     </div>
 
-                    <div class="flex w-full items-center gap-3 sm:w-auto">
+                    <div class="flex w-full items-center gap-2 sm:w-auto">
                         <div class="report-years-search-wrap">
                             <Search class="report-years-search-icon" aria-hidden="true" />
                             <Input
                                 v-model="searchQuery"
                                 type="search"
                                 class="report-years-search"
+                                placeholder="Search year or title"
+                                aria-label="Search report years"
                             />
                         </div>
-                        <button
-                            type="button"
-                            class="report-years-btn-icon transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
-                            aria-label="Reset filters"
-                            @click="resetFilters"
-                        >
+                        <button type="button" class="report-years-btn-icon" aria-label="Reset filters" @click="resetFilters">
                             <RefreshCw class="size-4" :stroke-width="2" />
                         </button>
                     </div>
@@ -230,44 +204,42 @@ function confirmDeleteReportYear(): void {
 
                 <div class="report-years-table-wrap">
                     <table class="report-years-table">
+                        <caption class="sr-only">
+                            Report years, newest first. Use the status filters and search above to narrow the list.
+                        </caption>
                         <thead>
                             <tr>
-                                <th scope="col" class="w-24">Year</th>
+                                <th scope="col" class="w-20">Year</th>
                                 <th scope="col">Title</th>
-                                <th scope="col" class="w-52">Published</th>
                                 <th scope="col" class="w-32">Status</th>
-                                <th scope="col" class="w-32">Actions</th>
+                                <th scope="col" class="w-56">Published</th>
+                                <th scope="col" class="w-28 text-right">Actions</th>
                             </tr>
                         </thead>
                         <transition-group name="list" tag="tbody">
                             <tr v-if="filteredYears.length === 0" key="empty">
-                                <td colspan="5" class="py-12 text-center text-sm text-slate-600">
-                                    No reports found matching your criteria.
-                                    <button
-                                        type="button"
-                                        class="ml-1 font-medium text-blue-700 underline underline-offset-4 hover:text-blue-800 transition-colors duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
-                                        @click="resetFilters"
-                                    >
-                                        Clear filters
-                                    </button>
+                                <td colspan="5" class="report-years-no-match">
+                                    No report years match your filters.
+                                    <button type="button" class="report-years-inline-link" @click="resetFilters">Clear filters</button>
                                 </td>
                             </tr>
                             <tr
                                 v-for="reportYear in paginatedYears"
                                 :key="reportYear.id"
-                                class="transition-colors duration-500"
-                                :class="{ 'bg-blue-50/70 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.2)]': (reportYear as any)._justUpdated }"
+                                :class="{ 'is-highlighted': (reportYear as any)._justUpdated }"
                             >
                                 <td>
-                                    <div class="flex items-center gap-2">
-                                        <span class="report-years-table-year">{{ reportYear.year }}</span>
-                                        <Lock v-if="reportYear.isLocked" class="size-3 text-amber-600" aria-hidden="true" />
-                                    </div>
+                                    <span class="report-years-table-year">
+                                        {{ reportYear.year }}
+                                        <Lock v-if="reportYear.isLocked" class="report-years-table-lock" aria-hidden="true" />
+                                        <span v-if="reportYear.isLocked" class="sr-only">Locked</span>
+                                    </span>
                                 </td>
                                 <td>
-                                    <span class="line-clamp-1">{{ reportYear.title ?? '—' }}</span>
+                                    <Link :href="route('report-years.edit', reportYear.id)" prefetch class="report-years-table-title">
+                                        {{ reportYear.title ?? `Report year ${reportYear.year}` }}
+                                    </Link>
                                 </td>
-                                <td class="tabular-nums">{{ formatPublishedAt(reportYear.publishedAt) ?? '—' }}</td>
                                 <td>
                                     <span class="report-years-status">
                                         <span
@@ -282,16 +254,21 @@ function confirmDeleteReportYear(): void {
                                         {{ reportYear.status }}
                                     </span>
                                 </td>
+                                <td class="report-years-table-meta">
+                                    {{ formatPublishedAt(reportYear.publishedAt) ?? '—' }}
+                                </td>
                                 <td>
                                     <div class="report-years-row-actions">
                                         <Tooltip v-if="canToggleLock">
                                             <TooltipTrigger as-child>
                                                 <button
                                                     type="button"
-                                                    class="report-years-row-action inline-flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
-                                                    :class="reportYear.isLocked ? 'text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100' : ''"
+                                                    class="report-years-row-action"
+                                                    :class="{ 'report-years-row-action--locked': reportYear.isLocked }"
                                                     :aria-label="`${reportYear.isLocked ? 'Unlock' : 'Lock'} Report Year ${reportYear.year}`"
-                                                    @click="router.patch(route('report-years.toggle-lock', reportYear.id), {}, { preserveScroll: true })"
+                                                    @click="
+                                                        router.patch(route('report-years.toggle-lock', reportYear.id), {}, { preserveScroll: true })
+                                                    "
                                                 >
                                                     <Lock v-if="reportYear.isLocked" class="size-4" aria-hidden="true" />
                                                     <Unlock v-else class="size-4" aria-hidden="true" />
@@ -304,7 +281,7 @@ function confirmDeleteReportYear(): void {
                                                 <Link
                                                     :href="route('report-years.edit', reportYear.id)"
                                                     prefetch
-                                                    class="report-years-row-action inline-flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
+                                                    class="report-years-row-action"
                                                     :aria-label="`Edit report year ${reportYear.year}`"
                                                 >
                                                     <Pencil class="size-4" :stroke-width="2" aria-hidden="true" />
@@ -316,7 +293,7 @@ function confirmDeleteReportYear(): void {
                                             <TooltipTrigger as-child>
                                                 <button
                                                     type="button"
-                                                    class="report-years-row-action report-years-row-action--danger inline-flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
+                                                    class="report-years-row-action report-years-row-action--danger"
                                                     :aria-label="`Delete Report Year ${reportYear.year}`"
                                                     @click="openDeleteDialog(reportYear)"
                                                 >
@@ -333,33 +310,27 @@ function confirmDeleteReportYear(): void {
                 </div>
 
                 <footer class="report-years-footer">
-                    <p class="report-years-footer-meta">
+                    <p class="report-years-footer-meta" aria-live="polite">
                         <template v-if="filteredYears.length === 0">0 of 0</template>
                         <template v-else>Showing {{ showingFrom }}–{{ showingTo }} of {{ filteredYears.length }}</template>
                     </p>
-                    <div v-if="filteredYears.length > 0" class="report-years-pagination">
-                        <button
-                            type="button"
-                            class="report-years-page-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
-                            :disabled="currentPage <= 1"
-                            aria-label="First page"
-                            @click="goPage(1)"
-                        >
+                    <nav v-if="filteredYears.length > 0" class="report-years-pagination" aria-label="Pagination">
+                        <button type="button" class="report-years-page-btn" :disabled="currentPage <= 1" aria-label="First page" @click="goPage(1)">
                             <ChevronsLeft class="size-4" :stroke-width="2" />
                         </button>
                         <button
                             type="button"
-                            class="report-years-page-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
+                            class="report-years-page-btn"
                             :disabled="currentPage <= 1"
                             aria-label="Previous page"
                             @click="goPage(currentPage - 1)"
                         >
                             <ChevronLeft class="size-4" :stroke-width="2" />
                         </button>
-                        <span class="report-years-page-indicator">{{ currentPage }}</span>
+                        <span class="report-years-page-indicator" aria-current="page">{{ currentPage }}</span>
                         <button
                             type="button"
-                            class="report-years-page-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
+                            class="report-years-page-btn"
                             :disabled="currentPage >= totalPages"
                             aria-label="Next page"
                             @click="goPage(currentPage + 1)"
@@ -368,14 +339,14 @@ function confirmDeleteReportYear(): void {
                         </button>
                         <button
                             type="button"
-                            class="report-years-page-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.95]"
+                            class="report-years-page-btn"
                             :disabled="currentPage >= totalPages"
                             aria-label="Last page"
                             @click="goPage(totalPages)"
                         >
                             <ChevronsRight class="size-4" :stroke-width="2" />
                         </button>
-                    </div>
+                    </nav>
                 </footer>
             </div>
         </div>
@@ -389,25 +360,15 @@ function confirmDeleteReportYear(): void {
                     <DialogTitle class="text-black">Delete Report Year</DialogTitle>
                     <DialogDescription v-if="deleteTarget" class="text-black">
                         This will permanently delete the report for
-                        <span class="font-medium text-black">{{ deleteTarget.year }}</span>. All associated data
-                        will be removed. This action cannot be undone.
+                        <span class="font-medium text-black">{{ deleteTarget.year }}</span
+                        >. All associated data will be removed. This action cannot be undone.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter class="report-years-dialog-footer mt-6 gap-3">
-                    <button
-                        type="button"
-                        class="report-years-btn-secondary transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
-                        :disabled="deleteProcessing"
-                        @click="onDeleteDialogOpenChange(false)"
-                    >
+                    <button type="button" class="report-years-btn-secondary" :disabled="deleteProcessing" @click="onDeleteDialogOpenChange(false)">
                         Cancel
                     </button>
-                    <button
-                        type="button"
-                        class="report-years-btn-danger transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
-                        :disabled="deleteProcessing"
-                        @click="confirmDeleteReportYear"
-                    >
+                    <button type="button" class="report-years-btn-danger" :disabled="deleteProcessing" @click="confirmDeleteReportYear">
                         {{ deleteProcessing ? 'Deleting...' : 'Delete Report' }}
                     </button>
                 </DialogFooter>
@@ -420,15 +381,31 @@ function confirmDeleteReportYear(): void {
 .list-enter-active,
 .list-leave-active {
     transition-property: opacity, transform;
-    transition-duration: 200ms;
     transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+/* Exit faster than enter — the system responding should outpace it revealing */
+.list-enter-active {
+    transition-duration: 200ms;
+}
+.list-leave-active {
+    position: absolute;
+    transition-duration: 140ms;
 }
 .list-enter-from,
 .list-leave-to {
     opacity: 0;
     transform: scale(0.97) translateY(8px);
 }
-.list-leave-active {
-    position: absolute;
+
+@media (prefers-reduced-motion: reduce) {
+    .list-enter-active,
+    .list-leave-active {
+        transition-property: opacity;
+        transition-duration: 120ms;
+    }
+    .list-enter-from,
+    .list-leave-to {
+        transform: none;
+    }
 }
 </style>
