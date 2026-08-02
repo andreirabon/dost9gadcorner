@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,8 +96,6 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
 
 <template>
     <section id="panel-metadata" class="report-panel" role="tabpanel" aria-labelledby="tab-metadata">
-        <HeadingSmall variant="report" title="Metadata" />
-
         <form class="report-form report-form--edit w-full" autocomplete="off" @submit.prevent="save">
             <div class="grid gap-4 sm:grid-cols-[10rem_14rem]">
                 <div class="grid gap-2">
@@ -142,7 +139,10 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
                 </div>
             </div>
 
-            <div class="grid gap-2">
+            <!-- Capped at a readable measure: the panel runs full width for the
+                 data tables in sibling sections, but a text field stretched to
+                 1400px reads as unbounded and overruns a comfortable line. -->
+            <div class="grid max-w-3xl gap-2">
                 <div class="report-field-labelrow">
                     <Label for="title">Title</Label>
                     <span class="report-field-counter">Up to {{ REPORT_YEAR_FIELD_LIMITS.title }} characters</span>
@@ -161,7 +161,7 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
                 <InputError :message="form.errors.title" />
             </div>
 
-            <div class="grid gap-2">
+            <div class="grid max-w-3xl gap-2">
                 <div class="report-field-labelrow">
                     <Label for="description">Description</Label>
                     <span class="report-field-counter" aria-live="polite">
@@ -182,7 +182,7 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
 
             <InputError :message="patchError" />
 
-            <div class="flex flex-wrap items-center gap-4 border-t border-zinc-200/80 pt-2">
+            <div class="report-years-form-actions">
                 <Button
                     type="submit"
                     :disabled="saving || isReadOnly"

@@ -2,12 +2,13 @@
 import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
 import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import {
+    niceAxisScale,
     REPORT_CHART_FONT_FAMILY,
     reportChartCspNonce,
     reportDisaggPalette,
     useReportChartMotion,
 } from '@/lib/reportChartConstants';
-import { reportChartTooltip, reportChartUi } from '@/lib/reportChartUi';
+import { reportChartDataLabelBackground, reportChartTooltip, reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
@@ -60,7 +61,7 @@ const chartOptions = computed<ApexOptions>(() => {
         5,
         ...props.data.map((entry) => entry.female + entry.femaleLed + entry.male + entry.maleLed),
     );
-    const yMax = Math.ceil(maxValue / 5) * 5;
+    const { max: yMax, tickAmount } = niceAxisScale(maxValue);
 
     return {
         theme: {
@@ -95,9 +96,13 @@ const chartOptions = computed<ApexOptions>(() => {
         xaxis: {
             categories: props.data.map((entry) => entry.label),
             labels: {
+                rotate: 0,
+                rotateAlways: false,
+                trim: false,
+                formatter: (value: string) => value.slice(0, 3),
                 style: {
                     fontFamily: REPORT_CHART_FONT_FAMILY,
-                    fontSize: '12px',
+                    fontSize: '13px',
                     colors: ui.labelMuted,
                 },
             },
@@ -105,11 +110,11 @@ const chartOptions = computed<ApexOptions>(() => {
         yaxis: {
             min: 0,
             max: yMax,
-            tickAmount: Math.min(8, Math.max(4, Math.floor(yMax / 5))),
+            tickAmount,
             labels: {
                 style: {
                     fontFamily: REPORT_CHART_FONT_FAMILY,
-                    fontSize: '12px',
+                    fontSize: '13px',
                     colors: [ui.labelMuted],
                 },
             },
@@ -118,7 +123,7 @@ const chartOptions = computed<ApexOptions>(() => {
             position: 'bottom',
             horizontalAlign: 'center',
             offsetY: 4,
-            fontSize: '12px',
+            fontSize: '13px',
             fontFamily: REPORT_CHART_FONT_FAMILY,
             itemMargin: {
                 horizontal: 10,
@@ -137,8 +142,13 @@ const chartOptions = computed<ApexOptions>(() => {
             formatter: (value: number) => (value === 0 ? '' : `${value}`),
             style: {
                 fontFamily: REPORT_CHART_FONT_FAMILY,
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: 600,
+                colors: ['#ffffff'],
+            },
+            background: reportChartDataLabelBackground(),
+            dropShadow: {
+                enabled: false,
             },
         },
         stroke: {

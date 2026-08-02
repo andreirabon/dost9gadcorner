@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,55 +69,56 @@ const total = computed(() => toNumber(form.female_count) + toNumber(form.male_co
 
 <template>
     <section id="panel-gfps_membership" class="report-panel" role="tabpanel" aria-labelledby="tab-gfps_membership">
-        <HeadingSmall variant="report" title="GFPS membership" />
-
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
-            <div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm">
-                <div class="grid gap-4 sm:grid-cols-3">
-                    <div class="grid gap-2">
-                        <Label for="gfps_female_count">Female</Label>
-                        <Input
-                            id="gfps_female_count"
-                            v-model="form.female_count"
-                            type="number"
-                            min="0"
-                            inputmode="numeric"
-                            :disabled="isReadOnly"
-                            :class="inputClass"
-                        />
-                        <InputError :message="form.errors.female_count" />
-                    </div>
+            <!-- No wrapper card: the panel is already one, and three count fields
+                 stretched across the full panel width gave each a ~460px box for a
+                 two-digit number. Fixed columns size the fields to their content. -->
+            <div class="grid gap-4 sm:grid-cols-[repeat(3,minmax(0,12rem))]">
+                <div class="grid gap-2">
+                    <Label for="gfps_female_count">Female</Label>
+                    <Input
+                        id="gfps_female_count"
+                        v-model="form.female_count"
+                        type="number"
+                        min="0"
+                        inputmode="numeric"
+                        :disabled="isReadOnly"
+                        :class="inputClass"
+                    />
+                    <InputError :message="form.errors.female_count" />
+                </div>
 
-                    <div class="grid gap-2">
-                        <Label for="gfps_male_count">Male</Label>
-                        <Input
-                            id="gfps_male_count"
-                            v-model="form.male_count"
-                            type="number"
-                            min="0"
-                            inputmode="numeric"
-                            :disabled="isReadOnly"
-                            :class="inputClass"
-                        />
-                        <InputError :message="form.errors.male_count" />
-                    </div>
+                <div class="grid gap-2">
+                    <Label for="gfps_male_count">Male</Label>
+                    <Input
+                        id="gfps_male_count"
+                        v-model="form.male_count"
+                        type="number"
+                        min="0"
+                        inputmode="numeric"
+                        :disabled="isReadOnly"
+                        :class="inputClass"
+                    />
+                    <InputError :message="form.errors.male_count" />
+                </div>
 
-                    <div class="report-derived-group grid gap-2">
-                        <Label for="gfps_total_count">Total members</Label>
-                        <Input
-                            id="gfps_total_count"
-                            :model-value="total"
-                            type="text"
-                            readonly
-                            tabindex="-1"
-                            aria-live="polite"
-                            :class="[inputClass, 'report-derived-field']"
-                        />
-                    </div>
+                <!-- Label stays left like Female/Male; the value itself is still
+                     centred by report-derived-field. -->
+                <div class="grid gap-2">
+                    <Label for="gfps_total_count">Total members</Label>
+                    <Input
+                        id="gfps_total_count"
+                        :model-value="total"
+                        type="text"
+                        readonly
+                        tabindex="-1"
+                        aria-live="polite"
+                        :class="[inputClass, 'report-derived-field']"
+                    />
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-4 border-t border-zinc-200/80 pt-2">
+            <div class="report-years-form-actions">
                 <Button
                     type="submit"
                     class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"

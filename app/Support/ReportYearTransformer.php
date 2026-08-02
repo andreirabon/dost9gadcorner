@@ -35,6 +35,8 @@ class ReportYearTransformer
         return [
             'id' => $reportYear->id,
             'year' => (string) $reportYear->year,
+            'title' => (string) $reportYear->title,
+            'description' => $reportYear->description,
             'reportData' => $this->transformReportData($reportYear),
         ];
     }

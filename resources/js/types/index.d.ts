@@ -33,6 +33,7 @@ export interface YearItem {
     id: number;
     year: string;
     href: string;
+    title?: string;
     description?: string;
     status?: 'pending' | 'published';
     reportData?: ReportYearData | null;

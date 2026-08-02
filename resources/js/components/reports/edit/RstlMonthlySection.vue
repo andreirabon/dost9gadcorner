@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,10 +41,12 @@ const { form, save, error } = useRowSection({
 
 <template>
     <section id="panel-rstl_monthly" class="report-panel" role="tabpanel" aria-labelledby="tab-rstl_monthly">
-        <HeadingSmall variant="report" title="RSTL by month" />
-
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
-            <div class="report-years-data-table-scroll">
+            <!-- Capped on the scroll container, not the table: the table carries
+                 min-w-full, which would win against a max-width set on itself.
+                 5xl still clears the 44rem min-width, so no scrollbar appears
+                 on desktop that was not there before. -->
+            <div class="report-years-data-table-scroll max-w-5xl">
                 <div class="report-years-data-table report-years-data-table--wide report-years-data-table--rstl">
                     <div class="report-years-data-head report-years-data-head--5col">
                         <span class="report-years-data-head-label">Month</span>

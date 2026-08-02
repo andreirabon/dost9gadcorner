@@ -33,6 +33,25 @@ export function reportChartUi(_appearance?: 'light'): ReportChartUi {
     };
 }
 
+/**
+ * Opaque pill behind bar/pie data labels. A thin stacked segment (or a small pie slice) leaves no
+ * room for a centered label without it overlapping the neighboring color — the background keeps
+ * the number fully legible instead of blending into (or clipping against) whatever's next to it.
+ * Dark fill + the existing white label text (set on every chart's dataLabels.style.colors) keeps
+ * the same contrast convention used everywhere else on these charts.
+ */
+export function reportChartDataLabelBackground(): NonNullable<ApexOptions['dataLabels']>['background'] {
+    return {
+        enabled: true,
+        backgroundColor: 'rgba(15, 23, 42, 0.82)',
+        borderRadius: 3,
+        padding: 4,
+        opacity: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.16)',
+    };
+}
+
 const REPORT_CHART_TOOLTIP_TEXT_COLOR = '#334155';
 const REPORT_CHART_TOOLTIP_TITLE_COLOR = '#0f172a';
 

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,10 +43,8 @@ function rowTotal(row: Record<string, unknown>): number {
 
 <template>
     <section id="panel-gfps_assemblies" class="report-panel" role="tabpanel" aria-labelledby="tab-gfps_assemblies">
-        <HeadingSmall variant="report" title="GFPS assemblies" />
-
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
-            <div class="report-years-data-table">
+            <div class="report-years-data-table report-years-data-table--narrow">
                 <div class="report-years-data-head report-years-data-head--4col">
                     <span class="report-years-data-head-label">Period</span>
                     <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>

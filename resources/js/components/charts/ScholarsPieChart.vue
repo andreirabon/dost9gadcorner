@@ -7,7 +7,7 @@ import {
     reportDisaggPalette,
     useReportChartMotion,
 } from '@/lib/reportChartConstants';
-import { reportChartPieTooltip, reportChartUi } from '@/lib/reportChartUi';
+import { reportChartDataLabelBackground, reportChartPieTooltip, reportChartUi } from '@/lib/reportChartUi';
 import type { ApexOptions } from 'apexcharts';
 import { computed } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
@@ -49,7 +49,7 @@ const chartOptions = computed<ApexOptions>(() => {
         legend: {
             position: 'bottom',
             horizontalAlign: 'center',
-            fontSize: '12px',
+            fontSize: '13px',
             fontFamily: REPORT_CHART_FONT_FAMILY,
             offsetY: 4,
             labels: {
@@ -72,7 +72,9 @@ const chartOptions = computed<ApexOptions>(() => {
                 fontFamily: REPORT_CHART_FONT_FAMILY,
                 fontSize: '13px',
                 fontWeight: 600,
+                colors: ['#ffffff'],
             },
+            background: reportChartDataLabelBackground(),
             dropShadow: {
                 enabled: false,
             },

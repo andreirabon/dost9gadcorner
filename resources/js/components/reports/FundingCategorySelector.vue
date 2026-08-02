@@ -40,7 +40,7 @@ const selectCategory = (slug: string): void => {
 };
 
 const buttonClass = (isActive: boolean): string[] => [
-    'inline-flex items-center rounded-lg border px-3 py-1.5 text-sm font-semibold tracking-wide transition-[transform,background-color,border-color,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40 active:scale-[0.97]',
+    'inline-flex items-center rounded-lg border px-3.5 py-2 text-base font-semibold tracking-wide transition-[transform,background-color,border-color,color] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40 active:scale-[0.97]',
     isActive
         ? 'border-purple-500 bg-purple-600 text-white shadow-sm'
         : 'border-purple-400/35 bg-purple-900/55 text-purple-100 hover:border-purple-400/55 hover:bg-purple-900/75 report-light:border-slate-300 report-light:bg-slate-50 report-light:text-slate-700 report-light:hover:border-slate-400 report-light:hover:bg-slate-100',

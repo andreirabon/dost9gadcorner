@@ -213,7 +213,7 @@ function confirmDeleteReportYear(): void {
                                 <th scope="col">Title</th>
                                 <th scope="col" class="w-32">Status</th>
                                 <th scope="col" class="w-56">Published</th>
-                                <th scope="col" class="w-28 text-right">Actions</th>
+                                <th scope="col" class="w-28 text-center">Actions</th>
                             </tr>
                         </thead>
                         <transition-group name="list" tag="tbody">

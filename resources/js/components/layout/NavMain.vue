@@ -30,29 +30,31 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
 
 <template>
     <SidebarGroup class="p-0">
-        <SidebarGroupLabel
-            v-if="sectionLabel"
-            class="mb-2.5 px-3 pt-1 pb-2 text-[10px] font-semibold tracking-[0.16em] text-blue-200/40 uppercase group-data-[collapsible=icon]:hidden"
-        >
+        <SidebarGroupLabel v-if="sectionLabel" class="sidebar-section-label h-auto group-data-[collapsible=icon]:hidden">
             {{ sectionLabel }}
         </SidebarGroupLabel>
         <SidebarMenu class="gap-1">
             <SidebarMenuItem v-for="item in items" :key="item.title">
-                <SidebarMenuButton
-                    as-child
-                    :is-active="navItemIsActive(page.url, item.href)"
-                    :tooltip="item.title"
-                    class="sidebar-nav-item"
-                >
+                <SidebarMenuButton as-child :is-active="navItemIsActive(page.url, item.href)" :tooltip="item.title" class="sidebar-nav-item">
                     <template v-if="item.onClick">
                         <button
                             type="button"
                             class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 group-data-[collapsible=icon]:justify-center"
                             @click="item.onClick"
                         >
-                            <component :is="item.icon" class="size-[18px] shrink-0" :stroke-width="1.8" />
-                            <span class="group-data-[collapsible=icon]:hidden flex-1 text-left">{{ item.title }}</span>
-                            <span v-if="item.badge" class="group-data-[collapsible=icon]:hidden ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary">{{ item.badge }}</span>
+                            <component :is="item.icon" class="size-4.5 shrink-0" :stroke-width="1.8" />
+                            <!-- The shared sidebar variant truncates the last span; these
+                                 override it so a long nav label wraps instead of clipping
+                                 to an ellipsis. `!` is required — the variant's utility
+                                 outranks any rule we could write in the components layer. -->
+                            <span class="flex-1 overflow-visible! text-left whitespace-normal! group-data-[collapsible=icon]:hidden">{{
+                                item.title
+                            }}</span>
+                            <span
+                                v-if="item.badge"
+                                class="ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[10px] leading-none font-medium text-primary group-data-[collapsible=icon]:hidden"
+                                >{{ item.badge }}</span
+                            >
                         </button>
                     </template>
                     <template v-else>
@@ -60,9 +62,19 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
                             :href="item.href"
                             class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 group-data-[collapsible=icon]:justify-center"
                         >
-                            <component :is="item.icon" class="size-[18px] shrink-0" :stroke-width="1.8" />
-                            <span class="group-data-[collapsible=icon]:hidden flex-1 text-left">{{ item.title }}</span>
-                            <span v-if="item.badge" class="group-data-[collapsible=icon]:hidden ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary">{{ item.badge }}</span>
+                            <component :is="item.icon" class="size-4.5 shrink-0" :stroke-width="1.8" />
+                            <!-- The shared sidebar variant truncates the last span; these
+                                 override it so a long nav label wraps instead of clipping
+                                 to an ellipsis. `!` is required — the variant's utility
+                                 outranks any rule we could write in the components layer. -->
+                            <span class="flex-1 overflow-visible! text-left whitespace-normal! group-data-[collapsible=icon]:hidden">{{
+                                item.title
+                            }}</span>
+                            <span
+                                v-if="item.badge"
+                                class="ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[10px] leading-none font-medium text-primary group-data-[collapsible=icon]:hidden"
+                                >{{ item.badge }}</span
+                            >
                         </Link>
                     </template>
                 </SidebarMenuButton>

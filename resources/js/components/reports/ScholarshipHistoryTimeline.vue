@@ -70,18 +70,18 @@ const isExpanded = (id: number): boolean => expandedIds.value.has(id);
                         >
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                         </svg>
-                        <span class="text-sm tracking-tight" :class="isExpanded(historyRowId(entry, idx)) ? 'font-semibold' : 'font-medium'">
+                        <span class="text-base tracking-tight" :class="isExpanded(historyRowId(entry, idx)) ? 'font-semibold' : 'font-medium'">
                             {{ entry.asOfDate ?? 'No date' }}
                         </span>
                         <span
                             v-if="idx === 0"
-                            class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-emerald-400 uppercase report-light:bg-emerald-100/80 report-light:text-emerald-800"
+                            class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold tracking-wider text-emerald-400 uppercase report-light:bg-emerald-100/80 report-light:text-emerald-800"
                         >
                             Latest
                         </span>
                     </div>
                     <span
-                        class="text-sm font-medium tabular-nums"
+                        class="text-base font-medium tabular-nums"
                         :class="
                             isExpanded(historyRowId(entry, idx))
                                 ? 'text-purple-200 report-light:text-purple-900/90'
@@ -101,30 +101,30 @@ const isExpanded = (id: number): boolean => expandedIds.value.has(id);
                 >
                     <div
                         v-if="isExpanded(historyRowId(entry, idx))"
-                        class="mt-3.5 border-t border-purple-500/10 pt-3 text-sm report-light:border-purple-900/5"
+                        class="mt-3.5 border-t border-purple-500/10 pt-3 text-base report-light:border-purple-900/5"
                     >
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <p class="text-[10px] font-semibold tracking-wider text-purple-300/50 uppercase report-light:text-slate-400">
+                                <p class="text-xs font-semibold tracking-wider text-purple-300/50 uppercase report-light:text-slate-400">
                                     School Year
                                 </p>
-                                <p class="mt-1.5 text-sm font-bold text-purple-100 report-light:text-slate-800">
+                                <p class="mt-1.5 text-base font-bold text-purple-100 report-light:text-slate-800">
                                     {{ entry.schoolYearLabel || 'No school year' }}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-[10px] font-semibold tracking-wider text-purple-300/50 uppercase report-light:text-slate-400">
+                                <p class="text-xs font-semibold tracking-wider text-purple-300/50 uppercase report-light:text-slate-400">
                                     Gender Breakdown
                                 </p>
                                 <div class="mt-1 flex items-baseline gap-3">
-                                    <span class="text-sm text-purple-300/70 report-light:text-slate-500">
+                                    <span class="text-base text-purple-300/70 report-light:text-slate-500">
                                         Female:
                                         <span class="ml-0.5 font-mono text-base font-bold text-purple-100 report-light:text-slate-900">{{
                                             entry.femaleCount
                                         }}</span>
                                     </span>
                                     <span class="text-purple-500/20 report-light:text-slate-200">|</span>
-                                    <span class="text-sm text-purple-300/70 report-light:text-slate-500">
+                                    <span class="text-base text-purple-300/70 report-light:text-slate-500">
                                         Male:
                                         <span class="ml-0.5 font-mono text-base font-bold text-purple-100 report-light:text-slate-900">{{
                                             entry.maleCount

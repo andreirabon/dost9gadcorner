@@ -127,16 +127,26 @@ const sectionState = computed<Record<string, SectionState>>(() => {
     };
 });
 
-const enteredSectionCount = computed(() => visibleTabs.value.filter((tab) => sectionState.value[tab.id] !== 'empty').length);
+/** Plain-language headings for the visible breakdown under the lede. */
+const SECTION_STATE_HEADING: Record<SectionState, string> = {
+    complete: 'Complete data',
+    partial: 'Incomplete data',
+    empty: 'No data',
+};
 
-/** The chip mirrors the marks: nothing started, some started, or all started. */
-const overallState = computed<SectionState>(() => {
-    if (enteredSectionCount.value === 0) {
-        return 'empty';
-    }
-
-    return enteredSectionCount.value === visibleTabs.value.length ? 'complete' : 'partial';
-});
+/**
+ * Same three states as the tab marks, spelled out. Empty groups are dropped so
+ * the hero never carries a "No data — none" line on a finished report.
+ */
+const sectionBreakdown = computed(() =>
+    (['complete', 'partial', 'empty'] as const)
+        .map((state) => ({
+            state,
+            heading: SECTION_STATE_HEADING[state],
+            names: visibleTabs.value.filter((tab) => sectionState.value[tab.id] === state).map((tab) => tab.name),
+        }))
+        .filter((group) => group.names.length > 0),
+);
 
 const isReadOnly = computed(() => props.reportYear.isLocked);
 
@@ -240,9 +250,18 @@ watch(
                         <p class="report-years-lede">
                             Sections may be updated in any order. Save each tab when you finish. Visible tabs follow your account access.
                         </p>
-                        <p class="report-years-tab-progress" :class="`is-${overallState}`" role="status" aria-live="polite">
-                            {{ enteredSectionCount }} of {{ visibleTabs.length }} sections have data
-                        </p>
+                        <!-- Says outright what the tab dots only imply, so the state is
+                             readable without opening every tab. Carries the counts too:
+                             a separate progress chip disagreed with these groups. -->
+                        <dl class="report-years-breakdown" role="status" aria-live="polite">
+                            <div v-for="group in sectionBreakdown" :key="group.state" class="report-years-breakdown-row">
+                                <dt class="report-years-breakdown-term" :class="`is-${group.state}`">
+                                    <span class="report-years-breakdown-mark" aria-hidden="true" />
+                                    {{ group.heading }} ({{ group.names.length }})
+                                </dt>
+                                <dd class="report-years-breakdown-names">{{ group.names.join(', ') }}</dd>
+                            </div>
+                        </dl>
                     </div>
 
                     <div class="report-years-tab-bar">

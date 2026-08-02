@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRowSection } from '@/composables/useRowSection';
-import { REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
+import { REPORT_TABLE_AMOUNT_INPUT_CLASS, REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
 import type { EditableProgramFundingRow } from '@/types/reports';
 import { CheckCircle2, Loader2, Save } from '@lucide/vue';
 import { computed } from 'vue';
@@ -23,6 +22,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<{ notice: [message: string] }>();
 
 const tableInputClass = REPORT_TABLE_INPUT_CLASS;
+const amountInputClass = REPORT_TABLE_AMOUNT_INPUT_CLASS;
 
 const VALUE_FIELDS = ['female_projects', 'female_amount', 'male_projects', 'male_amount'] as const;
 
@@ -68,106 +68,100 @@ const cestFundingRows = computed(() => fundingRows.value.filter((item) => isCest
 
 <template>
     <section id="panel-program_funding" class="report-panel" role="tabpanel" aria-labelledby="tab-program_funding">
-        <HeadingSmall variant="report" title="Program funding" />
-
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
             <div class="space-y-6">
+                <!-- Cap on the scroll container; see RstlMonthlySection. 6xl clears
+                     the funding table's 52rem min-width. -->
                 <div
                     v-for="group in [
                         { key: 'setup', title: 'SETUP', rows: setupFundingRows },
                         { key: 'cest', title: 'CEST', rows: cestFundingRows },
                     ]"
                     :key="group.key"
-                    class="space-y-2"
+                    class="report-years-data-table-scroll max-w-6xl"
                 >
-                    <p class="text-sm font-semibold tracking-wide text-foreground uppercase">{{ group.title }}</p>
-                    <div class="report-years-data-table-scroll">
-                        <div class="report-years-data-table report-years-data-table--wide report-years-data-table--funding">
-                            <div class="report-years-data-head report-years-data-head--funding">
-                                <span class="report-years-data-head-label">Program</span>
-                                <span class="report-years-data-head-label report-years-data-head-label--center">Female projects</span>
-                                <span class="report-years-data-head-label report-years-data-head-label--center">Female amount</span>
-                                <span class="report-years-data-head-label report-years-data-head-label--center">Male projects</span>
-                                <span class="report-years-data-head-label report-years-data-head-label--center">Male amount</span>
+                    <div class="report-years-data-table report-years-data-table--wide report-years-data-table--funding">
+                        <div class="report-years-data-head report-years-data-head--funding">
+                            <!-- Group name lives in the column header rather than a
+                                     separate heading above the table: one line instead of
+                                     two, and it labels the column it actually describes. -->
+                            <span class="report-years-data-head-label">{{ group.title }} Program</span>
+                            <span class="report-years-data-head-label report-years-data-head-label--center">Female projects</span>
+                            <span class="report-years-data-head-label report-years-data-head-label--center">Female amount</span>
+                            <span class="report-years-data-head-label report-years-data-head-label--center">Male projects</span>
+                            <span class="report-years-data-head-label report-years-data-head-label--center">Male amount</span>
+                        </div>
+                        <div
+                            v-for="item in group.rows"
+                            :key="item.row.funding_program_id"
+                            class="report-years-data-row report-years-data-row--funding"
+                        >
+                            <div class="report-years-data-row-label">
+                                {{ item.label }}
                             </div>
-                            <div
-                                v-for="item in group.rows"
-                                :key="item.row.funding_program_id"
-                                class="report-years-data-row report-years-data-row--funding"
-                            >
-                                <div class="report-years-data-row-label">
-                                    {{ item.label }}
-                                </div>
 
-                                <div class="report-years-data-cell">
-                                    <Label
-                                        :for="`funding_female_projects_${item.row.funding_program_id}`"
-                                        class="report-years-data-cell-label md:sr-only"
-                                        >Female projects</Label
-                                    >
-                                    <Input
-                                        :id="`funding_female_projects_${item.row.funding_program_id}`"
-                                        v-model="item.row.female_projects"
-                                        type="number"
-                                        min="0"
-                                        inputmode="numeric"
-                                        :disabled="isReadOnly"
-                                        :class="tableInputClass"
-                                    />
-                                </div>
+                            <div class="report-years-data-cell">
+                                <Label :for="`funding_female_projects_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only"
+                                    >Female projects</Label
+                                >
+                                <Input
+                                    :id="`funding_female_projects_${item.row.funding_program_id}`"
+                                    v-model="item.row.female_projects"
+                                    type="number"
+                                    min="0"
+                                    inputmode="numeric"
+                                    :disabled="isReadOnly"
+                                    :class="tableInputClass"
+                                />
+                            </div>
 
-                                <div class="report-years-data-cell">
-                                    <Label
-                                        :for="`funding_female_amount_${item.row.funding_program_id}`"
-                                        class="report-years-data-cell-label md:sr-only"
-                                        >Female amount</Label
-                                    >
-                                    <Input
-                                        :id="`funding_female_amount_${item.row.funding_program_id}`"
-                                        v-model="item.row.female_amount"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        inputmode="decimal"
-                                        placeholder="0.00"
-                                        :disabled="isReadOnly"
-                                        :class="tableInputClass"
-                                    />
-                                </div>
+                            <div class="report-years-data-cell">
+                                <Label :for="`funding_female_amount_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only"
+                                    >Female amount</Label
+                                >
+                                <Input
+                                    :id="`funding_female_amount_${item.row.funding_program_id}`"
+                                    v-model="item.row.female_amount"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    inputmode="decimal"
+                                    placeholder="0.00"
+                                    :disabled="isReadOnly"
+                                    :class="amountInputClass"
+                                />
+                            </div>
 
-                                <div class="report-years-data-cell">
-                                    <Label
-                                        :for="`funding_male_projects_${item.row.funding_program_id}`"
-                                        class="report-years-data-cell-label md:sr-only"
-                                        >Male projects</Label
-                                    >
-                                    <Input
-                                        :id="`funding_male_projects_${item.row.funding_program_id}`"
-                                        v-model="item.row.male_projects"
-                                        type="number"
-                                        min="0"
-                                        inputmode="numeric"
-                                        :disabled="isReadOnly"
-                                        :class="tableInputClass"
-                                    />
-                                </div>
+                            <div class="report-years-data-cell">
+                                <Label :for="`funding_male_projects_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only"
+                                    >Male projects</Label
+                                >
+                                <Input
+                                    :id="`funding_male_projects_${item.row.funding_program_id}`"
+                                    v-model="item.row.male_projects"
+                                    type="number"
+                                    min="0"
+                                    inputmode="numeric"
+                                    :disabled="isReadOnly"
+                                    :class="tableInputClass"
+                                />
+                            </div>
 
-                                <div class="report-years-data-cell">
-                                    <Label :for="`funding_male_amount_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only"
-                                        >Male amount</Label
-                                    >
-                                    <Input
-                                        :id="`funding_male_amount_${item.row.funding_program_id}`"
-                                        v-model="item.row.male_amount"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        inputmode="decimal"
-                                        placeholder="0.00"
-                                        :disabled="isReadOnly"
-                                        :class="tableInputClass"
-                                    />
-                                </div>
+                            <div class="report-years-data-cell">
+                                <Label :for="`funding_male_amount_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only"
+                                    >Male amount</Label
+                                >
+                                <Input
+                                    :id="`funding_male_amount_${item.row.funding_program_id}`"
+                                    v-model="item.row.male_amount"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    inputmode="decimal"
+                                    placeholder="0.00"
+                                    :disabled="isReadOnly"
+                                    :class="amountInputClass"
+                                />
                             </div>
                         </div>
                     </div>

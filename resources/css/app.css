@@ -145,80 +145,135 @@
         --sidebar-ring: rgba(37, 99, 235, 0.5);
     }
 
-    /* ponytail: sidebar gradient + inner light edge for physical depth.
-       Ceiling: single static gradient, no perf cost. Upgrade: animated mesh if needed. */
+    /*
+     * Flat tinted navy, not a three-stop vertical gradient. The gradient shifted
+     * the surface under the nav items, so the same item read as two different
+     * tints depending on scroll position, and an even top-to-bottom fade is the
+     * most common "generated" surface tell. One surface, one value.
+     */
     .sidebar-shell [data-sidebar='sidebar'] {
-        background: linear-gradient(180deg, #172554 0%, #152147 40%, #111d3e 100%);
-        box-shadow:
-            inset -1px 0 0 rgba(255, 255, 255, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        background: #14204a;
+        box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05);
     }
 
-    /* Nav item — default state */
+    /*
+     * Nav item. 44px keeps the Fitts target; the surface does the talking.
+     * The previous treatment stacked six signals on the active state (tint,
+     * border, 3px bar, glow, weight, icon colour) — one solid surface reads
+     * faster and leaves hover somewhere to go.
+     */
     .sidebar-nav-item {
-        position: relative;
         height: auto;
         min-height: 2.75rem;
-        border-radius: 0.75rem;
-        border: 1px solid transparent;
+        border-radius: 0.625rem;
         padding: 0.625rem 0.75rem;
-        font-size: 13.5px;
+        font-size: 0.875rem;
         font-weight: 500;
-        letter-spacing: -0.005em;
-        color: rgba(191, 219, 254, 0.6);
+        color: rgba(191, 219, 254, 0.72);
         transition:
-            background-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
-            color 200ms cubic-bezier(0.23, 1, 0.32, 1),
-            border-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
-            transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+            background-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+            color 180ms cubic-bezier(0.23, 1, 0.32, 1),
+            transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
     }
 
-    /* Nav item — hover */
+    .sidebar-nav-item svg {
+        color: rgba(147, 197, 253, 0.65);
+        transition: color 180ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .sidebar-nav-item > span:last-child {
+        line-height: 1.3;
+    }
+
+    /*
+     * Collapsed rail. The shared variant pins icon buttons to `size-8!` and
+     * leaves them at the container's left padding, so every control sat ~7px
+     * left of the rail's centre line. These centre them and give one uniform
+     * 40px target across nav, back link, and the toggle.
+     *
+     * !important is required and is enough: an important declaration in the
+     * components layer outranks an important one in utilities, because
+     * !important inverts cascade-layer order.
+     */
+    [data-collapsible='icon'] .sidebar-nav-item,
+    [data-collapsible='icon'] .sidebar-back-link,
+    [data-collapsible='icon'] .sidebar-logout-btn {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        min-height: 2.5rem !important;
+        margin-inline: auto !important;
+        padding: 0 !important;
+        justify-content: center !important;
+    }
+
+    [data-collapsible='icon'] .sidebar-collapse-btn {
+        display: flex;
+        width: 2.5rem;
+        height: 2.5rem;
+        align-items: center;
+        justify-content: center;
+        margin-inline: auto;
+        padding: 0;
+    }
+
+    /* The logo link stretched to the header's full height when collapsed. */
+    [data-collapsible='icon'] .sidebar-logo-link {
+        height: 2.5rem !important;
+        width: 2.5rem !important;
+        padding: 0 !important;
+        margin-inline: auto;
+    }
+
     @media (hover: hover) and (pointer: fine) {
         .sidebar-nav-item:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.08);
-            color: rgba(219, 234, 254, 0.95);
+            background-color: rgba(255, 255, 255, 0.06);
+            color: #eff6ff;
+        }
+
+        .sidebar-nav-item:hover svg {
+            color: rgba(191, 219, 254, 0.9);
         }
     }
 
-    /* Nav item — pressed */
     .sidebar-nav-item:active {
-        transform: scale(0.97);
+        transform: scale(0.98);
     }
 
-    /* Nav item — active (current page): left edge indicator + glass surface */
+    /* Active: one signal — a solid surface — plus the weight bump that any
+       current-page item needs so state is not carried by colour alone. */
     .sidebar-nav-item[data-active='true'] {
-        background-color: rgba(59, 130, 246, 0.12);
-        border-color: rgba(147, 197, 253, 0.18);
+        background-color: #2563eb;
         color: #ffffff;
         font-weight: 600;
-        box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.06),
-            0 1px 3px -1px rgba(0, 0, 0, 0.25);
     }
 
-    /* Active indicator bar — left edge */
-    .sidebar-nav-item[data-active='true']::before {
-        content: '';
-        position: absolute;
-        left: -1px;
-        top: 25%;
-        bottom: 25%;
-        width: 3px;
-        border-radius: 0 3px 3px 0;
-        background: linear-gradient(180deg, #60a5fa, #3b82f6);
-        box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+    .sidebar-nav-item[data-active='true'] svg,
+    .sidebar-nav-item[data-active='true']:hover svg {
+        color: #ffffff;
     }
 
-    /* Active nav icon color */
-    .sidebar-nav-item[data-active='true'] svg {
-        color: rgba(147, 197, 253, 0.9);
+    @media (hover: hover) and (pointer: fine) {
+        .sidebar-nav-item[data-active='true']:hover {
+            background-color: #1d4ed8;
+            color: #ffffff;
+        }
     }
 
-    /* Collapse toggle button */
+    /* Section label above the nav group. */
+    .sidebar-section-label {
+        padding: 0 0.75rem 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(191, 219, 254, 0.55);
+    }
+
+    /* Collapse toggle button.
+       slate-300 @ .6 measures 4.1:1; the previous slate-400 @ .55 measured
+       2.8:1 and failed the 3:1 minimum for non-text UI components. */
     .sidebar-collapse-btn {
-        color: rgba(148, 163, 184, 0.55);
+        color: rgba(203, 213, 225, 0.6);
         background-color: transparent;
     }
 
@@ -229,9 +284,15 @@
         }
     }
 
-    /* Back link — muted, doesn't compete with primary nav */
+    /* Back link — muted, doesn't compete with primary nav.
+       blue-200 @ .65 measures 5.2:1 on the sidebar gradient; the previous
+       slate-400 @ .5 measured 2.57:1 and failed WCAG AA for body text. */
     .sidebar-back-link {
-        color: rgba(148, 163, 184, 0.5);
+        /* 40px to match the nav items above it — it measured 32px, so the rail
+           had two different target heights for the same kind of control. */
+        min-height: 2.5rem;
+        border-radius: 0.625rem;
+        color: rgba(191, 219, 254, 0.65);
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -241,26 +302,32 @@
         }
     }
 
-    /* User info card */
+    /*
+     * User row, not a card. The sidebar is already a surface; boxing the user
+     * inside it was a card within a card. A hairline and the footer's own
+     * padding separate it just as well.
+     */
     .sidebar-user-card {
-        border-radius: 0.875rem;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        background: rgba(15, 23, 42, 0.5);
-        padding: 0.625rem 0.75rem;
-        box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.04),
-            0 2px 6px -2px rgba(0, 0, 0, 0.3);
+        /* 0.625rem left inset matches .sidebar-back-link's px-2.5 and the logout
+           row, so all three footer rows share one left edge and read as a single
+           "account / exit" region rather than three loose controls. */
+        padding: 0.5rem 0.625rem;
     }
 
-    /* Logout icon button */
+    /* Logout — a labelled row under the user, not a 32px icon in the corner. */
     .sidebar-logout-btn {
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        border-radius: 0.5rem;
-        color: rgba(148, 163, 184, 0.45);
+        justify-content: flex-start;
+        gap: 0.625rem;
+        width: 100%;
+        min-height: 2.25rem;
+        padding: 0 0.625rem;
+        border-radius: 0.625rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        text-align: left;
+        color: rgba(203, 213, 225, 0.75);
         transition:
             background-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
             color 200ms cubic-bezier(0.23, 1, 0.32, 1),
@@ -275,8 +342,10 @@
         }
     }
 
+    /* 0.98, not 0.92 — a full-width row scaling by 8% reads as a glitch, where
+       the same amount on a 32px icon looked like a press. */
     .sidebar-logout-btn:active {
-        transform: scale(0.92);
+        transform: scale(0.98);
     }
 
     .sidebar-logout-btn:focus-visible {
@@ -1136,23 +1205,27 @@
     .report-years-page {
         --report-ground: oklch(0.93 0.012 255);
         --report-plane: #ffffff;
-        --report-plane-border: oklch(0.82 0.02 255);
-        --report-plane-shadow:
-            0 1px 2px oklch(0.3 0.05 260 / 0.04), 0 8px 24px -12px oklch(0.3 0.05 260 / 0.14);
+        /* Was oklch(0.82 ...): 1.42:1 against the ground, so the border all but
+           disappeared and every card read as fused to the page rather than a
+           raised surface. Darkened toward slate-400 for an edge that actually
+           reads as an edge — measured, not eyeballed; see the layout audit. */
+        --report-plane-border: oklch(0.75 0.02 255);
+        --report-plane-shadow: 0 1px 2px oklch(0.3 0.05 260 / 0.04), 0 8px 24px -12px oklch(0.3 0.05 260 / 0.14);
 
         @apply flex min-h-0 flex-1 flex-col text-slate-900 selection:bg-blue-200/60;
         background-color: var(--report-ground);
     }
 
-    .report-years-page :is(
-        .report-years-header,
-        .report-years-shell,
-        .report-years-empty,
-        .report-years-create-hero,
-        .report-years-edit-hero,
-        .report-years-form-card,
-        .report-panel
-    ) {
+    .report-years-page
+        :is(
+            .report-years-header,
+            .report-years-shell,
+            .report-years-empty,
+            .report-years-create-hero,
+            .report-years-edit-hero,
+            .report-years-form-card,
+            .report-panel
+        ) {
         background-color: var(--report-plane);
         border-color: var(--report-plane-border);
         box-shadow: var(--report-plane-shadow);
@@ -1238,11 +1311,18 @@
     }
 
     .report-years-inner--edit .report-years-edit-hero {
-        @apply p-3 sm:p-3.5;
+        @apply p-4 sm:p-5;
     }
 
+    /*
+     * Three tiers, three distinct gaps — the hero read as one flat stack when
+     * every gap was 8-12px:
+     *   chips -> title   16px  (metadata, then the thing it describes)
+     *   title -> lede     4px  (one unit, deliberately tight)
+     *   lede  -> status  20px + rule (separate readout, not more prose)
+     */
     .report-years-edit-hero-top {
-        @apply mb-2 flex flex-col gap-2 sm:mb-2.5 sm:flex-row sm:items-start sm:justify-between;
+        @apply mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between;
     }
 
     .report-years-inner--edit .report-years-edit-hero-badges {
@@ -1251,6 +1331,7 @@
 
     .report-years-inner--edit .report-years-edit-hero-title {
         @apply text-xl sm:text-2xl;
+        text-wrap: balance;
     }
 
     /*
@@ -1260,8 +1341,12 @@
      * still break.
      */
     .report-years-inner--edit .report-years-edit-hero .report-years-lede {
-        @apply mt-1.5 max-w-none leading-snug;
+        @apply mt-1 max-w-none leading-snug;
         text-wrap: pretty;
+    }
+
+    .report-years-inner--edit .report-years-breakdown {
+        @apply mt-5 border-t border-slate-200/80 pt-4;
     }
 
     .report-years-inner--edit .report-years-tab-bar {
@@ -1272,8 +1357,10 @@
         @apply rounded-xl p-4;
     }
 
+    /* No top margin: the section heading it used to clear was removed — the tab
+       nav is the only label, so the form starts flush with the panel padding. */
     .report-years-page .report-years-inner--edit .report-form--edit {
-        @apply mt-3 flex w-full flex-col gap-4;
+        @apply flex w-full flex-col gap-4;
     }
 
     .report-years-inner--edit .report-years-data-row {
@@ -1528,8 +1615,12 @@
         @apply text-sm font-medium text-slate-600;
     }
 
+    /* Centred, not right-flush: the "Actions" header is centred over the
+       column, and a narrower label right-aligned to a wider icon cluster
+       shares an edge but not a centre — measured 26px off. Centring both
+       header and icons on the same column axis makes them agree exactly. */
     .report-years-row-actions {
-        @apply flex items-center justify-end gap-0.5;
+        @apply flex items-center justify-center gap-0.5;
     }
 
     /*
@@ -1579,8 +1670,12 @@
         @apply flex items-center gap-1;
     }
 
+    /* flex + centering is required: without it the SVG glyph rendered ~9px
+       left of the button's own centre in every browser test, since a bare
+       <button> lays out an inline SVG child by its default baseline/text-align
+       rules, not centred. */
     .report-years-page-btn {
-        @apply size-9 rounded-lg border border-slate-300 bg-white text-black transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40;
+        @apply flex size-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-black transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40;
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -1596,15 +1691,16 @@
 
     /* Keep colour/opacity feedback, drop movement (WCAG 2.2 SC 2.3.3) */
     @media (prefers-reduced-motion: reduce) {
-        .report-years-page :is(
-            .report-years-btn-primary,
-            .report-years-btn-secondary,
-            .report-years-btn-danger,
-            .report-years-btn-icon,
-            .report-years-filter-tab,
-            .report-years-row-action,
-            .report-years-page-btn
-        ):active {
+        .report-years-page
+            :is(
+                .report-years-btn-primary,
+                .report-years-btn-secondary,
+                .report-years-btn-danger,
+                .report-years-btn-icon,
+                .report-years-filter-tab,
+                .report-years-row-action,
+                .report-years-page-btn
+            ):active {
             transform: none;
         }
     }
@@ -1630,11 +1726,14 @@
     }
 
     .report-years-edit-hero-badges {
-        @apply mb-3 flex flex-wrap items-center gap-2 sm:gap-2.5;
+        @apply mb-3 flex flex-wrap items-center gap-2;
     }
 
+    /* Peer metadata to the status badge, not a banner: it sits beside the title
+       and must never out-weigh it. Same pill geometry as the status badge so the
+       two read as one row of chips. */
     .report-years-edit-meta-chip {
-        @apply inline-flex items-center rounded-lg border border-orange-200/80 bg-orange-50/60 px-3 py-1.5 text-sm font-semibold tracking-[0.2em] text-orange-800 uppercase;
+        @apply inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold tracking-wide text-slate-600 uppercase;
     }
 
     .report-years-edit-hero-title {
@@ -1657,8 +1756,10 @@
         @apply border-amber-200 bg-amber-50;
     }
 
+    /* The date is the payload, so it carries the larger size; the state word is
+       the qualifier and steps down. Both at text-sm made the pill read as noise. */
     .report-years-status-badge-label {
-        @apply text-sm font-semibold tracking-wide uppercase;
+        @apply text-xs font-semibold tracking-wide uppercase;
     }
 
     .report-years-status-badge-label--published {
@@ -1701,11 +1802,10 @@
      * the sr-only text on each tab, so this is not colour-only.
      */
     /*
-     * Three states, carried on two channels so colour is never the only signal:
-     * shape (hollow vs filled) separates empty from started, hue separates
-     * partial from complete, and each tab's sr-only text states the whole thing
-     * outright. Hues reuse the index status dots — amber-500 pending,
-     * emerald-500 published — so the two pages agree.
+     * Three states, all filled: red-500 empty, amber-500 partial, emerald-500
+     * complete. Colour is never the only signal — each tab's sr-only text states
+     * the state outright. Amber/emerald reuse the index status dots (pending /
+     * published) so the two pages agree.
      */
     .report-years-tab-mark {
         @apply size-2 shrink-0 rounded-full border;
@@ -1713,7 +1813,8 @@
     }
 
     .report-years-tab.is-empty .report-years-tab-mark {
-        border-color: var(--color-slate-500);
+        border-color: var(--color-red-600);
+        background-color: var(--color-red-500);
     }
 
     .report-years-tab.is-partial .report-years-tab-mark {
@@ -1735,40 +1836,63 @@
         @apply border-white bg-white;
     }
 
-    /* Sits inside the white hero card, so it needs a tinted fill of its own to
-       read as a chip rather than as another line of body text. Colour tracks
-       the tab marks; the number in the label is the non-colour channel. */
-    .report-years-tab-progress {
-        @apply mt-3 inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-sm font-semibold tabular-nums;
+    /* State word carries the colour dot and its count; the section names sit
+       beside it as plain text. Colours track the tab marks. */
+    .report-years-breakdown {
+        @apply mt-3 flex w-full flex-col gap-2;
     }
 
-    .report-years-tab-progress::before {
+    .report-years-breakdown-row {
+        @apply flex flex-col gap-y-0.5;
+    }
+
+    .report-years-breakdown-term {
+        @apply inline-flex items-center gap-2 text-sm font-semibold whitespace-nowrap;
+    }
+
+    /* From sm up the rows dissolve into the parent grid so every term column
+       shares one max-content width — no hardcoded width to outgrow, and the
+       names all start on the same line. Must follow the row rule it overrides. */
+    @media (width >= 40rem) {
+        .report-years-breakdown {
+            @apply grid grid-cols-[max-content_1fr] items-baseline gap-x-4 gap-y-2;
+        }
+
+        .report-years-breakdown-row {
+            display: contents;
+        }
+    }
+
+    .report-years-breakdown-mark {
         @apply size-2 shrink-0 rounded-full border;
-        content: '';
     }
 
-    .report-years-tab-progress.is-empty {
-        @apply border-slate-300 bg-slate-100 text-slate-700;
+    .report-years-breakdown-term.is-complete {
+        @apply text-emerald-800;
     }
 
-    .report-years-tab-progress.is-empty::before {
-        @apply border-slate-500 bg-transparent;
+    .report-years-breakdown-term.is-complete .report-years-breakdown-mark {
+        @apply border-emerald-600 bg-emerald-500;
     }
 
-    .report-years-tab-progress.is-partial {
-        @apply border-amber-300 bg-amber-50 text-amber-900;
+    .report-years-breakdown-term.is-partial {
+        @apply text-amber-800;
     }
 
-    .report-years-tab-progress.is-partial::before {
+    .report-years-breakdown-term.is-partial .report-years-breakdown-mark {
         @apply border-amber-600 bg-amber-500;
     }
 
-    .report-years-tab-progress.is-complete {
-        @apply border-emerald-300 bg-emerald-50 text-emerald-900;
+    .report-years-breakdown-term.is-empty {
+        @apply text-red-800;
     }
 
-    .report-years-tab-progress.is-complete::before {
-        @apply border-emerald-600 bg-emerald-500;
+    .report-years-breakdown-term.is-empty .report-years-breakdown-mark {
+        @apply border-red-600 bg-red-500;
+    }
+
+    .report-years-breakdown-names {
+        @apply text-sm text-slate-600;
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -1972,6 +2096,15 @@
         @apply min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)];
     }
 
+    /*
+     * Few-column tables (period/status label + 2-3 counts). Uncapped, the label
+     * column absorbed ~900px of empty space and stranded the inputs at the far
+     * right of the panel. The many-column tables below still need full width.
+     */
+    .report-years-data-table--narrow {
+        @apply max-w-4xl;
+    }
+
     .report-years-data-table--wide {
         @apply min-w-full;
     }
@@ -2009,11 +2142,6 @@
         @apply cursor-default border-slate-300! bg-slate-100! text-center font-semibold text-slate-800! tabular-nums;
     }
 
-    /* Derived field whose label sits above it rather than in a table header. */
-    .report-years-page .report-derived-group {
-        @apply justify-items-center text-center;
-    }
-
     .report-years-page [data-slot='input'].report-derived-field:focus-visible {
         @apply border-slate-300! bg-slate-100! ring-0! outline-none!;
     }
@@ -2032,8 +2160,11 @@
         @apply text-sm text-slate-600 tabular-nums;
     }
 
+    /* 13rem: "Total per assembly" measures 162px, so 9rem (160px of inner width
+       after padding) wrapped it and made the header band taller than the rows.
+       Also reclaims width from the over-wide label column. */
     .report-years-data-head--4col {
-        @apply md:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(7rem,9rem))];
+        @apply md:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(7rem,13rem))];
     }
 
     .report-years-data-head--5col {
@@ -2044,12 +2175,17 @@
         @apply md:grid-cols-[minmax(0,1.25fr)_repeat(8,minmax(5.75rem,8rem))];
     }
 
+    /* 11.5rem: "Female projects" measures 141px and is the widest of the four.
+       At 9rem three headers wrapped and the fourth did not, which read as ragged. */
     .report-years-data-head--funding {
-        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,9rem))];
+        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,11.5rem))];
     }
 
+    /* tracking-wider, not an arbitrary 0.14em: the wide tracking pushed
+       multi-word headers ("Total per assembly") onto a second line and made the
+       header band taller than the rows it labels. */
     .report-years-data-head-label {
-        @apply bg-slate-100 px-4 py-3 text-sm font-semibold tracking-[0.14em] text-black uppercase;
+        @apply bg-slate-100 px-4 py-3 text-sm font-semibold tracking-wider text-black uppercase;
     }
 
     .report-years-data-head-label--center {
@@ -2089,7 +2225,7 @@
     }
 
     .report-years-data-row--4col {
-        @apply md:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(7rem,9rem))];
+        @apply md:grid-cols-[minmax(0,1.35fr)_repeat(3,minmax(7rem,13rem))];
     }
 
     .report-years-data-row--5col {
@@ -2101,7 +2237,7 @@
     }
 
     .report-years-data-row--funding {
-        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,9rem))];
+        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,11.5rem))];
     }
 
     .report-years-data-row-label {
@@ -2116,12 +2252,111 @@
         @apply text-base font-medium text-black;
     }
 
+    /*
+     * Counts centre under their centred headers. Money does NOT: decimal points
+     * must line up column-wise, so amount fields opt back into right alignment
+     * via --amount below.
+     */
     .report-years-page .report-years-data-input {
-        @apply h-10 rounded-lg border-slate-400! bg-white! text-right tabular-nums shadow-none focus-visible:border-blue-600/40! focus-visible:ring-2 focus-visible:ring-blue-600/15!;
+        @apply h-10 rounded-lg border-slate-400! bg-white! text-center tabular-nums shadow-none focus-visible:border-blue-600/40! focus-visible:ring-2 focus-visible:ring-blue-600/15!;
+    }
+
+    .report-years-page .report-years-data-input--amount {
+        @apply text-right;
     }
 
     .report-years-form-actions {
         @apply flex flex-wrap items-center gap-4 border-t border-slate-200/80 pt-4;
+    }
+
+    /*
+     * Snapshot history. Rows on a rail rather than nested cards: the panel is
+     * already the card. The rail's left padding is the single source for the
+     * node offset, so there are no hand-computed pixel positions to drift.
+     */
+    .report-snapshot-list {
+        /* One source for the rail geometry: the node offset is derived from these
+           two, so changing the inset cannot leave the dot stranded. */
+        --rail-inset: 1.5rem;
+        --rail-node: 0.75rem;
+        @apply relative ml-2 flex list-none flex-col border-l border-slate-200;
+        padding-left: var(--rail-inset);
+    }
+
+    .report-snapshot {
+        @apply relative py-4;
+    }
+
+    .report-snapshot + .report-snapshot {
+        @apply border-t border-slate-200/70;
+    }
+
+    .report-snapshot-node {
+        @apply absolute rounded-full border-2 border-slate-300 bg-white;
+        width: var(--rail-node);
+        height: var(--rail-node);
+        /* Vertically centred on the header text (measured in-browser); horizontally
+           straddling the rail. */
+        top: 1.6rem;
+        left: calc((var(--rail-inset) + var(--rail-node) / 2 + 0.5px) * -1);
+    }
+
+    .report-snapshot.is-latest .report-snapshot-node {
+        @apply border-emerald-500 bg-emerald-500;
+    }
+
+    .report-snapshot-head {
+        @apply flex flex-wrap items-center gap-x-3 gap-y-2;
+    }
+
+    .report-snapshot-date {
+        @apply text-base font-semibold text-slate-900 tabular-nums;
+    }
+
+    .report-snapshot-badge {
+        @apply inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold tracking-wide text-emerald-800 uppercase;
+    }
+
+    /* Pushed right on its own so the buttons align to the header baseline. */
+    .report-snapshot-actions {
+        @apply ml-auto flex shrink-0 items-center gap-1;
+    }
+
+    .report-snapshot-action {
+        @apply inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-slate-600;
+        @apply transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900;
+        @apply focus-visible:ring-2 focus-visible:ring-slate-400/70 focus-visible:outline-none;
+        @apply disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .report-snapshot-action--danger {
+        @apply text-red-600 hover:bg-red-50 hover:text-red-700 focus-visible:ring-red-400/70;
+    }
+
+    /* Figures in a row, not four lines of "Label: value" prose. */
+    .report-snapshot-stats {
+        @apply mt-3 flex flex-wrap items-baseline gap-x-8 gap-y-3;
+    }
+
+    .report-snapshot-stat dt {
+        @apply text-xs font-medium tracking-wide text-slate-500 uppercase;
+    }
+
+    .report-snapshot-stat dd {
+        @apply mt-0.5 text-lg leading-none font-semibold text-slate-900 tabular-nums;
+    }
+
+    .report-snapshot-stat-text {
+        @apply text-base! font-medium!;
+    }
+
+    /* Derived value: separated from the two counts it sums. */
+    .report-snapshot-stat.is-total {
+        @apply border-l border-slate-200 pl-8;
+    }
+
+    .report-snapshot-meta {
+        @apply mt-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-slate-500;
     }
 
     .report-years-page .report-data-head {
@@ -2171,15 +2406,15 @@
 
     /* Public year report (/reports/{year}) — aligned with homepage bento, dual theme */
     .report-view-page {
-        /* Sex-disaggregated series: light slate (A) + slate gray (B) */
-        --report-disagg-a: #94a3b8;
-        --report-disagg-b: #334155;
+        /* Sex-disaggregated series: female purple (A) + male orange (B) */
+        --report-disagg-a: #603f8b;
+        --report-disagg-b: #ff8210;
         @apply flex min-h-[100dvh] w-full min-w-0 flex-col bg-linear-to-b from-purple-950 via-fuchsia-950/28 to-purple-950 text-purple-50 selection:bg-purple-500/30 report-light:bg-slate-50 report-light:text-slate-900 report-light:selection:bg-fuchsia-200/60;
     }
 
     .report-view-page.report-theme-light {
-        --report-disagg-a: #94a3b8;
-        --report-disagg-b: #334155;
+        --report-disagg-a: #603f8b;
+        --report-disagg-b: #ff8210;
     }
 
     .report-view-section {
@@ -2297,7 +2532,7 @@
     }
 
     .report-view-kicker {
-        @apply flex items-center gap-2.5 text-[0.6875rem] font-bold tracking-[0.2em] uppercase;
+        @apply flex items-center gap-2.5 text-sm font-bold tracking-[0.15em] uppercase;
         color: oklch(0.72 0.2 323.949);
     }
 
@@ -2357,7 +2592,7 @@
     }
 
     .report-view-subtitle {
-        @apply max-w-[62ch] text-sm leading-relaxed sm:text-[0.9375rem];
+        @apply text-base leading-relaxed;
         color: oklch(0.75 0.04 290 / 0.7);
     }
 
@@ -2455,7 +2690,7 @@
     }
 
     .report-view-tab {
-        @apply relative cursor-pointer touch-manipulation rounded-lg px-3.5 py-2 text-xs font-medium whitespace-nowrap transition-[transform,background-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97] md:px-4 md:text-[0.8125rem];
+        @apply relative cursor-pointer touch-manipulation rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-[transform,background-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97] md:px-4 md:text-base;
         color: oklch(0.75 0.06 310 / 0.7);
         /* Stagger animation */
         opacity: 0;
@@ -2539,11 +2774,11 @@
     }
 
     .report-view-stack {
-        @apply flex flex-col gap-4 md:gap-6;
+        @apply flex flex-col gap-3 md:gap-4;
     }
 
     .report-view-metrics {
-        @apply grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4;
+        @apply grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3;
     }
 
     .report-view-metrics--five-up {
@@ -2551,7 +2786,7 @@
     }
 
     .report-view-metrics--five-up .report-view-metric {
-        @apply min-w-0 md:p-4;
+        @apply min-w-0 md:p-3.5;
     }
 
     .report-view-metrics--five-up .report-view-metric-label {
@@ -2559,15 +2794,15 @@
     }
 
     .report-view-metric {
-        @apply rounded-xl border border-purple-400/35 bg-purple-900/55 p-4 shadow-sm ring-1 ring-white/10 md:p-5 report-light:border-slate-200 report-light:bg-white/90;
+        @apply rounded-xl border border-purple-400/35 bg-purple-900/55 p-3 shadow-sm ring-1 ring-white/10 md:p-4 report-light:border-slate-200 report-light:bg-white/90;
     }
 
     .report-view-metric-label {
-        @apply text-xs font-medium text-purple-200/80 report-light:text-black;
+        @apply text-sm font-medium text-purple-200/80 report-light:text-black;
     }
 
     .report-view-metric-value {
-        @apply text-lg font-semibold tracking-tight text-purple-50 tabular-nums md:text-xl report-light:text-black;
+        @apply text-xl font-semibold tracking-tight text-purple-50 tabular-nums md:text-2xl report-light:text-black;
     }
 
     /* Sex-disaggregated series colors apply inside charts only */
@@ -2605,55 +2840,57 @@
     }
 
     .report-view-metric-meta {
-        @apply text-xs text-purple-200/80 report-light:text-black;
+        @apply text-sm text-purple-200/80 report-light:text-black;
     }
 
     .report-view-block {
-        @apply overflow-hidden rounded-xl border border-purple-400/35 bg-purple-900/55 p-4 shadow-sm ring-1 ring-white/10 md:p-5 report-light:border-slate-200 report-light:bg-white/90;
+        @apply overflow-hidden rounded-xl border border-purple-400/35 bg-purple-900/55 p-3.5 shadow-sm ring-1 ring-white/10 md:p-4 report-light:border-slate-200 report-light:bg-white/90;
     }
 
     .report-view-block-header {
-        @apply mb-3 border-b border-white/10 pb-3 report-light:border-slate-200;
+        @apply mb-2.5 border-b border-white/10 pb-2.5 report-light:border-slate-200;
     }
 
     .report-view-block-title {
-        @apply text-sm font-semibold text-purple-50 md:text-base report-light:text-black;
+        @apply text-base font-semibold text-purple-50 md:text-lg report-light:text-black;
     }
 
     .report-view-block-desc {
-        @apply text-xs font-normal text-purple-200/80 report-light:text-black;
+        @apply text-sm font-normal text-purple-200/80 report-light:text-black;
     }
 
     .report-view-quick-grid {
-        @apply grid gap-3 sm:grid-cols-2 xl:grid-cols-3;
+        @apply grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3;
     }
 
     .report-view-category-grid {
-        @apply grid gap-3 sm:grid-cols-2;
+        @apply grid gap-2.5 sm:grid-cols-2;
     }
 
+    /* Deliberately flatter than .report-view-metric (no shadow/ring): Quick Access is a secondary nav
+       menu into the tabs below, not a second tier of headline data — it must read as lower priority. */
     .report-view-quick-item {
-        @apply cursor-pointer rounded-xl border border-purple-400/35 bg-purple-900/55 p-4 text-left shadow-sm ring-1 ring-white/10 transition-[transform,border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-purple-400/50 hover:bg-purple-900/65 focus-visible:ring-2 focus-visible:ring-purple-400/50 focus-visible:outline-none active:scale-[0.97] md:p-5 report-light:border-slate-300 report-light:bg-slate-50 report-light:hover:border-slate-400 report-light:hover:bg-slate-100;
+        @apply cursor-pointer rounded-xl border border-purple-400/25 bg-purple-900/35 p-3.5 text-left transition-[transform,border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-purple-400/50 hover:bg-purple-900/55 focus-visible:ring-2 focus-visible:ring-purple-400/50 focus-visible:outline-none active:scale-[0.97] md:p-4 report-light:border-slate-200 report-light:bg-slate-50/60 report-light:hover:border-slate-400 report-light:hover:bg-slate-100;
     }
 
     .report-view-quick-title {
-        @apply text-sm font-medium tracking-wide text-purple-50 uppercase report-light:text-black;
+        @apply text-base font-medium tracking-wide text-purple-50 uppercase report-light:text-black;
     }
 
     .report-view-quick-label {
-        @apply mt-1 text-xs font-normal text-purple-200/80 report-light:text-black;
+        @apply mt-1 text-sm font-normal text-purple-200/80 report-light:text-black;
     }
 
     .report-view-quick-value {
-        @apply text-lg font-semibold tracking-tight text-purple-50 report-light:text-black;
+        @apply text-lg font-medium tracking-tight text-purple-50 report-light:text-black;
     }
 
     .report-view-quick-value-sm {
-        @apply text-sm font-semibold text-purple-50 report-light:text-black;
+        @apply text-base font-medium text-purple-50 report-light:text-black;
     }
 
     .report-view-charts {
-        @apply grid gap-4 lg:grid-cols-2 lg:gap-6 2xl:gap-8;
+        @apply grid gap-3 lg:grid-cols-2 lg:gap-4 2xl:gap-5;
     }
 
     .report-view-chart-head {

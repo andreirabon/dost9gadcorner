@@ -195,6 +195,9 @@ const combinedProjectsCount = computed(() => setupStats.value.totalProjects + ce
 const activeTab = ref<TabType>('Overview');
 const tabStorageKey = computed(() => `year-report-last-tab:${props.year.id}`);
 
+/** ₱0.00 reads as a validated zero; funding that was never recorded should read as absent, not as a confirmed nil balance. */
+const formatFundingOrEmpty = (amount: number): string => (amount > 0 ? formatCurrency(amount) : 'No data yet');
+
 const formatCompactNumber = (value: number): string => {
     return new Intl.NumberFormat('en-PH', {
         notation: 'compact',
@@ -232,19 +235,15 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
         title: 'GFPS',
         metrics: [
             { label: 'Total Members', value: gfpsStats.value.totalMembers },
-            { label: 'GFPS Assemblies', value: assemblyData.value.length, meta: 'Quarterly' },
             { label: 'Female Members', value: gfpsStats.value.femaleCount, meta: `${gfpsStats.value.femalePercentage}%` },
-            { label: 'Male Members', value: gfpsStats.value.maleCount, meta: `${gfpsStats.value.malePercentage}%` },
         ],
     },
     {
         tab: 'DOST IX Employees',
         title: 'DOST IX Employees',
         metrics: [
-            { label: 'Employment Types', value: employeesData.value.length, meta: 'Categories' },
             { label: 'Total Employees', value: employeesStats.value.totalEmployees },
             { label: 'Female Employees', value: employeesStats.value.femaleCount, meta: `${employeesStats.value.femalePercentage}%` },
-            { label: 'Male Employees', value: employeesStats.value.maleCount, meta: `${employeesStats.value.malePercentage}%` },
         ],
     },
     {
@@ -252,13 +251,7 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
         title: 'Scholarship',
         metrics: [
             { label: 'Total Scholars', value: scholarsStats.value.totalScholars },
-            {
-                label: 'School Year',
-                value: scholarsStats.value.schoolYearLabel || 'Not set',
-                meta: scholarsStats.value.asOfDate ?? 'No date set',
-            },
             { label: 'Female Scholars', value: scholarsStats.value.femaleCount, meta: `${scholarsStats.value.femalePercentage}%` },
-            { label: 'Male Scholars', value: scholarsStats.value.maleCount, meta: `${scholarsStats.value.malePercentage}%` },
         ],
     },
     {
@@ -266,9 +259,7 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
         title: 'RSTL',
         metrics: [
             { label: 'Total Customers', value: rstlStats.value.totalCustomers },
-            { label: 'Period', value: props.year.year, meta: 'Full Year' },
             { label: 'Female', value: rstlStats.value.femaleCount, meta: `${rstlStats.value.femalePercentage}%` },
-            { label: 'Male', value: rstlStats.value.maleCount, meta: `${rstlStats.value.malePercentage}%` },
         ],
     },
     {
@@ -276,39 +267,23 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
         title: 'Program Funding',
         metrics: [
             { label: 'Combined Projects', value: combinedProjectsCount.value },
-            { label: 'Combined Funding', value: formatCurrency(combinedFundingAmount.value) },
-            {
-                label: 'SETUP Funding',
-                value: formatCurrency(setupStats.value.totalAmount),
-                meta: `${setupFundingRows.value.length} Categories`,
-            },
-            {
-                label: 'CEST Funding',
-                value: formatCurrency(cestStats.value.totalAmount),
-                meta: `${cestFundingRows.value.length} Categories`,
-            },
+            { label: 'Combined Funding', value: formatFundingOrEmpty(combinedFundingAmount.value) },
         ],
     },
     {
         tab: 'SETUP',
         title: 'SETUP',
         metrics: [
-            { label: 'Categories', value: setupFundingRows.value.length },
             { label: 'Total Projects', value: setupStats.value.totalProjects },
-            { label: 'Total Funding', value: formatCurrency(setupStats.value.totalAmount) },
-            { label: 'Male-led Projects', value: setupStats.value.maleProjects },
-            { label: 'Female-led Projects', value: setupStats.value.femaleProjects },
+            { label: 'Total Funding', value: formatFundingOrEmpty(setupStats.value.totalAmount) },
         ],
     },
     {
         tab: 'CEST',
         title: 'CEST',
         metrics: [
-            { label: 'Categories', value: cestFundingRows.value.length },
             { label: 'Total Projects', value: cestStats.value.totalProjects },
-            { label: 'Total Funding', value: formatCurrency(cestStats.value.totalAmount) },
-            { label: 'Male-led Projects', value: cestStats.value.maleProjects },
-            { label: 'Female-led Projects', value: cestStats.value.femaleProjects },
+            { label: 'Total Funding', value: formatFundingOrEmpty(cestStats.value.totalAmount) },
         ],
     },
 ]);
@@ -343,12 +318,9 @@ onMounted(() => {
                                 tabindex="-1"
                                 class="report-view-title"
                             >
-                                Sex Disaggregated Data
+                                {{ year.title }}
                             </h1>
-                            <p class="report-view-subtitle">
-                                Department of Science and Technology Regional Office IX validated figures across GFPS,
-                                employment, scholarship, RSTL, SETUP, and CEST programs.
-                            </p>
+                            <p v-if="year.description" class="report-view-subtitle">{{ year.description }}</p>
                         </div>
                     </div>
                     <div class="report-view-actions">
@@ -401,7 +373,7 @@ onMounted(() => {
                         tabindex="0"
                         class="w-full"
                     >
-                        <div v-if="activeTab === 'Overview'" class="space-y-4 md:space-y-6">
+                        <div v-if="activeTab === 'Overview'" class="space-y-3 md:space-y-4">
                     <ReportMetricsGrid
                         :metrics="[
                             { label: 'Total Female (all sections)', value: formatCompactNumber(totalFemaleAcrossPrograms) },
@@ -409,9 +381,9 @@ onMounted(() => {
                             { label: 'Combined Projects', value: combinedProjectsCount, meta: 'SETUP + CEST' },
                             {
                                 label: 'Combined Funding',
-                                value: formatCurrency(combinedFundingAmount),
+                                value: formatFundingOrEmpty(combinedFundingAmount),
                                 meta: 'SETUP + CEST',
-                                valueClass: 'text-sm md:text-base',
+                                valueClass: 'text-base md:text-lg',
                             },
                         ]"
                     />
@@ -419,7 +391,7 @@ onMounted(() => {
                     <ReportOverviewQuickAccess :programs="overviewPrograms" @select-tab="selectTab" />
                 </div>
 
-                <div v-else-if="activeTab === 'GFPS'" class="space-y-4 md:space-y-6">
+                <div v-else-if="activeTab === 'GFPS'" class="space-y-3 md:space-y-4">
                     <ReportMetricsGrid
                         :metrics="[
                             { label: 'Total Members', value: gfpsStats.totalMembers },
@@ -440,7 +412,7 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <div v-else-if="activeTab === 'DOST IX Employees'" class="space-y-4 md:space-y-6">
+                <div v-else-if="activeTab === 'DOST IX Employees'" class="space-y-3 md:space-y-4">
                     <ReportMetricsGrid
                         :metrics="[
                             { label: 'Employment Types', value: employeesData.length, meta: 'Categories' },
@@ -455,7 +427,7 @@ onMounted(() => {
                     </ReportChartBlock>
                 </div>
 
-                <div v-else-if="activeTab === 'Scholarship'" class="space-y-4 md:space-y-6">
+                <div v-else-if="activeTab === 'Scholarship'" class="space-y-3 md:space-y-4">
                     <ReportMetricsGrid
                         :metrics="[
                             { label: 'Total Scholars', value: scholarsStats.totalScholars },
@@ -480,7 +452,7 @@ onMounted(() => {
                     <ScholarshipHistoryTimeline :history="scholarshipHistory" />
                 </div>
 
-                <div v-else-if="activeTab === 'RSTL'" class="space-y-4 md:space-y-6">
+                <div v-else-if="activeTab === 'RSTL'" class="space-y-3 md:space-y-4">
                     <ReportMetricsGrid
                         :metrics="[
                             { label: 'Total Customers', value: rstlStats.totalCustomers },
@@ -498,22 +470,22 @@ onMounted(() => {
                     </ReportChartBlock>
                 </div>
 
-                <div v-else-if="activeTab === 'Program Funding'" class="space-y-4 md:space-y-6">
+                <div v-else-if="activeTab === 'Program Funding'" class="space-y-3 md:space-y-4">
                     <ReportMetricsGrid
                         :metrics="[
                             { label: 'Combined Projects', value: combinedProjectsCount },
-                            { label: 'Combined Funding', value: formatCurrency(combinedFundingAmount), valueClass: 'text-sm md:text-base' },
+                            { label: 'Combined Funding', value: formatFundingOrEmpty(combinedFundingAmount), valueClass: 'text-base md:text-lg' },
                             {
                                 label: 'SETUP Funding',
-                                value: formatCurrency(setupStats.totalAmount),
+                                value: formatFundingOrEmpty(setupStats.totalAmount),
                                 meta: `${setupFundingRows.length} Categories`,
-                                valueClass: 'text-sm md:text-base',
+                                valueClass: 'text-base md:text-lg',
                             },
                             {
                                 label: 'CEST Funding',
-                                value: formatCurrency(cestStats.totalAmount),
+                                value: formatFundingOrEmpty(cestStats.totalAmount),
                                 meta: `${cestFundingRows.length} Categories`,
-                                valueClass: 'text-sm md:text-base',
+                                valueClass: 'text-base md:text-lg',
                             },
                         ]"
                     />
@@ -533,13 +505,13 @@ onMounted(() => {
                     />
                 </div>
 
-                <div v-else-if="activeTab === 'SETUP'" class="space-y-4 md:space-y-6">
+                <div v-else-if="activeTab === 'SETUP'" class="space-y-3 md:space-y-4">
                     <ReportMetricsGrid
                         five-up
                         :metrics="[
                             { label: 'Categories', value: setupFundingRows.length },
                             { label: 'Total Projects', value: setupStats.totalProjects },
-                            { label: 'Total Funding', value: formatCurrency(setupStats.totalAmount), valueClass: 'text-sm md:text-base' },
+                            { label: 'Total Funding', value: formatFundingOrEmpty(setupStats.totalAmount), valueClass: 'text-base md:text-lg' },
                             { label: 'Male-led Projects', value: setupStats.maleProjects },
                             { label: 'Female-led Projects', value: setupStats.femaleProjects },
                         ]"
@@ -556,13 +528,13 @@ onMounted(() => {
                     </FundingCategorySelector>
                 </div>
 
-                <div v-else-if="activeTab === 'CEST'" class="space-y-4 md:space-y-6">
+                <div v-else-if="activeTab === 'CEST'" class="space-y-3 md:space-y-4">
                     <ReportMetricsGrid
                         five-up
                         :metrics="[
                             { label: 'Categories', value: cestFundingRows.length },
                             { label: 'Total Projects', value: cestStats.totalProjects },
-                            { label: 'Total Funding', value: formatCurrency(cestStats.totalAmount), valueClass: 'text-sm md:text-base' },
+                            { label: 'Total Funding', value: formatFundingOrEmpty(cestStats.totalAmount), valueClass: 'text-base md:text-lg' },
                             { label: 'Male-led Projects', value: cestStats.maleProjects },
                             { label: 'Female-led Projects', value: cestStats.femaleProjects },
                         ]"

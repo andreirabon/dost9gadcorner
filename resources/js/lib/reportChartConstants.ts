@@ -24,6 +24,27 @@ export function useReportChartMotion(): ComputedRef<NonNullable<ApexOptions['cha
     });
 }
 
+/**
+ * Y-axis max/tick-count pair guaranteed to divide evenly, so labels land on whole numbers
+ * (e.g. 0/5/10/15/20/25) instead of `max / tickAmount` fractions like 20.8, 16.7, 4.2.
+ */
+export function niceAxisScale(maxValue: number, minTicks = 4, maxTicks = 8): { max: number; tickAmount: number } {
+    const safeMax = Math.max(maxValue, 1);
+    const steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000, 100000];
+
+    for (const step of steps) {
+        const tickAmount = Math.ceil(safeMax / step);
+        if (tickAmount >= minTicks && tickAmount <= maxTicks) {
+            return { max: tickAmount * step, tickAmount };
+        }
+    }
+
+    const step = steps[steps.length - 1];
+    const tickAmount = Math.ceil(safeMax / step);
+
+    return { max: tickAmount * step, tickAmount };
+}
+
 export function reportChartCspNonce(): string | undefined {
     if (typeof document === 'undefined') {
         return undefined;

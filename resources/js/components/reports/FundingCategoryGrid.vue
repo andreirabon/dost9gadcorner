@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { formatCurrency } from '@/helpers/formatCurrency';
+
+/** ₱0.00 reads as a validated zero; funding never recorded should read as absent, not confirmed nil. */
+const formatFundingOrEmpty = (amount: number): string => (amount > 0 ? formatCurrency(amount) : 'No data yet');
 import type { FundingCategorySummaryData } from '@/types/reports';
 
 interface Props {
@@ -25,7 +28,7 @@ defineProps<Props>();
                 <p class="report-view-quick-label">Projects</p>
                 <p class="report-view-quick-value">{{ category.maleProjects + category.femaleProjects }}</p>
                 <p class="report-view-quick-label">Funding</p>
-                <p class="report-view-quick-value-sm">{{ formatCurrency(category.maleAmount + category.femaleAmount) }}</p>
+                <p class="report-view-quick-value-sm">{{ formatFundingOrEmpty(category.maleAmount + category.femaleAmount) }}</p>
             </div>
         </div>
     </div>

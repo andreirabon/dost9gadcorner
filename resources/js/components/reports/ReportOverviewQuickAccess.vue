@@ -43,7 +43,7 @@ const emit = defineEmits<{
                 >
                     <p class="report-view-quick-label">{{ metric.label }}</p>
                     <p class="report-view-quick-value-sm">{{ metric.value }}</p>
-                    <p v-if="metric.meta" class="text-[10px] text-purple-300/60 report-light:text-slate-500">{{ metric.meta }}</p>
+                    <p v-if="metric.meta" class="text-xs text-purple-300/60 report-light:text-slate-500">{{ metric.meta }}</p>
                 </div>
             </button>
         </div>

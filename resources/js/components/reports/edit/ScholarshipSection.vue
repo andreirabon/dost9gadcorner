@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/shared/HeadingSmall.vue';
 import InputError from '@/components/shared/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -150,10 +149,8 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
 <template>
     <div>
         <section id="panel-scholarship" class="report-panel" role="tabpanel" aria-labelledby="tab-scholarship">
-            <HeadingSmall variant="report" title="Scholarship" />
-
             <Transition name="fade-slide" mode="out-in">
-                <div v-if="!showAddForm" key="btn" class="mt-6 mb-6">
+                <div v-if="!showAddForm" key="btn" class="mb-6">
                     <Button
                         type="button"
                         variant="outline"
@@ -169,7 +166,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                 <form
                     v-else
                     key="form"
-                    class="report-form report-form--edit mt-6 mb-6 w-full rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-[transform,background-color,border-color,color] duration-200 ease-out"
+                    class="report-form report-form--edit mb-6 w-full rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-[transform,background-color,border-color,color] duration-200 ease-out"
                     @submit.prevent="storeScholarshipSnapshot"
                 >
                     <div class="mb-4 flex items-center justify-between gap-2 border-b border-zinc-200 pb-3">
@@ -256,7 +253,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                         </div>
                     </div>
 
-                    <div class="mt-6 flex flex-wrap items-center gap-4 border-t border-zinc-200/80 pt-4">
+                    <div class="report-years-form-actions mt-6">
                         <Button
                             type="submit"
                             class="report-save-btn flex items-center gap-2 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
@@ -291,94 +288,35 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                     }}</span>
                 </div>
 
-                <!-- Vertical Timeline line -->
-                <div class="relative ml-3 space-y-6 border-l border-zinc-200 pl-6">
-                    <div
+                <!--
+                    Rows on a timeline rail, not cards: the panel is already a card and
+                    nesting a second one around every snapshot added a border with no
+                    information in it. The rail carries the chronology instead.
+                -->
+                <ol class="report-snapshot-list">
+                    <li
                         v-for="(snap, index) in reportYear.scholarshipSnapshots"
                         :key="snap.id"
-                        class="relative rounded-2xl border p-5 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-sm"
-                        :class="index === 0 ? 'border-emerald-200 bg-emerald-50/30 shadow-[0_8px_30px_rgb(0,0,0,0.01)]' : 'border-zinc-200 bg-white'"
+                        class="report-snapshot"
+                        :class="{ 'is-latest': index === 0 }"
                     >
-                        <!-- Timeline node indicator dot -->
-                        <div
-                            class="absolute top-[26px] -left-[33px] flex h-4 w-4 items-center justify-center rounded-full border-2 bg-white"
-                            :class="index === 0 ? 'border-emerald-500' : 'border-zinc-300'"
-                        >
-                            <div class="h-1.5 w-1.5 rounded-full" :class="index === 0 ? 'animate-pulse bg-emerald-500' : 'bg-zinc-300'" />
-                        </div>
+                        <!-- Timeline node. Centred on the rail from the row's own padding,
+                             so it no longer depends on hand-computed pixel offsets. -->
+                        <span class="report-snapshot-node" aria-hidden="true" />
 
                         <!-- View mode -->
                         <template v-if="editingSnapshotId !== snap.id">
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <span class="text-sm font-semibold text-zinc-900"> As of {{ snap.asOfDate ?? 'No date' }} </span>
-                                        <span
-                                            v-if="index === 0"
-                                            class="inline-flex items-center rounded-full bg-emerald-100/80 px-2 py-0.5 text-sm font-bold text-emerald-800"
-                                        >
-                                            Latest Snapshot
-                                        </span>
-                                    </div>
-                                    <div class="mt-2 flex flex-col gap-y-1 text-sm text-zinc-600">
-                                        <span
-                                            >School Year:
-                                            <span class="font-medium text-zinc-900">{{ snap.schoolYearLabel || 'No school year' }}</span></span
-                                        >
-                                        <span
-                                            >Female:
-                                            <span class="font-mono font-semibold text-zinc-950 tabular-nums">{{ snap.femaleCount ?? 0 }}</span></span
-                                        >
-                                        <span
-                                            >Male:
-                                            <span class="font-mono font-semibold text-zinc-950 tabular-nums">{{ snap.maleCount ?? 0 }}</span></span
-                                        >
-                                        <span class="font-medium text-zinc-900"
-                                            >Total:
-                                            <span class="font-mono font-bold text-zinc-950 tabular-nums">{{
-                                                Number(snap.femaleCount ?? 0) + Number(snap.maleCount ?? 0)
-                                            }}</span></span
-                                        >
-                                    </div>
-                                    <p class="mt-2 flex items-center gap-1.5 text-sm text-zinc-600">
-                                        <Calendar class="size-3 text-zinc-400" />
-                                        <span
-                                            >Added
-                                            {{
-                                                snap.createdAt
-                                                    ? new Date(snap.createdAt).toLocaleDateString('en-PH', {
-                                                          month: 'short',
-                                                          day: 'numeric',
-                                                          year: 'numeric',
-                                                      })
-                                                    : 'unknown'
-                                            }}</span
-                                        >
-                                        <template v-if="snap.lastEditedBy">
-                                            <span>·</span>
-                                            <span
-                                                >Last edited by <span class="font-medium text-zinc-600">{{ snap.lastEditedBy }}</span></span
-                                            >
-                                            <template v-if="snap.lastEditedAt">
-                                                <span
-                                                    >on
-                                                    {{
-                                                        new Date(snap.lastEditedAt).toLocaleDateString('en-PH', {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                        })
-                                                    }}</span
-                                                >
-                                            </template>
-                                        </template>
-                                    </p>
-                                </div>
-                                <div class="flex shrink-0 items-center gap-1.5">
+                            <!-- Actions sit on the header baseline rather than floating
+                                 mid-row against nothing. -->
+                            <div class="report-snapshot-head">
+                                <span class="report-snapshot-date">As of {{ snap.asOfDate ?? 'No date' }}</span>
+                                <span v-if="index === 0" class="report-snapshot-badge">Latest Snapshot</span>
+                                <div class="report-snapshot-actions">
                                     <button
                                         v-if="canUpdate"
                                         type="button"
                                         :disabled="isReadOnly"
-                                        class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-zinc-600 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-zinc-100 hover:text-zinc-900 active:scale-[0.95] disabled:pointer-events-none disabled:opacity-50"
+                                        class="report-snapshot-action"
                                         @click="startEditSnapshot(snap)"
                                     >
                                         <Pencil class="size-3.5" aria-hidden="true" />
@@ -388,7 +326,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                                         v-if="canDelete"
                                         type="button"
                                         :disabled="isReadOnly"
-                                        class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-red-600 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-red-50 hover:text-red-700 active:scale-[0.95] disabled:pointer-events-none disabled:opacity-50"
+                                        class="report-snapshot-action report-snapshot-action--danger"
                                         @click="confirmDeleteScholarshipSnapshot(snap.id)"
                                     >
                                         <Trash2 class="size-3.5" aria-hidden="true" />
@@ -396,6 +334,53 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                                     </button>
                                 </div>
                             </div>
+
+                            <!-- The counts are why the row exists, so they read as figures
+                                 in a row rather than four lines of "Label: value" prose. -->
+                            <dl class="report-snapshot-stats">
+                                <div class="report-snapshot-stat">
+                                    <dt>School Year</dt>
+                                    <dd class="report-snapshot-stat-text">{{ snap.schoolYearLabel || 'No school year' }}</dd>
+                                </div>
+                                <div class="report-snapshot-stat">
+                                    <dt>Female</dt>
+                                    <dd>{{ snap.femaleCount ?? 0 }}</dd>
+                                </div>
+                                <div class="report-snapshot-stat">
+                                    <dt>Male</dt>
+                                    <dd>{{ snap.maleCount ?? 0 }}</dd>
+                                </div>
+                                <div class="report-snapshot-stat is-total">
+                                    <dt>Total</dt>
+                                    <dd>{{ Number(snap.femaleCount ?? 0) + Number(snap.maleCount ?? 0) }}</dd>
+                                </div>
+                            </dl>
+
+                            <p class="report-snapshot-meta">
+                                <Calendar class="size-3 shrink-0 text-slate-400" aria-hidden="true" />
+                                <span>
+                                    Added
+                                    {{
+                                        snap.createdAt
+                                            ? new Date(snap.createdAt).toLocaleDateString('en-PH', {
+                                                  month: 'short',
+                                                  day: 'numeric',
+                                                  year: 'numeric',
+                                              })
+                                            : 'unknown'
+                                    }}
+                                </span>
+                                <template v-if="snap.lastEditedBy">
+                                    <span aria-hidden="true">·</span>
+                                    <span>
+                                        Last edited by <span class="font-medium text-slate-700">{{ snap.lastEditedBy }}</span>
+                                        <template v-if="snap.lastEditedAt">
+                                            on
+                                            {{ new Date(snap.lastEditedAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) }}
+                                        </template>
+                                    </span>
+                                </template>
+                            </p>
                         </template>
 
                         <!-- Edit mode -->
@@ -484,7 +469,7 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                                     </div>
                                 </div>
 
-                                <div class="mt-6 flex flex-wrap items-center gap-3 border-t border-zinc-200/80 pt-4">
+                                <div class="report-years-form-actions mt-6">
                                     <Button
                                         type="submit"
                                         class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
@@ -505,8 +490,8 @@ const editSnapshotTotal = computed(() => toNum(editSnapshotForm.female_count) + 
                                 </div>
                             </form>
                         </template>
-                    </div>
-                </div>
+                    </li>
+                </ol>
             </div>
 
             <div v-else class="mt-6 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/20 p-8 text-center">
