@@ -128,6 +128,7 @@ return [
     'seed' => [
         'admin_password' => env('SEED_ADMIN_PASSWORD'),
         'staff_password' => env('SEED_STAFF_PASSWORD'),
+        'gadstaff_password' => env('SEED_GADSTAFF_PASSWORD'),
     ],
 
 ];

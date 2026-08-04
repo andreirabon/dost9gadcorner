@@ -11,7 +11,7 @@
         ---------------------------------------------------------------- */
 
         @page {
-            margin: 20mm 18mm 20mm 18mm;
+            margin: 14mm 14mm 14mm 14mm;
         }
 
         /* NOTE: do NOT set margin/padding on the `html` element. dompdf treats the
@@ -23,8 +23,8 @@
             background-color: #ffffff;
             color: #1e293b;
             font-family: 'DejaVu Sans', sans-serif;
-            font-size: 10px;
-            line-height: 1.5;
+            font-size: 9px;
+            line-height: 1.35;
         }
 
         p {
@@ -69,11 +69,11 @@
             width: 100%;
             border-collapse: collapse;
             border-bottom: 2px solid #0f172a;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
 
         table.brand td {
-            padding: 0 0 10px 0;
+            padding: 0 0 6px 0;
             vertical-align: bottom;
         }
 
@@ -128,21 +128,21 @@
         }
 
         .title-block {
-            margin-bottom: 18px;
+            margin-bottom: 12px;
         }
 
         /* --- Sections --- */
         .section {
-            margin-bottom: 18px;
+            margin-bottom: 12px;
         }
 
         .section-title {
-            font-size: 14px;
+            font-size: 12.5px;
             font-weight: bold;
             color: #0f172a;
             border-bottom: 1.5px solid #0f172a;
-            padding-bottom: 4px;
-            margin: 0 0 9px 0;
+            padding-bottom: 3px;
+            margin: 0 0 6px 0;
         }
 
         .section-num {
@@ -150,16 +150,16 @@
         }
 
         .subhead {
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: bold;
             color: #334155;
-            margin: 10px 0 4px 0;
+            margin: 7px 0 3px 0;
         }
 
         .note {
-            font-size: 9px;
+            font-size: 8.5px;
             color: #64748b;
-            margin: 0 0 7px 0;
+            margin: 0 0 5px 0;
         }
 
         .pending {
@@ -174,12 +174,12 @@
             border-collapse: collapse;
             border: 1px solid #e2e8f0;
             background-color: #f8fafc;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         table.kpi td {
             width: 25%;
-            padding: 9px 11px;
+            padding: 6px 8px;
             border-right: 1px solid #e2e8f0;
             vertical-align: top;
         }
@@ -197,14 +197,14 @@
         }
 
         .kpi-value {
-            font-size: 15px;
+            font-size: 13px;
             font-weight: bold;
             color: #0f172a;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .kpi-value.sm {
-            font-size: 11.5px;
+            font-size: 10.5px;
         }
 
         .kpi-sub {
@@ -218,19 +218,19 @@
             width: 100%;
             border-collapse: collapse;
             border: 1px solid #e2e8f0;
-            margin-bottom: 7px;
+            margin-bottom: 4px;
         }
 
         table.prog td.prog-title {
             background-color: #f1f5f9;
-            font-size: 9.5px;
+            font-size: 9px;
             font-weight: bold;
             color: #0f172a;
-            padding: 5px 9px;
+            padding: 3px 7px;
         }
 
         table.prog td.metric {
-            padding: 6px 9px;
+            padding: 4px 7px;
             border-top: 1px solid #e2e8f0;
             border-right: 1px solid #f1f5f9;
             vertical-align: top;
@@ -264,10 +264,10 @@
         .facts {
             border: 1px solid #e2e8f0;
             background-color: #f8fafc;
-            padding: 6px 9px;
-            font-size: 9px;
+            padding: 4px 7px;
+            font-size: 8.5px;
             color: #475569;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
 
         .facts .k {
@@ -287,7 +287,7 @@
         table.data {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         table.data thead {
@@ -297,18 +297,18 @@
         table.data th {
             background-color: #0f172a;
             color: #ffffff;
-            font-size: 8px;
+            font-size: 7.5px;
             font-weight: bold;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             text-align: left;
-            padding: 6px 7px;
+            padding: 4px 6px;
         }
 
         table.data td {
-            font-size: 9.5px;
+            font-size: 8.5px;
             color: #334155;
-            padding: 5px 7px;
+            padding: 3px 6px;
             border-bottom: 1px solid #f1f5f9;
         }
 
@@ -374,6 +374,14 @@
             };
 
             $formatCurrency = static fn (float $value): string => 'PHP ' . number_format($value, 2);
+
+            $formatPercentage = static function (int $value, int $total) use ($percentage): string {
+                if ($total === 0) {
+                    return 'No data yet';
+                }
+
+                return $percentage($value, $total) . '%';
+            };
 
             $sumFundingRows = static function (array $rows): array {
                 return array_reduce($rows, static function (array $carry, array $row): array {
@@ -468,8 +476,8 @@
                     'metrics' => [
                         ['label' => 'Total Members', 'value' => number_format($gfpsTotal)],
                         ['label' => 'GFPS Assemblies', 'value' => number_format($gfpsAssemblyCount), 'meta' => 'Quarterly'],
-                        ['label' => 'Female Members', 'value' => number_format($gfpsFemale), 'meta' => $percentage($gfpsFemale, $gfpsTotal) . '%'],
-                        ['label' => 'Male Members', 'value' => number_format($gfpsMale), 'meta' => $percentage($gfpsMale, $gfpsTotal) . '%'],
+                        ['label' => 'Female Members', 'value' => number_format($gfpsFemale), 'meta' => $formatPercentage($gfpsFemale, $gfpsTotal)],
+                        ['label' => 'Male Members', 'value' => number_format($gfpsMale), 'meta' => $formatPercentage($gfpsMale, $gfpsTotal)],
                     ],
                 ],
                 [
@@ -477,8 +485,8 @@
                     'metrics' => [
                         ['label' => 'Employment Types', 'value' => number_format($employeesTypeCount), 'meta' => 'Categories'],
                         ['label' => 'Total Employees', 'value' => number_format($employeesTotal)],
-                        ['label' => 'Female Employees', 'value' => number_format($employeesFemale), 'meta' => $percentage($employeesFemale, $employeesTotal) . '%'],
-                        ['label' => 'Male Employees', 'value' => number_format($employeesMale), 'meta' => $percentage($employeesMale, $employeesTotal) . '%'],
+                        ['label' => 'Female Employees', 'value' => number_format($employeesFemale), 'meta' => $formatPercentage($employeesFemale, $employeesTotal)],
+                        ['label' => 'Male Employees', 'value' => number_format($employeesMale), 'meta' => $formatPercentage($employeesMale, $employeesTotal)],
                     ],
                 ],
                 [
@@ -486,8 +494,8 @@
                     'metrics' => [
                         ['label' => 'Total Scholars', 'value' => number_format($scholarshipTotal)],
                         ['label' => 'School Year', 'value' => $scholarshipSchoolYear ?: 'Not set', 'meta' => $scholarshipAsOfDate],
-                        ['label' => 'Female Scholars', 'value' => number_format($scholarshipFemale), 'meta' => $percentage($scholarshipFemale, $scholarshipTotal) . '%'],
-                        ['label' => 'Male Scholars', 'value' => number_format($scholarshipMale), 'meta' => $percentage($scholarshipMale, $scholarshipTotal) . '%'],
+                        ['label' => 'Female Scholars', 'value' => number_format($scholarshipFemale), 'meta' => $formatPercentage($scholarshipFemale, $scholarshipTotal)],
+                        ['label' => 'Male Scholars', 'value' => number_format($scholarshipMale), 'meta' => $formatPercentage($scholarshipMale, $scholarshipTotal)],
                     ],
                 ],
                 [
@@ -495,8 +503,8 @@
                     'metrics' => [
                         ['label' => 'Total Customers', 'value' => number_format($rstlTotal)],
                         ['label' => 'Period', 'value' => (string) $year['year'], 'meta' => 'Full Year'],
-                        ['label' => 'Female', 'value' => number_format($rstlFemale), 'meta' => $percentage($rstlFemale, $rstlTotal) . '%'],
-                        ['label' => 'Male', 'value' => number_format($rstlMale), 'meta' => $percentage($rstlMale, $rstlTotal) . '%'],
+                        ['label' => 'Female', 'value' => number_format($rstlFemale), 'meta' => $formatPercentage($rstlFemale, $rstlTotal)],
+                        ['label' => 'Male', 'value' => number_format($rstlMale), 'meta' => $formatPercentage($rstlMale, $rstlTotal)],
                     ],
                 ],
                 [
@@ -600,12 +608,12 @@
                     <tr class="avoid-break">
                         <td class="strong">Female</td>
                         <td class="num">{{ number_format($gfpsFemale) }}</td>
-                        <td class="num">{{ $percentage($gfpsFemale, $gfpsTotal) }}%</td>
+                        <td class="num">{{ $formatPercentage($gfpsFemale, $gfpsTotal) }}</td>
                     </tr>
                     <tr class="avoid-break">
                         <td class="strong">Male</td>
                         <td class="num">{{ number_format($gfpsMale) }}</td>
-                        <td class="num">{{ $percentage($gfpsMale, $gfpsTotal) }}%</td>
+                        <td class="num">{{ $formatPercentage($gfpsMale, $gfpsTotal) }}</td>
                     </tr>
                     <tr class="total avoid-break">
                         <td>Total</td>
@@ -649,7 +657,7 @@
             <p class="note">
                 Sex-disaggregated data as of December 31, {{ $year['year'] }}.
                 Total employees: {{ number_format($employeesTotal) }}
-                (Female {{ $percentage($employeesFemale, $employeesTotal) }}%, Male {{ $percentage($employeesMale, $employeesTotal) }}%).
+                (Female {{ $formatPercentage($employeesFemale, $employeesTotal) }}, Male {{ $formatPercentage($employeesMale, $employeesTotal) }}).
             </p>
             <table class="data">
                 <thead>
@@ -701,12 +709,12 @@
                     <tr class="avoid-break">
                         <td class="strong">Female</td>
                         <td class="num">{{ number_format($scholarshipFemale) }}</td>
-                        <td class="num">{{ $percentage($scholarshipFemale, $scholarshipTotal) }}%</td>
+                        <td class="num">{{ $formatPercentage($scholarshipFemale, $scholarshipTotal) }}</td>
                     </tr>
                     <tr class="avoid-break">
                         <td class="strong">Male</td>
                         <td class="num">{{ number_format($scholarshipMale) }}</td>
-                        <td class="num">{{ $percentage($scholarshipMale, $scholarshipTotal) }}%</td>
+                        <td class="num">{{ $formatPercentage($scholarshipMale, $scholarshipTotal) }}</td>
                     </tr>
                     <tr class="total avoid-break">
                         <td>Total</td>
@@ -749,7 +757,7 @@
             <p class="note">
                 Testing and calibration services for {{ $year['year'] }}.
                 Total customers: {{ number_format($rstlTotal) }}
-                (Female {{ $percentage($rstlFemale, $rstlTotal) }}%, Male {{ $percentage($rstlMale, $rstlTotal) }}%).
+                (Female {{ $formatPercentage($rstlFemale, $rstlTotal) }}, Male {{ $formatPercentage($rstlMale, $rstlTotal) }}).
             </p>
             <table class="data">
                 <thead>

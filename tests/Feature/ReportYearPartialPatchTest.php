@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\User;
@@ -60,6 +61,62 @@ test('partial rstl patch updates only the provided row and field', function () {
         'report_year_id' => $reportYear->id,
         'report_month_id' => $february->id,
         'female_count' => 22,
+    ]);
+
+    $this->assertDatabaseHas('audit_logs', [
+        'actor_username' => $user->username,
+        'action' => 'rstl_monthly.updated',
+        'section' => 'RSTL Monthly',
+        'column' => 'Female Count',
+        'row' => $january->name,
+        'item_label' => "Report Year {$reportYear->year}",
+    ]);
+
+    $this->assertDatabaseHas('audit_logs', [
+        'actor_username' => $user->username,
+        'action' => 'rstl_monthly.added',
+        'section' => 'RSTL Monthly',
+        'row' => $february->name,
+    ]);
+});
+
+test('updating multiple report year fields logs a joined column summary', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2025, 'title' => 'Old Title', 'status' => 'pending']);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}", [
+            'year' => 2025,
+            'title' => 'New Title',
+            'description' => $reportYear->description,
+            'status' => 'published',
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('audit_logs', [
+        'actor_username' => $user->username,
+        'action' => 'report_year.updated',
+        'section' => 'Report Year',
+        'column' => 'Title, Status',
+        'row' => null,
+        'item_label' => 'New Title',
+    ]);
+});
+
+test('audit item label falls back to "Report Year {year}" when untitled', function () {
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'title' => null, 'status' => 'pending']);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}", [
+            'year' => 2026,
+            'status' => 'published',
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('audit_logs', [
+        'action' => 'report_year.updated',
+        'item_label' => 'Report Year 2026',
     ]);
 });
 

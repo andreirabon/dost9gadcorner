@@ -57,6 +57,7 @@ export interface User {
         accessReportYears?: boolean;
         createReportYears?: boolean;
         deleteReportYears?: boolean;
+        manageUsers?: boolean;
     };
 }
 

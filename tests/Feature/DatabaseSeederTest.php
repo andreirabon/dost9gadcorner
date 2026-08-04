@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
 use App\Models\ReportMonth;
@@ -16,7 +17,7 @@ uses(RefreshDatabase::class);
 test('user seeder creates admin and all staff accounts', function () {
     (new UserSeeder)->run();
 
-    expect(User::query()->count())->toBe(count(UserSeeder::STAFF_ACCOUNTS) + 1);
+    expect(User::query()->count())->toBe(count(UserSeeder::STAFF_ACCOUNTS) + 2);
 
     foreach (UserSeeder::STAFF_ACCOUNTS as $account) {
         $user = User::query()->where('username', $account['username'])->first();
@@ -25,6 +26,12 @@ test('user seeder creates admin and all staff accounts', function () {
             ->and($user->role)->toBe($account['role'])
             ->and(Hash::check(config('auth.seed.staff_password'), $user->password))->toBeTrue();
     }
+
+    $gadStaff = User::query()->where('username', UserSeeder::GAD_STAFF_USERNAME)->first();
+
+    expect($gadStaff)->not->toBeNull()
+        ->and($gadStaff->role)->toBe(UserRole::GAD)
+        ->and(Hash::check(config('auth.seed.gadstaff_password'), $gadStaff->password))->toBeTrue();
 });
 
 test('database seeder runs all seeders successfully', function () {
@@ -56,5 +63,5 @@ test('full db:seed runs in production when force flag is passed', function () {
         ->assertSuccessful();
 
     // Demo report data is deliberately excluded in production — see DemoDataSeedingTest.
-    expect(User::query()->count())->toBe(count(UserSeeder::STAFF_ACCOUNTS) + 1);
+    expect(User::query()->count())->toBe(count(UserSeeder::STAFF_ACCOUNTS) + 2);
 });

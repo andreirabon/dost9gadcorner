@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ReportPrintController;
@@ -60,6 +62,23 @@ Route::middleware(['auth', NoCacheHeaders::class])->group(function (): void {
         ->middleware('throttle:30,1')
         ->name('print-report.generate');
 });
+
+Route::middleware(['auth', NoCacheHeaders::class])
+    ->prefix('admin/users')
+    ->name('admin.users.')
+    ->group(function (): void {
+        Route::get('/', [UserManagementController::class, 'index'])->name('index');
+        Route::patch('/{user}/password', [UserManagementController::class, 'updatePassword'])
+            ->middleware('throttle:6,1')
+            ->name('password.update');
+    });
+
+Route::middleware(['auth', NoCacheHeaders::class])
+    ->prefix('admin/audit-logs')
+    ->name('admin.audit-logs.')
+    ->group(function (): void {
+        Route::get('/', [AuditLogController::class, 'index'])->name('index');
+    });
 
 Route::middleware('auth')
     ->prefix('settings')

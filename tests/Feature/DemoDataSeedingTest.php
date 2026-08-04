@@ -15,7 +15,7 @@ test('a production seed creates accounts and lookups but no demo report', functi
 
     $this->artisan('db:seed', ['--force' => true])->assertSuccessful();
 
-    expect(User::query()->count())->toBe(count(UserSeeder::STAFF_ACCOUNTS) + 1)
+    expect(User::query()->count())->toBe(count(UserSeeder::STAFF_ACCOUNTS) + 2)
         ->and(EmploymentStatus::query()->count())->toBeGreaterThan(0)
         ->and(ReportYear::query()->where('year', 2025)->exists())->toBeFalse();
 });

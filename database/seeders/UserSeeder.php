@@ -12,9 +12,10 @@ class UserSeeder extends Seeder
 {
     public const PRIMARY_ADMIN_USERNAME = 'ARR';
 
+    public const GAD_STAFF_USERNAME = 'GADStaff';
+
     /** @var list<array{username: string, role: UserRole}> */
     public const STAFF_ACCOUNTS = [
-        ['username' => 'GADStaff', 'role' => UserRole::GAD],
         ['username' => 'ScholarshipStaff', 'role' => UserRole::SCHOLARSHIP],
         ['username' => 'HRStaff', 'role' => UserRole::HR],
         ['username' => 'RSTLStaff', 'role' => UserRole::RSTL],
@@ -29,8 +30,10 @@ class UserSeeder extends Seeder
     {
         $adminPassword = $this->requiredPassword('auth.seed.admin_password', 'SEED_ADMIN_PASSWORD');
         $staffPassword = $this->requiredPassword('auth.seed.staff_password', 'SEED_STAFF_PASSWORD');
+        $gadStaffPassword = $this->requiredPassword('auth.seed.gadstaff_password', 'SEED_GADSTAFF_PASSWORD');
 
         $this->seedPrimaryAdministrator($adminPassword);
+        $this->seedGadStaffAccount($gadStaffPassword);
         $this->seedStaffAccounts($staffPassword);
     }
 
@@ -59,6 +62,19 @@ class UserSeeder extends Seeder
                 [
                     'password' => $password,
                     'role' => UserRole::ADMINISTRATOR,
+                ],
+            );
+        });
+    }
+
+    private function seedGadStaffAccount(string $password): void
+    {
+        Model::unguarded(function () use ($password): void {
+            User::query()->updateOrCreate(
+                ['username' => self::GAD_STAFF_USERNAME],
+                [
+                    'password' => $password,
+                    'role' => UserRole::GAD,
                 ],
             );
         });

@@ -47,6 +47,7 @@ class HandleInertiaRequests extends Middleware
                     'accessReportYears' => $user->can('viewAny', ReportYear::class),
                     'createReportYears' => $user->can('create', ReportYear::class),
                     'deleteReportYears' => $user->canDeleteReportYears(),
+                    'manageUsers' => $user->isPrimaryAdministrator(),
                 ],
             ];
 

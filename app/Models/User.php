@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
         return $this->role === UserRole::ADMINISTRATOR || $this->role === UserRole::GAD;
     }
+
+    public function isPrimaryAdministrator(): bool
+    {
+        return $this->role === UserRole::ADMINISTRATOR && $this->username === 'ARR';
+    }
 }

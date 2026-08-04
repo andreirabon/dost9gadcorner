@@ -26,6 +26,13 @@ test('user seeder refuses to run when staff password is not configured', functio
         ->toThrow(RuntimeException::class, 'SEED_STAFF_PASSWORD');
 });
 
+test('user seeder refuses to run when gadstaff password is not configured', function () {
+    config(['auth.seed.gadstaff_password' => null]);
+
+    expect(fn () => (new UserSeeder)->run())
+        ->toThrow(RuntimeException::class, 'SEED_GADSTAFF_PASSWORD');
+});
+
 /**
  * Read the live seed passwords straight from .env.
  *
@@ -47,7 +54,7 @@ function liveSeedPasswords(): array
     $values = [];
 
     foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-        if (! preg_match('/^\s*(SEED_ADMIN_PASSWORD|SEED_STAFF_PASSWORD)\s*=\s*(.*)$/', $line, $matches)) {
+        if (! preg_match('/^\s*(SEED_ADMIN_PASSWORD|SEED_STAFF_PASSWORD|SEED_GADSTAFF_PASSWORD)\s*=\s*(.*)$/', $line, $matches)) {
             continue;
         }
 

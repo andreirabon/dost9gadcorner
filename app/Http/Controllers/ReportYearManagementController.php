@@ -20,6 +20,7 @@ use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\ScholarshipSummary;
 use App\Models\SchoolYear;
+use App\Services\AuditLogger;
 use App\Services\Reports\ConflictGuard;
 use App\Services\Reports\PatchEmployeeStatusBreakdowns;
 use App\Services\Reports\PatchGfpsAssemblyAttendances;
@@ -49,6 +50,15 @@ class ReportYearManagementController extends Controller
         return $request->has('expected_updated_at')
             ? $request->input('expected_updated_at')
             : false;
+    }
+
+    /**
+     * Audit-log item label: the report year's title when set, otherwise a
+     * "Report Year {year}" fallback for untitled years.
+     */
+    private function reportYearLabel(?string $title, int $year): string
+    {
+        return $title !== null && $title !== '' ? $title : "Report Year {$year}";
     }
 
     public function index(): Response
@@ -107,6 +117,14 @@ class ReportYearManagementController extends Controller
         $validated['published_at'] = $validated['status'] === ReportYear::STATUS_PUBLISHED ? now() : null;
 
         $reportYear = ReportYear::query()->create($validated);
+
+        AuditLogger::record(
+            $request->user(),
+            'report_year.created',
+            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            AuditLogger::created($reportYear->only(['year', 'title', 'description', 'status'])),
+            section: 'Report Year',
+        );
 
         return to_route('report-years.edit', $reportYear);
     }
@@ -195,7 +213,19 @@ class ReportYearManagementController extends Controller
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
 
+        $before = $reportYear->only(['year', 'title', 'description', 'status']);
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description', 'status']);
+        $after = $reportYear->only(['year', 'title', 'description', 'status']);
+        $diff = AuditLogger::diff($before, $after);
+
+        AuditLogger::record(
+            $request->user(),
+            'report_year.'.AuditLogger::actionVerb($diff),
+            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $diff,
+            section: 'Report Year',
+            column: AuditLogger::humanizeFields($diff),
+        );
 
         return back();
     }
@@ -205,17 +235,39 @@ class ReportYearManagementController extends Controller
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
 
+        $before = $reportYear->only(['year', 'title', 'description']);
         $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description']);
+        $after = $reportYear->only(['year', 'title', 'description']);
+        $diff = AuditLogger::diff($before, $after);
+
+        AuditLogger::record(
+            $request->user(),
+            'report_year.metadata_'.AuditLogger::actionVerb($diff),
+            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $diff,
+            section: 'Report Year',
+            column: AuditLogger::humanizeFields($diff),
+        );
 
         return back();
     }
 
-    public function destroy(ReportYear $reportYear): RedirectResponse
+    public function destroy(Request $request, ReportYear $reportYear): RedirectResponse
     {
         $this->authorize('delete', $reportYear);
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
 
+        $label = $this->reportYearLabel($reportYear->title, $reportYear->year);
+        $before = $reportYear->only(['year', 'title', 'description', 'status']);
         $reportYear->delete();
+
+        AuditLogger::record(
+            $request->user(),
+            'report_year.deleted',
+            $label,
+            AuditLogger::removed($before),
+            section: 'Report Year',
+        );
 
         return to_route('report-years.index');
     }
@@ -225,7 +277,19 @@ class ReportYearManagementController extends Controller
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear->gfpsMembershipSummary, $this->expectedUpdatedAt($request));
 
+        $before = $reportYear->gfpsMembershipSummary?->only(['female_count', 'male_count']) ?? [];
         $patchGfpsMembership->apply($reportYear, $request->validated());
+        $after = $reportYear->gfpsMembershipSummary?->fresh()?->only(['female_count', 'male_count']) ?? [];
+        $diff = AuditLogger::diff($before, $after);
+
+        AuditLogger::record(
+            $request->user(),
+            'gfps_membership.'.AuditLogger::actionVerb($diff),
+            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $diff,
+            section: 'GFPS Membership',
+            column: AuditLogger::humanizeFields($diff),
+        );
 
         return back();
     }
@@ -235,7 +299,40 @@ class ReportYearManagementController extends Controller
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertRelationFresh($reportYear, 'gfpsAssemblyAttendances', $this->expectedUpdatedAt($request));
 
-        $patchGfpsAssemblies->apply($reportYear, $request->validated('attendances'));
+        $submitted = $request->validated('attendances');
+        $before = $reportYear->gfpsAssemblyAttendances()->get()->keyBy('gfps_assembly_period_id');
+
+        $patchGfpsAssemblies->apply($reportYear, $submitted);
+
+        $after = $reportYear->gfpsAssemblyAttendances()->get()->keyBy('gfps_assembly_period_id');
+        $names = GfpsAssemblyPeriod::query()
+            ->whereIn('id', collect($submitted)->pluck('period_id')->filter())
+            ->pluck('name', 'id');
+
+        foreach ($submitted as $row) {
+            if (! array_key_exists('period_id', $row)) {
+                continue;
+            }
+
+            $id = $row['period_id'];
+            $beforeAttrs = $before->get($id)?->only(['female_count', 'male_count']) ?? ['female_count' => 0, 'male_count' => 0];
+            $afterAttrs = $after->get($id)?->only(['female_count', 'male_count']) ?? ['female_count' => 0, 'male_count' => 0];
+            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
+
+            if ($diff === []) {
+                continue;
+            }
+
+            AuditLogger::record(
+                $request->user(),
+                'gfps_assemblies.'.AuditLogger::actionVerb($diff),
+                $this->reportYearLabel($reportYear->title, $reportYear->year),
+                $diff,
+                section: 'GFPS Assemblies',
+                column: AuditLogger::humanizeFields($diff),
+                row: $names->get($id, "#{$id}"),
+            );
+        }
 
         return back();
     }
@@ -245,7 +342,40 @@ class ReportYearManagementController extends Controller
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertRelationFresh($reportYear, 'employeeStatusBreakdowns', $this->expectedUpdatedAt($request));
 
-        $patchEmployeeStatuses->apply($reportYear, $request->validated('breakdowns'));
+        $submitted = $request->validated('breakdowns');
+        $before = $reportYear->employeeStatusBreakdowns()->get()->keyBy('employment_status_id');
+
+        $patchEmployeeStatuses->apply($reportYear, $submitted);
+
+        $after = $reportYear->employeeStatusBreakdowns()->get()->keyBy('employment_status_id');
+        $names = EmploymentStatus::query()
+            ->whereIn('id', collect($submitted)->pluck('employment_status_id')->filter())
+            ->pluck('name', 'id');
+
+        foreach ($submitted as $row) {
+            if (! array_key_exists('employment_status_id', $row)) {
+                continue;
+            }
+
+            $id = $row['employment_status_id'];
+            $beforeAttrs = $before->get($id)?->only(['female_count', 'male_count']) ?? ['female_count' => 0, 'male_count' => 0];
+            $afterAttrs = $after->get($id)?->only(['female_count', 'male_count']) ?? ['female_count' => 0, 'male_count' => 0];
+            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
+
+            if ($diff === []) {
+                continue;
+            }
+
+            AuditLogger::record(
+                $request->user(),
+                'employee_statuses.'.AuditLogger::actionVerb($diff),
+                $this->reportYearLabel($reportYear->title, $reportYear->year),
+                $diff,
+                section: 'Employee Statuses',
+                column: AuditLogger::humanizeFields($diff),
+                row: $names->get($id, "#{$id}"),
+            );
+        }
 
         return back();
     }
@@ -257,11 +387,22 @@ class ReportYearManagementController extends Controller
         // Stamped from the session, never from the payload: the history column
         // would otherwise sit blank for created rows and show a name only for
         // edited ones, which reads as a bug rather than as "never edited".
-        $reportYear->scholarshipSnapshots()->create([
+        $scholarship = $reportYear->scholarshipSnapshots()->create([
             ...$request->validated(),
             'last_edited_by' => $request->user()?->id,
             'last_edited_at' => now(),
         ]);
+
+        $schoolYearName = SchoolYear::find($scholarship->school_year_id)?->name;
+
+        AuditLogger::record(
+            $request->user(),
+            'scholarship.created',
+            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            AuditLogger::created($scholarship->only(['school_year_id', 'as_of_date', 'female_count', 'male_count'])),
+            section: 'Scholarship',
+            row: $schoolYearName ?? "#{$scholarship->school_year_id}",
+        );
 
         return back();
     }
@@ -276,6 +417,7 @@ class ReportYearManagementController extends Controller
         // Audit stamps ride along in the same save. Writing them separately bumped
         // updated_at twice, so the timestamp the client just synced against was
         // already stale by the time the response came back.
+        $before = $scholarship->only(['school_year_id', 'as_of_date', 'female_count', 'male_count']);
         $patcher->applyToModel(
             $scholarship,
             $request->validated(),
@@ -284,6 +426,18 @@ class ReportYearManagementController extends Controller
                 'last_edited_by' => $request->user()?->id,
                 'last_edited_at' => now(),
             ],
+        );
+        $after = $scholarship->only(['school_year_id', 'as_of_date', 'female_count', 'male_count']);
+        $diff = AuditLogger::diff($before, $after);
+
+        AuditLogger::record(
+            $request->user(),
+            'scholarship.'.AuditLogger::actionVerb($diff),
+            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $diff,
+            section: 'Scholarship',
+            column: AuditLogger::humanizeFields($diff),
+            row: $scholarship->schoolYear?->name ?? "#{$scholarship->school_year_id}",
         );
 
         return back();
@@ -295,7 +449,18 @@ class ReportYearManagementController extends Controller
         $this->authorize('deleteScholarship', $reportYear);
         abort_unless($scholarship->report_year_id === $reportYear->id, 404);
 
+        $schoolYearName = $scholarship->schoolYear?->name ?? "#{$scholarship->school_year_id}";
+        $before = $scholarship->only(['school_year_id', 'as_of_date', 'female_count', 'male_count']);
         $scholarship->delete();
+
+        AuditLogger::record(
+            $request->user(),
+            'scholarship.deleted',
+            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            AuditLogger::removed($before),
+            section: 'Scholarship',
+            row: $schoolYearName,
+        );
 
         return back();
     }
@@ -305,7 +470,42 @@ class ReportYearManagementController extends Controller
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertRelationFresh($reportYear, 'rstlMonthlyBreakdowns', $this->expectedUpdatedAt($request));
 
-        $patchRstlMonthly->apply($reportYear, $request->validated('breakdowns'));
+        $submitted = $request->validated('breakdowns');
+        $before = $reportYear->rstlMonthlyBreakdowns()->get()->keyBy('report_month_id');
+
+        $patchRstlMonthly->apply($reportYear, $submitted);
+
+        $after = $reportYear->rstlMonthlyBreakdowns()->get()->keyBy('report_month_id');
+        $names = ReportMonth::query()
+            ->whereIn('id', collect($submitted)->pluck('report_month_id')->filter())
+            ->pluck('name', 'id');
+
+        $fields = ['female_count', 'female_led_count', 'male_count', 'male_led_count'];
+
+        foreach ($submitted as $row) {
+            if (! array_key_exists('report_month_id', $row)) {
+                continue;
+            }
+
+            $id = $row['report_month_id'];
+            $beforeAttrs = $before->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
+            $afterAttrs = $after->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
+            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
+
+            if ($diff === []) {
+                continue;
+            }
+
+            AuditLogger::record(
+                $request->user(),
+                'rstl_monthly.'.AuditLogger::actionVerb($diff),
+                $this->reportYearLabel($reportYear->title, $reportYear->year),
+                $diff,
+                section: 'RSTL Monthly',
+                column: AuditLogger::humanizeFields($diff),
+                row: $names->get($id, "#{$id}"),
+            );
+        }
 
         return back();
     }
@@ -315,7 +515,42 @@ class ReportYearManagementController extends Controller
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertRelationFresh($reportYear, 'programFundingSummaries', $this->expectedUpdatedAt($request));
 
-        $patchProgramFunding->apply($reportYear, $request->validated('summaries'));
+        $submitted = $request->validated('summaries');
+        $before = $reportYear->programFundingSummaries()->get()->keyBy('funding_program_id');
+
+        $patchProgramFunding->apply($reportYear, $submitted);
+
+        $after = $reportYear->programFundingSummaries()->get()->keyBy('funding_program_id');
+        $names = FundingProgram::query()
+            ->whereIn('id', collect($submitted)->pluck('funding_program_id')->filter())
+            ->pluck('name', 'id');
+
+        $fields = ['female_projects', 'female_amount', 'male_projects', 'male_amount'];
+
+        foreach ($submitted as $row) {
+            if (! array_key_exists('funding_program_id', $row)) {
+                continue;
+            }
+
+            $id = $row['funding_program_id'];
+            $beforeAttrs = $before->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
+            $afterAttrs = $after->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
+            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
+
+            if ($diff === []) {
+                continue;
+            }
+
+            AuditLogger::record(
+                $request->user(),
+                'program_funding.'.AuditLogger::actionVerb($diff),
+                $this->reportYearLabel($reportYear->title, $reportYear->year),
+                $diff,
+                section: 'Program Funding',
+                column: AuditLogger::humanizeFields($diff),
+                row: $names->get($id, "#{$id}"),
+            );
+        }
 
         return back();
     }
@@ -324,7 +559,17 @@ class ReportYearManagementController extends Controller
     {
         $this->authorize('toggleLock', $reportYear);
 
-        $reportYear->update(['is_locked' => ! $reportYear->is_locked]);
+        $wasLocked = $reportYear->is_locked;
+        $reportYear->update(['is_locked' => ! $wasLocked]);
+
+        AuditLogger::record(
+            $request->user(),
+            'report_year.lock_toggled',
+            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            ['is_locked' => ['old' => $wasLocked, 'new' => ! $wasLocked]],
+            section: 'Report Year',
+            column: 'Is Locked',
+        );
 
         return back();
     }

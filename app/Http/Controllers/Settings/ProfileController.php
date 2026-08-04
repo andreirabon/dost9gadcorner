@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +30,8 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        AuditLogger::record($user, 'user.deleted', "User account: {$user->username}", section: 'Account');
 
         Auth::logout();
 

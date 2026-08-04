@@ -46,7 +46,16 @@ test('staff account can log in after seeding', function () {
     (new UserSeeder)->run();
 
     $this->post(route('login.store'), [
-        'username' => 'GADStaff',
+        'username' => 'ScholarshipStaff',
         'password' => config('auth.seed.staff_password'),
+    ])->assertRedirect(route('report-years.index'));
+});
+
+test('gad staff account can log in after seeding', function () {
+    (new UserSeeder)->run();
+
+    $this->post(route('login.store'), [
+        'username' => 'GADStaff',
+        'password' => config('auth.seed.gadstaff_password'),
     ])->assertRedirect(route('report-years.index'));
 });

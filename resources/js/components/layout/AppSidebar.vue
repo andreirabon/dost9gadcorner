@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, ChevronsLeft, ChevronsRight, FileChartColumnIncreasing, Printer } from '@lucide/vue';
+import { ArrowLeft, ChevronsLeft, ChevronsRight, FileChartColumnIncreasing, Printer, ScrollText, Settings } from '@lucide/vue';
 import { computed } from 'vue';
 
 const page = usePage();
@@ -41,6 +41,25 @@ const mainNavItems = computed((): NavItem[] => {
     }
 
     return items;
+});
+
+const adminNavItems = computed((): NavItem[] => {
+    if (!page.props.auth.user?.can?.manageUsers) {
+        return [];
+    }
+
+    return [
+        {
+            title: 'Settings',
+            href: route('admin.users.index'),
+            icon: Settings,
+        },
+        {
+            title: 'Audit Log',
+            href: route('admin.audit-logs.index'),
+            icon: ScrollText,
+        },
+    ];
 });
 </script>
 
@@ -93,6 +112,9 @@ const mainNavItems = computed((): NavItem[] => {
         <SidebarContent class="px-2.5 py-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
             <nav aria-label="Main">
                 <NavMain :items="mainNavItems" section-label="Reports" />
+            </nav>
+            <nav v-if="adminNavItems.length" aria-label="Administration" class="mt-4">
+                <NavMain :items="adminNavItems" section-label="Administration" />
             </nav>
         </SidebarContent>
 
