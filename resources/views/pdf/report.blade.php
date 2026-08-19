@@ -724,6 +724,27 @@
                 </tbody>
             </table>
 
+            @php
+                $applicantRows = $data['scholarshipApplicants'] ?? [];
+                $hasApplicants = collect($applicantRows)->contains(
+                    fn (array $row): bool => (int) ($row['female'] ?? 0) + (int) ($row['male'] ?? 0) > 0,
+                );
+            @endphp
+
+            @if($hasApplicants)
+                <p class="subhead">Applicants by Scholarship Program</p>
+                @include('pdf.partials.scholarship-applicants-table', [
+                    'rows' => $applicantRows,
+                    'level' => 'undergraduate',
+                    'emptyMessage' => 'No undergraduate applicant data recorded for this year.',
+                ])
+                @include('pdf.partials.scholarship-applicants-table', [
+                    'rows' => $applicantRows,
+                    'level' => 'graduate',
+                    'emptyMessage' => 'No graduate applicant data recorded for this year.',
+                ])
+            @endif
+
             @if(count($data['scholarshipHistory'] ?? []) > 1)
                 <p class="subhead">Scholar Count History</p>
                 <table class="data">

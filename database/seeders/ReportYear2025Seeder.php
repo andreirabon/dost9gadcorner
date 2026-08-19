@@ -12,6 +12,8 @@ use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\RstlMonthlyBreakdown;
+use App\Models\ScholarshipApplicantSummary;
+use App\Models\ScholarshipProgram;
 use App\Models\ScholarshipSummary;
 use App\Models\SchoolYear;
 use Illuminate\Database\Seeder;
@@ -30,7 +32,9 @@ class ReportYear2025Seeder extends Seeder
                     'title' => '2025 Sex Disaggregated Data Report',
                     'description' => 'Data report for 2025 covering DOST IX employees, RSTL services, and categorized SETUP/CEST programs.',
                     'status' => ReportYear::STATUS_PUBLISHED,
-                    'published_at' => now(),
+                    // Kept inside the reporting year so the published date never
+                    // reads as later than the data it describes.
+                    'published_at' => fake()->dateTimeBetween('2025-11-01', '2025-12-31'),
                 ],
             );
 
@@ -82,9 +86,9 @@ class ReportYear2025Seeder extends Seeder
                 ['report_year_id' => $reportYear->id],
                 [
                     'school_year_id' => $schoolYear->id ?? null,
-                    'as_of_date' => '2025-01-13',
-                    'female_count' => 64,
-                    'male_count' => 114,
+                    'as_of_date' => fake()->dateTimeBetween('2025-01-01', '2025-12-31')->format('Y-m-d'),
+                    'female_count' => fake()->numberBetween(40, 90),
+                    'male_count' => fake()->numberBetween(80, 140),
                 ],
             );
 
@@ -113,13 +117,20 @@ class ReportYear2025Seeder extends Seeder
                 );
             }
 
+            foreach (ScholarshipProgram::query()->get() as $program) {
+                ScholarshipApplicantSummary::query()->updateOrCreate(
+                    [
+                        'report_year_id' => $reportYear->id,
+                        'scholarship_program_id' => $program->id,
+                    ],
+                    [
+                        'female_count' => fake()->numberBetween(0, 120),
+                        'male_count' => fake()->numberBetween(0, 120),
+                    ],
+                );
+            }
+
             $fundingPrograms = FundingProgram::query()->pluck('id', 'slug');
-            $zeroFundingValues = [
-                'male_projects' => 0,
-                'male_amount' => 0.00,
-                'female_projects' => 0,
-                'female_amount' => 0.00,
-            ];
 
             foreach ([
                 'setup-zc-ic',
@@ -136,9 +147,58 @@ class ReportYear2025Seeder extends Seeder
                         'report_year_id' => $reportYear->id,
                         'funding_program_id' => $fundingPrograms[$slug],
                     ],
-                    $zeroFundingValues,
+                    $this->randomProgramFundingValues(),
                 );
             }
         });
+    }
+
+    /**
+     * Demo figures for one funding program.
+     *
+     * Deliberately generated rather than hardcoded so the sample report shows a
+     * realistic spread across categories instead of the same number repeated.
+     *
+     * Two invariants are honoured so the seeded rows are values the edit screen
+     * would actually accept:
+     *  - jobs_male + jobs_female equals jobs_total, which the request validates.
+     *  - PWD / senior citizen / IP / 4Ps are overlapping subsets of that total,
+     *    never additional to it, so each is capped below it rather than summed.
+     *
+     * @return array<string, int|float>
+     */
+    private function randomProgramFundingValues(): array
+    {
+        $femaleProjects = fake()->numberBetween(0, 18);
+        $maleProjects = fake()->numberBetween(0, 18);
+
+        $jobsMale = fake()->numberBetween(0, 60);
+        $jobsFemale = fake()->numberBetween(0, 60);
+        $jobsTotal = $jobsMale + $jobsFemale;
+
+        /** A subset category can never exceed the workforce it is drawn from. */
+        $subsetOfJobs = fn (int $ceiling): int => $jobsTotal === 0 ? 0 : fake()->numberBetween(0, min($ceiling, intdiv($jobsTotal, 4)));
+
+        return [
+            'female_projects' => $femaleProjects,
+            'female_amount' => $femaleProjects === 0 ? 0 : fake()->randomFloat(2, 50_000, 2_500_000),
+            'male_projects' => $maleProjects,
+            'male_amount' => $maleProjects === 0 ? 0 : fake()->randomFloat(2, 50_000, 2_500_000),
+
+            'funded_projects_count' => $femaleProjects + $maleProjects,
+            'funded_projects_value' => fake()->randomFloat(2, 100_000, 5_000_000),
+            'training_participants' => fake()->numberBetween(0, 150),
+
+            'jobs_total' => $jobsTotal,
+            'jobs_male' => $jobsMale,
+            'jobs_female' => $jobsFemale,
+            'jobs_pwd' => $subsetOfJobs(8),
+            'jobs_senior_citizen' => $subsetOfJobs(8),
+            'jobs_ip' => $subsetOfJobs(8),
+            'jobs_4ps' => $subsetOfJobs(10),
+
+            'special_projects_research_male' => fake()->numberBetween(0, 12),
+            'special_projects_research_female' => fake()->numberBetween(0, 12),
+        ];
     }
 }

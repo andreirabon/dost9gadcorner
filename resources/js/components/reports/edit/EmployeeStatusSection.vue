@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRowSection } from '@/composables/useRowSection';
+import { formatNumber } from '@/helpers/formatNumber';
 import { REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
 import { sumRowFields } from '@/helpers/reportTotals';
 import type { EditableEmployeeStatusRow } from '@/types/reports';
@@ -90,7 +91,7 @@ const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_cou
                         <Label for="employee_total_female" class="report-years-data-cell-label md:sr-only">Total female</Label>
                         <Input
                             id="employee_total_female"
-                            :model-value="totals.female_count"
+                            :model-value="formatNumber(totals.female_count)"
                             type="text"
                             readonly
                             tabindex="-1"
@@ -103,7 +104,7 @@ const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_cou
                         <Label for="employee_total_male" class="report-years-data-cell-label md:sr-only">Total male</Label>
                         <Input
                             id="employee_total_male"
-                            :model-value="totals.male_count"
+                            :model-value="formatNumber(totals.male_count)"
                             type="text"
                             readonly
                             tabindex="-1"

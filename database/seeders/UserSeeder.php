@@ -14,6 +14,8 @@ class UserSeeder extends Seeder
 
     public const GAD_STAFF_USERNAME = 'GADStaff';
 
+    public const TESTER_USERNAME = 'e2e-tester';
+
     /** @var list<array{username: string, role: UserRole}> */
     public const STAFF_ACCOUNTS = [
         ['username' => 'ScholarshipStaff', 'role' => UserRole::SCHOLARSHIP],
@@ -35,6 +37,38 @@ class UserSeeder extends Seeder
         $this->seedPrimaryAdministrator($adminPassword);
         $this->seedGadStaffAccount($gadStaffPassword);
         $this->seedStaffAccounts($staffPassword);
+        $this->seedTesterAccount();
+    }
+
+    /**
+     * Account the Playwright specs log in as.
+     *
+     * Never created in production: an automation account with a shared password
+     * has no business existing on a live site. Outside production it is created
+     * only when SEED_TESTER_PASSWORD is set, so a developer who has not opted in
+     * does not silently gain an extra login.
+     */
+    private function seedTesterAccount(): void
+    {
+        if (app()->isProduction()) {
+            return;
+        }
+
+        $password = config('auth.seed.tester_password');
+
+        if (! is_string($password) || trim($password) === '') {
+            return;
+        }
+
+        Model::unguarded(function () use ($password): void {
+            User::query()->updateOrCreate(
+                ['username' => self::TESTER_USERNAME],
+                [
+                    'password' => $password,
+                    'role' => UserRole::TESTER,
+                ],
+            );
+        });
     }
 
     /**

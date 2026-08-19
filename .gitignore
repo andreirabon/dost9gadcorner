@@ -51,3 +51,5 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+# Local E2E credentials — never commit.
+/playwright.env.local

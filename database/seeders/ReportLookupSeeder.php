@@ -6,6 +6,7 @@ use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
 use App\Models\GfpsAssemblyPeriod;
 use App\Models\ReportMonth;
+use App\Models\ScholarshipProgram;
 use Illuminate\Database\Seeder;
 
 class ReportLookupSeeder extends Seeder
@@ -51,6 +52,70 @@ class ReportLookupSeeder extends Seeder
             ['name' => 'CEST ZDS', 'slug' => 'cest-zds', 'sort_order' => 7],
             ['name' => 'CEST ZDN', 'slug' => 'cest-zdn', 'sort_order' => 8],
         ], ['slug'], ['name', 'sort_order']);
+
+        /*
+         * Scholarship programs applicants apply to. `short_name` is what the
+         * data tables show — the full titles are too long for a column — while
+         * `name` stays available for headings and tooltips.
+         */
+        ScholarshipProgram::query()->upsert([
+            [
+                'name' => 'S&T Undergraduate Scholarships',
+                'short_name' => 'S&T Undergraduate',
+                'slug' => 'undergraduate-st',
+                'level' => ScholarshipProgram::LEVEL_UNDERGRADUATE,
+                'sort_order' => 1,
+            ],
+            [
+                'name' => 'Junior Level Science Scholarships',
+                'short_name' => 'JLSS',
+                'slug' => 'undergraduate-jlss',
+                'level' => ScholarshipProgram::LEVEL_UNDERGRADUATE,
+                'sort_order' => 2,
+            ],
+            [
+                'name' => 'BEST for IP Scholarship Program',
+                'short_name' => 'BEST for IP',
+                'slug' => 'undergraduate-best-ip',
+                'level' => ScholarshipProgram::LEVEL_UNDERGRADUATE,
+                'sort_order' => 3,
+            ],
+            [
+                'name' => 'Accelerated Science and Technology Human Resource Development Program',
+                'short_name' => 'ASTHRDP',
+                'slug' => 'graduate-asthrdp',
+                'level' => ScholarshipProgram::LEVEL_GRADUATE,
+                'sort_order' => 4,
+            ],
+            [
+                'name' => 'Capacity Building Program in Science and Mathematics Education',
+                'short_name' => 'CBPSME',
+                'slug' => 'graduate-cbpsme',
+                'level' => ScholarshipProgram::LEVEL_GRADUATE,
+                'sort_order' => 5,
+            ],
+            [
+                'name' => 'Engineering Research and Development for Technology',
+                'short_name' => 'ERDT',
+                'slug' => 'graduate-erdt',
+                'level' => ScholarshipProgram::LEVEL_GRADUATE,
+                'sort_order' => 6,
+            ],
+            [
+                'name' => 'Science and Technology Regional Alliance of Universities for National Development',
+                'short_name' => 'STRAND',
+                'slug' => 'graduate-strand',
+                'level' => ScholarshipProgram::LEVEL_GRADUATE,
+                'sort_order' => 7,
+            ],
+            [
+                'name' => 'Foreign Graduate Scholarship Program',
+                'short_name' => 'Foreign Graduate',
+                'slug' => 'graduate-foreign',
+                'level' => ScholarshipProgram::LEVEL_GRADUATE,
+                'sort_order' => 8,
+            ],
+        ], ['slug'], ['name', 'short_name', 'level', 'sort_order']);
 
         $this->call(SchoolYearSeeder::class);
     }

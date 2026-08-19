@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useReportSectionSave } from '@/composables/useReportSectionSave';
 import { REPORT_INPUT_CLASS } from '@/constants/reportFormClasses';
+import { formatNumber } from '@/helpers/formatNumber';
 import { cloneSnapshot, diffObjectPatch, hasPatch } from '@/helpers/reportPatch';
 import { toNumber } from '@/helpers/reportTotals';
 import type { GfpsMembershipData } from '@/types/reports';
@@ -108,7 +109,7 @@ const total = computed(() => toNumber(form.female_count) + toNumber(form.male_co
                     <Label for="gfps_total_count">Total members</Label>
                     <Input
                         id="gfps_total_count"
-                        :model-value="total"
+                        :model-value="formatNumber(total)"
                         type="text"
                         readonly
                         tabindex="-1"

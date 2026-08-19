@@ -52,6 +52,7 @@ Route::middleware(['auth', NoCacheHeaders::class])
         Route::delete('/{reportYear}/scholarship/{scholarship}', [ReportYearManagementController::class, 'destroyScholarshipSnapshot'])->name('scholarship.destroy');
         Route::patch('/{reportYear}/rstl-monthly', [ReportYearManagementController::class, 'updateRstlMonthly'])->name('rstl-monthly.update');
         Route::patch('/{reportYear}/program-funding', [ReportYearManagementController::class, 'updateProgramFunding'])->name('program-funding.update');
+        Route::patch('/{reportYear}/scholarship-applicants', [ReportYearManagementController::class, 'updateScholarshipApplicants'])->name('scholarship-applicants.update');
         Route::patch('/{reportYear}/toggle-lock', [ReportYearManagementController::class, 'toggleLock'])->name('toggle-lock');
     });
 

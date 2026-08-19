@@ -129,6 +129,12 @@ return [
         'admin_password' => env('SEED_ADMIN_PASSWORD'),
         'staff_password' => env('SEED_STAFF_PASSWORD'),
         'gadstaff_password' => env('SEED_GADSTAFF_PASSWORD'),
+
+        /*
+         * Automated end-to-end test account. Unset in production, where the
+         * account is not seeded at all — see UserSeeder.
+         */
+        'tester_password' => env('SEED_TESTER_PASSWORD'),
     ],
 
 ];

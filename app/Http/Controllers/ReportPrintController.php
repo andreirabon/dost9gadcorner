@@ -38,6 +38,7 @@ class ReportPrintController extends Controller
             'scholarshipSnapshots.schoolYear',
             'rstlMonthlyBreakdowns.reportMonth',
             'programFundingSummaries.fundingProgram',
+            'scholarshipApplicantSummaries.scholarshipProgram',
         ])->findOrFail($validated['report_year_id']);
 
         $this->authorize('view', $reportYear);

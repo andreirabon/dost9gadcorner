@@ -5,6 +5,8 @@ namespace App\Support;
 use App\Models\FundingProgram;
 use App\Models\ProgramFundingSummary;
 use App\Models\ReportYear;
+use App\Models\ScholarshipApplicantSummary;
+use App\Models\ScholarshipProgram;
 use App\Models\ScholarshipSummary;
 use Illuminate\Support\Collection;
 
@@ -95,6 +97,7 @@ class ReportYearTransformer
                 ])
                 ->values()
                 ->all(),
+            'scholarshipApplicants' => $this->transformScholarshipApplicants($reportYear),
             'rstlMonthly' => $this->transformRstlMonthlyBreakdowns($reportYear),
             'setupFunding' => $setupFundingSummary,
             'cestFunding' => $cestFundingSummary,
@@ -145,6 +148,43 @@ class ReportYearTransformer
                 'female' => (int) $breakdown->female_count,
                 'male' => (int) $breakdown->male_count,
             ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Applicants per scholarship program, in the lookup's own order so the
+     * undergraduate programs stay ahead of the graduate ones.
+     *
+     * Programs with no row for this year come back as zeros rather than being
+     * dropped, so the published table always lists the full programme set.
+     *
+     * @return array<int, array{label: string, fullName: string, slug: string, level: string, female: int, male: int}>
+     */
+    private function transformScholarshipApplicants(ReportYear $reportYear): array
+    {
+        /** @var Collection<int, ScholarshipApplicantSummary> $applicants */
+        $applicants = $reportYear->scholarshipApplicantSummaries->keyBy('scholarship_program_id');
+
+        return ScholarshipProgram::query()
+            ->orderBy('sort_order')
+            ->get(['id', 'name', 'short_name', 'slug', 'level'])
+            ->map(function (ScholarshipProgram $program) use ($applicants): array {
+                /** @var ScholarshipApplicantSummary|null $summary */
+                $summary = $applicants->get($program->id);
+
+                return [
+                    // Full programme name, not the acronym: this is a public
+                    // report, and ERDT or CBPSME means nothing to a reader
+                    // outside the programme.
+                    'label' => (string) $program->name,
+                    'fullName' => (string) $program->name,
+                    'slug' => (string) $program->slug,
+                    'level' => (string) $program->level,
+                    'female' => (int) ($summary?->female_count ?? 0),
+                    'male' => (int) ($summary?->male_count ?? 0),
+                ];
+            })
             ->values()
             ->all();
     }

@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRowSection } from '@/composables/useRowSection';
 import { REPORT_TABLE_AMOUNT_INPUT_CLASS, REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
+import { JOBS_BREAKDOWN_LABELS } from '@/constants/reportLabels';
+import { formatNumberInput, parseNumberInput } from '@/helpers/formatNumber';
 import type { EditableProgramFundingRow } from '@/types/reports';
 import { CheckCircle2, Loader2, Save } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Props {
     reportYearId: number;
@@ -69,10 +71,18 @@ interface ColumnDef {
 interface SectionDef {
     /** Rendered after the group name in the first header cell. */
     title: string;
-    /** Grid modifier shared by this section's header row and its data rows. */
-    grid: string;
     columns: ColumnDef[];
 }
+
+/**
+ * Every section renders on one grid, padded to the widest.
+ *
+ * Sized per section instead, the label column ended at 666px in one table and
+ * 1116px in another, so reading a programme's figures down the tab meant
+ * re-finding the column in every block. Filler cells are hidden from assistive
+ * tech: they hold the grid and carry nothing.
+ */
+const DATA_COLUMNS = 4;
 
 const count = (field: ValueField, label: string, idStem: string = field): ColumnDef => ({ field, idStem, label, kind: 'count' });
 const amount = (field: ValueField, label: string, idStem: string = field): ColumnDef => ({ field, idStem, label, kind: 'amount' });
@@ -86,7 +96,6 @@ const TABLES: SectionDef[][] = [
     [
         {
             title: 'Program',
-            grid: 'funding',
             columns: [
                 count('female_projects', 'Female projects', 'funding_female_projects'),
                 amount('female_amount', 'Female amount', 'funding_female_amount'),
@@ -97,8 +106,7 @@ const TABLES: SectionDef[][] = [
     ],
     [
         {
-            title: 'Program metrics',
-            grid: '4col',
+            title: 'Program Metrics',
             columns: [
                 count('funded_projects_count', 'Funded projects'),
                 amount('funded_projects_value', 'Value of funded projects'),
@@ -109,24 +117,21 @@ const TABLES: SectionDef[][] = [
     [
         {
             title: 'Jobs generated',
-            grid: '4col',
             columns: [count('jobs_total', 'Total'), count('jobs_male', 'Male'), count('jobs_female', 'Female')],
         },
         {
             title: 'Jobs breakdown',
-            grid: '5col',
             columns: [
-                count('jobs_pwd', 'PWD'),
-                count('jobs_senior_citizen', 'Senior citizen'),
-                count('jobs_ip', 'IP'),
-                count('jobs_4ps', '4Ps'),
+                count('jobs_pwd', JOBS_BREAKDOWN_LABELS.pwd),
+                count('jobs_senior_citizen', JOBS_BREAKDOWN_LABELS.seniorCitizen),
+                count('jobs_ip', JOBS_BREAKDOWN_LABELS.ip),
+                count('jobs_4ps', JOBS_BREAKDOWN_LABELS.fourPs),
             ],
         },
     ],
     [
         {
             title: 'Special projects research',
-            grid: '3col',
             columns: [count('special_projects_research_male', 'Male'), count('special_projects_research_female', 'Female')],
         },
     ],
@@ -176,6 +181,60 @@ const fundingRows = computed(() =>
  */
 const jobsMismatch = (row: Record<string, number>): boolean =>
     Number(row.jobs_male) + Number(row.jobs_female) !== Number(row.jobs_total);
+
+/**
+ * Amount fields are grouped for reading — 2177208.91 is a wall of digits, while
+ * 2,177,208.91 is a figure.
+ *
+ * `<input type="number">` cannot show separators: browsers treat a comma as
+ * invalid and blank the field. So amounts render as text with a decimal
+ * inputmode, and the grouping is applied only while the field is unfocused —
+ * reformatting under the caret would move it mid-typing and swallow a separator
+ * the moment it is typed. The model always holds the raw numeric string, so the
+ * submitted payload is unchanged.
+ */
+/**
+ * Text the user is currently typing, keyed by field. While a field is being
+ * edited its box shows exactly these keystrokes; once it is left, the box goes
+ * back to deriving its text from the model.
+ *
+ * Focusing deliberately does NOT rewrite the box. An earlier version swapped the
+ * grouped text for the raw number on focus, which moved the caret out from under
+ * the user mid-click and made a select-all-then-type replace nothing.
+ */
+const amountDrafts = ref<Record<string, string>>({});
+
+const amountFieldKey = (programId: number, field: string): string => `${programId}:${field}`;
+
+const amountDisplayValue = (programId: number, field: ValueField, raw: unknown): string => {
+    const key = amountFieldKey(programId, field);
+
+    if (key in amountDrafts.value) {
+        return amountDrafts.value[key];
+    }
+
+    return formatNumberInput(raw === null || raw === undefined ? '' : String(raw));
+};
+
+/*
+ * Bound to `update:modelValue`, not the native `input` event: the shared Input
+ * wraps `useVModel` in passive mode, so it keeps its own copy of the value and
+ * publishes it only through that emit. Listening for `input` left the two copies
+ * drifting apart and the field accumulated digits.
+ */
+const onAmountInput = (programId: number, row: Record<string, unknown>, field: ValueField, value: string | number): void => {
+    const typed = String(value);
+
+    amountDrafts.value[amountFieldKey(programId, field)] = typed;
+    row[field] = parseNumberInput(typed);
+};
+
+/** Dropping the draft hands the box back to the formatter. */
+const onAmountBlur = (programId: number, field: ValueField): void => {
+    const { [amountFieldKey(programId, field)]: _discarded, ...rest } = amountDrafts.value;
+
+    amountDrafts.value = rest;
+};
 </script>
 
 <template>
@@ -192,7 +251,7 @@ const jobsMismatch = (row: Record<string, number>): boolean =>
                         :class="{ 'mt-4': tableIndex > 0 }"
                     >
                         <template v-for="section in sections" :key="section.title">
-                            <div class="report-years-data-head" :class="`report-years-data-head--${section.grid}`">
+                            <div class="report-years-data-head report-years-data-head--program">
                                 <!-- Group name lives in the column header rather than a
                                      separate heading above the table: one line instead of
                                      two, and it labels the column it actually describes. -->
@@ -204,13 +263,18 @@ const jobsMismatch = (row: Record<string, number>): boolean =>
                                 >
                                     {{ column.label }}
                                 </span>
+                                <span
+                                    v-for="index in DATA_COLUMNS - section.columns.length"
+                                    :key="`head-filler-${index}`"
+                                    aria-hidden="true"
+                                    class="report-years-data-head-label"
+                                />
                             </div>
 
                             <div
                                 v-for="item in fundingRows"
                                 :key="`${section.title}-${item.row.funding_program_id}`"
-                                class="report-years-data-row"
-                                :class="`report-years-data-row--${section.grid}`"
+                                class="report-years-data-row report-years-data-row--program"
                             >
                                 <div class="report-years-data-row-label">
                                     {{ item.label }}
@@ -220,17 +284,33 @@ const jobsMismatch = (row: Record<string, number>): boolean =>
                                     <Label :for="`${column.idStem}_${item.row.funding_program_id}`" class="report-years-data-cell-label md:sr-only">
                                         {{ column.label }}
                                     </Label>
+                                    <!--
+                                        Amounts are text, not number, because a
+                                        number input rejects the separators; the
+                                        model still holds a plain numeric string.
+                                    -->
                                     <Input
+                                        v-if="column.kind === 'amount'"
+                                        :id="`${column.idStem}_${item.row.funding_program_id}`"
+                                        :model-value="amountDisplayValue(item.row.funding_program_id, column.field, item.row[column.field])"
+                                        type="text"
+                                        inputmode="decimal"
+                                        placeholder="0.00"
+                                        :disabled="isReadOnly"
+                                        :class="amountInputClass"
+                                        @update:model-value="onAmountInput(item.row.funding_program_id, item.row, column.field, $event)"
+                                        @blur="onAmountBlur(item.row.funding_program_id, column.field)"
+                                    />
+                                    <Input
+                                        v-else
                                         :id="`${column.idStem}_${item.row.funding_program_id}`"
                                         v-model="item.row[column.field]"
                                         type="number"
                                         min="0"
-                                        :step="column.kind === 'amount' ? '0.01' : undefined"
-                                        :inputmode="column.kind === 'amount' ? 'decimal' : 'numeric'"
-                                        :placeholder="column.kind === 'amount' ? '0.00' : undefined"
+                                        inputmode="numeric"
                                         :disabled="isReadOnly"
                                         :aria-invalid="column.field === 'jobs_total' ? jobsMismatch(item.row) : undefined"
-                                        :class="column.kind === 'amount' ? amountInputClass : tableInputClass"
+                                        :class="tableInputClass"
                                     />
                                     <!-- Catches the mismatch before submit rather than after the
                                          server round trip rejects it (error prevention). -->
@@ -238,6 +318,13 @@ const jobsMismatch = (row: Record<string, number>): boolean =>
                                         Male + female ≠ total
                                     </p>
                                 </div>
+
+                                <div
+                                    v-for="index in DATA_COLUMNS - section.columns.length"
+                                    :key="`${section.title}-${item.row.funding_program_id}-filler-${index}`"
+                                    aria-hidden="true"
+                                    class="report-years-data-cell"
+                                />
                             </div>
                         </template>
                     </div>

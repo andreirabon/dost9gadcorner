@@ -2181,6 +2181,19 @@
         @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,11.5rem))];
     }
 
+    /*
+     * One grid for every table on a funding tab.
+     *
+     * The tables carry two to four data columns each, and sized independently
+     * their label columns ended anywhere from 666px to 1116px — so reading one
+     * programme's figures down the tab meant re-finding the column in every
+     * block. Short tables pad with hidden cells rather than restretching.
+     */
+    .report-years-data-head--program,
+    .report-years-data-row--program {
+        @apply md:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(6.25rem,11.5rem))];
+    }
+
     /* tracking-wider, not an arbitrary 0.14em: the wide tracking pushed
        multi-word headers ("Total per assembly") onto a second line and made the
        header band taller than the rows it labels. */
@@ -2799,16 +2812,22 @@
         @apply leading-snug;
     }
 
+    /* Declared row grid, not content-derived: label / value / meta always occupy
+       the same three tracks, so every card in a row shares one internal rhythm
+       and the row bottoms stay level whether or not a card carries a meta line. */
     .report-view-metric {
-        @apply rounded-xl border border-purple-400/35 bg-purple-900/55 p-3 shadow-sm ring-1 ring-white/10 md:p-4 report-light:border-slate-200 report-light:bg-white/90;
+        @apply grid rounded-xl border border-purple-400/35 bg-purple-900/55 p-3 shadow-sm ring-1 ring-white/10 md:p-4 report-light:border-slate-200 report-light:bg-white/90;
+        grid-template-rows: auto 1fr auto;
     }
 
     .report-view-metric-label {
-        @apply text-sm font-medium text-purple-200/80 report-light:text-black;
+        @apply text-sm leading-snug font-medium text-purple-200/80 report-light:text-slate-600;
     }
 
+    /* Bottom-aligned so a long currency figure at a smaller size still sits on
+       the same baseline as the large plain numbers beside it. */
     .report-view-metric-value {
-        @apply text-xl font-semibold tracking-tight text-purple-50 tabular-nums md:text-2xl report-light:text-black;
+        @apply self-end pt-1 text-xl font-semibold tracking-tight text-purple-50 tabular-nums md:text-2xl report-light:text-black;
     }
 
     /* Sex-disaggregated series colors apply inside charts only */
@@ -2845,8 +2864,15 @@
         @apply inline-flex items-center gap-2;
     }
 
+    /* Always present, even when empty, so the row bottoms line up. `line-height`
+       is pinned to the same value as `min-height` so a filled slot and an empty
+       one measure exactly the same — otherwise the text's natural line box runs
+       a couple of pixels taller and the value above it lands off-baseline
+       against the cards that have no meta line. */
     .report-view-metric-meta {
-        @apply text-sm text-purple-200/80 report-light:text-black;
+        @apply text-sm text-purple-200/70 report-light:text-slate-500;
+        min-height: 1.25rem;
+        line-height: 1.25rem;
     }
 
     .report-view-block {
@@ -2869,8 +2895,100 @@
         @apply grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3;
     }
 
+    /* Fixed rows so a metric without a meta line still occupies the same height
+       as one with it — otherwise the divider rules and figures drift out of
+       line across the cards in a row. */
+    .report-view-quick-metric {
+        @apply grid;
+        grid-template-rows: auto 1fr auto;
+    }
+
+    .report-view-quick-metric--divided {
+        @apply mt-2 border-t border-purple-500/10 pt-2 report-light:border-slate-200/80;
+    }
+
+    /* Same pinned line box as the metric meta, and for the same reason. */
+    .report-view-quick-meta {
+        @apply text-xs text-purple-300/60 report-light:text-slate-500;
+        min-height: 1rem;
+        line-height: 1rem;
+    }
+
     .report-view-category-grid {
         @apply grid gap-2.5 sm:grid-cols-2;
+    }
+
+    /* Read-only mirrors of the edit screen's funding tables. Scroll container
+       keeps the wide breakdown tables from forcing the page to scroll sideways. */
+    .report-view-table-scroll {
+        @apply mt-3 -mx-1 [scrollbar-width:thin] overflow-x-auto px-1;
+    }
+
+    /* `fixed` is what makes the shared column grid hold: without it each table
+       sizes columns to its own content and the same reading position lands at a
+       different x in every block. */
+    .report-view-table {
+        @apply w-full border-collapse text-left;
+        table-layout: fixed;
+        /* Below this the shared grid would squeeze category names into two or
+           three wrapped lines. Scrolling the block sideways keeps the columns
+           aligned instead of trading alignment away for fit. */
+        min-width: 34rem;
+    }
+
+    /* One grid for every funding table, so a figure sits directly under the
+       figure above it and the eye tracks straight down instead of zig-zagging. */
+    .report-view-col-category {
+        width: 26%;
+    }
+
+    .report-view-col-data {
+        width: 18.5%;
+    }
+
+    .report-view-table-head {
+        @apply border-b border-purple-400/30 px-3 pt-1 pb-2.5 align-bottom text-[0.6875rem] leading-tight font-semibold tracking-wider text-purple-200/80 uppercase report-light:border-slate-200 report-light:text-slate-600;
+    }
+
+    .report-view-table-rowhead {
+        @apply border-b border-purple-400/10 px-3 py-2.5 text-sm font-medium text-purple-100 report-light:border-slate-100 report-light:text-slate-900;
+    }
+
+    .report-view-table-cell {
+        @apply border-b border-purple-400/10 px-3 py-2.5 text-sm text-purple-50 tabular-nums report-light:border-slate-100 report-light:text-black;
+    }
+
+    /* Last row carries no rule: the card edge already closes the table, and a
+       trailing border reads as a row that failed to render. */
+    .report-view-table tbody tr:last-child .report-view-table-rowhead,
+    .report-view-table tbody tr:last-child .report-view-table-cell {
+        @apply border-b-0;
+    }
+
+    /* Rows are wide and numbers are far from their label, so give the eye a
+       horizontal rail to follow. Hover only — no motion, nothing to distract. */
+    @media (hover: hover) and (pointer: fine) {
+        .report-view-table-row:hover .report-view-table-rowhead,
+        .report-view-table-row:hover .report-view-table-cell {
+            @apply bg-purple-400/10 report-light:bg-slate-50;
+        }
+    }
+
+    /* "No data yet" is prose, not a figure — de-emphasised so it never reads as
+       a measured value sitting among real ones. */
+    .report-view-table-cell--muted {
+        @apply text-purple-200/60 report-light:text-slate-400;
+    }
+
+    .report-view-table-num {
+        @apply text-right;
+    }
+
+    /* Totals row: separated from the entered rows it sums, like the edit screen's
+       derived footer. */
+    .report-view-table-row--total .report-view-table-rowhead,
+    .report-view-table-row--total .report-view-table-cell {
+        @apply border-t border-purple-400/25 font-semibold report-light:border-slate-300;
     }
 
     /* Deliberately flatter than .report-view-metric (no shadow/ring): Quick Access is a secondary nav
@@ -2897,6 +3015,23 @@
 
     .report-view-charts {
         @apply grid gap-3 lg:grid-cols-2 lg:gap-4 2xl:gap-5;
+    }
+
+    /*
+     * Charts sitting side by side share one frame height.
+     *
+     * The variants size themselves independently (a pie tops out at 360px, a
+     * bar reaches 480px), so in a two-up row the grid stretched both cards to
+     * the taller one and the pie was left with a band of dead space under it
+     * while the two plot areas started and ended at different heights. Two
+     * class names outrank the single-class variant and row-count rules, so this
+     * settles it without !important — and it is scoped to the two-up grid, so a
+     * full-width chart on another tab keeps its own sizing.
+     */
+    .report-view-charts .report-chart-frame {
+        height: clamp(300px, 40vh, 460px);
+        min-height: clamp(300px, 40vh, 460px);
+        max-height: clamp(300px, 40vh, 460px);
     }
 
     .report-view-chart-head {

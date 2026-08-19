@@ -1,3 +1,4 @@
+import { REPORT_TABS } from '@/helpers/reportTabs';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import ReportTabNav from './ReportTabNav.vue';
@@ -8,8 +9,10 @@ describe('ReportTabNav', () => {
             props: { activeTab: 'GFPS' },
         });
 
+        // Derived, not hardcoded: adding or removing a tab should not require
+        // editing a magic number here.
         const buttons = wrapper.findAll('[role="tab"]');
-        expect(buttons).toHaveLength(8);
+        expect(buttons).toHaveLength(REPORT_TABS.length);
 
         const active = wrapper.find('[aria-selected="true"]');
         expect(active.text()).toBe('GFPS');

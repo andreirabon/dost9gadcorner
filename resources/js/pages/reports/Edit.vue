@@ -5,6 +5,7 @@ import GfpsMembershipSection from '@/components/reports/edit/GfpsMembershipSecti
 import MetadataSection from '@/components/reports/edit/MetadataSection.vue';
 import ProgramFundingSection from '@/components/reports/edit/ProgramFundingSection.vue';
 import RstlMonthlySection from '@/components/reports/edit/RstlMonthlySection.vue';
+import ScholarshipApplicantsSection from '@/components/reports/edit/ScholarshipApplicantsSection.vue';
 import ScholarshipSection from '@/components/reports/edit/ScholarshipSection.vue';
 import ReportBackNavLink from '@/components/reports/ReportBackNavLink.vue';
 import { useReportSectionSave } from '@/composables/useReportSectionSave';
@@ -43,6 +44,7 @@ const tabDefs = [
     { id: 'metadata', name: 'Metadata' },
     { id: 'gfps_membership', name: 'GFPS Membership' },
     { id: 'scholarship', name: 'Scholarship' },
+    { id: 'scholarship_applicants', name: 'Scholarship Applicants' },
     { id: 'gfps_assemblies', name: 'GFPS Assemblies' },
     { id: 'employee_status', name: 'Employee Status' },
     { id: 'rstl_monthly', name: 'RSTL' },
@@ -58,6 +60,7 @@ function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
         case 'gfps_membership':
             return a.updateGfpsMembership;
         case 'scholarship':
+        case 'scholarship_applicants':
             return a.updateScholarship;
         case 'gfps_assemblies':
             return a.updateGfpsAssemblies;
@@ -140,6 +143,7 @@ const sectionState = computed<Record<string, SectionState>>(() => {
         metadata: binaryState(Boolean(report.title?.trim() || report.description?.trim())),
         gfps_membership: binaryState(report.gfpsMembership.femaleCount + report.gfpsMembership.maleCount > 0),
         scholarship: binaryState(report.scholarshipSnapshots.length > 0),
+        scholarship_applicants: rowsState(report.scholarshipApplicants, ['femaleCount', 'maleCount']),
         gfps_assemblies: rowsState(report.gfpsAssemblies, ['femaleCount', 'maleCount']),
         employee_status: rowsState(report.employeeStatuses, ['femaleCount', 'maleCount']),
         rstl_monthly: rowsState(report.rstlMonthly, ['femaleCount', 'femaleLedCount', 'maleCount', 'maleLedCount']),
@@ -352,6 +356,15 @@ watch(
                     :school-years="schoolYears"
                     :can-update="abilities.updateScholarship"
                     :can-delete="abilities.deleteScholarship"
+                    :is-read-only="isReadOnly"
+                    @notice="showSaveNotice"
+                />
+
+                <ScholarshipApplicantsSection
+                    v-show="activeTab === 'scholarship_applicants'"
+                    :report-year-id="reportYear.id"
+                    :rows="reportYear.scholarshipApplicants"
+                    :expected-updated-at="sectionTs.scholarshipApplicants"
                     :is-read-only="isReadOnly"
                     @notice="showSaveNotice"
                 />

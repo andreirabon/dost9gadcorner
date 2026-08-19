@@ -33,10 +33,10 @@
         foreach ([
             'jobsMale' => 'm',
             'jobsFemale' => 'f',
-            'jobsPwd' => 'PWD',
-            'jobsSeniorCitizen' => 'senior citizen',
-            'jobsIp' => 'IP',
-            'jobs4ps' => '4Ps',
+            'jobsPwd' => 'Person with Disability',
+            'jobsSeniorCitizen' => 'Senior Citizen',
+            'jobsIp' => 'Indigenous People',
+            'jobs4ps' => 'Pantawid Pamilyang Pilipino Program',
         ] as $key => $label) {
             $count = (int) ($row[$key] ?? 0);
 

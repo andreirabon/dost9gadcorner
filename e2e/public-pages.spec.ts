@@ -5,6 +5,13 @@ import { expect, test } from '@playwright/test';
  * needed, so this runs anywhere the app is served.
  */
 
+/**
+ * Browser projects default to the shared signed-in session from `auth.setup.ts`.
+ * These assertions are about being signed *out* — a logged-in visitor is not
+ * redirected to the login page — so the session is discarded here.
+ */
+test.use({ storageState: { cookies: [], origins: [] } });
+
 test('the homepage renders for a signed-out visitor', async ({ page }) => {
     await page.goto('/');
 

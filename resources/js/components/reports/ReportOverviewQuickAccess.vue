@@ -23,7 +23,11 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div class="report-view-metric">
+    <!--
+        The card shell is `report-view-block`, not `report-view-metric`: the
+        latter is a three-row label/value/meta grid meant for a single figure.
+    -->
+    <div class="report-view-block">
         <div class="report-view-block-header">
             <h3 class="report-view-block-title">Quick Access</h3>
         </div>
@@ -36,14 +40,20 @@ const emit = defineEmits<{
                 @click="emit('select-tab', program.tab)"
             >
                 <p class="report-view-quick-title">{{ program.title }}</p>
+                <!--
+                    Each metric occupies the same three rows whether or not it
+                    has a meta line, so the divider rules and figures line up
+                    across every card in the row instead of going ragged.
+                -->
                 <div
                     v-for="(metric, metricIndex) in program.metrics"
                     :key="metric.label"
-                    :class="metricIndex > 0 ? 'mt-2 border-t border-purple-500/10 pt-2 report-light:border-slate-200/80' : ''"
+                    class="report-view-quick-metric"
+                    :class="metricIndex > 0 ? 'report-view-quick-metric--divided' : ''"
                 >
                     <p class="report-view-quick-label">{{ metric.label }}</p>
                     <p class="report-view-quick-value-sm">{{ metric.value }}</p>
-                    <p v-if="metric.meta" class="text-xs text-purple-300/60 report-light:text-slate-500">{{ metric.meta }}</p>
+                    <p class="report-view-quick-meta" :aria-hidden="metric.meta ? undefined : 'true'">{{ metric.meta ?? '' }}</p>
                 </div>
             </button>
         </div>

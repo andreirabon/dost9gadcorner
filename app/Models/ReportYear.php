@@ -90,4 +90,9 @@ class ReportYear extends Model
     {
         return $this->hasMany(ProgramFundingSummary::class);
     }
+
+    public function scholarshipApplicantSummaries(): HasMany
+    {
+        return $this->hasMany(ScholarshipApplicantSummary::class);
+    }
 }

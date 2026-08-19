@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRowSection } from '@/composables/useRowSection';
+import { formatNumber } from '@/helpers/formatNumber';
 import { REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
 import { sumFields } from '@/helpers/reportTotals';
 import type { EditableGfpsAssemblyRow } from '@/types/reports';
@@ -88,7 +89,7 @@ function rowTotal(row: Record<string, unknown>): number {
                         </Label>
                         <Input
                             :id="`gfps_assembly_total_${row.period_id}`"
-                            :model-value="rowTotal(row)"
+                            :model-value="formatNumber(rowTotal(row))"
                             type="text"
                             readonly
                             tabindex="-1"

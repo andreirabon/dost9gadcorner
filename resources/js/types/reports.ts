@@ -84,12 +84,23 @@ export interface FundingCategorySummaryData extends FundingSummaryData {
     specialProjectsResearchFemale?: number;
 }
 
+export interface ScholarshipApplicantDataRow {
+    /** Short name; `fullName` carries the full programme title. */
+    label: string;
+    fullName: string;
+    slug: string;
+    level: 'undergraduate' | 'graduate';
+    female: number;
+    male: number;
+}
+
 export interface ReportYearData {
     gfpsMembership: GfpsMembershipData;
     gfpsAssemblies: GfpsAssemblyDataRow[];
     employeeStatuses: EmployeeStatusDataRow[];
     scholarship: ScholarshipSummaryData;
     scholarshipHistory: ScholarshipSummaryData[];
+    scholarshipApplicants: ScholarshipApplicantDataRow[];
     rstlMonthly: RstlMonthlyDataRow[];
     setupFunding: FundingSummaryData;
     cestFunding: FundingSummaryData;
@@ -142,6 +153,17 @@ export interface EditableProgramFundingRow {
     specialProjectsResearchFemale: number;
 }
 
+export interface EditableScholarshipApplicantRow {
+    scholarshipProgramId: number;
+    /** Short name, used in tables where the full title would wrap. */
+    label: string;
+    fullName: string;
+    slug: string;
+    level: 'undergraduate' | 'graduate';
+    femaleCount: number;
+    maleCount: number;
+}
+
 export interface ReportYearEditAbilities {
     updateFullReport: boolean;
     updateMetadata: boolean;
@@ -168,6 +190,7 @@ export interface EditableReportYear {
     gfpsAssemblies: EditableGfpsAssemblyRow[];
     employeeStatuses: EditableEmployeeStatusRow[];
     scholarshipSnapshots: ScholarshipSnapshot[];
+    scholarshipApplicants: EditableScholarshipApplicantRow[];
     rstlMonthly: EditableRstlMonthlyRow[];
     programFunding: EditableProgramFundingRow[];
     /**
@@ -211,4 +234,5 @@ export interface SectionTimestamps {
     scholarship: string | null;
     rstlMonthly: string | null;
     programFunding: string | null;
+    scholarshipApplicants: string | null;
 }

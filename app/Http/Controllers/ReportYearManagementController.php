@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateProgramFundingSummariesRequest;
 use App\Http\Requests\UpdateReportYearMetadataRequest;
 use App\Http\Requests\UpdateReportYearRequest;
 use App\Http\Requests\UpdateRstlMonthlyBreakdownsRequest;
+use App\Http\Requests\UpdateScholarshipApplicantSummariesRequest;
 use App\Http\Requests\UpdateScholarshipSnapshotRequest;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
@@ -18,6 +19,8 @@ use App\Models\GfpsAssemblyPeriod;
 use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
+use App\Models\ScholarshipApplicantSummary;
+use App\Models\ScholarshipProgram;
 use App\Models\ScholarshipSummary;
 use App\Models\SchoolYear;
 use App\Services\AuditLogger;
@@ -28,6 +31,7 @@ use App\Services\Reports\PatchGfpsMembershipSummary;
 use App\Services\Reports\PatchProgramFundingSummaries;
 use App\Services\Reports\PatchReportYearAttributes;
 use App\Services\Reports\PatchRstlMonthlyBreakdowns;
+use App\Services\Reports\PatchScholarshipApplicantSummaries;
 use App\Services\Reports\SparseRecordPatcher;
 use App\Support\FundingProgramScope;
 use Illuminate\Database\Eloquent\Builder;
@@ -141,6 +145,7 @@ class ReportYearManagementController extends Controller
             'scholarshipSnapshots.schoolYear',
             'rstlMonthlyBreakdowns',
             'programFundingSummaries',
+            'scholarshipApplicantSummaries',
         ]);
 
         $abilities = [
@@ -170,6 +175,7 @@ class ReportYearManagementController extends Controller
                 'scholarship' => $reportYear->scholarshipSnapshots->max('updated_at')?->toIso8601String(),
                 'rstlMonthly' => $reportYear->rstlMonthlyBreakdowns->max('updated_at')?->toIso8601String(),
                 'programFunding' => $reportYear->programFundingSummaries->max('updated_at')?->toIso8601String(),
+                'scholarshipApplicants' => $reportYear->scholarshipApplicantSummaries->max('updated_at')?->toIso8601String(),
             ],
             'reportYear' => [
                 'id' => $reportYear->id,
@@ -199,6 +205,7 @@ class ReportYearManagementController extends Controller
                         'lastEditedBy' => $s->lastEditedBy?->username,
                         'lastEditedAt' => $s->last_edited_at?->toIso8601String(),
                     ]),
+                'scholarshipApplicants' => $this->editableScholarshipApplicantRows($reportYear),
                 'rstlMonthly' => $this->editableRstlMonthlyRows($reportYear),
                 'programFunding' => $this->editableProgramFundingRows($reportYear),
                 // null means unrestricted. The screen hides rows outside this
@@ -510,6 +517,51 @@ class ReportYearManagementController extends Controller
         return back();
     }
 
+    public function updateScholarshipApplicants(UpdateScholarshipApplicantSummariesRequest $request, ReportYear $reportYear, PatchScholarshipApplicantSummaries $patchApplicants, ConflictGuard $conflictGuard): RedirectResponse
+    {
+        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
+        $conflictGuard->assertRelationFresh($reportYear, 'scholarshipApplicantSummaries', $this->expectedUpdatedAt($request));
+
+        $submitted = $request->validated('applicants');
+        $before = $reportYear->scholarshipApplicantSummaries()->get()->keyBy('scholarship_program_id');
+
+        $patchApplicants->apply($reportYear, $submitted);
+
+        $after = $reportYear->scholarshipApplicantSummaries()->get()->keyBy('scholarship_program_id');
+        $names = ScholarshipProgram::query()
+            ->whereIn('id', collect($submitted)->pluck('scholarship_program_id')->filter())
+            ->pluck('name', 'id');
+
+        $fields = ['female_count', 'male_count'];
+
+        foreach ($submitted as $row) {
+            if (! array_key_exists('scholarship_program_id', $row)) {
+                continue;
+            }
+
+            $id = $row['scholarship_program_id'];
+            $beforeAttrs = $before->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
+            $afterAttrs = $after->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
+            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
+
+            if ($diff === []) {
+                continue;
+            }
+
+            AuditLogger::record(
+                $request->user(),
+                'scholarship_applicants.'.AuditLogger::actionVerb($diff),
+                $this->reportYearLabel($reportYear->title, $reportYear->year),
+                $diff,
+                section: 'Scholarship Applicants',
+                column: AuditLogger::humanizeFields($diff),
+                row: $names->get($id, "#{$id}"),
+            );
+        }
+
+        return back();
+    }
+
     public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, PatchProgramFundingSummaries $patchProgramFunding, ConflictGuard $conflictGuard): RedirectResponse
     {
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
@@ -646,6 +698,38 @@ class ReportYearManagementController extends Controller
                     'femaleLedCount' => (int) ($breakdown?->female_led_count ?? 0),
                     'maleCount' => (int) ($breakdown?->male_count ?? 0),
                     'maleLedCount' => (int) ($breakdown?->male_led_count ?? 0),
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * Every scholarship program, zero-filled where a year has no row yet, so
+     * the screen always offers the full list rather than only what was entered.
+     *
+     * @return array<int, array{scholarshipProgramId: int, label: string, fullName: string, slug: string, level: string, femaleCount: int, maleCount: int}>
+     */
+    private function editableScholarshipApplicantRows(ReportYear $reportYear): array
+    {
+        /** @var Collection<int, ScholarshipApplicantSummary> $existing */
+        $existing = $reportYear->scholarshipApplicantSummaries->keyBy('scholarship_program_id');
+
+        return ScholarshipProgram::query()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function (ScholarshipProgram $program) use ($existing): array {
+                $summary = $existing->get($program->id);
+
+                return [
+                    'scholarshipProgramId' => $program->id,
+                    // Full programme name rather than the acronym — the editor
+                    // should see the same wording the published report shows.
+                    'label' => (string) $program->name,
+                    'fullName' => (string) $program->name,
+                    'slug' => (string) $program->slug,
+                    'level' => (string) $program->level,
+                    'femaleCount' => (int) ($summary?->female_count ?? 0),
+                    'maleCount' => (int) ($summary?->male_count ?? 0),
                 ];
             })
             ->all();

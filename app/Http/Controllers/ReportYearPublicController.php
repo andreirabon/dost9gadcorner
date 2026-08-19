@@ -24,6 +24,7 @@ class ReportYearPublicController extends Controller
             'scholarshipSnapshots.schoolYear',
             'rstlMonthlyBreakdowns.reportMonth',
             'programFundingSummaries.fundingProgram',
+            'scholarshipApplicantSummaries.scholarshipProgram',
         ]);
 
         return Inertia::render('reports/Show', [
