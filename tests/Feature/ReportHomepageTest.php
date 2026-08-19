@@ -122,8 +122,11 @@ test('homepage lists only published report years and hides draft report pages', 
             ->component('reports/Show')
             ->where('year.id', $publishedYear->id)
             ->where('year.year', '2025')
-            ->missing('year.title')
-            ->missing('year.description')
+            // Title and description are rendered as the report heading and lede,
+            // so the public payload carries them. Status and href stay out: the
+            // page is only reachable once published, and it links nowhere else.
+            ->where('year.title', (string) $publishedYear->title)
+            ->where('year.description', 'Sex-disaggregated data report for 2025.')
             ->missing('year.status')
             ->missing('year.href')
             ->where('year.reportData.gfpsMembership.femaleCount', 22)
@@ -142,4 +145,44 @@ test('homepage lists only published report years and hides draft report pages', 
         );
 
     $this->get(route('reports.show', $pendingYear))->assertNotFound();
+});
+
+test('public report page exposes the per-program annual metrics', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $publishedYear = ReportYear::factory()->published()->create(['year' => 2025]);
+    $setupProgram = FundingProgram::query()->where('slug', 'like', 'setup%')->orderBy('sort_order')->firstOrFail();
+
+    ProgramFundingSummary::query()->create([
+        'report_year_id' => $publishedYear->id,
+        'funding_program_id' => $setupProgram->id,
+        'funded_projects_count' => 10,
+        'funded_projects_value' => 500000.25,
+        'training_participants' => 40,
+        'jobs_total' => 100,
+        'jobs_male' => 50,
+        'jobs_female' => 50,
+        'jobs_pwd' => 5,
+        'jobs_senior_citizen' => 5,
+        'jobs_ip' => 5,
+        'jobs_4ps' => 4,
+        'special_projects_research_male' => 6,
+        'special_projects_research_female' => 4,
+    ]);
+
+    $this->get(route('reports.show', $publishedYear))
+        ->assertSuccessful()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('reports/Show')
+            ->where('year.reportData.setupFundingBreakdown.0.fundedProjectsCount', 10)
+            ->where('year.reportData.setupFundingBreakdown.0.trainingParticipants', 40)
+            ->where('year.reportData.setupFundingBreakdown.0.jobsTotal', 100)
+            ->where('year.reportData.setupFundingBreakdown.0.jobsMale', 50)
+            ->where('year.reportData.setupFundingBreakdown.0.jobsFemale', 50)
+            ->where('year.reportData.setupFundingBreakdown.0.jobsPwd', 5)
+            ->where('year.reportData.setupFundingBreakdown.0.jobs4ps', 4)
+            ->where('year.reportData.setupFundingBreakdown.0.specialProjectsResearchMale', 6)
+            ->where('year.reportData.setupFundingBreakdown.0.specialProjectsResearchFemale', 4)
+            ->etc()
+        );
 });

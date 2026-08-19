@@ -22,8 +22,9 @@ const TABS = [
     { name: 'Scholarship', panel: 'panel-scholarship', heading: 'Scholarship' },
     { name: 'GFPS Assemblies', panel: 'panel-gfps_assemblies', heading: 'GFPS assemblies' },
     { name: 'Employee Status', panel: 'panel-employee_status', heading: 'Employee status' },
-    { name: 'RSTL by Month', panel: 'panel-rstl_monthly', heading: 'RSTL by month' },
-    { name: 'Program Funding', panel: 'panel-program_funding', heading: 'Program funding' },
+    { name: 'RSTL', panel: 'panel-rstl_monthly', heading: 'RSTL' },
+    { name: 'SETUP', panel: 'panel-setup_funding', heading: 'SETUP Program' },
+    { name: 'CEST', panel: 'panel-cest_funding', heading: 'CEST Program' },
 ];
 
 async function login(page: Page): Promise<void> {
@@ -115,17 +116,64 @@ test.describe('report year edit screen', () => {
         await expect(panel).toContainText(`F: ${count * 2}`);
     });
 
-    test('program funding splits rows into SETUP and CEST groups', async ({ page }) => {
+    test('SETUP and CEST program funding are separate tabs, not one crowded panel', async ({ page }) => {
         await login(page);
         await page.goto('/report-years/1/edit');
 
-        await page.getByRole('tab', { name: 'Program Funding', exact: true }).click();
+        // SETUP tab shows only SETUP content.
+        await page.getByRole('tab', { name: 'SETUP', exact: true }).click();
+        const setupPanel = page.locator('#panel-setup_funding');
+        await expect(setupPanel).toBeVisible();
+        await expect(setupPanel).toContainText('SETUP Program');
+        await expect(setupPanel).not.toContainText('CEST');
 
-        const panel = page.locator('#panel-program_funding');
-        await expect(panel).toContainText('SETUP');
-        await expect(panel).toContainText('CEST');
-        await expect(panel).toContainText('SETUP totals');
-        await expect(panel).toContainText('CEST totals');
+        // CEST tab shows only CEST content, in its own panel.
+        await page.getByRole('tab', { name: 'CEST', exact: true }).click();
+        const cestPanel = page.locator('#panel-cest_funding');
+        await expect(cestPanel).toBeVisible();
+        await expect(cestPanel).toContainText('CEST Program');
+        await expect(cestPanel).not.toContainText('SETUP');
+    });
+
+    test('SETUP tab shows the program metrics as separate tables without a youth column', async ({ page }) => {
+        await login(page);
+        await page.goto('/report-years/1/edit');
+
+        await page.getByRole('tab', { name: 'SETUP', exact: true }).click();
+
+        const panel = page.locator('#panel-setup_funding');
+        await expect(panel).toContainText('Funded projects');
+        await expect(panel).toContainText('Value of funded projects');
+        await expect(panel).toContainText('Training participants');
+        await expect(panel).toContainText('Jobs generated');
+        await expect(panel).toContainText('Jobs breakdown');
+        await expect(panel).toContainText('PWD');
+        await expect(panel).toContainText('Senior citizen');
+        await expect(panel).toContainText('IP');
+        await expect(panel).toContainText('4Ps');
+        await expect(panel).toContainText('Special projects research');
+        await expect(panel).not.toContainText('Youth');
+    });
+
+    test('program funding flags a jobs male + female mismatch before saving', async ({ page }) => {
+        await login(page);
+        await page.goto('/report-years/1/edit');
+
+        await page.getByRole('tab', { name: 'SETUP', exact: true }).click();
+
+        const panel = page.locator('#panel-setup_funding');
+        const totalInput = panel.locator('input[id^="jobs_total_"]').first();
+        const maleInput = panel.locator('input[id^="jobs_male_"]').first();
+        const femaleInput = panel.locator('input[id^="jobs_female_"]').first();
+
+        await totalInput.fill('100');
+        await maleInput.fill('50');
+        await femaleInput.fill('40');
+
+        await expect(panel.locator('text=Male + female ≠ total').first()).toBeVisible();
+
+        await femaleInput.fill('50');
+        await expect(panel.locator('text=Male + female ≠ total')).toHaveCount(0);
     });
 
     test('keyboard arrows move between tabs', async ({ page }) => {

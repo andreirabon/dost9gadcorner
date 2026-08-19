@@ -12,6 +12,18 @@ final class PatchProgramFundingSummaries
         'female_amount',
         'male_projects',
         'male_amount',
+        'funded_projects_count',
+        'funded_projects_value',
+        'training_participants',
+        'jobs_total',
+        'jobs_male',
+        'jobs_female',
+        'jobs_pwd',
+        'jobs_senior_citizen',
+        'jobs_ip',
+        'jobs_4ps',
+        'special_projects_research_male',
+        'special_projects_research_female',
     ];
 
     public function __construct(private SparseRowPatcher $patcher) {}

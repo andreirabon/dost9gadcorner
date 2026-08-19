@@ -843,6 +843,7 @@
                 <span class="k">Female-led</span> <span class="v">{{ number_format($setupTotals['femaleProjects']) }}</span>
             </div>
             @include('pdf.partials.funding-detail-table', ['rows' => $setupFundingRows, 'emptyMessage' => 'No SETUP category data yet for this year.'])
+            @include('pdf.partials.funding-metrics-table', ['rows' => $setupFundingRows, 'emptyMessage' => 'No SETUP program metrics recorded for this year.'])
         </div>
 
         {{-- 8. CEST --}}
@@ -861,6 +862,7 @@
                 <span class="k">Female-led</span> <span class="v">{{ number_format($cestTotals['femaleProjects']) }}</span>
             </div>
             @include('pdf.partials.funding-detail-table', ['rows' => $cestFundingRows, 'emptyMessage' => 'No CEST category data yet for this year.'])
+            @include('pdf.partials.funding-metrics-table', ['rows' => $cestFundingRows, 'emptyMessage' => 'No CEST program metrics recorded for this year.'])
         </div>
     @endif
 </body>

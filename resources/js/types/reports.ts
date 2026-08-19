@@ -66,6 +66,22 @@ export interface FundingSummaryData {
 export interface FundingCategorySummaryData extends FundingSummaryData {
     label: string;
     slug: string;
+    /**
+     * Per-program annual metrics. Optional because a category row can also be
+     * synthesised from a bare funding summary that carries no metrics.
+     */
+    fundedProjectsCount?: number;
+    fundedProjectsValue?: number;
+    trainingParticipants?: number;
+    jobsTotal?: number;
+    jobsMale?: number;
+    jobsFemale?: number;
+    jobsPwd?: number;
+    jobsSeniorCitizen?: number;
+    jobsIp?: number;
+    jobs4ps?: number;
+    specialProjectsResearchMale?: number;
+    specialProjectsResearchFemale?: number;
 }
 
 export interface ReportYearData {
@@ -112,6 +128,18 @@ export interface EditableProgramFundingRow {
     femaleAmount: number;
     maleProjects: number;
     maleAmount: number;
+    fundedProjectsCount: number;
+    fundedProjectsValue: number;
+    trainingParticipants: number;
+    jobsTotal: number;
+    jobsMale: number;
+    jobsFemale: number;
+    jobsPwd: number;
+    jobsSeniorCitizen: number;
+    jobsIp: number;
+    jobs4ps: number;
+    specialProjectsResearchMale: number;
+    specialProjectsResearchFemale: number;
 }
 
 export interface ReportYearEditAbilities {

@@ -168,7 +168,7 @@ class ReportYearTransformer
     }
 
     /**
-     * @return array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}>
+     * @return array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float, fundedProjectsCount: int, fundedProjectsValue: float, trainingParticipants: int, jobsTotal: int, jobsMale: int, jobsFemale: int, jobsPwd: int, jobsSeniorCitizen: int, jobsIp: int, jobs4ps: int, specialProjectsResearchMale: int, specialProjectsResearchFemale: int}>
      */
     private function transformFundingBreakdown(ReportYear $reportYear, string $prefix): array
     {
@@ -194,6 +194,18 @@ class ReportYearTransformer
                     'maleAmount' => (float) ($summary?->male_amount ?? 0),
                     'femaleProjects' => (int) ($summary?->female_projects ?? 0),
                     'femaleAmount' => (float) ($summary?->female_amount ?? 0),
+                    'fundedProjectsCount' => (int) ($summary?->funded_projects_count ?? 0),
+                    'fundedProjectsValue' => (float) ($summary?->funded_projects_value ?? 0),
+                    'trainingParticipants' => (int) ($summary?->training_participants ?? 0),
+                    'jobsTotal' => (int) ($summary?->jobs_total ?? 0),
+                    'jobsMale' => (int) ($summary?->jobs_male ?? 0),
+                    'jobsFemale' => (int) ($summary?->jobs_female ?? 0),
+                    'jobsPwd' => (int) ($summary?->jobs_pwd ?? 0),
+                    'jobsSeniorCitizen' => (int) ($summary?->jobs_senior_citizen ?? 0),
+                    'jobsIp' => (int) ($summary?->jobs_ip ?? 0),
+                    'jobs4ps' => (int) ($summary?->jobs_4ps ?? 0),
+                    'specialProjectsResearchMale' => (int) ($summary?->special_projects_research_male ?? 0),
+                    'specialProjectsResearchFemale' => (int) ($summary?->special_projects_research_female ?? 0),
                 ];
             })
             ->values()
@@ -201,7 +213,11 @@ class ReportYearTransformer
     }
 
     /**
-     * @param  array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}>  $rows
+     * Totals the money columns only. The per-program metrics (jobs, training,
+     * research) stay on their own rows: they are counts of different things,
+     * so a column sum across programs would not mean anything here.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
      * @return array{maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}
      */
     private function sumFundingBreakdown(array $rows): array

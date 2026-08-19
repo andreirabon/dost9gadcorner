@@ -316,6 +316,71 @@ test('locked report year rejects program funding summary updates', function () {
     expect($reportYear->fresh()->programFundingSummaries)->toBeEmpty();
 });
 
+test('admin can update program funding summary with new program metrics', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => false]);
+    $program = FundingProgram::query()->orderBy('sort_order')->firstOrFail();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/program-funding", [
+            'summaries' => [
+                [
+                    'funding_program_id' => $program->id,
+                    'funded_projects_count' => 10,
+                    'funded_projects_value' => 500000.25,
+                    'training_participants' => 40,
+                    'jobs_total' => 100,
+                    'jobs_male' => 50,
+                    'jobs_female' => 50,
+                    'jobs_pwd' => 5,
+                    'jobs_senior_citizen' => 5,
+                    'jobs_ip' => 5,
+                    'jobs_4ps' => 4,
+                    'special_projects_research_male' => 6,
+                    'special_projects_research_female' => 4,
+                ],
+            ],
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('program_funding_summaries', [
+        'report_year_id' => $reportYear->id,
+        'funding_program_id' => $program->id,
+        'funded_projects_count' => 10,
+        'training_participants' => 40,
+        'jobs_total' => 100,
+        'jobs_male' => 50,
+        'jobs_female' => 50,
+        'special_projects_research_male' => 6,
+        'special_projects_research_female' => 4,
+    ]);
+});
+
+test('program funding update is rejected when jobs male plus female does not equal jobs total', function () {
+    $this->seed(ReportLookupSeeder::class);
+
+    $user = User::factory()->create(['role' => UserRole::ADMINISTRATOR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026, 'is_locked' => false]);
+    $program = FundingProgram::query()->orderBy('sort_order')->firstOrFail();
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/program-funding", [
+            'summaries' => [
+                [
+                    'funding_program_id' => $program->id,
+                    'jobs_total' => 100,
+                    'jobs_male' => 50,
+                    'jobs_female' => 40,
+                ],
+            ],
+        ])
+        ->assertSessionHasErrors('summaries.0.jobs_total');
+
+    expect($reportYear->fresh()->programFundingSummaries)->toBeEmpty();
+});
+
 test('non-admin user cannot access report management', function () {
     $user = User::factory()->create(['role' => UserRole::None]);
 

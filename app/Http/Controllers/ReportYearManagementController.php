@@ -525,7 +525,13 @@ class ReportYearManagementController extends Controller
             ->whereIn('id', collect($submitted)->pluck('funding_program_id')->filter())
             ->pluck('name', 'id');
 
-        $fields = ['female_projects', 'female_amount', 'male_projects', 'male_amount'];
+        $fields = [
+            'female_projects', 'female_amount', 'male_projects', 'male_amount',
+            'funded_projects_count', 'funded_projects_value', 'training_participants',
+            'jobs_total', 'jobs_male', 'jobs_female', 'jobs_pwd', 'jobs_senior_citizen',
+            'jobs_ip', 'jobs_4ps',
+            'special_projects_research_male', 'special_projects_research_female',
+        ];
 
         foreach ($submitted as $row) {
             if (! array_key_exists('funding_program_id', $row)) {
@@ -646,7 +652,7 @@ class ReportYearManagementController extends Controller
     }
 
     /**
-     * @return array<int, array{fundingProgramId: int, label: string, slug: string, femaleProjects: int, femaleAmount: float, maleProjects: int, maleAmount: float}>
+     * @return array<int, array{fundingProgramId: int, label: string, slug: string, femaleProjects: int, femaleAmount: float, maleProjects: int, maleAmount: float, fundedProjectsCount: int, fundedProjectsValue: float, trainingParticipants: int, jobsTotal: int, jobsMale: int, jobsFemale: int, jobsPwd: int, jobsSeniorCitizen: int, jobsIp: int, jobs4ps: int, specialProjectsResearchMale: int, specialProjectsResearchFemale: int}>
      */
     private function editableProgramFundingRows(ReportYear $reportYear): array
     {
@@ -667,6 +673,18 @@ class ReportYearManagementController extends Controller
                     'femaleAmount' => number_format((float) ($summary?->female_amount ?? 0), 2, '.', ''),
                     'maleProjects' => (int) ($summary?->male_projects ?? 0),
                     'maleAmount' => number_format((float) ($summary?->male_amount ?? 0), 2, '.', ''),
+                    'fundedProjectsCount' => (int) ($summary?->funded_projects_count ?? 0),
+                    'fundedProjectsValue' => number_format((float) ($summary?->funded_projects_value ?? 0), 2, '.', ''),
+                    'trainingParticipants' => (int) ($summary?->training_participants ?? 0),
+                    'jobsTotal' => (int) ($summary?->jobs_total ?? 0),
+                    'jobsMale' => (int) ($summary?->jobs_male ?? 0),
+                    'jobsFemale' => (int) ($summary?->jobs_female ?? 0),
+                    'jobsPwd' => (int) ($summary?->jobs_pwd ?? 0),
+                    'jobsSeniorCitizen' => (int) ($summary?->jobs_senior_citizen ?? 0),
+                    'jobsIp' => (int) ($summary?->jobs_ip ?? 0),
+                    'jobs4ps' => (int) ($summary?->jobs_4ps ?? 0),
+                    'specialProjectsResearchMale' => (int) ($summary?->special_projects_research_male ?? 0),
+                    'specialProjectsResearchFemale' => (int) ($summary?->special_projects_research_female ?? 0),
                 ];
             })
             ->all();

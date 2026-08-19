@@ -45,8 +45,9 @@ const tabDefs = [
     { id: 'scholarship', name: 'Scholarship' },
     { id: 'gfps_assemblies', name: 'GFPS Assemblies' },
     { id: 'employee_status', name: 'Employee Status' },
-    { id: 'rstl_monthly', name: 'RSTL by Month' },
-    { id: 'program_funding', name: 'Program Funding' },
+    { id: 'rstl_monthly', name: 'RSTL' },
+    { id: 'setup_funding', name: 'SETUP' },
+    { id: 'cest_funding', name: 'CEST' },
 ] as const;
 
 function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
@@ -64,7 +65,8 @@ function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
             return a.updateEmployeeStatuses;
         case 'rstl_monthly':
             return a.updateRstlMonthly;
-        case 'program_funding':
+        case 'setup_funding':
+        case 'cest_funding':
             return a.updateProgramFunding;
         default:
             return false;
@@ -110,6 +112,24 @@ function binaryState(hasData: boolean): SectionState {
 }
 
 /**
+ * The rows one funding tab owns: its own program family, minus anything outside
+ * the user's write scope. Resolved here rather than inside the section so the
+ * tab's completion marker and the tab's form always measure the same rows.
+ *
+ * `editableFundingSlugs` is null when the user is unrestricted; otherwise it is
+ * the exact allowlist the server enforces, so dropping the rest here just
+ * avoids offering an edit the server would reject.
+ */
+function programFundingRowsFor(group: 'setup' | 'cest'): EditableReportYear['programFunding'] {
+    const editableSlugs = props.reportYear.editableFundingSlugs;
+
+    return props.reportYear.programFunding.filter(
+        (row) =>
+            (row.slug === group || row.slug.startsWith(`${group}-`)) && (editableSlugs === null || editableSlugs.includes(row.slug)),
+    );
+}
+
+/**
  * Drives the tab marks so the bar shows what is left to enter without opening
  * all seven. Reflects saved state; refreshes when a section save reloads props.
  */
@@ -123,7 +143,8 @@ const sectionState = computed<Record<string, SectionState>>(() => {
         gfps_assemblies: rowsState(report.gfpsAssemblies, ['femaleCount', 'maleCount']),
         employee_status: rowsState(report.employeeStatuses, ['femaleCount', 'maleCount']),
         rstl_monthly: rowsState(report.rstlMonthly, ['femaleCount', 'femaleLedCount', 'maleCount', 'maleLedCount']),
-        program_funding: rowsState(report.programFunding, ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
+        setup_funding: rowsState(programFundingRowsFor('setup'), ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
+        cest_funding: rowsState(programFundingRowsFor('cest'), ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
     };
 });
 
@@ -363,10 +384,20 @@ watch(
                 />
 
                 <ProgramFundingSection
-                    v-show="activeTab === 'program_funding'"
+                    v-show="activeTab === 'setup_funding'"
+                    group="setup"
                     :report-year-id="reportYear.id"
-                    :rows="reportYear.programFunding"
-                    :editable-funding-slugs="reportYear.editableFundingSlugs"
+                    :rows="programFundingRowsFor('setup')"
+                    :expected-updated-at="sectionTs.programFunding"
+                    :is-read-only="isReadOnly"
+                    @notice="showSaveNotice"
+                />
+
+                <ProgramFundingSection
+                    v-show="activeTab === 'cest_funding'"
+                    group="cest"
+                    :report-year-id="reportYear.id"
+                    :rows="programFundingRowsFor('cest')"
                     :expected-updated-at="sectionTs.programFunding"
                     :is-read-only="isReadOnly"
                     @notice="showSaveNotice"

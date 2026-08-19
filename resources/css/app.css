@@ -2252,6 +2252,12 @@
         @apply text-base font-medium text-black;
     }
 
+    /* Inline validation hint: red, small, sits directly under the offending
+       input so the fix is obvious without scanning away from the field. */
+    .report-years-data-cell-error {
+        @apply text-xs font-medium text-red-600;
+    }
+
     /*
      * Counts centre under their centred headers. Money does NOT: decimal points
      * must line up column-wise, so amount fields opt back into right alignment
