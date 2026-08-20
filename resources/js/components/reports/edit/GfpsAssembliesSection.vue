@@ -1,14 +1,13 @@
 <script setup lang="ts">
+import ReportSectionSaveActions from '@/components/reports/edit/ReportSectionSaveActions.vue';
 import InputError from '@/components/shared/InputError.vue';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRowSection } from '@/composables/useRowSection';
-import { formatNumber } from '@/helpers/formatNumber';
 import { REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
+import { formatNumber } from '@/helpers/formatNumber';
 import { sumFields } from '@/helpers/reportTotals';
 import type { EditableGfpsAssemblyRow } from '@/types/reports';
-import { CheckCircle2, Loader2, Save } from '@lucide/vue';
 
 interface Props {
     reportYearId: number;
@@ -102,21 +101,9 @@ function rowTotal(row: Record<string, unknown>): number {
 
             <InputError :message="error" />
 
-            <div class="report-years-form-actions">
-                <Button
-                    type="submit"
-                    class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
-                    :disabled="form.processing || isReadOnly"
-                >
-                    <Loader2 v-if="form.processing" class="size-4 animate-spin" aria-hidden="true" />
-                    <Save v-else class="size-4" :stroke-width="2.5" aria-hidden="true" />
-                    Save assemblies
-                </Button>
-                <p v-show="form.recentlySuccessful" class="report-save-hint">
-                    <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
-                    Saved
-                </p>
-            </div>
+            <ReportSectionSaveActions :processing="form.processing" :recently-successful="form.recentlySuccessful" :is-read-only="isReadOnly">
+                Save assemblies
+            </ReportSectionSaveActions>
         </form>
     </section>
 </template>

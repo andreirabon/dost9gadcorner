@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import ReportSectionSaveActions from '@/components/reports/edit/ReportSectionSaveActions.vue';
 import InputError from '@/components/shared/InputError.vue';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useReportSectionSave } from '@/composables/useReportSectionSave';
@@ -10,7 +10,6 @@ import { cloneSnapshot, diffObjectPatch, hasPatch } from '@/helpers/reportPatch'
 import { toNumber } from '@/helpers/reportTotals';
 import type { GfpsMembershipData } from '@/types/reports';
 import { useForm } from '@inertiajs/vue3';
-import { CheckCircle2, Loader2, Save } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 interface Props {
@@ -119,21 +118,9 @@ const total = computed(() => toNumber(form.female_count) + toNumber(form.male_co
                 </div>
             </div>
 
-            <div class="report-years-form-actions">
-                <Button
-                    type="submit"
-                    class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
-                    :disabled="form.processing || isReadOnly"
-                >
-                    <Loader2 v-if="form.processing" class="size-4 animate-spin" aria-hidden="true" />
-                    <Save v-else class="size-4" :stroke-width="2.5" aria-hidden="true" />
-                    Save GFPS membership
-                </Button>
-                <p v-show="form.recentlySuccessful" class="report-save-hint">
-                    <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
-                    Saved
-                </p>
-            </div>
+            <ReportSectionSaveActions :processing="form.processing" :recently-successful="form.recentlySuccessful" :is-read-only="isReadOnly">
+                Save GFPS membership
+            </ReportSectionSaveActions>
         </form>
     </section>
 </template>

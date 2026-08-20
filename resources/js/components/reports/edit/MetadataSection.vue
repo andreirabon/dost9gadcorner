@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import ReportSectionSaveActions from '@/components/reports/edit/ReportSectionSaveActions.vue';
 import InputError from '@/components/shared/InputError.vue';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useReportSectionSave } from '@/composables/useReportSectionSave';
@@ -8,7 +8,6 @@ import { REPORT_INPUT_CLASS } from '@/constants/reportFormClasses';
 import { REPORT_YEAR_FIELD_LIMITS } from '@/constants/reportYearFields';
 import { cloneSnapshot, diffObjectPatch, hasPatch, normalizeNumeric } from '@/helpers/reportPatch';
 import { router, useForm } from '@inertiajs/vue3';
-import { CheckCircle2, Loader2, Save } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 interface Props {
@@ -182,21 +181,9 @@ const patchError = computed(() => (form.errors as Record<string, string | undefi
 
             <InputError :message="patchError" />
 
-            <div class="report-years-form-actions">
-                <Button
-                    type="submit"
-                    :disabled="saving || isReadOnly"
-                    class="report-save-btn transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
-                >
-                    <Loader2 v-if="saving" class="size-4 animate-spin" aria-hidden="true" />
-                    <Save v-else class="size-4" :stroke-width="2.5" aria-hidden="true" />
-                    Save metadata
-                </Button>
-                <p v-show="form.recentlySuccessful" class="report-save-hint">
-                    <CheckCircle2 class="size-4 shrink-0" :stroke-width="2" aria-hidden="true" />
-                    Saved
-                </p>
-            </div>
+            <ReportSectionSaveActions :processing="saving" :recently-successful="form.recentlySuccessful" :is-read-only="isReadOnly">
+                Save metadata
+            </ReportSectionSaveActions>
         </form>
     </section>
 </template>
