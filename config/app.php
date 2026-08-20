@@ -140,4 +140,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Content-Security-Policy
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, SecurityHeaders sends a strict CSP on production responses.
+    | Non-production environments skip the header so Vite HMR and dev tooling work.
+    |
+    */
+
+    'csp_enabled' => env('CSP_ENABLED', true),
+
 ];

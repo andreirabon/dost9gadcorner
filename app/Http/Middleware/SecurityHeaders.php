@@ -38,7 +38,7 @@ class SecurityHeaders
 
     private function shouldSendContentSecurityPolicy(): bool
     {
-        if (! config('csp.enabled', true)) {
+        if (! config('app.csp_enabled', true)) {
             return false;
         }
 
