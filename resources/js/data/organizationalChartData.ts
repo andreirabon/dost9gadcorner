@@ -20,21 +20,6 @@ export interface OrgTreeNode extends OrgChartNode {
     children: OrgTreeNode[];
 }
 
-/** Flat rows for `d3-org-chart` / d3.stratify (`parentId` null for roots). */
-export function toD3OrgChartFlat(nodes: OrgChartNode[]): Array<{
-    id: number;
-    parentId: number | null;
-    name: string;
-    title: string;
-}> {
-    return nodes.map((n) => ({
-        id: n.id,
-        parentId: n.pid === undefined ? null : n.pid,
-        name: n.name,
-        title: n.title,
-    }));
-}
-
 /** Build a forest from flat `id` / `pid` rows (GFPS and MOVE each use self-contained ids). */
 export function buildOrgTree(flat: OrgChartNode[]): OrgTreeNode[] {
     const map = new Map<number, OrgTreeNode>();
