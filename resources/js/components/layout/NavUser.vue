@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/sidebar';
-import { useInitials } from '@/composables/useInitials';
+import { getInitials } from '@/composables/useInitials';
 import { type User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { LogOut } from '@lucide/vue';
@@ -10,7 +10,6 @@ import { computed } from 'vue';
 
 const user = usePage().props.auth.user! as User;
 
-const { getInitials } = useInitials();
 const showAvatar = computed(() => Boolean(user.avatar && user.avatar !== ''));
 const displayHandle = computed(() => user.username?.trim() || '—');
 

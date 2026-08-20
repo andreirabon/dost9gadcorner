@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useInitials } from '@/composables/useInitials';
+import { getInitials } from '@/composables/useInitials';
 import type { User } from '@/types';
 import { computed } from 'vue';
 
@@ -14,7 +14,6 @@ const props = withDefaults(defineProps<Props>(), {
     hideAvatar: false,
 });
 
-const { getInitials } = useInitials();
 
 const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '');
 
