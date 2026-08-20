@@ -49,17 +49,19 @@ test('fresh metadata save succeeds with correct expected_updated_at', function (
     ]);
 });
 
-test('save without expected_updated_at still succeeds for backward compatibility', function () {
+test('save without expected_updated_at is rejected once the section has a record', function () {
     $user = User::factory()->create();
     $reportYear = ReportYear::factory()->create(['year' => 2025]);
 
+    // Omitting the field asserts "nothing was saved here yet", which is false
+    // for an existing report year, so it reads as a conflict.
     $this->actingAs($user)
         ->patch("/report-years/{$reportYear->id}", [
             'title' => 'No conflict check',
         ])
-        ->assertRedirect();
+        ->assertSessionHasErrors('conflict');
 
-    $this->assertDatabaseHas('report_years', [
+    $this->assertDatabaseMissing('report_years', [
         'id' => $reportYear->id,
         'title' => 'No conflict check',
     ]);
@@ -245,6 +247,7 @@ test('metadata update sanitizes HTML tags from title and description', function 
         ->patch("/report-years/{$reportYear->id}/metadata", [
             'title' => '<strong>Secure Title</strong>',
             'description' => '<p>Paragraph</p> <strong>Bold</strong> Text',
+            'expected_updated_at' => $reportYear->updated_at->toIso8601String(),
         ])
         ->assertRedirect();
 

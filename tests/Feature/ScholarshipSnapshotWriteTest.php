@@ -62,6 +62,7 @@ test('updating a snapshot records who edited it and when', function () {
     $this->actingAs($this->user)
         ->patch("/report-years/{$this->reportYear->id}/scholarship/{$this->snapshot->id}", [
             'female_count' => 42,
+            'expected_updated_at' => $this->snapshot->updated_at?->toIso8601String(),
         ])
         ->assertSessionHasNoErrors();
 

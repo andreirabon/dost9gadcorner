@@ -40,19 +40,6 @@ use Inertia\Response;
 class ReportYearManagementController extends Controller
 {
     /**
-     * Extract the expected_updated_at value from a request.
-     *
-     * Returns `false` when the field is absent (skip conflict check),
-     * or `null`/string when explicitly provided.
-     */
-    private function expectedUpdatedAt(Request $request): string|false|null
-    {
-        return $request->has('expected_updated_at')
-            ? $request->input('expected_updated_at')
-            : false;
-    }
-
-    /**
      * Audit-log item label: the report year's title when set, otherwise a
      * "Report Year {year}" fallback for untitled years.
      */
@@ -251,7 +238,7 @@ class ReportYearManagementController extends Controller
         string $auditActionPrefix,
     ): RedirectResponse {
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
+        $conflictGuard->assertFresh($reportYear, $request->input('expected_updated_at'));
 
         $before = $reportYear->only($fields);
         $patchReportYear->apply($reportYear, $request->validated(), $fields);
@@ -293,7 +280,7 @@ class ReportYearManagementController extends Controller
     public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, SparseRecordPatcher $patcher, ConflictGuard $conflictGuard): RedirectResponse
     {
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertFresh($reportYear->gfpsMembershipSummary, $this->expectedUpdatedAt($request));
+        $conflictGuard->assertFresh($reportYear->gfpsMembershipSummary, $request->input('expected_updated_at'));
 
         $before = $reportYear->gfpsMembershipSummary?->only(['female_count', 'male_count']) ?? [];
         $patcher->applyToReportYearRelation(
@@ -359,7 +346,7 @@ class ReportYearManagementController extends Controller
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         abort_unless($scholarship->report_year_id === $reportYear->id, 404);
 
-        $conflictGuard->assertFresh($scholarship, $this->expectedUpdatedAt($request));
+        $conflictGuard->assertFresh($scholarship, $request->input('expected_updated_at'));
 
         // Audit stamps ride along in the same save. Writing them separately bumped
         // updated_at twice, so the timestamp the client just synced against was
@@ -445,7 +432,7 @@ class ReportYearManagementController extends Controller
         $config = RowSection::config($section);
 
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertRelationFresh($reportYear, $config['relation'], $this->expectedUpdatedAt($request));
+        $conflictGuard->assertRelationFresh($reportYear, $config['relation'], $request->input('expected_updated_at'));
 
         /** @var array<int, array<string, mixed>> $submitted */
         $submitted = $request->validated($config['payloadKey']);

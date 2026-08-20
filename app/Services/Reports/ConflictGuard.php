@@ -16,14 +16,10 @@ final class ConflictGuard
      *
      * Use for metadata (ReportYear itself), GFPS membership, and scholarship.
      *
-     * @param  string|false|null  $expectedUpdatedAt  Pass `false` to skip the check entirely (backward compat).
+     * @param  string|null  $expectedUpdatedAt  `null` asserts the section had no record yet.
      */
-    public function assertFresh(?Model $model, string|false|null $expectedUpdatedAt): void
+    public function assertFresh(?Model $model, ?string $expectedUpdatedAt): void
     {
-        if ($expectedUpdatedAt === false) {
-            return;
-        }
-
         if ($expectedUpdatedAt === null && $model === null) {
             return;
         }
@@ -48,17 +44,13 @@ final class ConflictGuard
      * Use for assemblies, employee statuses, RSTL monthly, and program funding.
      * Compares against MAX(updated_at) across all rows for the report year.
      *
-     * @param  string|false|null  $expectedUpdatedAt  Pass `false` to skip the check entirely (backward compat).
+     * @param  string|null  $expectedUpdatedAt  `null` asserts the section had no rows yet.
      */
     public function assertRelationFresh(
         ReportYear $reportYear,
         string $relationName,
-        string|false|null $expectedUpdatedAt,
+        ?string $expectedUpdatedAt,
     ): void {
-        if ($expectedUpdatedAt === false) {
-            return;
-        }
-
         $maxUpdatedAt = $reportYear->{$relationName}()->max('updated_at');
 
         if ($expectedUpdatedAt === null && $maxUpdatedAt === null) {

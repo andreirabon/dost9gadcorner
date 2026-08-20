@@ -650,6 +650,7 @@ test('gad user can sparse patch metadata fields', function () {
     $this->actingAs($user)
         ->patch("/report-years/{$reportYear->id}/metadata", [
             'title' => 'Updated title',
+            'expected_updated_at' => $reportYear->updated_at->toIso8601String(),
         ])
         ->assertRedirect();
 
@@ -669,6 +670,7 @@ test('administrator can sparse patch metadata via full update route', function (
     $this->actingAs($user)
         ->patch("/report-years/{$reportYear->id}", [
             'status' => ReportYear::STATUS_PUBLISHED,
+            'expected_updated_at' => $reportYear->updated_at->toIso8601String(),
         ])
         ->assertRedirect();
 
@@ -721,9 +723,7 @@ test('authenticated user can update scholarship snapshot', function () {
         ->patch("/report-years/{$reportYear->id}/scholarship/{$snapshot->id}", [
             'female_count' => 15,
             'male_count' => 25,
-
-        ], [
-            'X-Expected-Updated-At' => $snapshot->updated_at?->toIso8601String(),
+            'expected_updated_at' => $snapshot->updated_at?->toIso8601String(),
         ])
         ->assertRedirect();
 

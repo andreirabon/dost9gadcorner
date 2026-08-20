@@ -6,12 +6,24 @@ use App\Models\ReportYear;
 use App\Models\User;
 use Database\Seeders\ReportLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(ReportLookupSeeder::class);
 });
+
+/**
+ * The conflict token a client would hold for a multi-row section: the newest
+ * updated_at across its rows.
+ */
+function relationUpdatedAt(ReportYear $reportYear, string $relation): ?string
+{
+    $max = $reportYear->{$relation}()->max('updated_at');
+
+    return $max === null ? null : Carbon::parse($max)->toIso8601String();
+}
 
 test('partial rstl patch updates only the provided row and field', function () {
     $user = User::factory()->create();
@@ -48,6 +60,7 @@ test('partial rstl patch updates only the provided row and field', function () {
                     'female_count' => 99,
                 ],
             ],
+            'expected_updated_at' => relationUpdatedAt($reportYear, 'rstlMonthlyBreakdowns'),
         ])
         ->assertRedirect();
 
@@ -90,6 +103,7 @@ test('updating multiple report year fields logs a joined column summary', functi
             'title' => 'New Title',
             'description' => $reportYear->description,
             'status' => 'published',
+            'expected_updated_at' => $reportYear->updated_at->toIso8601String(),
         ])
         ->assertRedirect();
 
@@ -111,6 +125,7 @@ test('audit item label falls back to "Report Year {year}" when untitled', functi
         ->patch("/report-years/{$reportYear->id}", [
             'year' => 2026,
             'status' => 'published',
+            'expected_updated_at' => $reportYear->updated_at->toIso8601String(),
         ])
         ->assertRedirect();
 
@@ -145,6 +160,7 @@ test('sequential partial rstl patches from different rows both persist', functio
                     'male_count' => 8,
                 ],
             ],
+            'expected_updated_at' => relationUpdatedAt($reportYear, 'rstlMonthlyBreakdowns'),
         ])
         ->assertRedirect();
 
@@ -193,6 +209,7 @@ test('partial gfps membership patch updates only provided fields', function () {
     $this->actingAs($user)
         ->patch("/report-years/{$reportYear->id}/gfps-membership", [
             'female_count' => 15,
+            'expected_updated_at' => $reportYear->gfpsMembershipSummary()->first()?->updated_at?->toIso8601String(),
         ])
         ->assertRedirect();
 
