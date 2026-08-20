@@ -40,10 +40,10 @@ describe('FundingProgramTables', () => {
 
         const text = wrapper.text();
         expect(text).toContain('SETUP Program');
-        expect(text).toContain('SETUP Program metrics');
-        expect(text).toContain('SETUP Jobs generated');
-        expect(text).toContain('SETUP Jobs breakdown');
-        expect(text).toContain('SETUP Special projects research');
+        expect(text).toContain('SETUP Program Metrics');
+        expect(text).toContain('SETUP Jobs Generated');
+        expect(text).toContain('SETUP Jobs Breakdown');
+        expect(text).toContain('SETUP Special Projects Research');
     });
 
     it('drops a section entirely when no category has data for it', () => {
@@ -52,8 +52,8 @@ describe('FundingProgramTables', () => {
         const wrapper = mountTables([category({ femaleProjects: 8 })]);
 
         expect(wrapper.text()).toContain('SETUP Program');
-        expect(wrapper.text()).not.toContain('SETUP Jobs generated');
-        expect(wrapper.text()).not.toContain('SETUP Special projects research');
+        expect(wrapper.text()).not.toContain('SETUP Jobs Generated');
+        expect(wrapper.text()).not.toContain('SETUP Special Projects Research');
     });
 
     it('renders unrecorded money as absent rather than a confirmed zero balance', () => {
