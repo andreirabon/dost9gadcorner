@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
-import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import { wrapAxisLabel } from '@/constants/reportLabels';
 import {
     niceAxisScale,
@@ -34,7 +33,6 @@ const props = withDefaults(defineProps<Props>(), {
     axisCeiling: undefined,
 });
 
-const appearance = useReportChartAppearance();
 const chartAnimations = useReportChartMotion();
 
 const series = computed(() => [
@@ -42,10 +40,10 @@ const series = computed(() => [
     { name: 'Male', data: props.rows.map((row) => row.male) },
 ]);
 
-const palette = computed(() => reportDisaggPalette(appearance.value));
+const palette = computed(() => reportDisaggPalette());
 
 const chartOptions = computed<ApexOptions>(() => {
-    const ui = reportChartUi(appearance.value);
+    const ui = reportChartUi();
     const colors = palette.value;
 
     // Scale to the set-wide ceiling when given one, otherwise to this chart's

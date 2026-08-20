@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
-import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import {
     niceAxisScale,
     REPORT_CHART_FONT_FAMILY,
@@ -41,7 +40,6 @@ const props = withDefaults(defineProps<Props>(), {
     title: '',
 });
 
-const appearance = useReportChartAppearance();
 const chartAnimations = useReportChartMotion();
 
 const actualSeries = computed(() => [
@@ -75,10 +73,10 @@ const series = computed(() => {
     }));
 });
 
-const palette = computed(() => reportDisaggPalette(appearance.value));
+const palette = computed(() => reportDisaggPalette());
 
 const chartOptions = computed<ApexOptions>(() => {
-    const ui = reportChartUi(appearance.value);
+    const ui = reportChartUi();
     const colors = palette.value;
     const { yMax, tickAmount } = chartScale.value;
     const femaleActual = actualSeries.value[0]?.data ?? [];

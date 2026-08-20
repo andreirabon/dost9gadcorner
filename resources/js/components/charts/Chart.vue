@@ -33,7 +33,7 @@ const series = computed(() => {
 });
 
 const chartOptions = computed<ApexOptions>(() => {
-    const ui = reportChartUi('light');
+    const ui = reportChartUi();
 
     return {
     theme: {

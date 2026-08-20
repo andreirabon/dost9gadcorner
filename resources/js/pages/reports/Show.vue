@@ -2,7 +2,6 @@
 import IndexSectionDecor from '@/components/home/IndexSectionDecor.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import YearReportContent from '@/components/reports/YearReportContent.vue';
-import { provideReportPageTheme } from '@/composables/useReportPageTheme';
 import type { YearItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 
@@ -14,7 +13,6 @@ defineOptions({
     name: 'ReportYearShowPage',
 });
 
-provideReportPageTheme();
 </script>
 
 <template>

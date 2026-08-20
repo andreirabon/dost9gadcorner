@@ -30,7 +30,7 @@ const DISAGG_LIGHT: ReportDisaggPalette = {
     stroke: ['#452c66', '#c25f00'],
 };
 
-export function reportDisaggPalette(_appearance?: 'light'): ReportDisaggPalette {
+export function reportDisaggPalette(): ReportDisaggPalette {
     return DISAGG_LIGHT;
 }
 

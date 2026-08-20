@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
-import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import { JOBS_BREAKDOWN_LABELS, wrapAxisLabel } from '@/constants/reportLabels';
 import { REPORT_CHART_FONT_FAMILY, reportChartCspNonce, useReportChartMotion } from '@/lib/reportChartConstants';
 import { reportChartTooltip, reportChartUi } from '@/lib/reportChartUi';
@@ -15,7 +14,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const appearance = useReportChartAppearance();
 const chartAnimations = useReportChartMotion();
 
 /**
@@ -65,7 +63,7 @@ const series = computed(() =>
 );
 
 const chartOptions = computed<ApexOptions>(() => {
-    const ui = reportChartUi(appearance.value);
+    const ui = reportChartUi();
 
     return {
         theme: { mode: ui.themeMode },

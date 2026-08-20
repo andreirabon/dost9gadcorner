@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
-import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import {
     niceAxisScale,
     REPORT_CHART_FONT_FAMILY,
@@ -29,7 +28,6 @@ const props = withDefaults(defineProps<Props>(), {
     title: '',
 });
 
-const appearance = useReportChartAppearance();
 const chartAnimations = useReportChartMotion();
 
 const formatCurrency = (value: number): string => {
@@ -57,7 +55,7 @@ const amountSeries = computed(() => [{ name: 'Amount Funded', data: [props.data.
 const projectsScale = computed(() => niceAxisScale(Math.max(5, props.data.femaleProjects, props.data.maleProjects)));
 const amountScale = computed(() => niceAxisScale(Math.max(5, props.data.femaleAmount, props.data.maleAmount)));
 
-const palette = computed(() => reportDisaggPalette(appearance.value));
+const palette = computed(() => reportDisaggPalette());
 
 /**
  * Shared base for the two single-axis panels below. Projects (a small integer count) and Amount
@@ -132,7 +130,7 @@ function baseOptions(ui: ReturnType<typeof reportChartUi>, panelTitle: string): 
 }
 
 const projectsOptions = computed<ApexOptions>(() => {
-    const ui = reportChartUi(appearance.value);
+    const ui = reportChartUi();
     const colors = palette.value;
 
     return {
@@ -181,7 +179,7 @@ const projectsOptions = computed<ApexOptions>(() => {
 });
 
 const amountOptions = computed<ApexOptions>(() => {
-    const ui = reportChartUi(appearance.value);
+    const ui = reportChartUi();
     const colors = palette.value;
 
     return {

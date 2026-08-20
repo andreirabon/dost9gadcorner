@@ -27,7 +27,6 @@ use App\Services\AuditLogger;
 use App\Services\Reports\ConflictGuard;
 use App\Services\Reports\PatchEmployeeStatusBreakdowns;
 use App\Services\Reports\PatchGfpsAssemblyAttendances;
-use App\Services\Reports\PatchGfpsMembershipSummary;
 use App\Services\Reports\PatchProgramFundingSummaries;
 use App\Services\Reports\PatchReportYearAttributes;
 use App\Services\Reports\PatchRstlMonthlyBreakdowns;
@@ -279,13 +278,18 @@ class ReportYearManagementController extends Controller
         return to_route('report-years.index');
     }
 
-    public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, PatchGfpsMembershipSummary $patchGfpsMembership, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, SparseRecordPatcher $patcher, ConflictGuard $conflictGuard): RedirectResponse
     {
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear->gfpsMembershipSummary, $this->expectedUpdatedAt($request));
 
         $before = $reportYear->gfpsMembershipSummary?->only(['female_count', 'male_count']) ?? [];
-        $patchGfpsMembership->apply($reportYear, $request->validated());
+        $patcher->applyToReportYearRelation(
+            $reportYear,
+            'gfpsMembershipSummary',
+            $request->validated(),
+            ['female_count', 'male_count'],
+        );
         $after = $reportYear->gfpsMembershipSummary?->fresh()?->only(['female_count', 'male_count']) ?? [];
         $diff = AuditLogger::diff($before, $after);
 

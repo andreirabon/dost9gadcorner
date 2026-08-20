@@ -19,7 +19,7 @@ export type ReportChartUi = {
     dataLabelColor: string;
 };
 
-export function reportChartUi(_appearance?: 'light'): ReportChartUi {
+export function reportChartUi(): ReportChartUi {
     return {
         themeMode: 'light',
         chartBackground: REPORT_CHART_SURFACE_BACKGROUND,

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
-import { useReportChartAppearance } from '@/composables/useReportPageTheme';
 import {
     REPORT_CHART_FONT_FAMILY,
     reportChartCspNonce,
@@ -19,17 +18,16 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const appearance = useReportChartAppearance();
 const chartAnimations = useReportChartMotion();
 
 const totalCount = computed(() => props.femaleCount + props.maleCount);
 
 const series = computed(() => [props.femaleCount, props.maleCount]);
 
-const palette = computed(() => reportDisaggPalette(appearance.value));
+const palette = computed(() => reportDisaggPalette());
 
 const chartOptions = computed<ApexOptions>(() => {
-    const ui = reportChartUi(appearance.value);
+    const ui = reportChartUi();
     const colors = palette.value;
 
     return {
