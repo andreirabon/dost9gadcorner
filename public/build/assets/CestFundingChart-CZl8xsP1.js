@@ -1,1 +1,0 @@
-import{_ as a}from"./FundingSplitChart.vue_vue_type_script_setup_true_lang-DKDeEb-c.js";import{d as e,o,e as n}from"./app-ZMI4g6FU.js";import"./vue3-apexcharts-BDpSMZ8b.js";import"./index-BRs8y16v.js";const d=e({__name:"CestFundingChart",props:{data:{},title:{default:""}},setup(t){return(r,i)=>(o(),n(a,{data:t.data,title:t.title},null,8,["data","title"]))}});export{d as default};
