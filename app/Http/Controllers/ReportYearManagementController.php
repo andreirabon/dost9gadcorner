@@ -16,24 +16,21 @@ use App\Http\Requests\UpdateScholarshipSnapshotRequest;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
 use App\Models\GfpsAssemblyPeriod;
-use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
-use App\Models\ScholarshipApplicantSummary;
 use App\Models\ScholarshipProgram;
 use App\Models\ScholarshipSummary;
 use App\Models\SchoolYear;
 use App\Services\AuditLogger;
 use App\Services\Reports\ConflictGuard;
-use App\Services\Reports\PatchEmployeeStatusBreakdowns;
-use App\Services\Reports\PatchGfpsAssemblyAttendances;
-use App\Services\Reports\PatchProgramFundingSummaries;
 use App\Services\Reports\PatchReportYearAttributes;
-use App\Services\Reports\PatchRstlMonthlyBreakdowns;
-use App\Services\Reports\PatchScholarshipApplicantSummaries;
+use App\Services\Reports\PatchRowSection;
+use App\Services\Reports\RowSection;
 use App\Services\Reports\SparseRecordPatcher;
 use App\Support\FundingProgramScope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -216,39 +213,54 @@ class ReportYearManagementController extends Controller
 
     public function update(UpdateReportYearRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
-
-        $before = $reportYear->only(['year', 'title', 'description', 'status']);
-        $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description', 'status']);
-        $after = $reportYear->only(['year', 'title', 'description', 'status']);
-        $diff = AuditLogger::diff($before, $after);
-
-        AuditLogger::record(
-            $request->user(),
-            'report_year.'.AuditLogger::actionVerb($diff),
-            $this->reportYearLabel($reportYear->title, $reportYear->year),
-            $diff,
-            section: 'Report Year',
-            column: AuditLogger::humanizeFields($diff),
+        return $this->patchReportYearFields(
+            $request,
+            $reportYear,
+            $patchReportYear,
+            $conflictGuard,
+            ['year', 'title', 'description', 'status'],
+            'report_year.',
         );
-
-        return back();
     }
 
     public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
+        return $this->patchReportYearFields(
+            $request,
+            $reportYear,
+            $patchReportYear,
+            $conflictGuard,
+            ['year', 'title', 'description'],
+            'report_year.metadata_',
+        );
+    }
+
+    /**
+     * Shared body of the two report-year attribute endpoints. They differ only
+     * in which fields they may write and how the change is named in the audit
+     * log; the authorization gate lives on each endpoint's FormRequest.
+     *
+     * @param  list<string>  $fields
+     */
+    private function patchReportYearFields(
+        FormRequest $request,
+        ReportYear $reportYear,
+        PatchReportYearAttributes $patchReportYear,
+        ConflictGuard $conflictGuard,
+        array $fields,
+        string $auditActionPrefix,
+    ): RedirectResponse {
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear, $this->expectedUpdatedAt($request));
 
-        $before = $reportYear->only(['year', 'title', 'description']);
-        $patchReportYear->apply($reportYear, $request->validated(), ['year', 'title', 'description']);
-        $after = $reportYear->only(['year', 'title', 'description']);
+        $before = $reportYear->only($fields);
+        $patchReportYear->apply($reportYear, $request->validated(), $fields);
+        $after = $reportYear->only($fields);
         $diff = AuditLogger::diff($before, $after);
 
         AuditLogger::record(
             $request->user(),
-            'report_year.metadata_'.AuditLogger::actionVerb($diff),
+            $auditActionPrefix.AuditLogger::actionVerb($diff),
             $this->reportYearLabel($reportYear->title, $reportYear->year),
             $diff,
             section: 'Report Year',
@@ -305,90 +317,14 @@ class ReportYearManagementController extends Controller
         return back();
     }
 
-    public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear, PatchGfpsAssemblyAttendances $patchGfpsAssemblies, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
     {
-        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertRelationFresh($reportYear, 'gfpsAssemblyAttendances', $this->expectedUpdatedAt($request));
-
-        $submitted = $request->validated('attendances');
-        $before = $reportYear->gfpsAssemblyAttendances()->get()->keyBy('gfps_assembly_period_id');
-
-        $patchGfpsAssemblies->apply($reportYear, $submitted);
-
-        $after = $reportYear->gfpsAssemblyAttendances()->get()->keyBy('gfps_assembly_period_id');
-        $names = GfpsAssemblyPeriod::query()
-            ->whereIn('id', collect($submitted)->pluck('period_id')->filter())
-            ->pluck('name', 'id');
-
-        foreach ($submitted as $row) {
-            if (! array_key_exists('period_id', $row)) {
-                continue;
-            }
-
-            $id = $row['period_id'];
-            $beforeAttrs = $before->get($id)?->only(['female_count', 'male_count']) ?? ['female_count' => 0, 'male_count' => 0];
-            $afterAttrs = $after->get($id)?->only(['female_count', 'male_count']) ?? ['female_count' => 0, 'male_count' => 0];
-            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
-
-            if ($diff === []) {
-                continue;
-            }
-
-            AuditLogger::record(
-                $request->user(),
-                'gfps_assemblies.'.AuditLogger::actionVerb($diff),
-                $this->reportYearLabel($reportYear->title, $reportYear->year),
-                $diff,
-                section: 'GFPS Assemblies',
-                column: AuditLogger::humanizeFields($diff),
-                row: $names->get($id, "#{$id}"),
-            );
-        }
-
-        return back();
+        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::GFPS_ASSEMBLIES);
     }
 
-    public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, PatchEmployeeStatusBreakdowns $patchEmployeeStatuses, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
     {
-        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertRelationFresh($reportYear, 'employeeStatusBreakdowns', $this->expectedUpdatedAt($request));
-
-        $submitted = $request->validated('breakdowns');
-        $before = $reportYear->employeeStatusBreakdowns()->get()->keyBy('employment_status_id');
-
-        $patchEmployeeStatuses->apply($reportYear, $submitted);
-
-        $after = $reportYear->employeeStatusBreakdowns()->get()->keyBy('employment_status_id');
-        $names = EmploymentStatus::query()
-            ->whereIn('id', collect($submitted)->pluck('employment_status_id')->filter())
-            ->pluck('name', 'id');
-
-        foreach ($submitted as $row) {
-            if (! array_key_exists('employment_status_id', $row)) {
-                continue;
-            }
-
-            $id = $row['employment_status_id'];
-            $beforeAttrs = $before->get($id)?->only(['female_count', 'male_count']) ?? ['female_count' => 0, 'male_count' => 0];
-            $afterAttrs = $after->get($id)?->only(['female_count', 'male_count']) ?? ['female_count' => 0, 'male_count' => 0];
-            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
-
-            if ($diff === []) {
-                continue;
-            }
-
-            AuditLogger::record(
-                $request->user(),
-                'employee_statuses.'.AuditLogger::actionVerb($diff),
-                $this->reportYearLabel($reportYear->title, $reportYear->year),
-                $diff,
-                section: 'Employee Statuses',
-                column: AuditLogger::humanizeFields($diff),
-                row: $names->get($id, "#{$id}"),
-            );
-        }
-
-        return back();
+        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::EMPLOYEE_STATUSES);
     }
 
     public function storeScholarshipSnapshot(StoreScholarshipSnapshotRequest $request, ReportYear $reportYear): RedirectResponse
@@ -476,128 +412,64 @@ class ReportYearManagementController extends Controller
         return back();
     }
 
-    public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear, PatchRstlMonthlyBreakdowns $patchRstlMonthly, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
     {
-        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertRelationFresh($reportYear, 'rstlMonthlyBreakdowns', $this->expectedUpdatedAt($request));
-
-        $submitted = $request->validated('breakdowns');
-        $before = $reportYear->rstlMonthlyBreakdowns()->get()->keyBy('report_month_id');
-
-        $patchRstlMonthly->apply($reportYear, $submitted);
-
-        $after = $reportYear->rstlMonthlyBreakdowns()->get()->keyBy('report_month_id');
-        $names = ReportMonth::query()
-            ->whereIn('id', collect($submitted)->pluck('report_month_id')->filter())
-            ->pluck('name', 'id');
-
-        $fields = ['female_count', 'female_led_count', 'male_count', 'male_led_count'];
-
-        foreach ($submitted as $row) {
-            if (! array_key_exists('report_month_id', $row)) {
-                continue;
-            }
-
-            $id = $row['report_month_id'];
-            $beforeAttrs = $before->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
-            $afterAttrs = $after->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
-            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
-
-            if ($diff === []) {
-                continue;
-            }
-
-            AuditLogger::record(
-                $request->user(),
-                'rstl_monthly.'.AuditLogger::actionVerb($diff),
-                $this->reportYearLabel($reportYear->title, $reportYear->year),
-                $diff,
-                section: 'RSTL Monthly',
-                column: AuditLogger::humanizeFields($diff),
-                row: $names->get($id, "#{$id}"),
-            );
-        }
-
-        return back();
+        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::RSTL_MONTHLY);
     }
 
-    public function updateScholarshipApplicants(UpdateScholarshipApplicantSummariesRequest $request, ReportYear $reportYear, PatchScholarshipApplicantSummaries $patchApplicants, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateScholarshipApplicants(UpdateScholarshipApplicantSummariesRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
     {
-        abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertRelationFresh($reportYear, 'scholarshipApplicantSummaries', $this->expectedUpdatedAt($request));
-
-        $submitted = $request->validated('applicants');
-        $before = $reportYear->scholarshipApplicantSummaries()->get()->keyBy('scholarship_program_id');
-
-        $patchApplicants->apply($reportYear, $submitted);
-
-        $after = $reportYear->scholarshipApplicantSummaries()->get()->keyBy('scholarship_program_id');
-        $names = ScholarshipProgram::query()
-            ->whereIn('id', collect($submitted)->pluck('scholarship_program_id')->filter())
-            ->pluck('name', 'id');
-
-        $fields = ['female_count', 'male_count'];
-
-        foreach ($submitted as $row) {
-            if (! array_key_exists('scholarship_program_id', $row)) {
-                continue;
-            }
-
-            $id = $row['scholarship_program_id'];
-            $beforeAttrs = $before->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
-            $afterAttrs = $after->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
-            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
-
-            if ($diff === []) {
-                continue;
-            }
-
-            AuditLogger::record(
-                $request->user(),
-                'scholarship_applicants.'.AuditLogger::actionVerb($diff),
-                $this->reportYearLabel($reportYear->title, $reportYear->year),
-                $diff,
-                section: 'Scholarship Applicants',
-                column: AuditLogger::humanizeFields($diff),
-                row: $names->get($id, "#{$id}"),
-            );
-        }
-
-        return back();
+        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::SCHOLARSHIP_APPLICANTS);
     }
 
-    public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, PatchProgramFundingSummaries $patchProgramFunding, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
     {
+        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::PROGRAM_FUNDING);
+    }
+
+    /**
+     * Shared body of the five multi-row section endpoints: conflict check,
+     * sparse patch, then one audit entry per row that actually changed.
+     *
+     * Authorization stays on each endpoint's FormRequest, and the per-section
+     * differences (model, identity column, value fields, audit wording) come
+     * from {@see RowSection}.
+     */
+    private function patchRowSection(
+        FormRequest $request,
+        ReportYear $reportYear,
+        PatchRowSection $patchRowSection,
+        ConflictGuard $conflictGuard,
+        string $section,
+    ): RedirectResponse {
+        $config = RowSection::config($section);
+
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
-        $conflictGuard->assertRelationFresh($reportYear, 'programFundingSummaries', $this->expectedUpdatedAt($request));
+        $conflictGuard->assertRelationFresh($reportYear, $config['relation'], $this->expectedUpdatedAt($request));
 
-        $submitted = $request->validated('summaries');
-        $before = $reportYear->programFundingSummaries()->get()->keyBy('funding_program_id');
+        /** @var array<int, array<string, mixed>> $submitted */
+        $submitted = $request->validated($config['payloadKey']);
+        $before = $reportYear->{$config['relation']}()->get()->keyBy($config['identity']);
 
-        $patchProgramFunding->apply($reportYear, $submitted);
+        $patchRowSection->apply($reportYear, $section, $submitted);
 
-        $after = $reportYear->programFundingSummaries()->get()->keyBy('funding_program_id');
-        $names = FundingProgram::query()
-            ->whereIn('id', collect($submitted)->pluck('funding_program_id')->filter())
+        $after = $reportYear->{$config['relation']}()->get()->keyBy($config['identity']);
+        $names = $config['labelModel']::query()
+            ->whereIn('id', collect($submitted)->pluck($config['patchKey'])->filter())
             ->pluck('name', 'id');
 
-        $fields = [
-            'female_projects', 'female_amount', 'male_projects', 'male_amount',
-            'funded_projects_count', 'funded_projects_value', 'training_participants',
-            'jobs_total', 'jobs_male', 'jobs_female', 'jobs_pwd', 'jobs_senior_citizen',
-            'jobs_ip', 'jobs_4ps',
-            'special_projects_research_male', 'special_projects_research_female',
-        ];
+        $zeroed = array_fill_keys($config['valueFields'], 0);
 
         foreach ($submitted as $row) {
-            if (! array_key_exists('funding_program_id', $row)) {
+            if (! array_key_exists($config['patchKey'], $row)) {
                 continue;
             }
 
-            $id = $row['funding_program_id'];
-            $beforeAttrs = $before->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
-            $afterAttrs = $after->get($id)?->only($fields) ?? array_fill_keys($fields, 0);
-            $diff = AuditLogger::diff($beforeAttrs, $afterAttrs);
+            $id = $row[$config['patchKey']];
+            $diff = AuditLogger::diff(
+                $before->get($id)?->only($config['valueFields']) ?? $zeroed,
+                $after->get($id)?->only($config['valueFields']) ?? $zeroed,
+            );
 
             if ($diff === []) {
                 continue;
@@ -605,10 +477,10 @@ class ReportYearManagementController extends Controller
 
             AuditLogger::record(
                 $request->user(),
-                'program_funding.'.AuditLogger::actionVerb($diff),
+                $config['auditAction'].'.'.AuditLogger::actionVerb($diff),
                 $this->reportYearLabel($reportYear->title, $reportYear->year),
                 $diff,
-                section: 'Program Funding',
+                section: $config['auditSection'],
                 column: AuditLogger::humanizeFields($diff),
                 row: $names->get($id, "#{$id}"),
             );
@@ -641,21 +513,33 @@ class ReportYearManagementController extends Controller
      */
     private function editableGfpsAssemblyRows(ReportYear $reportYear): array
     {
-        $existing = $reportYear->gfpsAssemblyAttendances->keyBy('gfps_assembly_period_id');
+        return $this->zeroFilledRows(
+            GfpsAssemblyPeriod::query()->orderBy('sort_order'),
+            $reportYear->gfpsAssemblyAttendances->keyBy('gfps_assembly_period_id'),
+            fn (GfpsAssemblyPeriod $period, ?Model $attendance): array => [
+                'periodId' => $period->id,
+                'label' => $period->name,
+                'femaleCount' => (int) ($attendance?->female_count ?? 0),
+                'maleCount' => (int) ($attendance?->male_count ?? 0),
+            ],
+        );
+    }
 
-        return GfpsAssemblyPeriod::query()
-            ->orderBy('sort_order')
+    /**
+     * Every lookup row for a section, in lookup order, paired with the report
+     * year's saved row for it — or nothing, which the mapper zero-fills. The
+     * screen always offers the full list rather than only what was entered.
+     *
+     * @param  Builder<covariant Model>  $lookup
+     * @param  Collection<int, Model>  $existing  keyed by the lookup row's id
+     * @param  callable(Model, ?Model): array<string, mixed>  $map
+     * @return array<int, array<string, mixed>>
+     */
+    private function zeroFilledRows(Builder $lookup, Collection $existing, callable $map): array
+    {
+        return $lookup
             ->get()
-            ->map(function (GfpsAssemblyPeriod $period) use ($existing): array {
-                $attendance = $existing->get($period->id);
-
-                return [
-                    'periodId' => $period->id,
-                    'label' => $period->name,
-                    'femaleCount' => (int) ($attendance?->female_count ?? 0),
-                    'maleCount' => (int) ($attendance?->male_count ?? 0),
-                ];
-            })
+            ->map(fn (Model $row): array => $map($row, $existing->get($row->getKey())))
             ->all();
     }
 
@@ -664,22 +548,16 @@ class ReportYearManagementController extends Controller
      */
     private function editableEmployeeStatusRows(ReportYear $reportYear): array
     {
-        $existing = $reportYear->employeeStatusBreakdowns->keyBy('employment_status_id');
-
-        return EmploymentStatus::query()
-            ->orderBy('sort_order')
-            ->get()
-            ->map(function (EmploymentStatus $status) use ($existing): array {
-                $breakdown = $existing->get($status->id);
-
-                return [
-                    'employmentStatusId' => $status->id,
-                    'label' => $status->name,
-                    'femaleCount' => (int) ($breakdown?->female_count ?? 0),
-                    'maleCount' => (int) ($breakdown?->male_count ?? 0),
-                ];
-            })
-            ->all();
+        return $this->zeroFilledRows(
+            EmploymentStatus::query()->orderBy('sort_order'),
+            $reportYear->employeeStatusBreakdowns->keyBy('employment_status_id'),
+            fn (EmploymentStatus $status, ?Model $breakdown): array => [
+                'employmentStatusId' => $status->id,
+                'label' => $status->name,
+                'femaleCount' => (int) ($breakdown?->female_count ?? 0),
+                'maleCount' => (int) ($breakdown?->male_count ?? 0),
+            ],
+        );
     }
 
     /**
@@ -687,56 +565,40 @@ class ReportYearManagementController extends Controller
      */
     private function editableRstlMonthlyRows(ReportYear $reportYear): array
     {
-        $existing = $reportYear->rstlMonthlyBreakdowns->keyBy('report_month_id');
-
-        return ReportMonth::query()
-            ->orderBy('month_number')
-            ->get()
-            ->map(function (ReportMonth $month) use ($existing): array {
-                $breakdown = $existing->get($month->id);
-
-                return [
-                    'reportMonthId' => $month->id,
-                    'label' => $month->name,
-                    'femaleCount' => (int) ($breakdown?->female_count ?? 0),
-                    'femaleLedCount' => (int) ($breakdown?->female_led_count ?? 0),
-                    'maleCount' => (int) ($breakdown?->male_count ?? 0),
-                    'maleLedCount' => (int) ($breakdown?->male_led_count ?? 0),
-                ];
-            })
-            ->all();
+        return $this->zeroFilledRows(
+            ReportMonth::query()->orderBy('month_number'),
+            $reportYear->rstlMonthlyBreakdowns->keyBy('report_month_id'),
+            fn (ReportMonth $month, ?Model $breakdown): array => [
+                'reportMonthId' => $month->id,
+                'label' => $month->name,
+                'femaleCount' => (int) ($breakdown?->female_count ?? 0),
+                'femaleLedCount' => (int) ($breakdown?->female_led_count ?? 0),
+                'maleCount' => (int) ($breakdown?->male_count ?? 0),
+                'maleLedCount' => (int) ($breakdown?->male_led_count ?? 0),
+            ],
+        );
     }
 
     /**
-     * Every scholarship program, zero-filled where a year has no row yet, so
-     * the screen always offers the full list rather than only what was entered.
-     *
      * @return array<int, array{scholarshipProgramId: int, label: string, fullName: string, slug: string, level: string, femaleCount: int, maleCount: int}>
      */
     private function editableScholarshipApplicantRows(ReportYear $reportYear): array
     {
-        /** @var Collection<int, ScholarshipApplicantSummary> $existing */
-        $existing = $reportYear->scholarshipApplicantSummaries->keyBy('scholarship_program_id');
-
-        return ScholarshipProgram::query()
-            ->orderBy('sort_order')
-            ->get()
-            ->map(function (ScholarshipProgram $program) use ($existing): array {
-                $summary = $existing->get($program->id);
-
-                return [
-                    'scholarshipProgramId' => $program->id,
-                    // Full programme name rather than the acronym — the editor
-                    // should see the same wording the published report shows.
-                    'label' => (string) $program->name,
-                    'fullName' => (string) $program->name,
-                    'slug' => (string) $program->slug,
-                    'level' => (string) $program->level,
-                    'femaleCount' => (int) ($summary?->female_count ?? 0),
-                    'maleCount' => (int) ($summary?->male_count ?? 0),
-                ];
-            })
-            ->all();
+        return $this->zeroFilledRows(
+            ScholarshipProgram::query()->orderBy('sort_order'),
+            $reportYear->scholarshipApplicantSummaries->keyBy('scholarship_program_id'),
+            fn (ScholarshipProgram $program, ?Model $summary): array => [
+                'scholarshipProgramId' => $program->id,
+                // Full programme name rather than the acronym — the editor
+                // should see the same wording the published report shows.
+                'label' => (string) $program->name,
+                'fullName' => (string) $program->name,
+                'slug' => (string) $program->slug,
+                'level' => (string) $program->level,
+                'femaleCount' => (int) ($summary?->female_count ?? 0),
+                'maleCount' => (int) ($summary?->male_count ?? 0),
+            ],
+        );
     }
 
     /**
@@ -744,37 +606,30 @@ class ReportYearManagementController extends Controller
      */
     private function editableProgramFundingRows(ReportYear $reportYear): array
     {
-        /** @var Collection<int, ProgramFundingSummary> $existing */
-        $existing = $reportYear->programFundingSummaries->keyBy('funding_program_id');
-
-        return FundingProgram::query()
-            ->orderBy('sort_order')
-            ->get()
-            ->map(function (FundingProgram $program) use ($existing): array {
-                $summary = $existing->get($program->id);
-
-                return [
-                    'fundingProgramId' => $program->id,
-                    'label' => $program->name,
-                    'slug' => $program->slug,
-                    'femaleProjects' => (int) ($summary?->female_projects ?? 0),
-                    'femaleAmount' => number_format((float) ($summary?->female_amount ?? 0), 2, '.', ''),
-                    'maleProjects' => (int) ($summary?->male_projects ?? 0),
-                    'maleAmount' => number_format((float) ($summary?->male_amount ?? 0), 2, '.', ''),
-                    'fundedProjectsCount' => (int) ($summary?->funded_projects_count ?? 0),
-                    'fundedProjectsValue' => number_format((float) ($summary?->funded_projects_value ?? 0), 2, '.', ''),
-                    'trainingParticipants' => (int) ($summary?->training_participants ?? 0),
-                    'jobsTotal' => (int) ($summary?->jobs_total ?? 0),
-                    'jobsMale' => (int) ($summary?->jobs_male ?? 0),
-                    'jobsFemale' => (int) ($summary?->jobs_female ?? 0),
-                    'jobsPwd' => (int) ($summary?->jobs_pwd ?? 0),
-                    'jobsSeniorCitizen' => (int) ($summary?->jobs_senior_citizen ?? 0),
-                    'jobsIp' => (int) ($summary?->jobs_ip ?? 0),
-                    'jobs4ps' => (int) ($summary?->jobs_4ps ?? 0),
-                    'specialProjectsResearchMale' => (int) ($summary?->special_projects_research_male ?? 0),
-                    'specialProjectsResearchFemale' => (int) ($summary?->special_projects_research_female ?? 0),
-                ];
-            })
-            ->all();
+        return $this->zeroFilledRows(
+            FundingProgram::query()->orderBy('sort_order'),
+            $reportYear->programFundingSummaries->keyBy('funding_program_id'),
+            fn (FundingProgram $program, ?Model $summary): array => [
+                'fundingProgramId' => $program->id,
+                'label' => $program->name,
+                'slug' => $program->slug,
+                'femaleProjects' => (int) ($summary?->female_projects ?? 0),
+                'femaleAmount' => number_format((float) ($summary?->female_amount ?? 0), 2, '.', ''),
+                'maleProjects' => (int) ($summary?->male_projects ?? 0),
+                'maleAmount' => number_format((float) ($summary?->male_amount ?? 0), 2, '.', ''),
+                'fundedProjectsCount' => (int) ($summary?->funded_projects_count ?? 0),
+                'fundedProjectsValue' => number_format((float) ($summary?->funded_projects_value ?? 0), 2, '.', ''),
+                'trainingParticipants' => (int) ($summary?->training_participants ?? 0),
+                'jobsTotal' => (int) ($summary?->jobs_total ?? 0),
+                'jobsMale' => (int) ($summary?->jobs_male ?? 0),
+                'jobsFemale' => (int) ($summary?->jobs_female ?? 0),
+                'jobsPwd' => (int) ($summary?->jobs_pwd ?? 0),
+                'jobsSeniorCitizen' => (int) ($summary?->jobs_senior_citizen ?? 0),
+                'jobsIp' => (int) ($summary?->jobs_ip ?? 0),
+                'jobs4ps' => (int) ($summary?->jobs_4ps ?? 0),
+                'specialProjectsResearchMale' => (int) ($summary?->special_projects_research_male ?? 0),
+                'specialProjectsResearchFemale' => (int) ($summary?->special_projects_research_female ?? 0),
+            ],
+        );
     }
 }
