@@ -7,6 +7,7 @@ use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
 use App\Models\GfpsAssemblyAttendance;
 use App\Models\GfpsAssemblyPeriod;
+use App\Models\GfpsMemberStatusBreakdown;
 use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\RstlMonthlyBreakdown;
@@ -28,6 +29,8 @@ final class RowSection
     public const GFPS_ASSEMBLIES = 'gfpsAssemblies';
 
     public const EMPLOYEE_STATUSES = 'employeeStatuses';
+
+    public const GFPS_MEMBER_STATUSES = 'gfpsMemberStatuses';
 
     public const RSTL_MONTHLY = 'rstlMonthly';
 
@@ -71,6 +74,17 @@ final class RowSection
             'payloadKey' => 'breakdowns',
             'auditAction' => 'employee_statuses',
             'auditSection' => 'Employee Statuses',
+        ],
+        self::GFPS_MEMBER_STATUSES => [
+            'model' => GfpsMemberStatusBreakdown::class,
+            'identity' => 'employment_status_id',
+            'patchKey' => 'employment_status_id',
+            'valueFields' => ['female_count', 'male_count'],
+            'relation' => 'gfpsMemberStatusBreakdowns',
+            'labelModel' => EmploymentStatus::class,
+            'payloadKey' => 'breakdowns',
+            'auditAction' => 'gfps_member_statuses',
+            'auditSection' => 'GFPS Member Statuses',
         ],
         self::RSTL_MONTHLY => [
             'model' => RstlMonthlyBreakdown::class,

@@ -56,6 +56,8 @@ function reportYear(overrides: Record<string, unknown> = {}) {
         coverImageUrl: null,
         gfpsMembership: { femaleCount: 0, maleCount: 0 },
         gfpsAssemblies: [],
+        gfpsMemberStatuses: [],
+        scholarshipApplicants: [],
         employeeStatuses: [],
         scholarshipSnapshots: [snapshot()],
         rstlMonthly: [],

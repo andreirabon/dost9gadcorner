@@ -115,7 +115,9 @@ test('the public report exposes applicants per program', function () {
         ->assertSuccessful()
         ->assertInertia(fn (Assert $page) => $page
             ->has('year.reportData.scholarshipApplicants', 8)
-            ->where('year.reportData.scholarshipApplicants.5.label', 'Engineering Research and Development for Technology')
+            // Acronym for the chart axis, full title alongside it for the table.
+            ->where('year.reportData.scholarshipApplicants.5.label', 'ERDT')
+            ->where('year.reportData.scholarshipApplicants.5.fullName', 'Engineering Research and Development for Technology')
             ->where('year.reportData.scholarshipApplicants.5.female', 12)
             ->where('year.reportData.scholarshipApplicants.5.male', 9)
             ->where('year.reportData.scholarshipApplicants.5.level', ScholarshipProgram::LEVEL_GRADUATE)

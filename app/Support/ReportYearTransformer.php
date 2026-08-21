@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
 use App\Models\ProgramFundingSummary;
 use App\Models\ReportYear;
@@ -74,8 +75,7 @@ class ReportYearTransformer
 
         $setupFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'setup');
         $cestFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'cest');
-        $setupFundingSummary = $this->sumFundingBreakdown($setupFundingBreakdown);
-        $cestFundingSummary = $this->sumFundingBreakdown($cestFundingBreakdown);
+        $giaFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'gia');
 
         return [
             'gfpsMembership' => [
@@ -84,6 +84,7 @@ class ReportYearTransformer
             ],
             'gfpsAssemblies' => $this->transformGfpsAssemblyAttendances($reportYear),
             'employeeStatuses' => $this->transformEmployeeStatusBreakdowns($reportYear),
+            'gfpsMemberStatuses' => $this->transformGfpsMemberStatusBreakdowns($reportYear),
             // The relation is already ordered newest-first, so the head of the
             // collection is the latest snapshot. Resolve it once.
             'scholarship' => $this->transformLatestScholarship($latestScholarship),
@@ -99,10 +100,9 @@ class ReportYearTransformer
                 ->all(),
             'scholarshipApplicants' => $this->transformScholarshipApplicants($reportYear),
             'rstlMonthly' => $this->transformRstlMonthlyBreakdowns($reportYear),
-            'setupFunding' => $setupFundingSummary,
-            'cestFunding' => $cestFundingSummary,
             'setupFundingBreakdown' => $setupFundingBreakdown,
             'cestFundingBreakdown' => $cestFundingBreakdown,
+            'giaFundingBreakdown' => $giaFundingBreakdown,
         ];
     }
 
@@ -131,6 +131,29 @@ class ReportYearTransformer
                 'label' => (string) $attendance->gfpsAssemblyPeriod?->name,
                 'female' => (int) $attendance->female_count,
                 'male' => (int) $attendance->male_count,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * GFPS members per employment status, zero-filled across the reportable
+     * statuses so the chart always plots the same bars.
+     *
+     * Entered independently of `gfpsMembership`, and deliberately not derived
+     * from it: the two are separate figures and are allowed to disagree.
+     *
+     * @return array<int, array{label: string, female: int, male: int}>
+     */
+    private function transformGfpsMemberStatusBreakdowns(ReportYear $reportYear): array
+    {
+        $breakdowns = $reportYear->gfpsMemberStatusBreakdowns->keyBy('employment_status_id');
+
+        return GfpsMemberStatuses::all()
+            ->map(fn (EmploymentStatus $status): array => [
+                'label' => (string) $status->name,
+                'female' => (int) ($breakdowns->get($status->id)?->female_count ?? 0),
+                'male' => (int) ($breakdowns->get($status->id)?->male_count ?? 0),
             ])
             ->values()
             ->all();
@@ -174,10 +197,11 @@ class ReportYearTransformer
                 $summary = $applicants->get($program->id);
 
                 return [
-                    // Full programme name, not the acronym: this is a public
-                    // report, and ERDT or CBPSME means nothing to a reader
-                    // outside the programme.
-                    'label' => (string) $program->name,
+                    // Acronym for the chart axis, where the full eighty-character
+                    // name overlaps its neighbours. `fullName` carries the
+                    // spelled-out title for the table and the chart tooltip, so a
+                    // reader outside the programme is never left with only ERDT.
+                    'label' => (string) ($program->short_name ?: $program->name),
                     'fullName' => (string) $program->name,
                     'slug' => (string) $program->slug,
                     'level' => (string) $program->level,
@@ -250,30 +274,5 @@ class ReportYearTransformer
             })
             ->values()
             ->all();
-    }
-
-    /**
-     * Totals the money columns only. The per-program metrics (jobs, training,
-     * research) stay on their own rows: they are counts of different things,
-     * so a column sum across programs would not mean anything here.
-     *
-     * @param  array<int, array<string, mixed>>  $rows
-     * @return array{maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float}
-     */
-    private function sumFundingBreakdown(array $rows): array
-    {
-        return array_reduce($rows, function (array $carry, array $row): array {
-            $carry['maleProjects'] += $row['maleProjects'];
-            $carry['maleAmount'] += $row['maleAmount'];
-            $carry['femaleProjects'] += $row['femaleProjects'];
-            $carry['femaleAmount'] += $row['femaleAmount'];
-
-            return $carry;
-        }, [
-            'maleProjects' => 0,
-            'maleAmount' => 0.0,
-            'femaleProjects' => 0,
-            'femaleAmount' => 0.0,
-        ]);
     }
 }

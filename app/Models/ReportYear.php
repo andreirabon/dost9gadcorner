@@ -55,6 +55,11 @@ class ReportYear extends Model
         return $this->hasMany(EmployeeStatusBreakdown::class);
     }
 
+    public function gfpsMemberStatusBreakdowns(): HasMany
+    {
+        return $this->hasMany(GfpsMemberStatusBreakdown::class);
+    }
+
     /**
      * Snapshots newest first: by as_of_date, then by id for same-day entries.
      *

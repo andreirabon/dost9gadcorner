@@ -8,6 +8,7 @@ use App\Models\ReportYear;
 use App\Models\SchoolYear;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\ReportYearDemoSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -43,7 +44,7 @@ test('database seeder runs all seeders successfully', function () {
         ->and(FundingProgram::query()->count())->toBeGreaterThan(0)
         ->and(ReportMonth::query()->count())->toBe(12)
         ->and(SchoolYear::query()->count())->toBeGreaterThan(0)
-        ->and(ReportYear::query()->where('year', 2025)->exists())->toBeTrue();
+        ->and(ReportYear::query()->where('year', ReportYearDemoSeeder::YEAR)->exists())->toBeTrue();
 });
 
 test('db:seed runs in production when force flag is passed', function () {

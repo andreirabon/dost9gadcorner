@@ -6,8 +6,6 @@ use App\Models\ReportYear;
 
 final class PatchReportYearAttributes
 {
-    public function __construct(private SparseRecordPatcher $patcher) {}
-
     /**
      * @param  array<string, mixed>  $patch
      * @param  list<string>  $allowedFields

@@ -399,25 +399,6 @@
                 ]);
             };
 
-            $resolveFundingRows = static function (array $breakdown, array $summary, string $fallbackLabel, string $fallbackSlug): array {
-                if (count($breakdown) > 0) {
-                    return $breakdown;
-                }
-
-                if (($summary['maleProjects'] ?? 0) > 0 || ($summary['femaleProjects'] ?? 0) > 0) {
-                    return [[
-                        'label' => $fallbackLabel,
-                        'slug' => $fallbackSlug,
-                        'maleProjects' => (int) $summary['maleProjects'],
-                        'maleAmount' => (float) $summary['maleAmount'],
-                        'femaleProjects' => (int) $summary['femaleProjects'],
-                        'femaleAmount' => (float) $summary['femaleAmount'],
-                    ]];
-                }
-
-                return [];
-            };
-
             $gfpsFemale = (int) $data['gfpsMembership']['femaleCount'];
             $gfpsMale = (int) $data['gfpsMembership']['maleCount'];
             $gfpsTotal = $gfpsFemale + $gfpsMale;
@@ -438,29 +419,23 @@
             }
             $rstlTotal = $rstlFemale + $rstlMale;
 
-            $setupFundingRows = $resolveFundingRows(
-                $data['setupFundingBreakdown'],
-                $data['setupFunding'],
-                'SETUP',
-                'setup',
-            );
-            $cestFundingRows = $resolveFundingRows(
-                $data['cestFundingBreakdown'],
-                $data['cestFunding'],
-                'CEST',
-                'cest',
-            );
+            $setupFundingRows = $data['setupFundingBreakdown'];
+            $cestFundingRows = $data['cestFundingBreakdown'];
+            $giaFundingRows = $data['giaFundingBreakdown'];
 
             $setupTotals = $sumFundingRows($setupFundingRows);
             $cestTotals = $sumFundingRows($cestFundingRows);
+            $giaTotals = $sumFundingRows($giaFundingRows);
 
             $setupProjects = $setupTotals['maleProjects'] + $setupTotals['femaleProjects'];
             $setupAmount = $setupTotals['maleAmount'] + $setupTotals['femaleAmount'];
             $cestProjects = $cestTotals['maleProjects'] + $cestTotals['femaleProjects'];
             $cestAmount = $cestTotals['maleAmount'] + $cestTotals['femaleAmount'];
+            $giaProjects = $giaTotals['maleProjects'] + $giaTotals['femaleProjects'];
+            $giaAmount = $giaTotals['maleAmount'] + $giaTotals['femaleAmount'];
 
-            $combinedProjects = $setupProjects + $cestProjects;
-            $combinedFunding = $setupAmount + $cestAmount;
+            $combinedProjects = $setupProjects + $cestProjects + $giaProjects;
+            $combinedFunding = $setupAmount + $cestAmount + $giaAmount;
 
             $totalFemaleAcrossPrograms = $gfpsFemale + $employeesFemale + $scholarshipFemale + $rstlFemale;
             $totalMaleAcrossPrograms = $gfpsMale + $employeesMale + $scholarshipMale + $rstlMale;
@@ -514,6 +489,7 @@
                         ['label' => 'Combined Funding', 'value' => $formatCurrency($combinedFunding)],
                         ['label' => 'SETUP Funding', 'value' => $formatCurrency($setupAmount), 'meta' => count($setupFundingRows) . ' Categories'],
                         ['label' => 'CEST Funding', 'value' => $formatCurrency($cestAmount), 'meta' => count($cestFundingRows) . ' Categories'],
+                        ['label' => 'GIA Funding', 'value' => $formatCurrency($giaAmount), 'meta' => count($giaFundingRows) . ' Categories'],
                     ],
                 ],
                 [
@@ -536,13 +512,23 @@
                         ['label' => 'Female-led Projects', 'value' => number_format($cestTotals['femaleProjects'])],
                     ],
                 ],
+                [
+                    'title' => 'GIA',
+                    'metrics' => [
+                        ['label' => 'Categories', 'value' => number_format(count($giaFundingRows))],
+                        ['label' => 'Total Projects', 'value' => number_format($giaProjects)],
+                        ['label' => 'Total Funding', 'value' => $formatCurrency($giaAmount)],
+                        ['label' => 'Male-led Projects', 'value' => number_format($giaTotals['maleProjects'])],
+                        ['label' => 'Female-led Projects', 'value' => number_format($giaTotals['femaleProjects'])],
+                    ],
+                ],
             ];
         @endphp
 
         {{-- 1. Overview --}}
         <div class="section">
             <p class="section-title"><span class="section-num">1.</span> Overview</p>
-            <p class="note">Validated figures across GFPS, employment, scholarship, RSTL, SETUP, and CEST programs.</p>
+            <p class="note">Validated figures across GFPS, employment, scholarship, RSTL, SETUP, CEST, and GIA programs.</p>
 
             <table class="kpi avoid-break">
                 <tr>
@@ -559,12 +545,12 @@
                     <td>
                         <p class="kpi-label">Combined Projects</p>
                         <p class="kpi-value">{{ number_format($combinedProjects) }}</p>
-                        <p class="kpi-sub">SETUP + CEST</p>
+                        <p class="kpi-sub">SETUP + CEST + GIA</p>
                     </td>
                     <td class="last">
                         <p class="kpi-label">Combined Funding</p>
                         <p class="kpi-value sm">{{ $formatCurrency($combinedFunding) }}</p>
-                        <p class="kpi-sub">SETUP + CEST</p>
+                        <p class="kpi-sub">SETUP + CEST + GIA</p>
                     </td>
                 </tr>
             </table>
@@ -833,10 +819,15 @@
                         <p class="kpi-value sm">{{ $formatCurrency($setupAmount) }}</p>
                         <p class="kpi-sub">{{ count($setupFundingRows) }} categories</p>
                     </td>
-                    <td class="last">
+                    <td>
                         <p class="kpi-label">CEST Funding</p>
                         <p class="kpi-value sm">{{ $formatCurrency($cestAmount) }}</p>
                         <p class="kpi-sub">{{ count($cestFundingRows) }} categories</p>
+                    </td>
+                    <td class="last">
+                        <p class="kpi-label">GIA Funding</p>
+                        <p class="kpi-value sm">{{ $formatCurrency($giaAmount) }}</p>
+                        <p class="kpi-sub">{{ count($giaFundingRows) }} categories</p>
                     </td>
                 </tr>
             </table>
@@ -846,45 +837,38 @@
 
             <p class="subhead">CEST Categories</p>
             @include('pdf.partials.funding-category-table', ['rows' => $cestFundingRows, 'emptyMessage' => 'No CEST category data yet.'])
+
+            <p class="subhead">GIA Categories</p>
+            @include('pdf.partials.funding-category-table', ['rows' => $giaFundingRows, 'emptyMessage' => 'No GIA category data yet.'])
         </div>
 
-        {{-- 7. Setup --}}
-        <div class="section">
-            <p class="section-title"><span class="section-num">7.</span> Setup</p>
-            <p class="note">Small Enterprise Technology Upgrading Program (SETUP) &middot; {{ $year['year'] }}</p>
-            <div class="facts avoid-break">
-                <span class="k">Categories</span> <span class="v">{{ count($setupFundingRows) }}</span>
-                <span class="sep">&nbsp;&middot;&nbsp;</span>
-                <span class="k">Total projects</span> <span class="v">{{ number_format($setupProjects) }}</span>
-                <span class="sep">&nbsp;&middot;&nbsp;</span>
-                <span class="k">Total funding</span> <span class="v">{{ $formatCurrency($setupAmount) }}</span>
-                <span class="sep">&nbsp;&middot;&nbsp;</span>
-                <span class="k">Male-led</span> <span class="v">{{ number_format($setupTotals['maleProjects']) }}</span>
-                <span class="sep">&nbsp;&middot;&nbsp;</span>
-                <span class="k">Female-led</span> <span class="v">{{ number_format($setupTotals['femaleProjects']) }}</span>
-            </div>
-            @include('pdf.partials.funding-detail-table', ['rows' => $setupFundingRows, 'emptyMessage' => 'No SETUP category data yet for this year.'])
-            @include('pdf.partials.funding-metrics-table', ['rows' => $setupFundingRows, 'emptyMessage' => 'No SETUP program metrics recorded for this year.'])
-        </div>
+        @include('pdf.partials.funding-program-section', [
+            'number' => 7,
+            'label' => 'SETUP',
+            'fullName' => 'Small Enterprise Technology Upgrading Program (SETUP)',
+            'year' => $year['year'],
+            'rows' => $setupFundingRows,
+            'totals' => $setupTotals,
+        ])
 
-        {{-- 8. CEST --}}
-        <div class="section">
-            <p class="section-title"><span class="section-num">8.</span> CEST</p>
-            <p class="note">Community Empowerment thru Science and Technology (CEST) &middot; {{ $year['year'] }}</p>
-            <div class="facts avoid-break">
-                <span class="k">Categories</span> <span class="v">{{ count($cestFundingRows) }}</span>
-                <span class="sep">&nbsp;&middot;&nbsp;</span>
-                <span class="k">Total projects</span> <span class="v">{{ number_format($cestProjects) }}</span>
-                <span class="sep">&nbsp;&middot;&nbsp;</span>
-                <span class="k">Total funding</span> <span class="v">{{ $formatCurrency($cestAmount) }}</span>
-                <span class="sep">&nbsp;&middot;&nbsp;</span>
-                <span class="k">Male-led</span> <span class="v">{{ number_format($cestTotals['maleProjects']) }}</span>
-                <span class="sep">&nbsp;&middot;&nbsp;</span>
-                <span class="k">Female-led</span> <span class="v">{{ number_format($cestTotals['femaleProjects']) }}</span>
-            </div>
-            @include('pdf.partials.funding-detail-table', ['rows' => $cestFundingRows, 'emptyMessage' => 'No CEST category data yet for this year.'])
-            @include('pdf.partials.funding-metrics-table', ['rows' => $cestFundingRows, 'emptyMessage' => 'No CEST program metrics recorded for this year.'])
-        </div>
+        @include('pdf.partials.funding-program-section', [
+            'number' => 8,
+            'label' => 'CEST',
+            'fullName' => 'Community Empowerment thru Science and Technology (CEST)',
+            'year' => $year['year'],
+            'rows' => $cestFundingRows,
+            'totals' => $cestTotals,
+        ])
+
+        @include('pdf.partials.funding-program-section', [
+            'number' => 9,
+            'label' => 'GIA',
+            'fullName' => 'Grants-in-Aid (GIA)',
+            'year' => $year['year'],
+            'rows' => $giaFundingRows,
+            'totals' => $giaTotals,
+        ])
+
     @endif
 </body>
 </html>

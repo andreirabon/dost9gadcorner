@@ -1068,14 +1068,8 @@
         @apply relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-purple-900/20 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-xl;
     }
 
-    /* Lucide watermark lives in ReportPanelWatermark.vue; keep content above */
-    .report-panel > *:not(.report-panel-watermark) {
+    .report-panel > * {
         @apply relative z-10;
-    }
-
-    .report-panel-watermark {
-        @apply text-violet-400 opacity-[0.15];
-        filter: brightness(1.25);
     }
 
     /* Outline→fill: light slate-blue on public report panels */

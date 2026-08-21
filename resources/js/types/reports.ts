@@ -98,15 +98,19 @@ export interface ReportYearData {
     gfpsMembership: GfpsMembershipData;
     gfpsAssemblies: GfpsAssemblyDataRow[];
     employeeStatuses: EmployeeStatusDataRow[];
+    /** GFPS members per employment status; entered separately from `gfpsMembership`. */
+    gfpsMemberStatuses: EmployeeStatusDataRow[];
     scholarship: ScholarshipSummaryData;
     scholarshipHistory: ScholarshipSummaryData[];
     scholarshipApplicants: ScholarshipApplicantDataRow[];
     rstlMonthly: RstlMonthlyDataRow[];
-    setupFunding: FundingSummaryData;
-    cestFunding: FundingSummaryData;
     setupFundingBreakdown: FundingCategorySummaryData[];
     cestFundingBreakdown: FundingCategorySummaryData[];
+    giaFundingBreakdown: FundingCategorySummaryData[];
 }
+
+/** The funding program families that each get their own report tab. */
+export type FundingGroupPrefix = 'setup' | 'cest' | 'gia';
 
 export interface EditableGfpsAssemblyRow {
     periodId: number;
@@ -172,6 +176,7 @@ export interface ReportYearEditAbilities {
     updateScholarship: boolean;
     deleteScholarship: boolean;
     updateEmployeeStatuses: boolean;
+    updateGfpsMemberStatuses: boolean;
     updateRstlMonthly: boolean;
     updateProgramFunding: boolean;
     toggleLock: boolean;
@@ -189,6 +194,7 @@ export interface EditableReportYear {
     gfpsMembership: GfpsMembershipData;
     gfpsAssemblies: EditableGfpsAssemblyRow[];
     employeeStatuses: EditableEmployeeStatusRow[];
+    gfpsMemberStatuses: EditableEmployeeStatusRow[];
     scholarshipSnapshots: ScholarshipSnapshot[];
     scholarshipApplicants: EditableScholarshipApplicantRow[];
     rstlMonthly: EditableRstlMonthlyRow[];
@@ -231,6 +237,7 @@ export interface SectionTimestamps {
     gfpsMembership: string | null;
     gfpsAssemblies: string | null;
     employeeStatuses: string | null;
+    gfpsMemberStatuses: string | null;
     scholarship: string | null;
     rstlMonthly: string | null;
     programFunding: string | null;

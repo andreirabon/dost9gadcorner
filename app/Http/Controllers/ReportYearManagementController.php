@@ -7,6 +7,7 @@ use App\Http\Requests\StoreScholarshipSnapshotRequest;
 use App\Http\Requests\UpdateEmployeeStatusBreakdownsRequest;
 use App\Http\Requests\UpdateGfpsAssemblyAttendancesRequest;
 use App\Http\Requests\UpdateGfpsMembershipSummaryRequest;
+use App\Http\Requests\UpdateGfpsMemberStatusBreakdownsRequest;
 use App\Http\Requests\UpdateProgramFundingSummariesRequest;
 use App\Http\Requests\UpdateReportYearMetadataRequest;
 use App\Http\Requests\UpdateReportYearRequest;
@@ -28,6 +29,7 @@ use App\Services\Reports\PatchRowSection;
 use App\Services\Reports\RowSection;
 use App\Services\Reports\SparseRecordPatcher;
 use App\Support\FundingProgramScope;
+use App\Support\GfpsMemberStatuses;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
@@ -139,6 +141,7 @@ class ReportYearManagementController extends Controller
             'updateScholarship' => $user->can('updateScholarship', $reportYear),
             'deleteScholarship' => $user->can('deleteScholarship', $reportYear),
             'updateEmployeeStatuses' => $user->can('updateEmployeeStatuses', $reportYear),
+            'updateGfpsMemberStatuses' => $user->can('updateGfpsMemberStatuses', $reportYear),
             'updateRstlMonthly' => $user->can('updateRstlMonthly', $reportYear),
             'updateProgramFunding' => $user->can('updateProgramFunding', $reportYear),
             'toggleLock' => $user->can('toggleLock', $reportYear),
@@ -155,6 +158,7 @@ class ReportYearManagementController extends Controller
                 'gfpsMembership' => $reportYear->gfpsMembershipSummary?->updated_at?->toIso8601String(),
                 'gfpsAssemblies' => $reportYear->gfpsAssemblyAttendances->max('updated_at')?->toIso8601String(),
                 'employeeStatuses' => $reportYear->employeeStatusBreakdowns->max('updated_at')?->toIso8601String(),
+                'gfpsMemberStatuses' => $reportYear->gfpsMemberStatusBreakdowns->max('updated_at')?->toIso8601String(),
                 'scholarship' => $reportYear->scholarshipSnapshots->max('updated_at')?->toIso8601String(),
                 'rstlMonthly' => $reportYear->rstlMonthlyBreakdowns->max('updated_at')?->toIso8601String(),
                 'programFunding' => $reportYear->programFundingSummaries->max('updated_at')?->toIso8601String(),
@@ -175,6 +179,7 @@ class ReportYearManagementController extends Controller
                 ],
                 'gfpsAssemblies' => $this->editableGfpsAssemblyRows($reportYear),
                 'employeeStatuses' => $this->editableEmployeeStatusRows($reportYear),
+                'gfpsMemberStatuses' => $this->editableGfpsMemberStatusRows($reportYear),
                 'scholarshipSnapshots' => $reportYear->scholarshipSnapshots
                     ->map(fn (ScholarshipSummary $s) => [
                         'id' => $s->id,
@@ -312,6 +317,11 @@ class ReportYearManagementController extends Controller
     public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
     {
         return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::EMPLOYEE_STATUSES);
+    }
+
+    public function updateGfpsMemberStatuses(UpdateGfpsMemberStatusBreakdownsRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
+    {
+        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::GFPS_MEMBER_STATUSES);
     }
 
     public function storeScholarshipSnapshot(StoreScholarshipSnapshotRequest $request, ReportYear $reportYear): RedirectResponse
@@ -538,6 +548,25 @@ class ReportYearManagementController extends Controller
         return $this->zeroFilledRows(
             EmploymentStatus::query()->orderBy('sort_order'),
             $reportYear->employeeStatusBreakdowns->keyBy('employment_status_id'),
+            fn (EmploymentStatus $status, ?Model $breakdown): array => [
+                'employmentStatusId' => $status->id,
+                'label' => $status->name,
+                'femaleCount' => (int) ($breakdown?->female_count ?? 0),
+                'maleCount' => (int) ($breakdown?->male_count ?? 0),
+            ],
+        );
+    }
+
+    /**
+     * GFPS members per employment status, narrowed to the reportable statuses.
+     *
+     * @return array<int, array{employmentStatusId: int, label: string, femaleCount: int, maleCount: int}>
+     */
+    private function editableGfpsMemberStatusRows(ReportYear $reportYear): array
+    {
+        return $this->zeroFilledRows(
+            EmploymentStatus::query()->whereIn('slug', GfpsMemberStatuses::slugs())->orderBy('sort_order'),
+            $reportYear->gfpsMemberStatusBreakdowns->keyBy('employment_status_id'),
             fn (EmploymentStatus $status, ?Model $breakdown): array => [
                 'employmentStatusId' => $status->id,
                 'label' => $status->name,

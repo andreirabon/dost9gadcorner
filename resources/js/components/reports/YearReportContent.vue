@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import FundingCategorySelector from '@/components/reports/FundingCategorySelector.vue';
-import FundingProgramTables from '@/components/reports/FundingProgramTables.vue';
+import FundingGroupPanel from '@/components/reports/FundingGroupPanel.vue';
 import ReportBackArrowIcon from '@/components/reports/ReportBackArrowIcon.vue';
 import ReportChartBlock from '@/components/reports/ReportChartBlock.vue';
 import ReportMetricsGrid from '@/components/reports/ReportMetricsGrid.vue';
@@ -8,96 +7,40 @@ import ReportOverviewQuickAccess, { type OverviewProgram } from '@/components/re
 import ReportTabNav from '@/components/reports/ReportTabNav.vue';
 import ScholarshipApplicantTables from '@/components/reports/ScholarshipApplicantTables.vue';
 import ScholarshipHistoryTimeline from '@/components/reports/ScholarshipHistoryTimeline.vue';
-import { formatCurrency } from '@/helpers/formatCurrency';
+import { fundingStats, useFundingRows } from '@/composables/useFundingGroup';
+import { formatFundingOrEmpty } from '@/helpers/formatCurrency';
 import { isValidReportTab, REPORT_TABPANEL_ID, reportTabSlug, type TabType } from '@/helpers/reportTabs';
 import type { YearItem } from '@/types';
-import type {
-    FundingCategorySummaryData,
-    FundingSummaryData,
-    GfpsAssemblyDataRow,
-    ReportYearData,
-    RstlMonthlyDataRow,
-    ScholarshipApplicantDataRow,
-    ScholarshipSummaryData,
-} from '@/types/reports';
+import type { GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow, ScholarshipApplicantDataRow, ScholarshipSummaryData } from '@/types/reports';
 import { Link } from '@inertiajs/vue3';
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 
 const StackedBarBySexChart = defineAsyncComponent(() => import('@/components/charts/StackedBarBySexChart.vue'));
-const CestFundingChart = defineAsyncComponent(() => import('@/components/charts/CestFundingChart.vue'));
 const EmployeesGroupedBarChart = defineAsyncComponent(() => import('@/components/charts/EmployeesGroupedBarChart.vue'));
 const GenderPieChart = defineAsyncComponent(() => import('@/components/charts/GenderPieChart.vue'));
-const JobsBreakdownHeatmap = defineAsyncComponent(() => import('@/components/charts/JobsBreakdownHeatmap.vue'));
 const RstlWarmBodiesStackedChart = defineAsyncComponent(() => import('@/components/charts/RstlWarmBodiesStackedChart.vue'));
 const ScholarsPieChart = defineAsyncComponent(() => import('@/components/charts/ScholarsPieChart.vue'));
 const ScholarshipApplicantsBarChart = defineAsyncComponent(() => import('@/components/charts/ScholarshipApplicantsBarChart.vue'));
-const SetupFundingChart = defineAsyncComponent(() => import('@/components/charts/SetupFundingChart.vue'));
 
 const props = defineProps<{
     year: YearItem;
 }>();
 
-const emptyFundingData: FundingSummaryData = {
-    maleProjects: 0,
-    maleAmount: 0,
-    femaleProjects: 0,
-    femaleAmount: 0,
-};
-
 const reportData = computed<ReportYearData | null>(() => props.year.reportData ?? null);
 
 const assemblyData = computed<GfpsAssemblyDataRow[]>(() => reportData.value?.gfpsAssemblies ?? []);
 const employeesData = computed<GfpsAssemblyDataRow[]>(() => reportData.value?.employeeStatuses ?? []);
+const gfpsMemberStatusData = computed<GfpsAssemblyDataRow[]>(() => reportData.value?.gfpsMemberStatuses ?? []);
 const rstlWarmBodiesData = computed<RstlMonthlyDataRow[]>(() => reportData.value?.rstlMonthly ?? []);
-const setupFundingData = computed<FundingSummaryData>(() => reportData.value?.setupFunding ?? emptyFundingData);
-const cestFundingData = computed<FundingSummaryData>(() => reportData.value?.cestFunding ?? emptyFundingData);
-const setupFundingBreakdown = computed<FundingCategorySummaryData[]>(() => reportData.value?.setupFundingBreakdown ?? []);
-const cestFundingBreakdown = computed<FundingCategorySummaryData[]>(() => reportData.value?.cestFundingBreakdown ?? []);
 
-const sumFundingRows = (rows: FundingCategorySummaryData[]): FundingSummaryData =>
-    rows.reduce<FundingSummaryData>(
-        (carry, row) => ({
-            maleProjects: carry.maleProjects + row.maleProjects,
-            maleAmount: carry.maleAmount + row.maleAmount,
-            femaleProjects: carry.femaleProjects + row.femaleProjects,
-            femaleAmount: carry.femaleAmount + row.femaleAmount,
-        }),
-        { ...emptyFundingData },
-    );
-
-const setupFundingRows = computed<FundingCategorySummaryData[]>(() => {
-    let rows = setupFundingBreakdown.value;
-
-    if (rows.length === 0 && (setupFundingData.value.maleProjects > 0 || setupFundingData.value.femaleProjects > 0)) {
-        rows = [
-            {
-                label: 'SETUP',
-                slug: 'setup',
-                ...setupFundingData.value,
-            },
-        ];
-    }
-
-    return rows;
-});
-
-
-
-const cestFundingRows = computed<FundingCategorySummaryData[]>(() => {
-    let rows = cestFundingBreakdown.value;
-
-    if (rows.length === 0 && (cestFundingData.value.maleProjects > 0 || cestFundingData.value.femaleProjects > 0)) {
-        rows = [
-            {
-                label: 'CEST',
-                slug: 'cest',
-                ...cestFundingData.value,
-            },
-        ];
-    }
-
-    return rows;
-});
+/*
+ * The three funding families are identical in shape and differ only in which
+ * payload keys they read, so each is one call rather than its own copy of the
+ * rows, totals and metric derivations.
+ */
+const setupFundingRows = useFundingRows(reportData, 'setup');
+const cestFundingRows = useFundingRows(reportData, 'cest');
+const giaFundingRows = useFundingRows(reportData, 'gia');
 
 const percentage = (value: number, total: number): number => {
     if (total === 0) {
@@ -106,6 +49,9 @@ const percentage = (value: number, total: number): number => {
 
     return Number(((value / total) * 100).toFixed(1));
 };
+
+/** Rows arrive zero-filled, so an all-zero set means nothing was entered. */
+const hasMemberStatusData = computed(() => gfpsMemberStatusData.value.some((row) => row.female + row.male > 0));
 
 const isYearDataPending = computed(() => reportData.value === null);
 
@@ -173,9 +119,7 @@ const hasApplicantData = (rows: ScholarshipApplicantDataRow[]): boolean => rows.
 const showApplicantCharts = computed(() => hasApplicantData(undergraduateApplicants.value) || hasApplicantData(graduateApplicants.value));
 
 /** Shared axis ceiling: small multiples only compare honestly on one scale. */
-const applicantAxisCeiling = computed(() =>
-    scholarshipApplicants.value.reduce((max, row) => Math.max(max, row.female + row.male), 0),
-);
+const applicantAxisCeiling = computed(() => scholarshipApplicants.value.reduce((max, row) => Math.max(max, row.female + row.male), 0));
 
 /**
  * Jobs generated per funding category, shaped for the stacked bar.
@@ -184,22 +128,6 @@ const applicantAxisCeiling = computed(() =>
  * stack is honest here — unlike the PWD/senior/IP/4Ps breakdown, whose groups
  * overlap and must never be stacked.
  */
-const jobsBySex = (rows: FundingCategorySummaryData[]) =>
-    rows.map((row) => ({
-        label: row.label,
-        female: row.jobsFemale ?? 0,
-        male: row.jobsMale ?? 0,
-    }));
-
-const setupJobs = computed(() => jobsBySex(setupFundingRows.value));
-const cestJobs = computed(() => jobsBySex(cestFundingRows.value));
-
-const hasJobsData = (rows: { female: number; male: number }[]): boolean => rows.some((row) => row.female + row.male > 0);
-
-/** The breakdown grid is only worth drawing once some subset has been recorded. */
-const hasBreakdownData = (rows: FundingCategorySummaryData[]): boolean =>
-    rows.some((row) => (row.jobsPwd ?? 0) + (row.jobsSeniorCitizen ?? 0) + (row.jobsIp ?? 0) + (row.jobs4ps ?? 0) > 0);
-
 const rstlStats = computed(() => {
     const totalFemale = rstlWarmBodiesData.value.reduce((sum, row) => sum + row.female + row.femaleLed, 0);
     const totalMale = rstlWarmBodiesData.value.reduce((sum, row) => sum + row.male + row.maleLed, 0);
@@ -214,71 +142,23 @@ const rstlStats = computed(() => {
     };
 });
 
-const setupStats = computed(() => {
-    const totals = sumFundingRows(setupFundingRows.value);
-
-    return {
-        totalProjects: totals.maleProjects + totals.femaleProjects,
-        totalAmount: totals.maleAmount + totals.femaleAmount,
-        maleProjects: totals.maleProjects,
-        femaleProjects: totals.femaleProjects,
-    };
-});
-
-const cestStats = computed(() => {
-    const totals = sumFundingRows(cestFundingRows.value);
-
-    return {
-        totalProjects: totals.maleProjects + totals.femaleProjects,
-        totalAmount: totals.maleAmount + totals.femaleAmount,
-        maleProjects: totals.maleProjects,
-        femaleProjects: totals.femaleProjects,
-    };
-});
+const setupStats = computed(() => fundingStats(setupFundingRows.value));
+const cestStats = computed(() => fundingStats(cestFundingRows.value));
+const giaStats = computed(() => fundingStats(giaFundingRows.value));
 
 const totalFemaleAcrossPrograms = computed(
     () => gfpsStats.value.femaleCount + employeesStats.value.femaleCount + scholarsStats.value.femaleCount + rstlStats.value.femaleCount,
 );
 
-
 const totalMaleAcrossPrograms = computed(
     () => gfpsStats.value.maleCount + employeesStats.value.maleCount + scholarsStats.value.maleCount + rstlStats.value.maleCount,
 );
 
-const combinedFundingAmount = computed(() => setupStats.value.totalAmount + cestStats.value.totalAmount);
-const combinedProjectsCount = computed(() => setupStats.value.totalProjects + cestStats.value.totalProjects);
-
-/**
- * Per-program annual metrics, totalled across one program family's categories.
- * `hasData` drives whether the row renders at all: these columns default to
- * zero in the schema, so an all-zero total means "never entered" rather than
- * "measured as none", and printing it would assert a figure nobody recorded.
- */
-const sumProgramMetrics = (rows: FundingCategorySummaryData[]) => {
-    const total = (key: keyof FundingCategorySummaryData): number => rows.reduce((sum, row) => sum + Number(row[key] ?? 0), 0);
-
-    const metrics = {
-        fundedProjects: total('fundedProjectsCount'),
-        fundedValue: total('fundedProjectsValue'),
-        trainingParticipants: total('trainingParticipants'),
-        jobsGenerated: total('jobsTotal'),
-        specialResearch: total('specialProjectsResearchMale') + total('specialProjectsResearchFemale'),
-    };
-
-    return {
-        ...metrics,
-        hasData: Object.values(metrics).some((value) => value > 0),
-    };
-};
-
-const setupMetricTotals = computed(() => sumProgramMetrics(setupFundingRows.value));
-const cestMetricTotals = computed(() => sumProgramMetrics(cestFundingRows.value));
+const combinedFundingAmount = computed(() => setupStats.value.totalAmount + cestStats.value.totalAmount + giaStats.value.totalAmount);
+const combinedProjectsCount = computed(() => setupStats.value.totalProjects + cestStats.value.totalProjects + giaStats.value.totalProjects);
 
 const activeTab = ref<TabType>('Overview');
 const tabStorageKey = computed(() => `year-report-last-tab:${props.year.id}`);
-
-/** ₱0.00 reads as a validated zero; funding that was never recorded should read as absent, not as a confirmed nil balance. */
-const formatFundingOrEmpty = (amount: number): string => (amount > 0 ? formatCurrency(amount) : 'No data yet');
 
 const formatCompactNumber = (value: number): string => {
     return new Intl.NumberFormat('en-PH', {
@@ -360,6 +240,14 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
             { label: 'Total Funding', value: formatFundingOrEmpty(cestStats.value.totalAmount) },
         ],
     },
+    {
+        tab: 'GIA',
+        title: 'GIA',
+        metrics: [
+            { label: 'Total Projects', value: giaStats.value.totalProjects },
+            { label: 'Total Funding', value: formatFundingOrEmpty(giaStats.value.totalAmount) },
+        ],
+    },
 ]);
 
 onMounted(() => {
@@ -386,23 +274,14 @@ onMounted(() => {
                             <p class="report-view-kicker">Annual report</p>
                         </div>
                         <div class="space-y-2">
-                            <h1
-                                :id="`report-title-${year.id}`"
-                                data-focus-anchor="true"
-                                tabindex="-1"
-                                class="report-view-title"
-                            >
+                            <h1 :id="`report-title-${year.id}`" data-focus-anchor="true" tabindex="-1" class="report-view-title">
                                 {{ year.title }}
                             </h1>
                             <p v-if="year.description" class="report-view-subtitle">{{ year.description }}</p>
                         </div>
                     </div>
                     <div class="report-view-actions">
-                        <Link
-                            :href="`${route('index')}#yearly`"
-                            class="report-view-back-link"
-                            prefetch
-                        >
+                        <Link :href="`${route('index')}#yearly`" class="report-view-back-link" prefetch>
                             <ReportBackArrowIcon />
                             <span class="hidden sm:inline">Select Another Year</span>
                             <span class="sm:hidden">Back</span>
@@ -416,23 +295,17 @@ onMounted(() => {
             </div>
         </header>
 
-
         <div class="report-view-body px-page-gutter animate-fade-in-up delay-1">
             <div v-if="isYearDataPending" class="report-view-empty">
                 <div class="report-view-empty-icon" aria-hidden="true">
                     <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="max-w-md space-y-4">
                     <p class="report-view-empty-title">Data not yet available</p>
                     <p class="report-view-empty-desc">
-                        {{ year.year }} figures are not available yet. This page will be updated as soon as validated
-                        annual data is ready.
+                        {{ year.year }} figures are not available yet. This page will be updated as soon as validated annual data is ready.
                     </p>
                 </div>
             </div>
@@ -448,249 +321,169 @@ onMounted(() => {
                         class="w-full"
                     >
                         <div v-if="activeTab === 'Overview'" class="space-y-3 md:space-y-4">
-                    <ReportMetricsGrid
-                        :metrics="[
-                            { label: 'Total Female (all sections)', value: formatCompactNumber(totalFemaleAcrossPrograms) },
-                            { label: 'Total Male (all sections)', value: formatCompactNumber(totalMaleAcrossPrograms) },
-                            { label: 'Combined Projects', value: combinedProjectsCount, meta: 'SETUP + CEST' },
-                            {
-                                label: 'Combined Funding',
-                                value: formatFundingOrEmpty(combinedFundingAmount),
-                                meta: 'SETUP + CEST',
-                                valueClass: 'text-base md:text-lg',
-                            },
-                        ]"
-                    />
+                            <ReportMetricsGrid
+                                :metrics="[
+                                    { label: 'Total Female (all sections)', value: formatCompactNumber(totalFemaleAcrossPrograms) },
+                                    { label: 'Total Male (all sections)', value: formatCompactNumber(totalMaleAcrossPrograms) },
+                                    { label: 'Combined Projects', value: combinedProjectsCount, meta: 'SETUP + CEST + GIA' },
+                                    {
+                                        label: 'Combined Funding',
+                                        value: formatFundingOrEmpty(combinedFundingAmount),
+                                        meta: 'SETUP + CEST + GIA',
+                                        valueClass: 'text-base md:text-lg',
+                                    },
+                                ]"
+                            />
 
-                    <ReportOverviewQuickAccess :programs="overviewPrograms" @select-tab="selectTab" />
-                </div>
+                            <ReportOverviewQuickAccess :programs="overviewPrograms" @select-tab="selectTab" />
+                        </div>
 
-                <div v-else-if="activeTab === 'GFPS'" class="space-y-3 md:space-y-4">
-                    <ReportMetricsGrid
-                        :metrics="[
-                            { label: 'Total Members', value: gfpsStats.totalMembers },
-                            { label: 'GFPS Assemblies', value: assemblyData.length, meta: 'Quarterly' },
-                            { label: 'Female Members', value: gfpsStats.femaleCount, meta: `${gfpsStats.femalePercentage}%` },
-                            { label: 'Male Members', value: gfpsStats.maleCount, meta: `${gfpsStats.malePercentage}%` },
-                        ]"
-                    />
+                        <div v-else-if="activeTab === 'GFPS'" class="space-y-3 md:space-y-4">
+                            <ReportMetricsGrid
+                                :metrics="[
+                                    { label: 'Total Members', value: gfpsStats.totalMembers },
+                                    { label: 'GFPS Assemblies', value: assemblyData.length, meta: 'Quarterly' },
+                                    { label: 'Female Members', value: gfpsStats.femaleCount, meta: `${gfpsStats.femalePercentage}%` },
+                                    { label: 'Male Members', value: gfpsStats.maleCount, meta: `${gfpsStats.malePercentage}%` },
+                                ]"
+                            />
 
-                    <div class="report-view-charts">
-                        <ReportChartBlock title="GFPS Membership by Sex" description="Distribution of GFPS members">
-                            <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
-                        </ReportChartBlock>
+                            <div class="report-view-charts">
+                                <ReportChartBlock title="GFPS Membership by Sex" description="Distribution of GFPS members">
+                                    <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
+                                </ReportChartBlock>
 
-                        <ReportChartBlock title="GFPS Assembly Participation" description="Quarterly assembly attendance by sex">
-                            <StackedBarBySexChart :data="assemblyData" />
-                        </ReportChartBlock>
-                    </div>
-                </div>
+                                <ReportChartBlock title="GFPS Assembly Participation" description="Quarterly assembly attendance by sex">
+                                    <StackedBarBySexChart :data="assemblyData" />
+                                </ReportChartBlock>
+                            </div>
 
-                <div v-else-if="activeTab === 'DOST IX Employees'" class="space-y-3 md:space-y-4">
-                    <ReportMetricsGrid
-                        :metrics="[
-                            { label: 'Employment Types', value: employeesData.length, meta: 'Categories' },
-                            { label: 'Total Employees', value: employeesStats.totalEmployees },
-                            { label: 'Female Employees', value: employeesStats.femaleCount, meta: `${employeesStats.femalePercentage}%` },
-                            { label: 'Male Employees', value: employeesStats.maleCount, meta: `${employeesStats.malePercentage}%` },
-                        ]"
-                    />
+                            <ReportChartBlock
+                                v-if="hasMemberStatusData"
+                                title="GFPS Members by Employment Status"
+                                description="GFPS members only — recorded separately from the membership total above"
+                            >
+                                <EmployeesGroupedBarChart :data="gfpsMemberStatusData" />
+                            </ReportChartBlock>
+                        </div>
 
-                    <ReportChartBlock title="Employees by Employment Status" :description="`Sex-disaggregated data as of December 31, ${year.year}`">
-                        <EmployeesGroupedBarChart :data="employeesData" />
-                    </ReportChartBlock>
-                </div>
+                        <div v-else-if="activeTab === 'DOST IX Employees'" class="space-y-3 md:space-y-4">
+                            <ReportMetricsGrid
+                                :metrics="[
+                                    { label: 'Employment Types', value: employeesData.length, meta: 'Categories' },
+                                    { label: 'Total Employees', value: employeesStats.totalEmployees },
+                                    { label: 'Female Employees', value: employeesStats.femaleCount, meta: `${employeesStats.femalePercentage}%` },
+                                    { label: 'Male Employees', value: employeesStats.maleCount, meta: `${employeesStats.malePercentage}%` },
+                                ]"
+                            />
 
-                <div v-else-if="activeTab === 'Scholarship'" class="space-y-3 md:space-y-4">
-                    <ReportMetricsGrid
-                        :metrics="[
-                            { label: 'Total Scholars', value: scholarsStats.totalScholars },
-                            {
-                                label: 'School Year',
-                                value: scholarsStats.schoolYearLabel || 'Not set',
-                                meta: scholarsStats.asOfDate ?? 'No date set',
-                            },
-                            { label: 'Female Scholars', value: scholarsStats.femaleCount, meta: `${scholarsStats.femalePercentage}%` },
-                            { label: 'Male Scholars', value: scholarsStats.maleCount, meta: `${scholarsStats.malePercentage}%` },
-                        ]"
-                    />
+                            <ReportChartBlock
+                                title="Employees by Employment Status"
+                                :description="`Sex-disaggregated data as of December 31, ${year.year}`"
+                            >
+                                <EmployeesGroupedBarChart :data="employeesData" />
+                            </ReportChartBlock>
+                        </div>
 
-                    <ReportChartBlock title="Distribution of On-Going Scholars by Sex">
-                        <template #description>
-                            {{ scholarsStats.schoolYearLabel || `School Year ${year.year}` }}
-                            <span v-if="scholarsStats.asOfDate"> • Data as of {{ scholarsStats.asOfDate }}</span>
-                        </template>
-                        <ScholarsPieChart :female-count="scholarsStats.femaleCount" :male-count="scholarsStats.maleCount" />
-                    </ReportChartBlock>
+                        <div v-else-if="activeTab === 'Scholarship'" class="space-y-3 md:space-y-4">
+                            <ReportMetricsGrid
+                                :metrics="[
+                                    { label: 'Total Scholars', value: scholarsStats.totalScholars },
+                                    {
+                                        label: 'School Year',
+                                        value: scholarsStats.schoolYearLabel || 'Not set',
+                                        meta: scholarsStats.asOfDate ?? 'No date set',
+                                    },
+                                    { label: 'Female Scholars', value: scholarsStats.femaleCount, meta: `${scholarsStats.femalePercentage}%` },
+                                    { label: 'Male Scholars', value: scholarsStats.maleCount, meta: `${scholarsStats.malePercentage}%` },
+                                ]"
+                            />
 
-                    <!--
-                        Full width, not the usual two-up grid: the programme names
-                        run past eighty characters, and in a half-width card the
-                        axis gutter clipped them — an abbreviation these charts
-                        exist to avoid. They still share an axis ceiling, so the
-                        two remain directly comparable stacked.
+                            <ReportChartBlock title="Distribution of On-Going Scholars by Sex">
+                                <template #description>
+                                    {{ scholarsStats.schoolYearLabel || `School Year ${year.year}` }}
+                                    <span v-if="scholarsStats.asOfDate"> • Data as of {{ scholarsStats.asOfDate }}</span>
+                                </template>
+                                <ScholarsPieChart :female-count="scholarsStats.femaleCount" :male-count="scholarsStats.maleCount" />
+                            </ReportChartBlock>
+
+                            <!--
+                        Full width, not the usual two-up grid: eight bars each need
+                        a readable row height, and a half-width card squeezes them
+                        into a band too thin to label. They share an axis ceiling,
+                        so the two remain directly comparable stacked.
                     -->
-                    <template v-if="showApplicantCharts">
-                        <ReportChartBlock
-                            v-if="hasApplicantData(undergraduateApplicants)"
-                            title="Undergraduate Applicants by Sex"
-                            :description="`Applicants per program • ${year.year}`"
-                        >
-                            <ScholarshipApplicantsBarChart :rows="undergraduateApplicants" :axis-ceiling="applicantAxisCeiling" />
-                        </ReportChartBlock>
+                            <template v-if="showApplicantCharts">
+                                <ReportChartBlock
+                                    v-if="hasApplicantData(undergraduateApplicants)"
+                                    title="Undergraduate Applicants by Sex"
+                                    :description="`Applicants per program • ${year.year}`"
+                                >
+                                    <ScholarshipApplicantsBarChart :rows="undergraduateApplicants" :axis-ceiling="applicantAxisCeiling" />
+                                </ReportChartBlock>
 
-                        <ReportChartBlock
-                            v-if="hasApplicantData(graduateApplicants)"
-                            title="Graduate Applicants by Sex"
-                            :description="`Applicants per program • ${year.year}`"
-                        >
-                            <ScholarshipApplicantsBarChart :rows="graduateApplicants" :axis-ceiling="applicantAxisCeiling" />
-                        </ReportChartBlock>
-                    </template>
+                                <ReportChartBlock
+                                    v-if="hasApplicantData(graduateApplicants)"
+                                    title="Graduate Applicants by Sex"
+                                    :description="`Applicants per program • ${year.year}`"
+                                >
+                                    <ScholarshipApplicantsBarChart :rows="graduateApplicants" :axis-ceiling="applicantAxisCeiling" />
+                                </ReportChartBlock>
+                            </template>
 
-                    <ScholarshipApplicantTables
-                        :rows="scholarshipApplicants"
-                        empty-label="No scholarship applicant data recorded for this year."
-                    />
+                            <ScholarshipApplicantTables
+                                :rows="scholarshipApplicants"
+                                empty-label="No scholarship applicant data recorded for this year."
+                            />
 
-                    <ScholarshipHistoryTimeline :history="scholarshipHistory" />
-                </div>
+                            <ScholarshipHistoryTimeline :history="scholarshipHistory" />
+                        </div>
 
-                <div v-else-if="activeTab === 'RSTL'" class="space-y-3 md:space-y-4">
-                    <ReportMetricsGrid
-                        :metrics="[
-                            { label: 'Total Customers', value: rstlStats.totalCustomers },
-                            { label: 'Period', value: year.year, meta: 'Full Year' },
-                            { label: 'Female', value: rstlStats.femaleCount, meta: `${rstlStats.femalePercentage}%` },
-                            { label: 'Male', value: rstlStats.maleCount, meta: `${rstlStats.malePercentage}%` },
-                        ]"
-                    />
+                        <div v-else-if="activeTab === 'RSTL'" class="space-y-3 md:space-y-4">
+                            <ReportMetricsGrid
+                                :metrics="[
+                                    { label: 'Total Customers', value: rstlStats.totalCustomers },
+                                    { label: 'Period', value: year.year, meta: 'Full Year' },
+                                    { label: 'Female', value: rstlStats.femaleCount, meta: `${rstlStats.femalePercentage}%` },
+                                    { label: 'Male', value: rstlStats.maleCount, meta: `${rstlStats.malePercentage}%` },
+                                ]"
+                            />
 
-                    <ReportChartBlock
-                        title="Testing and Calibration Services"
-                        :description="`Customers by sex (warm bodies) - Monthly breakdown for ${year.year}`"
-                    >
-                        <RstlWarmBodiesStackedChart :data="rstlWarmBodiesData" />
-                    </ReportChartBlock>
-                </div>
+                            <ReportChartBlock
+                                title="Testing and Calibration Services"
+                                :description="`Customers by sex (warm bodies) - Monthly breakdown for ${year.year}`"
+                            >
+                                <RstlWarmBodiesStackedChart :data="rstlWarmBodiesData" />
+                            </ReportChartBlock>
+                        </div>
 
-                <div v-else-if="activeTab === 'SETUP'" class="space-y-3 md:space-y-4">
-                    <ReportMetricsGrid
-                        five-up
-                        :metrics="[
-                            { label: 'Categories', value: setupFundingRows.length },
-                            { label: 'Total Projects', value: setupStats.totalProjects },
-                            { label: 'Total Funding', value: formatFundingOrEmpty(setupStats.totalAmount), valueClass: 'text-base md:text-lg' },
-                            { label: 'Male-led Projects', value: setupStats.maleProjects },
-                            { label: 'Female-led Projects', value: setupStats.femaleProjects },
-                        ]"
-                    />
+                        <FundingGroupPanel
+                            v-else-if="activeTab === 'SETUP'"
+                            label="SETUP"
+                            full-name="Small Enterprise Technology Upgrading Program (SETUP)"
+                            :year="year.year"
+                            :categories="setupFundingRows"
+                        />
 
-                    <ReportMetricsGrid
-                        v-if="setupMetricTotals.hasData"
-                        five-up
-                        :metrics="[
-                            { label: 'Funded Projects', value: setupMetricTotals.fundedProjects },
-                            {
-                                label: 'Value Funded',
-                                value: formatFundingOrEmpty(setupMetricTotals.fundedValue),
-                                valueClass: 'text-base md:text-lg',
-                            },
-                            { label: 'Training Participants', value: setupMetricTotals.trainingParticipants },
-                            { label: 'Jobs Generated', value: setupMetricTotals.jobsGenerated },
-                            { label: 'Special Research', value: setupMetricTotals.specialResearch },
-                        ]"
-                    />
+                        <FundingGroupPanel
+                            v-else-if="activeTab === 'CEST'"
+                            label="CEST"
+                            full-name="Community Empowerment thru Science and Technology (CEST)"
+                            :year="year.year"
+                            :categories="cestFundingRows"
+                        />
 
-                    <FundingCategorySelector
-                        title="Small Enterprise Technology Upgrading Program (SETUP)"
-                        :description="`Select category to preview chart • ${year.year}`"
-                        :empty-description="`No category data yet for ${year.year}`"
-                        :categories="setupFundingRows"
-                        v-slot="{ category }"
-                    >
-                        <SetupFundingChart :data="category" :title="category.label" />
-                    </FundingCategorySelector>
-
-                    <ReportChartBlock
-                        v-if="hasJobsData(setupJobs)"
-                        title="SETUP Jobs Generated by Sex"
-                        :description="`Jobs generated per category • ${year.year}`"
-                    >
-                        <StackedBarBySexChart :data="setupJobs" axis-title="Jobs Generated" />
-                    </ReportChartBlock>
-
-                    <ReportChartBlock
-                        v-if="hasBreakdownData(setupFundingRows)"
-                        title="SETUP Jobs Breakdown"
-                        description="Overlapping groups within the jobs generated — read each cell on its own, not as a share of the total"
-                    >
-                        <JobsBreakdownHeatmap :categories="setupFundingRows" />
-                    </ReportChartBlock>
-
-                    <FundingProgramTables group-label="SETUP" :categories="setupFundingRows" empty-label="No SETUP category data yet." />
-                </div>
-
-                <div v-else-if="activeTab === 'CEST'" class="space-y-3 md:space-y-4">
-                    <ReportMetricsGrid
-                        five-up
-                        :metrics="[
-                            { label: 'Categories', value: cestFundingRows.length },
-                            { label: 'Total Projects', value: cestStats.totalProjects },
-                            { label: 'Total Funding', value: formatFundingOrEmpty(cestStats.totalAmount), valueClass: 'text-base md:text-lg' },
-                            { label: 'Male-led Projects', value: cestStats.maleProjects },
-                            { label: 'Female-led Projects', value: cestStats.femaleProjects },
-                        ]"
-                    />
-
-                    <ReportMetricsGrid
-                        v-if="cestMetricTotals.hasData"
-                        five-up
-                        :metrics="[
-                            { label: 'Funded Projects', value: cestMetricTotals.fundedProjects },
-                            {
-                                label: 'Value Funded',
-                                value: formatFundingOrEmpty(cestMetricTotals.fundedValue),
-                                valueClass: 'text-base md:text-lg',
-                            },
-                            { label: 'Training Participants', value: cestMetricTotals.trainingParticipants },
-                            { label: 'Jobs Generated', value: cestMetricTotals.jobsGenerated },
-                            { label: 'Special Research', value: cestMetricTotals.specialResearch },
-                        ]"
-                    />
-
-                    <FundingCategorySelector
-                        title="Community Empowerment thru Science and Technology (CEST)"
-                        :description="`Select category to preview chart • ${year.year}`"
-                        :empty-description="`No category data yet for ${year.year}`"
-                        :categories="cestFundingRows"
-                        v-slot="{ category }"
-                    >
-                        <CestFundingChart :data="category" :title="category.label" />
-                    </FundingCategorySelector>
-
-                    <ReportChartBlock
-                        v-if="hasJobsData(cestJobs)"
-                        title="CEST Jobs Generated by Sex"
-                        :description="`Jobs generated per category • ${year.year}`"
-                    >
-                        <StackedBarBySexChart :data="cestJobs" axis-title="Jobs Generated" />
-                    </ReportChartBlock>
-
-                    <ReportChartBlock
-                        v-if="hasBreakdownData(cestFundingRows)"
-                        title="CEST Jobs Breakdown"
-                        description="Overlapping groups within the jobs generated — read each cell on its own, not as a share of the total"
-                    >
-                        <JobsBreakdownHeatmap :categories="cestFundingRows" />
-                    </ReportChartBlock>
-
-                    <FundingProgramTables group-label="CEST" :categories="cestFundingRows" empty-label="No CEST category data yet." />
-                </div>
+                        <FundingGroupPanel
+                            v-else-if="activeTab === 'GIA'"
+                            label="GIA"
+                            full-name="Grants-in-Aid (GIA)"
+                            :year="year.year"
+                            :categories="giaFundingRows"
+                        />
+                    </div>
+                </Transition>
             </div>
-        </Transition>
-    </div>
-</div>
+        </div>
     </article>
 </template>
 
@@ -718,7 +511,9 @@ onMounted(() => {
 }
 .tab-fade-enter-active,
 .tab-fade-leave-active {
-    transition: opacity 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    transition:
+        opacity 150ms cubic-bezier(0.23, 1, 0.32, 1),
+        transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .tab-fade-enter-from {
     opacity: 0;

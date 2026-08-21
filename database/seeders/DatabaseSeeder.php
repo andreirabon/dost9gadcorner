@@ -18,9 +18,9 @@ class DatabaseSeeder extends Seeder
         // Demo 2025 report (GFPS, RSTL, scholarship, program funding). Deploys run
         // `db:seed --force`, so this must not be part of a production seed — it
         // would publish invented figures on a live reporting site. Run it there
-        // deliberately with `db:seed --class=ReportYear2025Seeder --force`.
+        // deliberately with `db:seed --class=ReportYearDemoSeeder --force`.
         if (! app()->isProduction()) {
-            $this->call(ReportYear2025Seeder::class);
+            $this->call(ReportYearDemoSeeder::class);
         }
     }
 }

@@ -133,8 +133,8 @@ test('homepage lists only published report years and hides draft report pages', 
             ->where('year.reportData.gfpsAssemblies.0.label', '1st Assembly')
             ->where('year.reportData.employeeStatuses.0.label', 'Plantilla')
             ->where('year.reportData.scholarship.schoolYearLabel', '2025-2026')
-            ->where('year.reportData.setupFunding.maleProjects', 12 * $setupCategoryCount)
-            ->where('year.reportData.cestFunding.femaleProjects', 8 * $cestCategoryCount)
+            ->where('year.reportData.setupFundingBreakdown.0.maleProjects', 12)
+            ->where('year.reportData.cestFundingBreakdown.0.femaleProjects', 8)
             ->has('year.reportData.setupFundingBreakdown', $setupCategoryCount)
             ->has('year.reportData.cestFundingBreakdown', $cestCategoryCount)
             ->where('ziggy.routes', function ($routes): bool {

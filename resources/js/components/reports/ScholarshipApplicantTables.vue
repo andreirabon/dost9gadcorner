@@ -29,9 +29,7 @@ const numberFormat = new Intl.NumberFormat('en-PH');
 const rowsForLevel = (level: string) => props.rows.filter((row) => row.level === level);
 
 /** A level with nothing recorded is dropped rather than shown as a grid of zeros. */
-const visibleLevels = computed(() =>
-    LEVELS.filter((level) => rowsForLevel(level.key).some((row) => row.female + row.male > 0)),
-);
+const visibleLevels = computed(() => LEVELS.filter((level) => rowsForLevel(level.key).some((row) => row.female + row.male > 0)));
 
 const levelTotals = (level: string) => {
     const rows = rowsForLevel(level);
@@ -74,7 +72,7 @@ const format = (value: number): string => numberFormat.format(value);
                     </thead>
                     <tbody>
                         <tr v-for="row in rowsForLevel(level.key)" :key="row.slug" class="report-view-table-row">
-                            <th scope="row" class="report-view-table-rowhead">{{ row.label }}</th>
+                            <th scope="row" class="report-view-table-rowhead">{{ row.fullName }}</th>
                             <td class="report-view-table-cell report-view-table-num">{{ format(row.female) }}</td>
                             <td class="report-view-table-cell report-view-table-num">{{ format(row.male) }}</td>
                             <td class="report-view-table-cell report-view-table-num">{{ format(row.female + row.male) }}</td>

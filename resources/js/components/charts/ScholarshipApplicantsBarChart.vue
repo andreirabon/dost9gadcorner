@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import ReportChartFrame from '@/components/charts/ReportChartFrame.vue';
-import { wrapAxisLabel } from '@/constants/reportLabels';
-import {
-    niceAxisScale,
-    REPORT_CHART_FONT_FAMILY,
-    reportChartCspNonce,
-    reportDisaggPalette,
-    useReportChartMotion,
-} from '@/lib/reportChartConstants';
+import { niceAxisScale, REPORT_CHART_FONT_FAMILY, reportChartCspNonce, reportDisaggPalette, useReportChartMotion } from '@/lib/reportChartConstants';
 import { reportChartDataLabelBackground, reportChartTooltip, reportChartUi } from '@/lib/reportChartUi';
 import type { ScholarshipApplicantDataRow } from '@/types/reports';
 import type { ApexOptions } from 'apexcharts';
@@ -42,6 +35,52 @@ const series = computed(() => [
 
 const palette = computed(() => reportDisaggPalette());
 
+const fullNameByLabel = computed(() => new Map(props.rows.map((row) => [row.label, row.fullName])));
+
+type ChartRoot = { el?: Element | null };
+
+/**
+ * Hovering an axis acronym reveals the spelled-out programme.
+ *
+ * ApexCharts has no option for axis-label tooltips — the ticks are plain SVG
+ * <text> nodes — so an SVG <title> child is attached after each render. That is
+ * the native mechanism: the browser shows it on hover and assistive tech reads
+ * it as the element's name, with nothing to position or tear down. Any previous
+ * title is dropped first so the tick's own text is what gets matched.
+ */
+const annotateAxisLabels = (chartContext?: ChartRoot): void => {
+    const root = chartContext?.el;
+
+    if (!root) {
+        return;
+    }
+
+    root.querySelectorAll('.apexcharts-yaxis-label').forEach((label) => {
+        /*
+         * The tick's own text, minus any <title> already under it — this runs
+         * again on every re-render, and Apex writes a title of its own onto a
+         * label it had to truncate.
+         */
+        const tickText = Array.from(label.childNodes)
+            .filter((node) => node.nodeName.toLowerCase() !== 'title')
+            .map((node) => node.textContent ?? '')
+            .join('')
+            .trim();
+
+        const fullName = fullNameByLabel.value.get(tickText);
+
+        if (!fullName) {
+            return;
+        }
+
+        label.querySelector('title')?.remove();
+
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        title.textContent = fullName;
+        label.appendChild(title);
+    });
+};
+
 const chartOptions = computed<ApexOptions>(() => {
     const ui = reportChartUi();
     const colors = palette.value;
@@ -64,6 +103,11 @@ const chartOptions = computed<ApexOptions>(() => {
             offsetY: 0,
             parentHeightOffset: 0,
             animations: chartAnimations.value,
+            /* `el` is the chart's root node at runtime; Apex's own types omit it. */
+            events: {
+                mounted: (chart: ApexCharts) => annotateAxisLabels(chart as unknown as ChartRoot),
+                updated: (chart: ApexCharts) => annotateAxisLabels(chart as unknown as ChartRoot),
+            },
         },
         ...(props.title
             ? {
@@ -118,12 +162,12 @@ const chartOptions = computed<ApexOptions>(() => {
         yaxis: {
             labels: {
                 /*
-                 * Programme names run past eighty characters. Apex would clip
-                 * them to an ellipsis, so they are wrapped across lines instead
-                 * — the whole name has to be readable, not an abbreviation of it.
+                 * Acronyms, because the spelled-out programme names run past
+                 * eighty characters and overlapped each other in the axis
+                 * gutter. Hovering a tick still gives the full title — see
+                 * `annotateAxisLabels` — so the abbreviation never stands alone.
                  */
-                maxWidth: 320,
-                formatter: (value: string) => wrapAxisLabel(String(value), 20) as unknown as string,
+                maxWidth: 140,
                 style: {
                     fontFamily: REPORT_CHART_FONT_FAMILY,
                     fontSize: '12px',

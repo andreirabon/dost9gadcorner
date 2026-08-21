@@ -53,6 +53,15 @@ class ReportYearPolicy
         return $this->editsEverySection($user);
     }
 
+    /**
+     * GFPS membership data, but employment figures — HR owns the same split on
+     * the Employees section, so they can enter it here too.
+     */
+    public function updateGfpsMemberStatuses(User $user, ReportYear $reportYear): bool
+    {
+        return $this->editsEverySection($user) || $this->isRole($user, UserRole::HR);
+    }
+
     public function updateScholarship(User $user, ReportYear $reportYear): bool
     {
         return $this->editsEverySection($user) || $this->isRole($user, UserRole::SCHOLARSHIP);

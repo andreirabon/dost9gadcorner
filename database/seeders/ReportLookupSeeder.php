@@ -51,6 +51,10 @@ class ReportLookupSeeder extends Seeder
             ['name' => 'CEST ZSP', 'slug' => 'cest-zsp', 'sort_order' => 6],
             ['name' => 'CEST ZDS', 'slug' => 'cest-zds', 'sort_order' => 7],
             ['name' => 'CEST ZDN', 'slug' => 'cest-zdn', 'sort_order' => 8],
+            ['name' => 'GIA ZC/IC', 'slug' => 'gia-zc-ic', 'sort_order' => 9],
+            ['name' => 'GIA ZSP', 'slug' => 'gia-zsp', 'sort_order' => 10],
+            ['name' => 'GIA ZDS', 'slug' => 'gia-zds', 'sort_order' => 11],
+            ['name' => 'GIA ZDN', 'slug' => 'gia-zdn', 'sort_order' => 12],
         ], ['slug'], ['name', 'sort_order']);
 
         /*
@@ -110,7 +114,7 @@ class ReportLookupSeeder extends Seeder
             ],
             [
                 'name' => 'Foreign Graduate Scholarship Program',
-                'short_name' => 'Foreign Graduate',
+                'short_name' => 'FGSP',
                 'slug' => 'graduate-foreign',
                 'level' => ScholarshipProgram::LEVEL_GRADUATE,
                 'sort_order' => 8,

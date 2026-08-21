@@ -23,6 +23,14 @@ describe('FundingProgramTables', () => {
         expect(mountTables([]).text()).toContain('No SETUP category data yet.');
     });
 
+    it('omits the sections the charts above already plot', () => {
+        const wrapper = mountTables([category({ jobsTotal: 100, jobsMale: 50, jobsFemale: 50, jobsPwd: 5 })]);
+
+        const text = wrapper.text();
+        expect(text).not.toContain('Jobs Generated');
+        expect(text).not.toContain('Jobs Breakdown');
+    });
+
     it('renders every section that has data, labelled by program group', () => {
         const wrapper = mountTables([
             category({
@@ -30,10 +38,6 @@ describe('FundingProgramTables', () => {
                 femaleAmount: 1000,
                 fundedProjectsCount: 10,
                 trainingParticipants: 40,
-                jobsTotal: 100,
-                jobsMale: 50,
-                jobsFemale: 50,
-                jobsPwd: 5,
                 specialProjectsResearchMale: 6,
             }),
         ]);
@@ -41,8 +45,6 @@ describe('FundingProgramTables', () => {
         const text = wrapper.text();
         expect(text).toContain('SETUP Program');
         expect(text).toContain('SETUP Program Metrics');
-        expect(text).toContain('SETUP Jobs Generated');
-        expect(text).toContain('SETUP Jobs Breakdown');
         expect(text).toContain('SETUP Special Projects Research');
     });
 
@@ -52,7 +54,7 @@ describe('FundingProgramTables', () => {
         const wrapper = mountTables([category({ femaleProjects: 8 })]);
 
         expect(wrapper.text()).toContain('SETUP Program');
-        expect(wrapper.text()).not.toContain('SETUP Jobs Generated');
+        expect(wrapper.text()).not.toContain('SETUP Program Metrics');
         expect(wrapper.text()).not.toContain('SETUP Special Projects Research');
     });
 
@@ -64,8 +66,8 @@ describe('FundingProgramTables', () => {
 
     it('keeps one row per category', () => {
         const wrapper = mountTables([
-            category({ slug: 'setup-a', label: 'SETUP A', jobsTotal: 5 }),
-            category({ slug: 'setup-b', label: 'SETUP B', jobsTotal: 7 }),
+            category({ slug: 'setup-a', label: 'SETUP A', femaleProjects: 5 }),
+            category({ slug: 'setup-b', label: 'SETUP B', femaleProjects: 7 }),
         ]);
 
         expect(wrapper.text()).toContain('SETUP A');

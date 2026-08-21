@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { JOBS_BREAKDOWN_LABELS } from '@/constants/reportLabels';
 import { formatCurrency } from '@/helpers/formatCurrency';
 import type { FundingCategorySummaryData } from '@/types/reports';
 
@@ -34,8 +33,9 @@ const money = (value: number | undefined): Cell =>
 const positive = (...values: (number | undefined)[]): boolean => values.some((value) => Number(value ?? 0) > 0);
 
 /**
- * Mirrors the five tables on the edit screen so the published report shows the
- * same shape the data was entered in.
+ * Only the entered figures that no chart above already plots. Jobs Generated
+ * and Jobs Breakdown are omitted here because StackedBarBySexChart and
+ * JobsBreakdownHeatmap already show them for every category.
  */
 const TABLES: TableDef[] = [
     {
@@ -49,23 +49,6 @@ const TABLES: TableDef[] = [
         columns: ['Funded projects', 'Value of funded projects', 'Training participants'],
         row: (c) => [num(c.fundedProjectsCount), money(c.fundedProjectsValue), num(c.trainingParticipants)],
         hasData: (c) => positive(c.fundedProjectsCount, c.fundedProjectsValue, c.trainingParticipants),
-    },
-    {
-        title: 'Jobs Generated',
-        columns: ['Total', 'Male', 'Female'],
-        row: (c) => [num(c.jobsTotal), num(c.jobsMale), num(c.jobsFemale)],
-        hasData: (c) => positive(c.jobsTotal, c.jobsMale, c.jobsFemale),
-    },
-    {
-        title: 'Jobs Breakdown',
-        columns: [
-            JOBS_BREAKDOWN_LABELS.pwd,
-            JOBS_BREAKDOWN_LABELS.seniorCitizen,
-            JOBS_BREAKDOWN_LABELS.ip,
-            JOBS_BREAKDOWN_LABELS.fourPs,
-        ],
-        row: (c) => [num(c.jobsPwd), num(c.jobsSeniorCitizen), num(c.jobsIp), num(c.jobs4ps)],
-        hasData: (c) => positive(c.jobsPwd, c.jobsSeniorCitizen, c.jobsIp, c.jobs4ps),
     },
     {
         title: 'Special Projects Research',

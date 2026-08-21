@@ -47,6 +47,7 @@ Route::middleware(['auth', NoCacheHeaders::class])
         Route::patch('/{reportYear}/gfps-membership', [ReportYearManagementController::class, 'updateGfpsMembership'])->name('gfps-membership.update');
         Route::patch('/{reportYear}/gfps-assemblies', [ReportYearManagementController::class, 'updateGfpsAssemblies'])->name('gfps-assemblies.update');
         Route::patch('/{reportYear}/employee-statuses', [ReportYearManagementController::class, 'updateEmployeeStatuses'])->name('employee-statuses.update');
+        Route::patch('/{reportYear}/gfps-member-statuses', [ReportYearManagementController::class, 'updateGfpsMemberStatuses'])->name('gfps-member-statuses.update');
         Route::post('/{reportYear}/scholarship', [ReportYearManagementController::class, 'storeScholarshipSnapshot'])->name('scholarship.store');
         Route::patch('/{reportYear}/scholarship/{scholarship}', [ReportYearManagementController::class, 'updateScholarshipSnapshot'])->name('scholarship.update');
         Route::delete('/{reportYear}/scholarship/{scholarship}', [ReportYearManagementController::class, 'destroyScholarshipSnapshot'])->name('scholarship.destroy');

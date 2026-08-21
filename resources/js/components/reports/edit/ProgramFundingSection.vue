@@ -7,17 +7,18 @@ import { useRowSection } from '@/composables/useRowSection';
 import { REPORT_TABLE_AMOUNT_INPUT_CLASS, REPORT_TABLE_INPUT_CLASS } from '@/constants/reportFormClasses';
 import { JOBS_BREAKDOWN_LABELS } from '@/constants/reportLabels';
 import { formatNumberInput, parseNumberInput } from '@/helpers/formatNumber';
-import type { EditableProgramFundingRow } from '@/types/reports';
+import type { EditableProgramFundingRow, FundingGroupPrefix } from '@/types/reports';
 import { computed, ref } from 'vue';
 
 interface Props {
     reportYearId: number;
     /**
-     * Which funding program family this instance edits. SETUP and CEST get
-     * their own tab so one program's rows never crowd the other's. Used for
-     * labelling and element ids only — the shell decides which rows belong here.
+     * Which funding program family this instance edits. SETUP, CEST and GIA
+     * each get their own tab so one program's rows never crowd another's. Used
+     * for labelling and element ids only — the shell decides which rows belong
+     * here.
      */
-    group: 'setup' | 'cest';
+    group: FundingGroupPrefix;
     /** Already narrowed by the shell to this group, and to what the user may write. */
     rows: EditableProgramFundingRow[];
     expectedUpdatedAt: string | null;

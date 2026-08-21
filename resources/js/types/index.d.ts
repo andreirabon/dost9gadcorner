@@ -20,15 +20,6 @@ export interface NavItem {
     badge?: string;
 }
 
-export interface ProjectItem {
-    id: number;
-    name: string;
-    href: string;
-    colorTheme?: 'emerald' | 'blue' | 'orange' | 'rose' | 'purple' | 'teal';
-    description?: string;
-    backgroundImage?: string;
-}
-
 export interface YearItem {
     id: number;
     year: string;
