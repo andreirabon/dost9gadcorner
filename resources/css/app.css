@@ -15,12 +15,126 @@
 
 @custom-variant report-light (&:is(.report-theme-light *));
 
+/*
+ * Brand scale, declared as real custom properties rather than inside
+ * `@theme inline`, so `bg-brand-900` compiles to `var(--color-brand-900)` and
+ * each surface below can retint the same utilities.
+ *
+ * The values here are the public site's palette, because that is the largest
+ * surface and the one an unscoped utility most likely belongs to. Three other
+ * regions override them wholesale.
+ *
+ * Note this is deliberately four palettes, restored on request. The structural
+ * work is not affected: surfaces stay flat, there are no per-section gradients,
+ * no glow blobs, no shimmer bar, and the type and alignment rules are shared.
+ * Only the hues differ by region.
+ */
+@theme {
+    /* Public site — purple with a fuchsia accent. */
+    --color-brand-50: #faf5ff;
+    --color-brand-100: #f3e8ff;
+    --color-brand-200: #e9d5ff;
+    --color-brand-300: #f0abfc;
+    --color-brand-400: #c084fc;
+    --color-brand-500: #a855f7;
+    --color-brand-600: #9333ea;
+    --color-brand-700: #7e22ce;
+    --color-brand-800: #6b21a8;
+    --color-brand-900: #581c87;
+    --color-brand-950: #3b0764;
+}
+
+@layer base {
+    /*
+     * Sign-in and the error pages — slate ground, blue accent, cyan highlight.
+     * 600 stays the primary fill on every surface, so the button keeps its
+     * meaning even though its hue changes.
+     */
+    .auth-shell {
+        --color-brand-50: #f8fafc;
+        --color-brand-100: #e2e8f0;
+        --color-brand-200: #cbd5e1;
+        --color-brand-300: #93c5fd;
+        --color-brand-400: #60a5fa;
+        --color-brand-500: #3b82f6;
+        --color-brand-600: #2563eb;
+        --color-brand-700: #1d4ed8;
+        --color-brand-800: #1e293b;
+        --color-brand-900: #0f172a;
+        --color-brand-950: #020617;
+    }
+
+    /*
+     * Authenticated app — blue, matching the navy sidebar beside it. This wraps
+     * every signed-in page (report list, editor, user admin, audit log,
+     * settings), so the primary button, the active pagination chip and the
+     * focus rings all pick the blue up from here.
+     *
+     * 600 is blue-700 and 500 is blue-600: the fill is darker than its hover,
+     * which is the order the original used and the one that keeps white button
+     * text above 4.5:1.
+     */
+    /*
+     * The sidebar is a sibling of .app-main-shell, not a child, so it needs the
+     * blue on its own or the logo wordmark and the user avatar keep resolving
+     * to the public site's purple against navy chrome.
+     */
+    .app-main-shell,
+    [data-sidebar='sidebar'] {
+        --color-brand-50: #eff6ff;
+        --color-brand-100: #dbeafe;
+        --color-brand-200: #bfdbfe;
+        --color-brand-300: #93c5fd;
+        --color-brand-400: #60a5fa;
+        --color-brand-500: #2563eb;
+        --color-brand-600: #1d4ed8;
+        --color-brand-700: #1e40af;
+        --color-brand-800: #1e3a8a;
+    }
+
+    /*
+     * Public report view — magenta accents over the same neutral planes. Only
+     * the accent steps move; the dark ground steps stay near the public site so
+     * a visitor going from the home page into a report does not cross a hard
+     * colour break.
+     */
+    .report-view-page {
+        --color-brand-300: #f0abfc;
+        --color-brand-400: #e879f9;
+        --color-brand-500: #d946ef;
+        --color-brand-600: #c026d3;
+        --color-brand-700: #a21caf;
+    }
+}
+
 @theme inline {
     --font-sans:
         'Geist Sans', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* App off-white: replaces default #fff for all `*-white` utilities */
     --color-white: #fafafa;
+
+    /*
+     * Type scale.
+     *
+     * The root is 18px (see `html` in the base layer), so every rem-based
+     * utility — text, spacing, gaps, control heights — comes up 12.5% from the
+     * browser default of 16px.
+     *
+     * The scale itself is stock Tailwind. An earlier pass overrode `xs` and
+     * `sm` upward because at a 17px root the body size most of this app uses
+     * (`text-sm`, on 118 surfaces against 57 for `text-base`) still landed at
+     * only 14.9px. At 18px the stock ratio puts `sm` at 15.75px on its own,
+     * within 0.2px of what the override was buying, so the override is gone —
+     * and with it the compromise it forced, where `sm` and `base` sat ~1px
+     * apart and the pairing in HeadingSmall had to lean entirely on weight and
+     * colour to read as two levels.
+     *
+     *   xs    12px -> 13.5px
+     *   sm    14px -> 15.75px
+     *   base  16px -> 18px
+     *   lg    18px -> 20.25px
+     */
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -132,7 +246,7 @@
 /* Admin sidebar — premium dark navy with depth */
 @layer components {
     [data-sidebar='sidebar'] {
-        color: rgba(191, 219, 254, 0.65);
+        color: rgba(191, 219, 254, 0.72);
         border-color: rgba(255, 255, 255, 0.06);
         --sidebar: #172554;
         --sidebar-background: #172554;
@@ -169,7 +283,7 @@
         padding: 0.625rem 0.75rem;
         font-size: 0.875rem;
         font-weight: 500;
-        color: rgba(191, 219, 254, 0.72);
+        color: rgba(191, 219, 254, 0.75);
         transition:
             background-color 180ms cubic-bezier(0.23, 1, 0.32, 1),
             color 180ms cubic-bezier(0.23, 1, 0.32, 1),
@@ -177,7 +291,7 @@
     }
 
     .sidebar-nav-item svg {
-        color: rgba(147, 197, 253, 0.65);
+        color: rgba(147, 197, 253, 0.7);
         transition: color 180ms cubic-bezier(0.23, 1, 0.32, 1);
     }
 
@@ -231,7 +345,7 @@
         }
 
         .sidebar-nav-item:hover svg {
-            color: rgba(191, 219, 254, 0.9);
+            color: rgba(191, 219, 254, 0.92);
         }
     }
 
@@ -266,21 +380,21 @@
         font-weight: 600;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: rgba(191, 219, 254, 0.55);
+        color: rgba(191, 219, 254, 0.7);
     }
 
     /* Collapse toggle button.
        slate-300 @ .6 measures 4.1:1; the previous slate-400 @ .55 measured
        2.8:1 and failed the 3:1 minimum for non-text UI components. */
     .sidebar-collapse-btn {
-        color: rgba(203, 213, 225, 0.6);
+        color: rgba(147, 197, 253, 0.7);
         background-color: transparent;
     }
 
     @media (hover: hover) and (pointer: fine) {
         .sidebar-collapse-btn:hover {
             background-color: rgba(255, 255, 255, 0.06);
-            color: rgba(191, 219, 254, 0.85);
+            color: rgba(191, 219, 254, 0.88);
         }
     }
 
@@ -292,12 +406,12 @@
            had two different target heights for the same kind of control. */
         min-height: 2.5rem;
         border-radius: 0.625rem;
-        color: rgba(191, 219, 254, 0.65);
+        color: rgba(191, 219, 254, 0.75);
     }
 
     @media (hover: hover) and (pointer: fine) {
         .sidebar-back-link:hover {
-            color: rgba(191, 219, 254, 0.8);
+            color: rgba(191, 219, 254, 0.85);
             background-color: rgba(255, 255, 255, 0.04);
         }
     }
@@ -327,7 +441,7 @@
         font-size: 0.8125rem;
         font-weight: 500;
         text-align: left;
-        color: rgba(203, 213, 225, 0.75);
+        color: rgba(191, 219, 254, 0.75);
         transition:
             background-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
             color 200ms cubic-bezier(0.23, 1, 0.32, 1),
@@ -365,7 +479,7 @@
         width: 100%;
         height: 3.5rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        background-color: rgba(14, 7, 22, 0.45);
+        background-color: rgba(21, 14, 34, 0.55);
         backdrop-filter: blur(20px) saturate(1.3);
         -webkit-backdrop-filter: blur(20px) saturate(1.3);
         box-shadow:
@@ -385,7 +499,7 @@
 
     /* Scroll state: slightly opaquer, stronger border */
     .home-topnav--scrolled {
-        background-color: rgba(14, 7, 22, 0.75);
+        background-color: rgba(21, 14, 34, 0.82);
         border-bottom-color: rgba(255, 255, 255, 0.12);
         box-shadow:
             inset 0 -1px 0 rgba(255, 255, 255, 0.06),
@@ -411,7 +525,7 @@
         justify-content: center;
         border-radius: 9999px;
         padding: 0.375rem 0.875rem;
-        font-size: 13px;
+        font-size: 0.8125rem;
         font-weight: 500;
         letter-spacing: -0.005em;
         white-space: nowrap;
@@ -433,16 +547,16 @@
         transform: scale(0.97);
     }
 
-    /* Login button — matches purple page palette */
+    /* Login button — brand-600 fill, the only 4.5:1+ brand step under white text. */
     .home-topnav-login {
         display: inline-flex;
         align-items: center;
         gap: 0.375rem;
         border-radius: 9999px;
-        border: 1px solid rgba(147, 51, 234, 0.35);
-        background-color: rgba(147, 51, 234, 0.85);
+        border: 1px solid rgba(164, 130, 203, 0.4);
+        background-color: #6f4b97;
         padding: 0.5rem 1.125rem;
-        font-size: 13.5px;
+        font-size: 0.85rem;
         font-weight: 600;
         letter-spacing: -0.005em;
         color: #fff;
@@ -459,10 +573,10 @@
 
     @media (hover: hover) and (pointer: fine) {
         .home-topnav-login:hover {
-            background-color: rgba(147, 51, 234, 1);
-            border-color: rgba(168, 85, 247, 0.5);
+            background-color: #8a63b4;
+            border-color: rgba(191, 166, 221, 0.55);
             box-shadow:
-                0 4px 12px -2px rgba(147, 51, 234, 0.35),
+                0 4px 12px -2px rgba(21, 14, 34, 0.55),
                 inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
     }
@@ -484,7 +598,7 @@
         border: 1px solid rgba(139, 92, 246, 0.25) !important;
         background-color: rgba(139, 92, 246, 0.15) !important;
         padding: 0.5rem 1rem;
-        font-size: 13.5px;
+        font-size: 0.85rem;
         font-weight: 500;
         letter-spacing: -0.005em;
         color: rgba(221, 214, 254, 0.9) !important;
@@ -517,7 +631,7 @@
         border: 1px solid rgba(239, 68, 68, 0.25) !important;
         background-color: rgba(239, 68, 68, 0.15) !important;
         padding: 0.5rem 1.125rem;
-        font-size: 13.5px;
+        font-size: 0.85rem;
         font-weight: 500;
         letter-spacing: -0.005em;
         color: rgba(254, 226, 226, 0.9) !important;
@@ -551,6 +665,13 @@
         @apply font-sans antialiased;
         font-optical-sizing: auto;
         color-scheme: light;
+        /*
+         * 18px, expressed as a percentage of whatever the visitor has set as
+         * their browser default rather than as a hard `18px`. A reader who has
+         * raised their default to 20px still gets 22.5px here; a hard pixel
+         * value would silently override that and take the choice away.
+         */
+        font-size: 112.5%;
     }
 
     body {
@@ -564,17 +685,6 @@
         isolation: isolate;
         background-color: rgb(248 250 252);
         color: rgb(15 23 42);
-    }
-
-    .app-main-shell::before {
-        content: '';
-        pointer-events: none;
-        position: absolute;
-        inset: 0;
-        background:
-            radial-gradient(120% 80% at 0% 0%, rgb(59 130 246 / 0.08), transparent 52%),
-            radial-gradient(95% 70% at 100% 100%, rgb(14 165 233 / 0.07), transparent 50%);
-        opacity: 0.9;
     }
 
     .app-main-shell > * {
@@ -880,22 +990,6 @@
 
 /* Enhanced Mobile Responsive Design */
 @layer utilities {
-    /* Improved text scaling for mobile */
-    @media (max-width: 768px) {
-        .text-responsive {
-            font-size: clamp(0.875rem, 3vw, 1rem);
-            line-height: 1.6;
-        }
-    }
-
-    /* Extra small devices (phones in portrait) */
-    @media (max-width: 480px) {
-        .text-responsive {
-            font-size: clamp(0.813rem, 3.5vw, 0.938rem);
-            line-height: 1.6;
-        }
-    }
-
     /* Mobile modal optimizations */
     @media (max-width: 768px) {
         .modal-content-mobile {
@@ -923,13 +1017,6 @@
 
         .chart-container canvas {
             max-height: 200px;
-        }
-    }
-
-    /* Very small screens (iPhone SE, etc.) */
-    @media (max-width: 375px) {
-        .text-responsive {
-            font-size: clamp(0.75rem, 3.5vw, 0.875rem);
         }
     }
 
@@ -1001,7 +1088,9 @@
         input[type='url'],
         select,
         textarea {
-            font-size: 16px; /* Prevent iOS zoom on focus */
+            /* Must stay at or above 16px or iOS Safari zooms the page on
+               focus. 1rem is 18px here, so the floor is cleared. */
+            font-size: 1rem;
         }
     }
 }
@@ -1012,7 +1101,7 @@
      * content-visibility skips paint for off-screen sections (disabled when reduced motion).
      */
     .home-index-section {
-        @apply relative isolate flex flex-col overflow-x-clip border-t border-purple-500/45;
+        @apply relative isolate flex flex-col overflow-x-clip border-t border-brand-800/70;
         contain: layout paint style;
         padding-top: clamp(2.5rem, 4vh + 1.25rem, 6rem);
         padding-bottom: clamp(2.5rem, 4vh + 1.25rem, 6rem);
@@ -1036,6 +1125,102 @@
         @apply relative z-10 mx-auto min-h-0 w-full;
     }
 
+    /*
+     * One texture for the whole public page, not three per section.
+     * Each section used to paint its own vertical purple-to-fuchsia fade plus a
+     * pair of blurred radial blobs plus a grid overlay, so every section
+     * boundary showed a seam and the "ambient glow" read as decoration with no
+     * job. A single fixed grain over one flat ground keeps the surface from
+     * going plasticky without any of that.
+     */
+    .home-shell {
+        @apply relative isolate bg-brand-950 text-brand-50;
+    }
+
+    .home-shell::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.035;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+    }
+
+    /*
+     * Section header. All three content sections repeated the same 200-character
+     * class string inline, wrapped in a card — a heading boxed inside a panel
+     * that then contained more panels. It is a header: eyebrow, title, lead.
+     */
+    .home-section-header {
+        @apply relative z-10 mb-8 flex max-w-3xl flex-col items-start gap-3 sm:mb-10;
+    }
+
+    .home-eyebrow {
+        @apply text-xs font-semibold tracking-[0.14em] text-brand-300 uppercase;
+    }
+
+    .home-section-title {
+        /* Larger than the h3s inside the sections. Those ran at 5xl/6xl under a
+           4xl section heading, so the page's heading sizes ranked backwards. */
+        @apply text-3xl font-semibold tracking-tight text-balance text-brand-50 sm:text-4xl md:text-5xl;
+    }
+
+    .home-section-lead {
+        @apply max-w-[62ch] text-base leading-relaxed text-pretty text-brand-200 sm:text-lg;
+    }
+
+    .home-note {
+        @apply inline-flex items-center gap-2 text-sm text-brand-300;
+    }
+
+    /* Panel: one hairline and one fill. No border + ring + shadow + gradient. */
+    .home-panel {
+        @apply relative z-10 rounded-xl border border-brand-800 bg-brand-900 p-5 sm:p-6;
+    }
+
+    .home-panel-title {
+        @apply text-xl font-semibold tracking-tight text-brand-50 sm:text-2xl;
+    }
+
+    .home-panel-body {
+        @apply mt-3 max-w-[68ch] text-base leading-relaxed text-brand-100/90;
+    }
+
+    /*
+     * Login and the error page shared a copy-pasted shell in a slate/blue/cyan
+     * palette that appeared nowhere else in the product, built from two
+     * 600px blurred colour blobs and a grid overlay. Same ground as the public
+     * site, one panel, defined once and used by both.
+     */
+    .auth-shell {
+        @apply relative flex min-h-dvh flex-col bg-brand-950 text-brand-50 scheme-dark selection:bg-brand-500/30;
+    }
+
+    .auth-panel {
+        @apply w-full rounded-2xl border border-brand-800 bg-brand-900 p-6 sm:p-8;
+    }
+
+    .auth-eyebrow {
+        @apply text-xs font-semibold tracking-[0.14em] text-brand-300 uppercase;
+    }
+
+    .auth-field {
+        @apply h-11 border-brand-800 bg-brand-950 text-brand-50 transition-colors duration-200 placeholder:text-brand-300/70 focus-visible:border-brand-400 focus-visible:ring-4 focus-visible:ring-brand-400/20;
+    }
+
+    /* `!bg-` is required: shadcn's Button carries `bg-primary` as a utility, and
+       utilities outrank the components layer, so a plain background-color here
+       lost and the button rendered near-black. */
+    .auth-submit {
+        @apply h-11 w-full cursor-pointer rounded-xl text-sm font-semibold text-white transition-[background-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60;
+        @apply !bg-brand-600 [@media(hover:hover)_and_(pointer:fine)]:hover:!bg-brand-500;
+    }
+
+    .auth-quiet-link {
+        @apply inline-flex h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-brand-800 px-5 text-sm font-medium text-brand-200 transition-[color,border-color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-brand-700 hover:text-brand-50 focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:outline-none active:scale-[0.98];
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .home-index-section {
             content-visibility: visible;
@@ -1043,79 +1228,86 @@
         }
     }
 
+    /* Primary call to action. brand-600 is the darkest brand step that still
+       carries white text at 4.5:1, so it is the one fill used for it. */
+    .home-cta {
+        @apply inline-flex h-12 cursor-pointer items-center gap-2 rounded-xl px-6 text-base font-semibold text-white transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950 focus-visible:outline-none active:scale-[0.97];
+        background-color: var(--color-brand-600);
+    }
+
     @media (hover: hover) and (pointer: fine) {
-        .hero-cta:hover {
-            border-color: rgb(216 180 254 / 0.55);
-            background-color: rgb(147 51 234);
+        .home-cta:hover {
+            background-color: var(--color-brand-500);
         }
 
-        .hero-cta:hover .hero-cta-icon {
-            transform: translateX(0.25rem);
+        .home-cta:hover .home-cta-icon {
+            transform: translateY(0.15rem);
         }
     }
 
-    .hero-cta-icon {
+    .home-cta-icon {
         transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .hero-cta-icon {
+        .home-cta,
+        .home-cta-icon {
             transition: none;
         }
     }
 
     .report-panel {
-        @apply relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-purple-900/20 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-xl;
+        @apply relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-brand-900/45 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-xl;
     }
 
     .report-panel > * {
         @apply relative z-10;
     }
 
-    /* Outline→fill: light slate-blue on public report panels */
+    /* Outline→fill on public report panels. */
     .report-btn-primary {
-        @apply rounded-xl border border-white/10 bg-white/5 text-purple-100 shadow-sm transition-colors duration-300 hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+        @apply rounded-xl border border-white/10 bg-white/5 text-brand-100 shadow-sm transition-colors duration-300 hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-400/50 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
     }
 
-    /* Primary actions (save / create). Light: rgb(74,93,150). Dark: teal (same family as section icons / tabs) — !bg beats shadcn bg-primary. */
+    /* Primary actions (save / create). Light: rgb(74,93,150). Dark: brand-600 — !bg beats shadcn bg-primary. */
     .report-save-btn {
         @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-white/10 px-6 text-base font-semibold shadow-sm transition-all duration-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
-        @apply !bg-violet-600 text-white shadow-lg shadow-violet-900/30 hover:!bg-violet-500 focus-visible:!ring-violet-500/50 active:scale-[0.97];
+        @apply !bg-brand-600 text-white shadow-lg shadow-brand-950/45 hover:!bg-brand-500 focus-visible:!ring-brand-400/50 active:scale-[0.97];
     }
 
     .report-btn-secondary {
-        @apply rounded-xl border border-white/10 bg-white/5 text-purple-300/70 shadow-sm transition-all duration-300 hover:bg-white/10 hover:text-purple-100 focus-visible:ring-2 focus-visible:ring-violet-500/30 focus-visible:outline-none active:scale-[0.97];
+        @apply rounded-xl border border-white/10 bg-white/5 text-brand-300/80 shadow-sm transition-all duration-300 hover:bg-white/10 hover:text-brand-100 focus-visible:ring-2 focus-visible:ring-brand-400/40 focus-visible:outline-none active:scale-[0.97];
     }
 
     /* Form field names vs values: labels are caption-style; values stay body (overrides ui/Label defaults) */
     .report-form :is([data-slot='label'], label) {
-        @apply text-base! font-medium! tracking-normal! text-purple-100! normal-case! antialiased;
+        @apply text-base! font-medium! tracking-normal! text-brand-100! normal-case! antialiased;
     }
 
     .report-field {
-        @apply h-11 rounded-xl border-white/10 bg-black/20 px-3 text-base text-purple-50 transition-colors placeholder:text-purple-300/30 focus-visible:border-violet-500 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-violet-500/20;
+        @apply h-11 rounded-xl border-white/10 bg-black/20 px-3 text-base text-brand-50 transition-colors placeholder:text-brand-300/40 focus-visible:border-brand-400 focus-visible:bg-black/40 focus-visible:ring-4 focus-visible:ring-brand-400/25;
     }
 
     .report-row {
-        @apply rounded-[2rem] border border-white/10 bg-purple-900/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-xl;
+        @apply rounded-[2rem] border border-white/10 bg-brand-900/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_20px_40px_-15px_rgba(0,0,0,0.5)] backdrop-blur-xl;
     }
 
     .report-list-item {
-        @apply rounded-xl border border-white/10 bg-purple-900/20 transition-all duration-300 hover:border-white/20 hover:bg-purple-900/40;
+        @apply rounded-xl border border-white/10 bg-brand-900/45 transition-all duration-300 hover:border-white/20 hover:bg-brand-900/70;
     }
 
     .report-textarea {
-        @apply min-h-24 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-base text-purple-50 shadow-sm transition-colors placeholder:text-purple-300/30 focus:border-violet-500 focus:bg-black/40 focus:ring-4 focus:ring-violet-500/20 focus:outline-none;
+        @apply min-h-24 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-base text-brand-50 shadow-sm transition-colors placeholder:text-brand-300/40 focus:border-brand-400 focus:bg-black/40 focus:ring-4 focus:ring-brand-400/25 focus:outline-none;
     }
 
     .report-select {
-        @apply relative h-11 w-full rounded-xl border border-white/10 bg-black/20 py-1 pr-8 pl-3 text-base text-purple-50 shadow-sm transition-colors focus:border-violet-500 focus:bg-black/40 focus:ring-4 focus:ring-violet-500/20 focus:outline-none;
+        @apply relative h-11 w-full rounded-xl border border-white/10 bg-black/20 py-1 pr-8 pl-3 text-base text-brand-50 shadow-sm transition-colors focus:border-brand-400 focus:bg-black/40 focus:ring-4 focus:ring-brand-400/25 focus:outline-none;
     }
 
     .report-form .report-field,
     .report-form .report-textarea,
     .report-form .report-select {
-        @apply font-normal text-purple-50;
+        @apply font-normal text-brand-50;
     }
 
     .report-data-shell {
@@ -1123,7 +1315,7 @@
     }
 
     .report-data-head {
-        @apply hidden border-b border-white/10 bg-purple-900/30 px-4 py-3 text-sm font-semibold tracking-widest text-violet-400 uppercase md:grid md:gap-4;
+        @apply hidden border-b border-white/10 bg-brand-900/55 px-4 py-3 text-sm font-semibold tracking-widest text-brand-300 uppercase md:grid md:gap-4;
     }
 
     .report-data-row {
@@ -1206,7 +1398,7 @@
         --report-plane-border: oklch(0.75 0.02 255);
         --report-plane-shadow: 0 1px 2px oklch(0.3 0.05 260 / 0.04), 0 8px 24px -12px oklch(0.3 0.05 260 / 0.14);
 
-        @apply flex min-h-0 flex-1 flex-col text-slate-900 selection:bg-blue-200/60;
+        @apply flex min-h-0 flex-1 flex-col text-slate-900 selection:bg-brand-200/60;
         background-color: var(--report-ground);
     }
 
@@ -1386,7 +1578,7 @@
     }
 
     .report-years-kicker {
-        @apply text-sm font-semibold tracking-[0.2em] text-blue-700 uppercase;
+        @apply text-sm font-semibold tracking-[0.2em] text-brand-600 uppercase;
     }
 
     .report-years-title {
@@ -1398,14 +1590,14 @@
     }
 
     .report-years-btn-primary {
-        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-base font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
-        background-color: var(--color-blue-700);
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-brand-800/20 px-6 text-base font-semibold text-white transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-brand-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 focus-visible:outline-none active:scale-[0.97];
+        background-color: var(--color-brand-600);
     }
 
     @media (hover: hover) and (pointer: fine) {
         .report-years-btn-primary:hover {
             border-color: rgba(30, 58, 138, 0.2);
-            background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
+            background-color: color-mix(in oklab, var(--color-brand-600) 88%, black);
         }
     }
 
@@ -1491,7 +1683,7 @@
 
     .report-years-filter-tab.is-active {
         @apply text-white shadow-none;
-        background-color: var(--color-blue-700);
+        background-color: var(--color-brand-600);
     }
 
     .report-years-filter-tab.is-active .report-years-filter-count {
@@ -1529,7 +1721,7 @@
     }
 
     .report-years-inline-link {
-        @apply cursor-pointer font-medium text-blue-700 underline underline-offset-4 transition-colors duration-150 ease-out hover:text-blue-800;
+        @apply cursor-pointer font-medium text-brand-600 underline underline-offset-4 transition-colors duration-150 ease-out hover:text-blue-800;
     }
 
     .report-years-table-wrap {
@@ -1556,9 +1748,14 @@
         @apply transition-colors duration-150 ease-out;
     }
 
+    /* Zebra. Equal specificity to the hover below it (0,2,2), so it goes first. */
+    .report-years-table tbody tr:nth-child(even) {
+        background-color: oklch(0.968 0.007 255);
+    }
+
     @media (hover: hover) and (pointer: fine) {
         .report-years-table tbody tr:hover {
-            background-color: oklch(0.97 0.008 255);
+            background-color: oklch(0.93 0.016 255);
         }
     }
 
@@ -1581,7 +1778,7 @@
     }
 
     .report-years-table-title {
-        @apply line-clamp-1 rounded-sm font-medium text-slate-800 transition-colors duration-150 ease-out hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:outline-none;
+        @apply line-clamp-1 rounded-sm font-medium text-slate-800 transition-colors duration-150 ease-out hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-blue-600/40 focus-visible:outline-none;
     }
 
     .report-years-table-meta {
@@ -1897,12 +2094,12 @@
 
     .report-years-tab.is-active {
         @apply text-white shadow-none;
-        background-color: var(--color-blue-700);
+        background-color: var(--color-brand-600);
     }
 
     @media (hover: hover) and (pointer: fine) {
         .report-years-tab.is-active:hover {
-            background-color: color-mix(in oklab, var(--color-blue-700) 88%, black);
+            background-color: color-mix(in oklab, var(--color-brand-600) 88%, black);
             @apply text-white;
         }
     }
@@ -1924,12 +2121,12 @@
     }
 
     .report-years-page .report-save-btn {
-        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-blue-800/15 px-6 text-base font-semibold text-white shadow-none transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-blue-600/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
-        background-color: var(--color-blue-700) !important;
+        @apply inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-brand-800/20 px-6 text-base font-semibold text-white shadow-none transition-[transform,background-color,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-brand-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:outline-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+        background-color: var(--color-brand-600) !important;
     }
 
     .report-years-page .report-save-btn:hover {
-        background-color: color-mix(in oklab, var(--color-blue-700) 88%, black) !important;
+        background-color: color-mix(in oklab, var(--color-brand-600) 88%, black) !important;
     }
 
     .report-years-page .report-btn-secondary {
@@ -2208,6 +2405,25 @@
         @apply transition-[background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)];
     }
 
+    /*
+     * Zebra striping.
+     *
+     * Faint on purpose. Every one of these rows also has a hover and a
+     * focus-within state, and all three land on the same specificity (0,3,0),
+     * because `:hover` and `:focus-within` count in the class column just like
+     * `.is-striped` does. Source order is therefore the only tie-breaker, which
+     * is why this block sits above them: a stripe that came later would swallow
+     * the row highlight on every second row.
+     *
+     * The class is bound from the row index rather than `:nth-child`, because
+     * these tables are CSS grids whose children interleave section headers and
+     * a totals row — `nth-child` counts those and the banding drifts.
+     */
+    .report-years-data-row.is-striped .report-years-data-row-label,
+    .report-years-data-row.is-striped .report-years-data-cell {
+        @apply bg-slate-100;
+    }
+
     @media (hover: hover) and (pointer: fine) {
         .report-years-data-row:hover .report-years-data-row-label,
         .report-years-data-row:hover .report-years-data-cell {
@@ -2276,6 +2492,30 @@
 
     .report-years-page .report-years-data-input--amount {
         @apply text-right;
+    }
+
+    /*
+     * Currency field. The peso sign is pinned to the left edge while the figure
+     * stays right-aligned, so the sign reads as the column's unit and the
+     * decimal points still line up down the column. Padding on the input keeps
+     * a long figure from running under the sign.
+     */
+    .report-years-amount-field {
+        @apply relative w-full;
+    }
+
+    .report-years-amount-prefix {
+        @apply pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-sm text-slate-500 select-none;
+    }
+
+    .report-years-page .report-years-amount-field .report-years-data-input--amount {
+        @apply pl-7;
+    }
+
+    /* A disabled field greys its own text; the unit has to follow or it reads
+       as the only live thing in a locked row. */
+    .report-years-amount-field:has(input:disabled) .report-years-amount-prefix {
+        @apply text-slate-400;
     }
 
     .report-years-form-actions {
@@ -2422,12 +2662,48 @@
         /* Sex-disaggregated series: female purple (A) + male orange (B) */
         --report-disagg-a: #603f8b;
         --report-disagg-b: #ff8210;
-        @apply flex min-h-[100dvh] w-full min-w-0 flex-col bg-linear-to-b from-purple-950 via-fuchsia-950/28 to-purple-950 text-purple-50 selection:bg-purple-500/30 report-light:bg-slate-50 report-light:text-slate-900 report-light:selection:bg-fuchsia-200/60;
+        @apply flex min-h-[100dvh] w-full min-w-0 flex-col bg-brand-950 text-brand-50 selection:bg-brand-500/30 report-light:bg-slate-50 report-light:text-slate-900 report-light:selection:bg-brand-200/60;
     }
 
+    /*
+     * The light theme has to be restated for the element that carries the theme
+     * class. `report-light:` is declared as `&:is(.report-theme-light *)` — a
+     * descendant combinator — so it matches every child but never the root
+     * itself, which kept the dark ground while everything inside it went light.
+     * It stayed invisible while the footer painted its own white background.
+     */
     .report-view-page.report-theme-light {
         --report-disagg-a: #603f8b;
         --report-disagg-b: #ff8210;
+        @apply bg-slate-50 text-slate-900;
+    }
+
+    /*
+     * Line-length cap. Both the hero and the body ran edge to edge, so on a
+     * 2560px display a metric card stretched to ~490px to hold a three-digit
+     * number and the tab strip spanned the full width of the screen. Capping
+     * the children of both keeps the two regions on the same left edge.
+     * Below 1700px this is inert, so laptop widths are unchanged.
+     */
+    .report-view-hero > *,
+    .report-view-body > * {
+        @apply mx-auto w-full max-w-[100rem];
+    }
+
+    /*
+     * Footer row. The width lives here rather than as utilities in the template
+     * so the report view can widen it: a utility `max-w-7xl` in the markup
+     * outranks any components-layer rule and would need an `!` to override.
+     * It also shares `px-page-gutter` with the page content, so the copyright
+     * line starts on the same left edge as the content above it at every width.
+     */
+    .app-footer-inner {
+        @apply mx-auto flex w-full max-w-7xl flex-col gap-3 py-6 text-sm sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    /* Matches the report view's wider content cap. */
+    .report-view-page .app-footer-inner {
+        @apply max-w-[100rem];
     }
 
     .report-view-section {
@@ -2442,87 +2718,27 @@
         @apply relative flex min-h-0 w-full min-w-0 flex-1 flex-col;
     }
 
-    /* ── Decorative accent bar at top of hero ── */
-    .report-view-hero-accent {
-        @apply h-[5px] w-full;
-        background: linear-gradient(
-            90deg,
-            oklch(0.48 0.22 310 / 0) 0%,
-            oklch(0.48 0.22 310) 12%,
-            oklch(0.518 0.253 323.949) 35%,
-            oklch(0.6 0.22 330) 50%,
-            oklch(0.518 0.253 323.949) 65%,
-            oklch(0.48 0.22 310) 88%,
-            oklch(0.48 0.22 310 / 0) 100%
-        );
-        background-size: 200% 100%;
-        animation: accentShimmer 6s ease-in-out infinite;
-    }
-
-    @keyframes accentShimmer {
-        0%,
-        100% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
-        }
-    }
-
+    /*
+     * Report hero.
+     *
+     * What was here: a 5px rainbow bar running a 6-second infinite shimmer
+     * loop, two 600px blurred magenta orbs behind the heading, a hero
+     * background in a magenta that appears nowhere else in the product,
+     * gradient-filled pill buttons each carrying a coloured glow, gradient
+     * fills on the year badge, the kicker rule, the divider, and the active
+     * tab, and a per-tab entry animation with hard-coded nth-child delays up to
+     * the eighth child.
+     *
+     * None of it encoded anything about the report. It is now one flat surface
+     * per theme, a hairline where a divider is needed, and a single solid fill
+     * (brand-600) on the one control per region that is primary.
+     */
     .report-view-hero {
-        @apply relative flex flex-col gap-6 overflow-hidden border-b py-6 sm:py-8 md:pt-10 md:pb-6;
-        border-color: oklch(0.48 0.22 310 / 0.2);
-        background: linear-gradient(175deg, oklch(0.16 0.06 310 / 0.95) 0%, oklch(0.14 0.05 300 / 0.8) 50%, oklch(0.12 0.04 290 / 0.7) 100%);
+        @apply relative flex flex-col gap-6 border-b border-brand-800 bg-brand-900 py-6 sm:py-8 md:pt-10 md:pb-6;
     }
 
-    /* Decorative radial orbs — visual depth behind content */
-    .report-view-hero::before,
-    .report-view-hero::after {
-        content: '';
-        @apply pointer-events-none absolute;
-    }
-
-    .report-view-hero::before {
-        top: -25%;
-        right: -5%;
-        width: 600px;
-        height: 600px;
-        border-radius: 50%;
-        background: radial-gradient(circle, oklch(0.518 0.253 323.949 / 0.2) 0%, oklch(0.518 0.253 323.949 / 0.08) 35%, transparent 65%);
-    }
-
-    .report-view-hero::after {
-        bottom: -35%;
-        left: -3%;
-        width: 500px;
-        height: 500px;
-        border-radius: 50%;
-        background: radial-gradient(circle, oklch(0.48 0.22 310 / 0.18) 0%, oklch(0.48 0.22 310 / 0.06) 35%, transparent 65%);
-    }
-
-    /* ── Light theme overrides ── */
     .report-view-page.report-theme-light .report-view-hero {
-        border-color: oklch(0.48 0.22 310 / 0.15);
-        background:
-            url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%239333ea' fill-opacity='0.04'/%3E%3C/svg%3E")
-                repeat,
-            linear-gradient(170deg, oklch(0.94 0.035 310) 0%, oklch(0.96 0.022 323.949) 35%, oklch(0.975 0.012 310) 70%, oklch(0.98 0.008 300) 100%);
-    }
-
-    .report-view-page.report-theme-light .report-view-hero::before {
-        top: -20%;
-        right: -5%;
-        width: 650px;
-        height: 650px;
-        background: radial-gradient(circle, oklch(0.518 0.253 323.949 / 0.18) 0%, oklch(0.518 0.253 323.949 / 0.06) 35%, transparent 60%);
-    }
-
-    .report-view-page.report-theme-light .report-view-hero::after {
-        bottom: -30%;
-        left: -3%;
-        width: 550px;
-        height: 550px;
-        background: radial-gradient(circle, oklch(0.48 0.22 310 / 0.14) 0%, oklch(0.48 0.22 310 / 0.05) 35%, transparent 60%);
+        @apply border-slate-200 bg-white;
     }
 
     .report-view-hero-top {
@@ -2534,83 +2750,41 @@
     }
 
     .report-view-year-badge {
-        @apply inline-flex items-center rounded-lg px-3 py-1 text-sm font-extrabold tracking-tight text-white tabular-nums;
-        background: linear-gradient(135deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
-        box-shadow: 0 2px 8px oklch(0.48 0.22 310 / 0.3);
-    }
-
-    .report-view-page.report-theme-light .report-view-year-badge {
-        background: linear-gradient(135deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
-        box-shadow: 0 2px 10px oklch(0.48 0.22 310 / 0.25);
+        @apply inline-flex items-center rounded-lg bg-brand-600 px-3 py-1 text-sm font-semibold tracking-tight text-white tabular-nums;
     }
 
     .report-view-kicker {
-        @apply flex items-center gap-2.5 text-sm font-bold tracking-[0.15em] uppercase;
-        color: oklch(0.72 0.2 323.949);
-    }
-
-    .report-view-kicker::before {
-        content: '';
-        @apply block h-[2px] w-6 shrink-0 rounded-full;
-        background: linear-gradient(90deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
+        @apply flex items-center gap-2.5 text-xs font-semibold tracking-[0.14em] text-brand-300 uppercase;
     }
 
     .report-view-page.report-theme-light .report-view-kicker {
-        color: oklch(0.48 0.22 310);
-    }
-
-    .report-view-page.report-theme-light .report-view-kicker::before {
-        background: linear-gradient(90deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
+        @apply text-brand-600;
     }
 
     .report-view-heading {
         @apply flex min-w-0 flex-1 flex-col gap-3;
     }
 
-    /* Gradient separator between heading and tabs */
     .report-view-hero-divider {
-        @apply relative z-10 h-px w-full;
-        background: linear-gradient(
-            90deg,
-            oklch(0.48 0.22 310 / 0) 0%,
-            oklch(0.48 0.22 310 / 0.3) 20%,
-            oklch(0.518 0.253 323.949 / 0.35) 50%,
-            oklch(0.48 0.22 310 / 0.3) 80%,
-            oklch(0.48 0.22 310 / 0) 100%
-        );
+        @apply relative z-10 h-px w-full bg-brand-800;
     }
 
     .report-view-page.report-theme-light .report-view-hero-divider {
-        background: linear-gradient(
-            90deg,
-            oklch(0.48 0.22 310 / 0) 0%,
-            oklch(0.48 0.22 310 / 0.2) 20%,
-            oklch(0.518 0.253 323.949 / 0.25) 50%,
-            oklch(0.48 0.22 310 / 0.2) 80%,
-            oklch(0.48 0.22 310 / 0) 100%
-        );
+        @apply bg-slate-200;
     }
 
     .report-view-title {
-        @apply text-2xl font-bold tracking-[-0.025em] text-purple-50 sm:text-3xl md:text-[2.5rem] md:leading-[1.1] report-light:text-slate-900;
+        @apply text-2xl font-semibold tracking-tight text-brand-50 sm:text-3xl md:text-[2.5rem] md:leading-[1.1] report-light:text-slate-900;
     }
 
+    /* The accent word is still emphasised, by weight, on the same colour as the
+       rest of the title. A second hue inside a heading is one signal too many. */
     .report-view-title-accent {
-        @apply font-extrabold;
-        color: oklch(0.78 0.2 323.949);
-    }
-
-    .report-view-page.report-theme-light .report-view-title-accent {
-        color: oklch(0.48 0.22 310);
+        @apply font-bold;
     }
 
     .report-view-subtitle {
-        @apply text-base leading-relaxed;
-        color: oklch(0.75 0.04 290 / 0.7);
-    }
-
-    .report-view-page.report-theme-light .report-view-subtitle {
-        color: oklch(0.45 0.02 290);
+        @apply text-base leading-relaxed text-brand-200 report-light:text-slate-600;
     }
 
     .report-view-actions {
@@ -2618,64 +2792,29 @@
     }
 
     .report-view-btn-icon {
-        @apply inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/90 transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97];
-        background: oklch(0.48 0.22 310 / 0.35);
-        border: 1px solid oklch(0.518 0.253 323.949 / 0.25);
-    }
-
-    .report-view-btn-icon:hover {
-        background: oklch(0.48 0.22 310 / 0.5);
-        border-color: oklch(0.518 0.253 323.949 / 0.4);
-    }
-
-    .report-view-back-link {
-        @apply inline-flex min-h-9 shrink-0 cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white transition-[transform,background-color,border-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] md:text-sm;
-        background: linear-gradient(135deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
-        border: 1px solid oklch(0.6 0.2 323.949 / 0.3);
-        box-shadow: 0 2px 8px oklch(0.48 0.22 310 / 0.25);
+        @apply inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-brand-800 text-brand-200 transition-[transform,background-color,border-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] report-light:border-slate-300 report-light:text-slate-600;
     }
 
     @media (hover: hover) and (pointer: fine) {
-        .report-view-back-link:hover {
-            background: linear-gradient(135deg, oklch(0.44 0.22 310), oklch(0.48 0.253 323.949));
-            box-shadow: 0 4px 16px oklch(0.48 0.22 310 / 0.35);
+        .report-view-btn-icon:hover {
+            @apply border-brand-700 bg-brand-800 text-brand-50 report-light:border-slate-400 report-light:bg-slate-100 report-light:text-slate-900;
         }
     }
 
-    .report-view-page.report-theme-light .report-view-btn-icon {
-        background: oklch(0.48 0.22 310 / 0.08);
-        border-color: oklch(0.48 0.22 310 / 0.15);
-        color: oklch(0.48 0.22 310);
-    }
-
-    .report-view-page.report-theme-light .report-view-btn-icon:hover {
-        background: oklch(0.48 0.22 310 / 0.14);
-        border-color: oklch(0.48 0.22 310 / 0.25);
-    }
-
-    .report-view-page.report-theme-light .report-view-back-link {
-        background: linear-gradient(135deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
-        border-color: oklch(0.518 0.253 323.949 / 0.3);
-        box-shadow: 0 2px 10px oklch(0.48 0.22 310 / 0.2);
-        color: white;
-    }
-
-    .report-view-page.report-theme-light .report-view-back-link:hover {
-        background: linear-gradient(135deg, oklch(0.44 0.22 310), oklch(0.48 0.253 323.949));
-        box-shadow: 0 4px 18px oklch(0.48 0.22 310 / 0.3);
-    }
-
+    .report-view-back-link,
     .report-view-btn {
-        @apply inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-xs font-medium text-white transition-[transform,background-color,border-color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] md:text-sm;
-        background: linear-gradient(135deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
-        border: 1px solid oklch(0.6 0.2 323.949 / 0.3);
-        box-shadow: 0 2px 8px oklch(0.48 0.22 310 / 0.25);
+        @apply inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97];
     }
 
     @media (hover: hover) and (pointer: fine) {
+        .report-view-back-link:hover,
         .report-view-btn:hover {
-            background: linear-gradient(135deg, oklch(0.44 0.22 310), oklch(0.48 0.253 323.949));
-            box-shadow: 0 4px 16px oklch(0.48 0.22 310 / 0.35);
+            @apply bg-brand-500;
+        }
+
+        .report-view-page.report-theme-light .report-view-back-link:hover,
+        .report-view-page.report-theme-light .report-view-btn:hover {
+            @apply bg-brand-700;
         }
     }
 
@@ -2685,17 +2824,9 @@
     }
 
     .report-view-tabs {
-        @apply flex w-full gap-1 overflow-x-auto rounded-xl p-1;
-        background: oklch(0.48 0.22 310 / 0.12);
-        border: 1px solid oklch(0.518 0.253 323.949 / 0.15);
+        @apply flex w-full gap-1 overflow-x-auto rounded-xl border border-brand-800 bg-brand-950 p-1 report-light:border-slate-200 report-light:bg-slate-100;
         -ms-overflow-style: none;
         scrollbar-width: none;
-    }
-
-    .report-view-page.report-theme-light .report-view-tabs {
-        background: oklch(0.48 0.22 310 / 0.06);
-        border-color: oklch(0.48 0.22 310 / 0.12);
-        box-shadow: inset 0 1px 3px oklch(0.48 0.22 310 / 0.04);
     }
 
     .report-view-tabs::-webkit-scrollbar {
@@ -2703,87 +2834,27 @@
     }
 
     .report-view-tab {
-        @apply relative cursor-pointer touch-manipulation rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-[transform,background-color,color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97] md:px-4 md:text-base;
-        color: oklch(0.75 0.06 310 / 0.7);
-        /* Stagger animation */
-        opacity: 0;
-        transform: translateY(6px);
-        animation: tabReveal 350ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
-        animation-delay: 120ms;
-    }
-
-    .report-view-tab:nth-child(2) {
-        animation-delay: 160ms;
-    }
-
-    .report-view-tab:nth-child(3) {
-        animation-delay: 200ms;
-    }
-
-    .report-view-tab:nth-child(4) {
-        animation-delay: 240ms;
-    }
-
-    .report-view-tab:nth-child(5) {
-        animation-delay: 280ms;
-    }
-
-    .report-view-tab:nth-child(6) {
-        animation-delay: 320ms;
-    }
-
-    .report-view-tab:nth-child(7) {
-        animation-delay: 360ms;
-    }
-
-    .report-view-tab:nth-child(8) {
-        animation-delay: 400ms;
-    }
-
-    .report-view-page.report-theme-light .report-view-tab {
-        color: oklch(0.4 0.04 310);
+        @apply relative cursor-pointer touch-manipulation rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap text-brand-200 transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:outline-none active:scale-[0.97] md:px-4 md:text-base report-light:text-slate-600;
     }
 
     @media (hover: hover) and (pointer: fine) {
         .report-view-tab:hover:not(.is-active) {
-            background: oklch(0.518 0.253 323.949 / 0.1);
-            color: oklch(0.85 0.1 323.949);
-        }
-
-        .report-view-page.report-theme-light .report-view-tab:hover:not(.is-active) {
-            background: oklch(0.48 0.22 310 / 0.07);
-            color: oklch(0.38 0.18 310);
+            @apply bg-brand-800 text-brand-50 report-light:bg-slate-200 report-light:text-slate-900;
         }
     }
 
     .report-view-tab.is-active {
-        @apply shadow-sm;
-        background: linear-gradient(135deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
-        color: white;
-        box-shadow: 0 2px 8px oklch(0.48 0.22 310 / 0.3);
-    }
-
-    .report-view-page.report-theme-light .report-view-tab.is-active {
-        background: linear-gradient(135deg, oklch(0.48 0.22 310), oklch(0.518 0.253 323.949));
-        color: white;
-        box-shadow: 0 2px 8px oklch(0.48 0.22 310 / 0.2);
+        @apply bg-brand-600 font-semibold text-white;
     }
 
     @media (hover: hover) and (pointer: fine) {
         .report-view-tab.is-active:hover {
-            background: linear-gradient(135deg, oklch(0.44 0.22 310), oklch(0.48 0.253 323.949));
-        }
-    }
-
-    @keyframes tabReveal {
-        to {
-            opacity: 1;
-            transform: translateY(0);
+            @apply bg-brand-500 report-light:bg-brand-700;
         }
     }
 
     .report-view-body {
-        @apply min-h-0 w-full flex-1 bg-purple-950 py-5 sm:py-6 md:py-8 lg:py-10 report-light:bg-slate-50;
+        @apply min-h-0 w-full flex-1 bg-brand-950 py-5 sm:py-6 md:py-8 lg:py-10 report-light:bg-slate-50;
     }
 
     .report-view-stack {
@@ -2810,18 +2881,18 @@
        the same three tracks, so every card in a row shares one internal rhythm
        and the row bottoms stay level whether or not a card carries a meta line. */
     .report-view-metric {
-        @apply grid rounded-xl border border-purple-400/35 bg-purple-900/55 p-3 shadow-sm ring-1 ring-white/10 md:p-4 report-light:border-slate-200 report-light:bg-white/90;
+        @apply grid rounded-xl border border-brand-800 bg-brand-900 p-3 md:p-4 report-light:border-slate-200 report-light:bg-white/90;
         grid-template-rows: auto 1fr auto;
     }
 
     .report-view-metric-label {
-        @apply text-sm leading-snug font-medium text-purple-200/80 report-light:text-slate-600;
+        @apply text-sm leading-snug font-medium text-brand-200 report-light:text-slate-600;
     }
 
     /* Bottom-aligned so a long currency figure at a smaller size still sits on
        the same baseline as the large plain numbers beside it. */
     .report-view-metric-value {
-        @apply self-end pt-1 text-xl font-semibold tracking-tight text-purple-50 tabular-nums md:text-2xl report-light:text-black;
+        @apply self-end pt-1 text-xl font-semibold tracking-tight text-brand-50 tabular-nums md:text-2xl report-light:text-black;
     }
 
     /* Sex-disaggregated series colors apply inside charts only */
@@ -2851,7 +2922,7 @@
     }
 
     .report-view-disagg-legend {
-        @apply flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-purple-200/85 report-light:text-slate-600;
+        @apply flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-brand-200 report-light:text-slate-600;
     }
 
     .report-view-disagg-legend-item {
@@ -2864,13 +2935,13 @@
        a couple of pixels taller and the value above it lands off-baseline
        against the cards that have no meta line. */
     .report-view-metric-meta {
-        @apply text-sm text-purple-200/70 report-light:text-slate-500;
+        @apply text-sm text-brand-300 report-light:text-slate-500;
         min-height: 1.25rem;
         line-height: 1.25rem;
     }
 
     .report-view-block {
-        @apply overflow-hidden rounded-xl border border-purple-400/35 bg-purple-900/55 p-3.5 shadow-sm ring-1 ring-white/10 md:p-4 report-light:border-slate-200 report-light:bg-white/90;
+        @apply overflow-hidden rounded-xl border border-brand-800 bg-brand-900 p-3.5 md:p-4 report-light:border-slate-200 report-light:bg-white/90;
     }
 
     .report-view-block-header {
@@ -2878,11 +2949,11 @@
     }
 
     .report-view-block-title {
-        @apply text-base font-semibold text-purple-50 md:text-lg report-light:text-black;
+        @apply text-base font-semibold text-brand-50 md:text-lg report-light:text-black;
     }
 
     .report-view-block-desc {
-        @apply text-sm font-normal text-purple-200/80 report-light:text-black;
+        @apply text-sm font-normal text-brand-200 report-light:text-black;
     }
 
     .report-view-quick-grid {
@@ -2898,12 +2969,12 @@
     }
 
     .report-view-quick-metric--divided {
-        @apply mt-2 border-t border-purple-500/10 pt-2 report-light:border-slate-200/80;
+        @apply mt-2 border-t border-brand-800/60 pt-2 report-light:border-slate-200/80;
     }
 
     /* Same pinned line box as the metric meta, and for the same reason. */
     .report-view-quick-meta {
-        @apply text-xs text-purple-300/60 report-light:text-slate-500;
+        @apply text-xs text-brand-300 report-light:text-slate-500;
         min-height: 1rem;
         line-height: 1rem;
     }
@@ -2915,7 +2986,7 @@
     /* Read-only mirrors of the edit screen's funding tables. Scroll container
        keeps the wide breakdown tables from forcing the page to scroll sideways. */
     .report-view-table-scroll {
-        @apply mt-3 -mx-1 [scrollbar-width:thin] overflow-x-auto px-1;
+        @apply -mx-1 mt-3 [scrollbar-width:thin] overflow-x-auto px-1;
     }
 
     /* `fixed` is what makes the shared column grid hold: without it each table
@@ -2941,15 +3012,15 @@
     }
 
     .report-view-table-head {
-        @apply border-b border-purple-400/30 px-3 pt-1 pb-2.5 align-bottom text-[0.6875rem] leading-tight font-semibold tracking-wider text-purple-200/80 uppercase report-light:border-slate-200 report-light:text-slate-600;
+        @apply border-b border-brand-800 px-3 pt-1 pb-2.5 align-bottom text-[0.6875rem] leading-tight font-semibold tracking-wider text-brand-200 uppercase report-light:border-slate-200 report-light:text-slate-600;
     }
 
     .report-view-table-rowhead {
-        @apply border-b border-purple-400/10 px-3 py-2.5 text-sm font-medium text-purple-100 report-light:border-slate-100 report-light:text-slate-900;
+        @apply border-b border-brand-800/60 px-3 py-2.5 text-sm font-medium text-brand-100 report-light:border-slate-100 report-light:text-slate-900;
     }
 
     .report-view-table-cell {
-        @apply border-b border-purple-400/10 px-3 py-2.5 text-sm text-purple-50 tabular-nums report-light:border-slate-100 report-light:text-black;
+        @apply border-b border-brand-800/60 px-3 py-2.5 text-sm text-brand-50 tabular-nums report-light:border-slate-100 report-light:text-black;
     }
 
     /* Last row carries no rule: the card edge already closes the table, and a
@@ -2961,17 +3032,27 @@
 
     /* Rows are wide and numbers are far from their label, so give the eye a
        horizontal rail to follow. Hover only — no motion, nothing to distract. */
+    /* Zebra. Totals are excluded — a banded totals row reads as just another
+       data row, and it already earns its own rule below. */
+    .report-view-table-row:nth-child(even):not(.report-view-table-row--total) .report-view-table-rowhead,
+    .report-view-table-row:nth-child(even):not(.report-view-table-row--total) .report-view-table-cell {
+        @apply bg-brand-800/40 report-light:bg-slate-100;
+    }
+
+    /* `tbody` is in this selector purely for weight: `:not()` lifts the stripe
+       above to (0,4,0), so the hover needs to clear that or it never shows on a
+       striped row. The tints also move a step apart for the same reason. */
     @media (hover: hover) and (pointer: fine) {
-        .report-view-table-row:hover .report-view-table-rowhead,
-        .report-view-table-row:hover .report-view-table-cell {
-            @apply bg-purple-400/10 report-light:bg-slate-50;
+        .report-view-table tbody .report-view-table-row:hover .report-view-table-rowhead,
+        .report-view-table tbody .report-view-table-row:hover .report-view-table-cell {
+            @apply bg-brand-800/75 report-light:bg-slate-200;
         }
     }
 
     /* "No data yet" is prose, not a figure — de-emphasised so it never reads as
        a measured value sitting among real ones. */
     .report-view-table-cell--muted {
-        @apply text-purple-200/60 report-light:text-slate-400;
+        @apply text-brand-300 report-light:text-slate-400;
     }
 
     .report-view-table-num {
@@ -2982,29 +3063,29 @@
        derived footer. */
     .report-view-table-row--total .report-view-table-rowhead,
     .report-view-table-row--total .report-view-table-cell {
-        @apply border-t border-purple-400/25 font-semibold report-light:border-slate-300;
+        @apply border-t border-brand-800 font-semibold report-light:border-slate-300;
     }
 
     /* Deliberately flatter than .report-view-metric (no shadow/ring): Quick Access is a secondary nav
        menu into the tabs below, not a second tier of headline data — it must read as lower priority. */
     .report-view-quick-item {
-        @apply cursor-pointer rounded-xl border border-purple-400/25 bg-purple-900/35 p-3.5 text-left transition-[transform,border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-purple-400/50 hover:bg-purple-900/55 focus-visible:ring-2 focus-visible:ring-purple-400/50 focus-visible:outline-none active:scale-[0.97] md:p-4 report-light:border-slate-200 report-light:bg-slate-50/60 report-light:hover:border-slate-400 report-light:hover:bg-slate-100;
+        @apply cursor-pointer rounded-xl border border-brand-800 bg-brand-900 p-3.5 text-left transition-[transform,border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-brand-700 hover:bg-brand-800 focus-visible:ring-2 focus-visible:ring-brand-400/50 focus-visible:outline-none active:scale-[0.97] md:p-4 report-light:border-slate-200 report-light:bg-slate-50/60 report-light:hover:border-slate-400 report-light:hover:bg-slate-100;
     }
 
     .report-view-quick-title {
-        @apply text-base font-medium tracking-wide text-purple-50 uppercase report-light:text-black;
+        @apply text-base font-medium tracking-wide text-brand-50 uppercase report-light:text-black;
     }
 
     .report-view-quick-label {
-        @apply mt-1 text-sm font-normal text-purple-200/80 report-light:text-black;
+        @apply mt-1 text-sm font-normal text-brand-200 report-light:text-black;
     }
 
     .report-view-quick-value {
-        @apply text-lg font-medium tracking-tight text-purple-50 report-light:text-black;
+        @apply text-lg font-medium tracking-tight text-brand-50 report-light:text-black;
     }
 
     .report-view-quick-value-sm {
-        @apply text-base font-medium text-purple-50 report-light:text-black;
+        @apply text-base font-medium text-brand-50 report-light:text-black;
     }
 
     .report-view-charts {
@@ -3033,19 +3114,19 @@
     }
 
     .report-view-empty {
-        @apply flex min-h-[min(32vh,13rem)] flex-col items-center justify-center gap-4 rounded-xl border border-purple-400/35 bg-purple-900/55 px-5 py-10 text-center shadow-sm ring-1 ring-white/10 report-light:border-slate-200 report-light:bg-white/90;
+        @apply flex min-h-[min(32vh,13rem)] flex-col items-center justify-center gap-4 rounded-xl border border-brand-800 bg-brand-900 px-5 py-10 text-center shadow-sm ring-1 ring-white/10 report-light:border-slate-200 report-light:bg-white/90;
     }
 
     .report-view-empty-icon {
-        @apply flex size-12 items-center justify-center rounded-full bg-purple-900/40 text-purple-200/80 report-light:bg-slate-200/80 report-light:text-slate-500;
+        @apply flex size-12 items-center justify-center rounded-full bg-brand-900/70 text-brand-200 report-light:bg-slate-200/80 report-light:text-slate-500;
     }
 
     .report-view-empty-title {
-        @apply text-base font-semibold text-purple-50 md:text-lg report-light:text-black;
+        @apply text-base font-semibold text-brand-50 md:text-lg report-light:text-black;
     }
 
     .report-view-empty-desc {
-        @apply max-w-md text-sm leading-relaxed font-normal text-purple-200/80 md:text-base report-light:text-black;
+        @apply max-w-md text-sm leading-relaxed font-normal text-brand-200 md:text-base report-light:text-black;
     }
 
     .report-view-loading {
@@ -3053,11 +3134,11 @@
     }
 
     .report-view-spinner {
-        @apply size-9 animate-spin rounded-full border-[3px] border-white/20 border-t-fuchsia-400 report-light:border-slate-300 report-light:border-t-slate-700;
+        @apply size-9 animate-spin rounded-full border-[3px] border-white/20 border-t-brand-300 report-light:border-slate-300 report-light:border-t-slate-700;
     }
 
     .report-view-loading-label {
-        @apply text-sm font-normal text-purple-200/80 report-light:text-black;
+        @apply text-sm font-normal text-brand-200 report-light:text-black;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -3084,10 +3165,6 @@
         }
 
         .report-view-spinner {
-            animation: none;
-        }
-
-        .report-view-hero-accent {
             animation: none;
         }
     }
@@ -3119,7 +3196,7 @@
     margin: 0 0 6px;
     padding-bottom: 4px;
     border-bottom: 1px solid #e2e8f0;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     line-height: 1.3;
     color: #0f172a;
@@ -3130,7 +3207,7 @@
     align-items: center;
     gap: 6px;
     padding: 2px 0;
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.35;
 }
 

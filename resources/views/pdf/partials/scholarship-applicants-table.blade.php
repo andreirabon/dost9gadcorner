@@ -23,7 +23,7 @@
         </thead>
         <tbody>
             @foreach($levelRows as $row)
-                <tr class="avoid-break">
+                <tr class="avoid-break @if($loop->even)zebra @endif">
                     <td class="strong">{{ $row['fullName'] ?? $row['label'] }}</td>
                     <td class="num">{{ number_format((int) ($row['female'] ?? 0)) }}</td>
                     <td class="num">{{ number_format((int) ($row['male'] ?? 0)) }}</td>

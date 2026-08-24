@@ -65,7 +65,9 @@ const formatAction = humanizeLabel;
 
             <div class="app-surface-card max-h-[calc(100vh-14rem)] overflow-auto rounded-2xl">
                 <table class="w-full text-left text-sm">
-                    <thead class="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                    <thead
+                        class="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-xs font-semibold tracking-wide text-slate-500 uppercase"
+                    >
                         <tr>
                             <th class="px-4 py-3">Name</th>
                             <th class="px-4 py-3">Action</th>
@@ -74,15 +76,15 @@ const formatAction = humanizeLabel;
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        <template v-for="log in logs.data" :key="log.id">
-                            <tr class="transition-colors duration-150 hover:bg-slate-50">
+                        <template v-for="(log, index) in logs.data" :key="log.id">
+                            <tr class="transition-colors duration-150 hover:bg-slate-200" :class="{ 'bg-slate-100': index % 2 === 1 }">
                                 <td class="px-4 py-3 font-medium text-slate-900">{{ log.actor_username }}</td>
                                 <td class="px-4 py-3 text-slate-700">{{ formatAction(log.action) }}</td>
                                 <td class="px-4 py-3 whitespace-nowrap text-slate-600">{{ formatDate(log.created_at) }}</td>
                                 <td class="px-4 py-3 text-right">
                                     <button
                                         type="button"
-                                        class="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:outline-none"
+                                        class="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition-colors duration-150 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:outline-none"
                                         :aria-expanded="expandedId === log.id"
                                         @click="toggle(log.id)"
                                     >
@@ -94,7 +96,7 @@ const formatAction = humanizeLabel;
                                     </button>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr :class="{ 'bg-slate-100': index % 2 === 1 }">
                                 <td colspan="4" class="p-0">
                                     <Transition
                                         enter-active-class="transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none"
@@ -140,8 +142,8 @@ const formatAction = humanizeLabel;
                             v-else
                             :href="link.url"
                             preserve-scroll
-                            class="rounded-lg px-3 py-1.5 text-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:outline-none"
-                            :class="link.active ? 'bg-blue-700 text-white' : 'text-slate-600 hover:bg-slate-100'"
+                            class="rounded-lg px-3 py-1.5 text-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:outline-none"
+                            :class="link.active ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-100'"
                         >
                             <span v-html="link.label" />
                         </Link>

@@ -15,19 +15,12 @@ withDefaults(defineProps<Props>(), {
     <header>
         <h3
             :class="
-                variant === 'report'
-                    ? 'mb-1 text-[13px] font-semibold tracking-[0.14em] text-black uppercase'
-                    : 'mb-0.5 text-base font-medium'
+                variant === 'report' ? 'mb-1 text-[0.8125rem] font-semibold tracking-[0.14em] text-black uppercase' : 'mb-0.5 text-base font-medium'
             "
         >
             {{ title }}
         </h3>
-        <p
-            v-if="description"
-            :class="
-                variant === 'report' ? 'mt-0.5 text-sm leading-snug text-black' : 'text-sm text-muted-foreground'
-            "
-        >
+        <p v-if="description" :class="variant === 'report' ? 'mt-0.5 text-sm leading-snug text-black' : 'text-sm text-muted-foreground'">
             {{ description }}
         </p>
     </header>

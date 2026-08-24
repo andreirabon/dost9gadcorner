@@ -322,6 +322,10 @@
             color: #0f172a;
         }
 
+        table.data tr.zebra td {
+            background-color: #f4f6f9;
+        }
+
         table.data tr.total td {
             background-color: #f8fafc;
             font-weight: bold;
@@ -596,7 +600,7 @@
                         <td class="num">{{ number_format($gfpsFemale) }}</td>
                         <td class="num">{{ $formatPercentage($gfpsFemale, $gfpsTotal) }}</td>
                     </tr>
-                    <tr class="avoid-break">
+                    <tr class="avoid-break zebra">
                         <td class="strong">Male</td>
                         <td class="num">{{ number_format($gfpsMale) }}</td>
                         <td class="num">{{ $formatPercentage($gfpsMale, $gfpsTotal) }}</td>
@@ -622,7 +626,7 @@
                 </thead>
                 <tbody>
                     @forelse($data['gfpsAssemblies'] as $assembly)
-                        <tr class="avoid-break">
+                        <tr class="avoid-break @if($loop->even)zebra @endif">
                             <td class="strong">{{ $assembly['label'] }}</td>
                             <td class="num">{{ number_format($assembly['female']) }}</td>
                             <td class="num">{{ number_format($assembly['male']) }}</td>
@@ -656,7 +660,7 @@
                 </thead>
                 <tbody>
                     @forelse($data['employeeStatuses'] as $status)
-                        <tr class="avoid-break">
+                        <tr class="avoid-break @if($loop->even)zebra @endif">
                             <td class="strong">{{ $status['label'] }}</td>
                             <td class="num">{{ number_format($status['female']) }}</td>
                             <td class="num">{{ number_format($status['male']) }}</td>
@@ -697,7 +701,7 @@
                         <td class="num">{{ number_format($scholarshipFemale) }}</td>
                         <td class="num">{{ $formatPercentage($scholarshipFemale, $scholarshipTotal) }}</td>
                     </tr>
-                    <tr class="avoid-break">
+                    <tr class="avoid-break zebra">
                         <td class="strong">Male</td>
                         <td class="num">{{ number_format($scholarshipMale) }}</td>
                         <td class="num">{{ $formatPercentage($scholarshipMale, $scholarshipTotal) }}</td>
@@ -745,7 +749,7 @@
                     </thead>
                     <tbody>
                         @foreach($data['scholarshipHistory'] as $entry)
-                            <tr class="avoid-break">
+                            <tr class="avoid-break @if($loop->even)zebra @endif">
                                 <td class="strong">{{ $entry['asOfDate'] ?? 'N/A' }}</td>
                                 <td>{{ $entry['schoolYearLabel'] ?: 'N/A' }}</td>
                                 <td class="num">{{ number_format($entry['femaleCount']) }}</td>
@@ -783,7 +787,7 @@
                             $monthFemale = (int) $month['female'] + (int) $month['femaleLed'];
                             $monthMale = (int) $month['male'] + (int) $month['maleLed'];
                         @endphp
-                        <tr class="avoid-break">
+                        <tr class="avoid-break @if($loop->even)zebra @endif">
                             <td class="strong">{{ $month['label'] }}</td>
                             <td class="num">{{ number_format($month['female']) }}</td>
                             <td class="num">{{ number_format($month['femaleLed']) }}</td>

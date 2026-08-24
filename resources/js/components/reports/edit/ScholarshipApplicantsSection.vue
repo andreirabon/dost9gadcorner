@@ -76,9 +76,10 @@ const levelTotal = (level: string, field: 'female_count' | 'male_count'): number
                         </div>
 
                         <div
-                            v-for="item in rowsForLevel(level.key)"
+                            v-for="(item, rowIndex) in rowsForLevel(level.key)"
                             :key="item.row.scholarship_program_id"
                             class="report-years-data-row report-years-data-row--4col"
+                            :class="{ 'is-striped': rowIndex % 2 === 1 }"
                         >
                             <div class="report-years-data-row-label">
                                 {{ item.label }}

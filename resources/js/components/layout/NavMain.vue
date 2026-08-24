@@ -52,7 +52,7 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
                             }}</span>
                             <span
                                 v-if="item.badge"
-                                class="ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[10px] leading-none font-medium text-primary group-data-[collapsible=icon]:hidden"
+                                class="ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[0.65rem] leading-none font-medium text-primary group-data-[collapsible=icon]:hidden"
                                 >{{ item.badge }}</span
                             >
                         </button>
@@ -72,7 +72,7 @@ function navItemIsActive(rawUrl: string, href: string): boolean {
                             }}</span>
                             <span
                                 v-if="item.badge"
-                                class="ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[10px] leading-none font-medium text-primary group-data-[collapsible=icon]:hidden"
+                                class="ml-auto rounded bg-primary/10 px-1.5 py-0.5 text-[0.65rem] leading-none font-medium text-primary group-data-[collapsible=icon]:hidden"
                                 >{{ item.badge }}</span
                             >
                         </Link>

@@ -2,34 +2,32 @@
 const year = new Date().getFullYear();
 </script>
 
+<!--
+    The same footer renders on the dark public site, the light report view, and
+    the light admin shell. It used to hard-code a white background plus a pair of
+    blue and teal radial washes, so on the public page it appeared as a white
+    slab under a near-black page, in a third colour family that existed nowhere
+    else. It now inherits: transparent ground, `currentColor` hairline, and text
+    opacity for the secondary line.
+-->
 <template>
-    <footer
-        class="relative isolate shrink-0 overflow-hidden border-t [color-scheme:light] border-slate-200 bg-white text-slate-700"
-        role="contentinfo"
-    >
-        <div aria-hidden="true" class="pointer-events-none absolute inset-0 bg-[radial-gradient(85%_80%_at_0%_0%,rgba(37,99,235,0.08),transparent_55%),radial-gradient(70%_70%_at_100%_100%,rgba(14,116,144,0.07),transparent_52%)]" />
-        <div
-            class="relative mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:py-6"
-        >
-            <p class="text-sm leading-relaxed text-slate-500">
-                © {{ year }}
-                <span class="font-medium text-slate-800"
-                    >Department of Science and Technology Region IX</span
-                >
+    <footer class="px-page-gutter shrink-0 border-t border-current/12 bg-transparent" role="contentinfo">
+        <div class="app-footer-inner">
+            <p class="leading-relaxed opacity-70">
+                &copy; {{ year }} <span class="font-medium opacity-100">Department of Science and Technology Region IX</span>
             </p>
-            <p
-                class="flex flex-wrap items-center gap-x-1.5 text-sm leading-normal text-slate-500"
-            >
+
+            <p class="flex flex-wrap items-center gap-x-1.5 leading-normal opacity-70">
                 <span class="shrink-0">Connect with us on</span>
                 <a
                     href="https://www.facebook.com/GADdost9"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="DOST-IX GAD on Facebook (opens in new tab)"
-                    class="group inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 transition-colors duration-200 hover:underline focus-visible:rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 text-slate-700 hover:text-blue-700 focus-visible:ring-blue-500/50 focus-visible:ring-offset-white"
+                    class="group inline-flex cursor-pointer items-center gap-1.5 font-medium underline-offset-2 opacity-100 transition-opacity duration-200 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-current/40 focus-visible:outline-none"
                 >
                     <svg
-                        class="block size-4.5 shrink-0 text-[#1877F2] transition-transform duration-200 ease-out group-hover:scale-110"
+                        class="block size-4 shrink-0 transition-transform duration-200 ease-out group-hover:scale-110"
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"

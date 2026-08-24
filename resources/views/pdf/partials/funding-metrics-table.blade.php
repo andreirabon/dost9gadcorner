@@ -72,7 +72,7 @@
         </thead>
         <tbody>
             @foreach($metricRows as $row)
-                <tr class="avoid-break">
+                <tr class="avoid-break @if($loop->even)zebra @endif">
                     <td class="strong">{{ $row['label'] }}</td>
                     <td class="num">{{ number_format((int) ($row['fundedProjectsCount'] ?? 0)) }}</td>
                     <td class="num">PHP {{ number_format((float) ($row['fundedProjectsValue'] ?? 0), 2) }}</td>

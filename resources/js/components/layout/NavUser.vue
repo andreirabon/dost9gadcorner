@@ -28,18 +28,18 @@ function handleLogout(): void {
                         <!-- Avatar -->
                         <Avatar class="size-8 shrink-0 overflow-hidden rounded-lg ring-1 ring-white/10">
                             <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="displayHandle" />
-                            <AvatarFallback class="rounded-lg bg-blue-700 text-[11px] font-semibold text-white">
+                            <AvatarFallback class="rounded-lg bg-brand-600 text-[0.7rem] font-semibold text-white">
                                 {{ getInitials(displayHandle) }}
                             </AvatarFallback>
                         </Avatar>
 
                         <!-- Name + role -->
                         <div class="min-w-0 flex-1 text-left">
-                            <p class="truncate text-[13px] leading-tight font-semibold text-blue-50" :title="displayHandle">
+                            <p class="truncate text-[0.8125rem] leading-tight font-semibold text-brand-50" :title="displayHandle">
                                 {{ displayHandle }}
                             </p>
                             <!-- /60 measures 5.1:1; /45 measured 3.46:1 and failed AA. -->
-                            <p class="mt-0.5 text-[11px] font-medium text-blue-200/60">Signed in</p>
+                            <p class="mt-0.5 text-[0.7rem] font-medium text-brand-200/80">Signed in</p>
                         </div>
                     </div>
                 </div>
@@ -50,7 +50,7 @@ function handleLogout(): void {
                 <div class="hidden justify-center py-1 group-data-[collapsible=icon]:flex">
                     <Avatar class="size-9 shrink-0 overflow-hidden rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] ring-1 ring-white/10">
                         <AvatarImage v-if="showAvatar" :src="user.avatar!" :alt="displayHandle" />
-                        <AvatarFallback class="rounded-xl bg-blue-800/60 text-[11px] font-semibold text-blue-100">
+                        <AvatarFallback class="rounded-xl bg-brand-800 text-[0.7rem] font-semibold text-brand-100">
                             {{ getInitials(displayHandle) }}
                         </AvatarFallback>
                     </Avatar>

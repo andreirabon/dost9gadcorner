@@ -25,7 +25,7 @@ const closeModal = () => {
             <button
                 type="button"
                 @click="closeModal"
-                class="modal-close-btn touch-target tap-highlight-none shrink-0 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                class="modal-close-btn touch-target tap-highlight-none shrink-0 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:ring-2 focus:ring-brand-500 focus:outline-none"
                 aria-label="Close modal"
             >
                 <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

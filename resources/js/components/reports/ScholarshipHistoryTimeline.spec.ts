@@ -33,8 +33,8 @@ describe('ScholarshipHistoryTimeline', () => {
 
         const buttons = wrapper.findAll('button');
         expect(buttons[0].text()).toContain('Latest');
-        expect(buttons[0].attributes('class')).toContain('border-purple-400/50');
-        expect(buttons[1].attributes('class')).not.toContain('border-purple-400/50');
+        expect(buttons[0].attributes('class')).toContain('border-brand-700');
+        expect(buttons[1].attributes('class')).not.toContain('border-brand-700');
     });
 
     it('clicking a collapsed entry expands it independently of other entries', async () => {
@@ -46,8 +46,8 @@ describe('ScholarshipHistoryTimeline', () => {
 
         // Entries expand independently (not an accordion): the newly-clicked entry expands
         // and the already-expanded "Latest" entry stays expanded too.
-        expect(buttons[1].attributes('class')).toContain('border-purple-400/50');
-        expect(buttons[0].attributes('class')).toContain('border-purple-400/50');
+        expect(buttons[1].attributes('class')).toContain('border-brand-700');
+        expect(buttons[0].attributes('class')).toContain('border-brand-700');
     });
 
     it('clicking an expanded entry collapses it back', async () => {
@@ -57,6 +57,6 @@ describe('ScholarshipHistoryTimeline', () => {
         const buttons = wrapper.findAll('button');
         await buttons[0].trigger('click');
 
-        expect(buttons[0].attributes('class')).not.toContain('border-purple-400/50');
+        expect(buttons[0].attributes('class')).not.toContain('border-brand-700');
     });
 });

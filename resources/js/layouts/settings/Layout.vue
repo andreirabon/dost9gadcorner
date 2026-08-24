@@ -31,18 +31,14 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
             <aside class="w-full">
                 <div class="app-surface-card rounded-2xl p-2">
                     <nav class="flex flex-col space-y-1">
-                        <p class="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-[0.16em] text-slate-500 uppercase">
-                            Account
-                        </p>
+                        <p class="px-3 pt-2 pb-1 text-[0.7rem] font-semibold tracking-[0.16em] text-slate-500 uppercase">Account</p>
                         <Button
                             v-for="item in sidebarNavItems"
                             :key="item.href"
                             variant="ghost"
                             :class="[
                                 'h-10 w-full cursor-pointer justify-start rounded-xl px-3 text-sm font-medium transition-[background-color,color,transform] duration-200 ease-out active:scale-[0.97]',
-                                currentPath === item.href
-                                    ? 'bg-blue-600 text-white hover:bg-blue-500'
-                                    : 'text-slate-700 hover:bg-slate-100',
+                                currentPath === item.href ? 'bg-brand-600 text-white hover:bg-brand-500' : 'text-slate-700 hover:bg-slate-100',
                             ]"
                             as-child
                         >

@@ -51,7 +51,12 @@ function rowTotal(row: Record<string, unknown>): number {
                     <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
                     <span class="report-years-data-head-label report-years-data-head-label--center">Total per assembly</span>
                 </div>
-                <div v-for="(row, index) in form.rows" :key="row.period_id" class="report-years-data-row report-years-data-row--4col">
+                <div
+                    v-for="(row, index) in form.rows"
+                    :key="row.period_id"
+                    class="report-years-data-row report-years-data-row--4col"
+                    :class="{ 'is-striped': index % 2 === 1 }"
+                >
                     <div class="report-years-data-row-label">
                         {{ rows[index]?.label }}
                     </div>

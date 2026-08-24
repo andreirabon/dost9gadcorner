@@ -2,80 +2,44 @@
 import type { YearItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { ArrowUpRight } from '@lucide/vue';
-import { computed } from 'vue';
 
 defineOptions({
     name: 'YearCard',
 });
 
-const props = defineProps<{
+defineProps<{
     year: YearItem;
 }>();
-
-const yearTheme = computed(() => {
-    const themes: Record<string, { border: string; bg: string; accent: string }> = {
-        '2025': {
-            border: 'border-fuchsia-400/35',
-            bg: 'bg-linear-to-br from-fuchsia-900/40 via-purple-900/50 to-purple-950/60',
-            accent: 'text-fuchsia-200/90',
-        },
-        '2026': {
-            border: 'border-purple-400/35',
-            bg: 'bg-linear-to-br from-purple-900/45 via-fuchsia-950/35 to-purple-950/60',
-            accent: 'text-purple-200/90',
-        },
-        default: {
-            border: 'border-purple-400/30',
-            bg: 'bg-linear-to-br from-purple-900/40 via-fuchsia-950/30 to-purple-950/55',
-            accent: 'text-purple-200/85',
-        },
-    };
-
-    return themes[props.year.year] ?? themes.default;
-});
 </script>
 
+<!--
+    Every card is the same card. It used to pick a different gradient per year
+    from a hard-coded map, which meant 2025 and 2026 looked like different kinds
+    of thing and any year outside the map looked like a third kind. The year is
+    the only variable, and it is already the largest element on the card.
+-->
 <template>
     <Link
         :href="year.href"
         prefetch
-        :class="[
-            'year-card group touch-target tap-highlight-none relative flex min-h-36 flex-col overflow-hidden rounded-xl border p-4 text-left shadow-[0_8px_28px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/10 contain-[paint] transition-[transform,border-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none active:scale-[0.98] sm:min-h-40 sm:p-5',
-            yearTheme.border,
-            yearTheme.bg,
-            '[@media(hover:hover)_and_(pointer:fine)]:hover:border-purple-400/50',
-        ]"
-        :aria-label="`View ${year.year} sex-disaggregated data report`"
+        class="group touch-target tap-highlight-none flex min-h-40 flex-col rounded-xl border border-brand-800 bg-brand-900 p-5 text-left transition-[transform,border-color,background-color] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950 focus-visible:outline-none active:scale-[0.98] motion-reduce:transition-none [@media(hover:hover)_and_(pointer:fine)]:hover:border-brand-700 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-brand-800"
+        :aria-label="`View the ${year.year} sex-disaggregated data report`"
     >
-        <p
-            :class="[
-                'text-[0.6875rem] font-semibold tracking-[0.14em] uppercase',
-                yearTheme.accent,
-            ]"
-        >
-            Annual report
-        </p>
+        <p class="home-eyebrow">Annual report</p>
 
-        <h3 class="mt-2 font-sans text-3xl font-bold tracking-tighter text-purple-50 sm:text-4xl">
+        <h3 class="mt-2 text-4xl font-semibold tracking-tight text-brand-50 tabular-nums">
             {{ year.year }}
         </h3>
 
-        <p
-            v-if="year.description"
-            class="mt-1.5 line-clamp-3 flex-1 text-sm leading-relaxed text-purple-200/80"
-        >
+        <p v-if="year.description" class="mt-2 line-clamp-3 flex-1 text-sm leading-relaxed text-brand-200">
             {{ year.description }}
         </p>
-        <p v-else class="mt-1.5 flex-1 text-sm text-purple-200/60">
-            Open the full report for indicators, activities, and outcomes.
-        </p>
+        <p v-else class="mt-2 flex-1 text-sm leading-relaxed text-brand-300">Indicators, activities, and outcomes for the reporting year.</p>
 
-        <span
-            class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-fuchsia-200/90 transition-[transform,opacity] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:gap-2 motion-reduce:transition-none"
-        >
+        <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-300">
             View report
             <ArrowUpRight
-                class="size-3.5 shrink-0 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+                class="size-4 shrink-0 transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none"
                 stroke-width="2"
                 aria-hidden="true"
             />

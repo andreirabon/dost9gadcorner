@@ -193,14 +193,6 @@ const selectTab = (tab: TabType) => {
 
 const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
-        tab: 'GFPS',
-        title: 'GFPS',
-        metrics: [
-            { label: 'Total Members', value: gfpsStats.value.totalMembers },
-            { label: 'Female Members', value: gfpsStats.value.femaleCount, meta: `${gfpsStats.value.femalePercentage}%` },
-        ],
-    },
-    {
         tab: 'DOST IX Employees',
         title: 'DOST IX Employees',
         metrics: [
@@ -209,11 +201,11 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
         ],
     },
     {
-        tab: 'Scholarship',
-        title: 'Scholarship',
+        tab: 'GFPS',
+        title: 'GFPS',
         metrics: [
-            { label: 'Total Scholars', value: scholarsStats.value.totalScholars },
-            { label: 'Female Scholars', value: scholarsStats.value.femaleCount, meta: `${scholarsStats.value.femalePercentage}%` },
+            { label: 'Total Members', value: gfpsStats.value.totalMembers },
+            { label: 'Female Members', value: gfpsStats.value.femaleCount, meta: `${gfpsStats.value.femalePercentage}%` },
         ],
     },
     {
@@ -248,6 +240,14 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
             { label: 'Total Funding', value: formatFundingOrEmpty(giaStats.value.totalAmount) },
         ],
     },
+    {
+        tab: 'Scholarship',
+        title: 'Scholarship',
+        metrics: [
+            { label: 'Total Scholars', value: scholarsStats.value.totalScholars },
+            { label: 'Female Scholars', value: scholarsStats.value.femaleCount, meta: `${scholarsStats.value.femalePercentage}%` },
+        ],
+    },
 ]);
 
 onMounted(() => {
@@ -265,19 +265,13 @@ onMounted(() => {
 <template>
     <article class="report-view-shell" :aria-labelledby="`report-title-${year.id}`">
         <header class="animate-fade-in-up">
-            <div class="report-view-hero-accent"></div>
             <div class="report-view-hero px-page-gutter">
                 <div class="report-view-hero-top">
                     <div class="report-view-heading">
-                        <div class="report-view-kicker-row">
-                            <span class="report-view-year-badge">{{ year.year }}</span>
-                            <p class="report-view-kicker">Annual report</p>
-                        </div>
                         <div class="space-y-2">
                             <h1 :id="`report-title-${year.id}`" data-focus-anchor="true" tabindex="-1" class="report-view-title">
                                 {{ year.title }}
                             </h1>
-                            <p v-if="year.description" class="report-view-subtitle">{{ year.description }}</p>
                         </div>
                     </div>
                     <div class="report-view-actions">
@@ -288,7 +282,6 @@ onMounted(() => {
                         </Link>
                     </div>
                 </div>
-                <div class="report-view-hero-divider" aria-hidden="true"></div>
                 <div v-if="!isYearDataPending" class="report-view-tabs-container">
                     <ReportTabNav :active-tab="activeTab" @select="selectTab" />
                 </div>

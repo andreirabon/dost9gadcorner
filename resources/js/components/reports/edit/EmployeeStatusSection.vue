@@ -48,7 +48,12 @@ const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_cou
                     <span class="report-years-data-head-label report-years-data-head-label--center">Female</span>
                     <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
                 </div>
-                <div v-for="(row, index) in form.rows" :key="row.employment_status_id" class="report-years-data-row report-years-data-row--3col">
+                <div
+                    v-for="(row, index) in form.rows"
+                    :key="row.employment_status_id"
+                    class="report-years-data-row report-years-data-row--3col"
+                    :class="{ 'is-striped': index % 2 === 1 }"
+                >
                     <div class="report-years-data-row-label">
                         {{ rows[index]?.label }}
                     </div>

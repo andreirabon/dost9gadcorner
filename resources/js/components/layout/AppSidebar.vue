@@ -95,7 +95,7 @@ const adminNavItems = computed((): NavItem[] => {
                 </SidebarMenu>
                 <button
                     type="button"
-                    class="sidebar-collapse-btn shrink-0 rounded-lg p-2 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:p-2.5 focus-visible:ring-2 focus-visible:ring-blue-300/40 focus-visible:outline-none active:scale-[0.93]"
+                    class="sidebar-collapse-btn shrink-0 rounded-lg p-2 transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-[collapsible=icon]:rounded-xl group-data-[collapsible=icon]:p-2.5 focus-visible:ring-2 focus-visible:ring-brand-400/50 focus-visible:outline-none active:scale-[0.93]"
                     :aria-label="isMobile ? 'Close sidebar' : isIconOnly ? 'Expand sidebar to full width' : 'Collapse sidebar to icon strip'"
                     :aria-expanded="isMobile ? true : !isIconOnly"
                     :title="isMobile ? 'Close sidebar' : isIconOnly ? 'Expand sidebar (full width)' : 'Collapse to icon strip (Ctrl+B)'"
@@ -125,7 +125,7 @@ const adminNavItems = computed((): NavItem[] => {
                     <SidebarMenuButton as-child size="default" tooltip="Go back to homepage">
                         <Link
                             :href="route('index')"
-                            class="sidebar-back-link flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
+                            class="sidebar-back-link flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[0.8125rem] font-medium transition-[background-color,color,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97]"
                         >
                             <ArrowLeft class="size-4 shrink-0" :stroke-width="1.8" aria-hidden="true" />
                             <span class="truncate group-data-[collapsible=icon]:hidden">Homepage</span>

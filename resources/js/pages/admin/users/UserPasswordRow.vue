@@ -61,7 +61,7 @@ function submit(): void {
                 </span>
                 <div class="min-w-0">
                     <p class="truncate text-sm font-semibold text-slate-900">{{ username }}</p>
-                    <span class="mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold" :class="badge.chipClass">
+                    <span class="mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[0.7rem] font-semibold" :class="badge.chipClass">
                         {{ badge.label }}
                     </span>
                 </div>
@@ -106,13 +106,11 @@ function submit(): void {
             <div class="flex items-center gap-3">
                 <Button
                     :disabled="form.processing"
-                    class="h-9 cursor-pointer rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-600 active:scale-[0.97]"
+                    class="h-9 cursor-pointer rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-500 active:scale-[0.97]"
                 >
                     Save password
                 </Button>
-                <Button type="button" variant="ghost" class="h-9 cursor-pointer rounded-lg px-3 text-sm" @click="cancelEditing">
-                    Cancel
-                </Button>
+                <Button type="button" variant="ghost" class="h-9 cursor-pointer rounded-lg px-3 text-sm" @click="cancelEditing"> Cancel </Button>
                 <Transition
                     enter-active-class="transition duration-200 ease-out"
                     enter-from-class="opacity-0"

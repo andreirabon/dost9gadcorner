@@ -54,7 +54,12 @@ const { form, save, error } = useRowSection({
                         <span class="report-years-data-head-label report-years-data-head-label--center">Male</span>
                         <span class="report-years-data-head-label report-years-data-head-label--center">Male-led</span>
                     </div>
-                    <div v-for="(row, index) in form.rows" :key="row.report_month_id" class="report-years-data-row report-years-data-row--5col">
+                    <div
+                        v-for="(row, index) in form.rows"
+                        :key="row.report_month_id"
+                        class="report-years-data-row report-years-data-row--5col"
+                        :class="{ 'is-striped': index % 2 === 1 }"
+                    >
                         <div class="report-years-data-row-label">
                             {{ rows[index]?.label }}
                         </div>

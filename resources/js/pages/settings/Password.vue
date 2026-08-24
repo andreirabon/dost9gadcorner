@@ -103,7 +103,7 @@ const updatePassword = () => {
                     <div class="flex items-center gap-4">
                         <Button
                             :disabled="form.processing"
-                            class="h-10 cursor-pointer rounded-xl border border-blue-800/15 bg-blue-700 px-5 text-sm font-semibold text-white transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-blue-600 active:scale-[0.97]"
+                            class="h-10 cursor-pointer rounded-xl border border-brand-700/40 bg-brand-600 px-5 text-sm font-semibold text-white transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-brand-500 active:scale-[0.97]"
                         >
                             Save password
                         </Button>

@@ -23,8 +23,8 @@ const SCROLL_FOCUS_DELAY_MS = 600;
 
 let focusTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
-const scrollToSection = (sectionId: string): void => {
-    const section = document.getElementById(sectionId);
+const scrollToYears = (): void => {
+    const section = document.getElementById('yearly');
     if (!section) return;
 
     const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
@@ -37,9 +37,6 @@ const scrollToSection = (sectionId: string): void => {
     }, SCROLL_FOCUS_DELAY_MS);
 };
 
-const scrollToYears = (): void => scrollToSection('yearly');
-const scrollToOrgChart = (): void => scrollToSection('org-chart');
-
 onUnmounted(() => {
     clearTimeout(focusTimeoutId);
 });
@@ -47,10 +44,15 @@ onUnmounted(() => {
 
 <template>
     <Head title="Home" />
-    <div class="flex min-h-dvh min-w-0 flex-col">
-        <div class="pb-safe min-w-0 flex-1 bg-purple-950 text-purple-50 [color-scheme:dark]">
-            <HomeTopNav />
-            <HeroSection @scroll-to-years="scrollToYears" @scroll-to-org-chart="scrollToOrgChart" />
+    <!--
+        The footer sits inside the dark shell. It was a white bar bolted onto the
+        bottom of a near-black page, which read as a rendering fault rather than
+        a footer.
+    -->
+    <div class="home-shell pb-safe flex min-h-dvh min-w-0 flex-col [color-scheme:dark]">
+        <HomeTopNav />
+        <div class="min-w-0 flex-1">
+            <HeroSection @scroll-to-years="scrollToYears" />
             <GadStrategicFrameworkSection />
             <OrganizationalChartSection />
             <YearlySection :years="years" />

@@ -15,7 +15,7 @@
         </thead>
         <tbody>
             @foreach($rows as $row)
-                <tr class="avoid-break">
+                <tr class="avoid-break @if($loop->even)zebra @endif">
                     <td class="strong">{{ $row['label'] }}</td>
                     <td class="num">{{ number_format($row['maleProjects']) }}</td>
                     <td class="num">PHP {{ number_format($row['maleAmount'], 2) }}</td>

@@ -1,1 +1,0 @@
-import{d as s,x as t,y as a,o,c as r,b as n,t as c}from"./app-BOK-tckl.js";const i={class:"text-sm text-red-600"},_=s({__name:"InputError",props:{message:{}},setup(e){return(m,p)=>t((o(),r("div",null,[n("p",i,c(e.message),1)],512)),[[a,e.message]])}});export{_};

@@ -15,9 +15,9 @@ defineOptions({
                 decoding="async"
             />
         </div>
-        <div class="group-data-[collapsible=icon]:hidden min-w-0 flex-1 text-left leading-tight">
-            <span class="block text-[15px] font-semibold tracking-[-0.02em] text-blue-50">GAD Database</span>
-            <span class="block text-[10.5px] font-medium tracking-[0.04em] text-blue-200/40 uppercase">DOST Region IX</span>
+        <div class="min-w-0 flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
+            <span class="block text-sm font-semibold tracking-[-0.02em] text-brand-50">GAD Database</span>
+            <span class="block text-[0.65rem] font-medium tracking-[0.04em] text-brand-200/70 uppercase">DOST Region IX</span>
         </div>
     </div>
 </template>

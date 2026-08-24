@@ -14,7 +14,6 @@ const props = withDefaults(defineProps<Props>(), {
     hideAvatar: false,
 });
 
-
 const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '');
 
 const displayHandle = computed(() => props.user.username?.trim() || '—');
@@ -29,7 +28,7 @@ const displayHandle = computed(() => props.user.username?.trim() || '—');
     </Avatar>
 
     <div class="grid min-w-0 flex-1 text-left leading-tight">
-        <span class="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">Username</span>
+        <span class="text-[0.65rem] font-semibold tracking-[0.08em] text-slate-500 uppercase">Username</span>
         <span class="mt-0.5 truncate font-sans text-sm font-semibold tracking-tight text-slate-900 tabular-nums">{{ displayHandle }}</span>
     </div>
 </template>

@@ -31,7 +31,9 @@ onMounted(() => {
     document.body.prepend(sentinel);
 
     observer = new IntersectionObserver(
-        ([entry]) => { scrolled.value = !entry.isIntersecting; },
+        ([entry]) => {
+            scrolled.value = !entry.isIntersecting;
+        },
         { threshold: 0 },
     );
     observer.observe(sentinel);
@@ -43,12 +45,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <header
-        class="home-topnav"
-        :class="{ 'home-topnav--scrolled': scrolled }"
-        role="banner"
-    >
-        <div class="px-safe mx-auto grid w-full max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-4">
+    <header class="home-topnav px-page-gutter" :class="{ 'home-topnav--scrolled': scrolled }" role="banner">
+        <div class="mx-auto grid w-full max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-4">
             <!-- Left: logos -->
             <div class="flex items-center justify-start gap-2.5 sm:gap-3">
                 <img
@@ -77,35 +75,16 @@ onBeforeUnmount(() => {
             <!-- Center: section links (desktop) -->
             <nav class="hidden items-center justify-center lg:flex">
                 <div class="home-topnav-pills">
-                    <a
-                        href="/#gad-strategic-framework"
-                        class="home-topnav-pill"
-                    >
-                        Strategic Framework
-                    </a>
-                    <a
-                        href="/#org-chart"
-                        class="home-topnav-pill"
-                    >
-                        Organizational Chart
-                    </a>
-                    <a
-                        href="/#yearly"
-                        class="home-topnav-pill"
-                    >
-                        Data Reports
-                    </a>
+                    <a href="/#gad-strategic-framework" class="home-topnav-pill"> Strategic Framework </a>
+                    <a href="/#org-chart" class="home-topnav-pill"> Organizational Chart </a>
+                    <a href="/#yearly" class="home-topnav-pill"> Data Reports </a>
                 </div>
             </nav>
 
             <!-- Right: auth actions -->
             <nav class="flex items-center justify-end gap-2 sm:gap-2.5" aria-label="Site">
                 <!-- Logged out: login button -->
-                <Link
-                    v-if="!user"
-                    :href="route('login')"
-                    class="home-topnav-login"
-                >
+                <Link v-if="!user" :href="route('login')" class="home-topnav-login">
                     <LogIn class="size-4 shrink-0" :stroke-width="1.8" aria-hidden="true" />
                     <span>Log in</span>
                 </Link>
@@ -122,13 +101,7 @@ onBeforeUnmount(() => {
                     </Link>
 
                     <!-- Logout button -->
-                    <Link
-                        class="home-topnav-logout"
-                        method="post"
-                        :href="route('logout')"
-                        @click="flushLogout"
-                        as="button"
-                    >
+                    <Link class="home-topnav-logout" method="post" :href="route('logout')" @click="flushLogout" as="button">
                         <LogOut class="size-4 shrink-0" :stroke-width="1.8" aria-hidden="true" />
                         <span>Log out</span>
                     </Link>

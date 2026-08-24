@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ArrowDown } from '@lucide/vue';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 defineOptions({
@@ -18,11 +19,17 @@ let reducedMotionQuery: MediaQueryList | null = null;
 let heroVisibilityObserver: IntersectionObserver | null = null;
 let hasPrimedSecondVideo = false;
 
-/** Lower = more faded video (e.g. opacity-10, opacity-15, opacity-20). */
-const heroVideoActiveOpacityClass = 'opacity-50';
+/**
+ * The video is a texture behind the headline, not the subject. At 50% a face
+ * filling the frame read as the content and the h1 sat across the bridge of a
+ * nose; 25% and desaturated under the scrim below keeps it as movement in
+ * the background, and stops the footage's own colours from competing with the
+ * one accent the rest of the page uses.
+ */
+const heroVideoActiveOpacityClass = 'opacity-25';
 
 const heroVideoClass =
-    'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:opacity-0! motion-reduce:transition-none';
+    'pointer-events-none absolute inset-0 h-full w-full object-cover saturate-50 transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:opacity-0! motion-reduce:transition-none';
 
 const prefersReducedMotion = (): boolean => reducedMotionQuery?.matches ?? false;
 
@@ -31,9 +38,7 @@ const shouldPlayHeroVideos = (): boolean => {
 };
 
 const getHeroVideos = (): HTMLVideoElement[] => {
-    return [heroVideoOneRef.value, heroVideoTwoRef.value].filter(
-        (video): video is HTMLVideoElement => video !== null,
-    );
+    return [heroVideoOneRef.value, heroVideoTwoRef.value].filter((video): video is HTMLVideoElement => video !== null);
 };
 
 const pauseAndResetVideo = (video: HTMLVideoElement): void => {
@@ -144,24 +149,17 @@ onBeforeUnmount(() => {
 
 defineEmits<{
     scrollToYears: [];
-    scrollToOrgChart: [];
 }>();
 </script>
 
 <template>
-    <section
-        aria-labelledby="hero-heading"
-        class="home-index-section--hero relative isolate bg-linear-to-b from-purple-950 via-purple-950/98 to-fuchsia-950/35"
-    >
+    <section aria-labelledby="hero-heading" class="home-index-section--hero relative isolate bg-brand-950">
         <div class="absolute inset-0 -z-10 overflow-hidden contain-[paint]" aria-hidden="true">
             <div class="absolute inset-0">
                 <video
                     ref="heroVideoOneRef"
                     :src="heroVideoSources[0]"
-                    :class="[
-                        heroVideoClass,
-                        activeVideoIndex === 0 ? ['z-1', heroVideoActiveOpacityClass] : 'z-0 opacity-0',
-                    ]"
+                    :class="[heroVideoClass, activeVideoIndex === 0 ? ['z-1', heroVideoActiveOpacityClass] : 'z-0 opacity-0']"
                     muted
                     playsinline
                     autoplay
@@ -175,10 +173,7 @@ defineEmits<{
                 <video
                     ref="heroVideoTwoRef"
                     :src="heroVideoSources[1]"
-                    :class="[
-                        heroVideoClass,
-                        activeVideoIndex === 1 ? ['z-1', heroVideoActiveOpacityClass] : 'z-0 opacity-0',
-                    ]"
+                    :class="[heroVideoClass, activeVideoIndex === 1 ? ['z-1', heroVideoActiveOpacityClass] : 'z-0 opacity-0']"
                     muted
                     playsinline
                     preload="none"
@@ -189,65 +184,38 @@ defineEmits<{
                     @ended="onHeroVideoEnded(1)"
                 />
             </div>
-            <div class="absolute inset-0 bg-linear-to-b from-purple-950/88 via-purple-950/72 to-fuchsia-950/55" />
-            <div
-                aria-hidden="true"
-                class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(192,38,211,0.16),transparent_72%)]"
-            />
-            <div
-                aria-hidden="true"
-                class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-size-[64px_64px] opacity-50"
-            />
+            <!--
+                One scrim, doing two jobs: it holds text contrast over whichever
+                video frame is playing, and it lands on the page ground at the
+                bottom so the hero does not end in a visible seam. It replaced
+                three stacked layers (a purple-to-fuchsia fade, a magenta radial
+                glow, and a grid overlay) that fought each other for the same
+                surface.
+            -->
+            <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(21,14,34,0.82)_0%,rgba(21,14,34,0.88)_60%,#150e22_100%)]" />
         </div>
 
-        <div class="px-page-gutter relative z-10 mx-auto w-full max-w-5xl text-center">
-            <div class="flex flex-col items-center gap-4 py-8">
-                <!-- <div
-                    class="flex flex-row flex-nowrap items-center justify-center gap-6 sm:gap-8 md:gap-10"
-                    aria-label="DOST and GAD logos"
+        <div class="px-page-gutter relative z-10 w-full">
+            <div class="mx-auto flex w-full max-w-7xl flex-col items-start gap-6 py-8">
+                <p class="text-xs font-semibold tracking-[0.14em] text-brand-300 uppercase sm:text-sm">
+                    Department of Science and Technology &middot; Region IX
+                </p>
+
+                <h1
+                    id="hero-heading"
+                    class="m-0 max-w-[16ch] text-[clamp(2.25rem,5vw+0.5rem,4.5rem)] leading-[1.05] font-semibold tracking-tight text-balance text-brand-50"
                 >
-                    <img
-                        src="/dostlogo.png"
-                        alt="Department of Science and Technology"
-                        class="h-16 w-auto opacity-95 sm:h-20 md:h-24"
-                        loading="eager"
-                        decoding="async"
-                        fetchpriority="high"
-                    />
-                    <img
-                        src="/gadlogo.png"
-                        alt="Gender and Development"
-                        class="h-16 w-auto opacity-95 sm:h-20 md:h-24"
-                        loading="eager"
-                        decoding="async"
-                    />
-                </div> -->
+                    Gender and Development Corner
+                </h1>
 
-                <div class="flex flex-col items-center">
-                    <p class="mb-1.5 text-sm font-semibold tracking-widest text-fuchsia-300/90 uppercase md:mb-2">
-                        Department of Science and Technology Region IX
-                    </p>
-                    <h1
-                        id="hero-heading"
-                        class="m-0 text-[clamp(1.5rem,4.5vw+0.5rem,4.5rem)] font-semibold leading-tight tracking-tighter text-balance text-purple-100"
-                    >
-                        Gender and Development Corner
-                    </h1>
-                    <p class="mt-3 max-w-[55ch] text-lg leading-relaxed text-purple-200/80 sm:mt-4 sm:text-xl md:mt-5">
-                        Discover how our projects drive gender equality, women's empowerment, and inclusive development through science and technology.
-                    </p>
-                </div>
+                <p class="max-w-[58ch] text-lg leading-relaxed text-pretty text-brand-200 sm:text-xl">
+                    The strategic framework, focal point structure, and yearly sex-disaggregated data behind gender mainstreaming at DOST Region IX.
+                </p>
 
-                <div class="mt-4 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <!-- <button
-                        type="button"
-                        @click="$emit('scrollToYears')"
-                        class="hero-cta touch-target inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-purple-400/50 bg-purple-600 px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-purple-950/40 transition-[transform,background-color,border-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-purple-950 focus-visible:outline-none"
-                    >
-                        Sex Disaggregated Data Reports
-                        <ArrowRight class="hero-cta-icon size-4 shrink-0" aria-hidden="true" :stroke-width="2.5" />
-                    </button> -->
-                </div>
+                <button type="button" class="home-cta" @click="$emit('scrollToYears')">
+                    Browse the yearly reports
+                    <ArrowDown class="home-cta-icon size-4 shrink-0" aria-hidden="true" :stroke-width="2.25" />
+                </button>
             </div>
         </div>
     </section>

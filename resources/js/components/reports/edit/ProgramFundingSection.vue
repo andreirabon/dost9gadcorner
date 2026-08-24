@@ -271,9 +271,10 @@ const onAmountBlur = (programId: number, field: ValueField): void => {
                             </div>
 
                             <div
-                                v-for="item in fundingRows"
+                                v-for="(item, rowIndex) in fundingRows"
                                 :key="`${section.title}-${item.row.funding_program_id}`"
                                 class="report-years-data-row report-years-data-row--program"
+                                :class="{ 'is-striped': rowIndex % 2 === 1 }"
                             >
                                 <div class="report-years-data-row-label">
                                     {{ item.label }}
@@ -287,19 +288,32 @@ const onAmountBlur = (programId: number, field: ValueField): void => {
                                         Amounts are text, not number, because a
                                         number input rejects the separators; the
                                         model still holds a plain numeric string.
+
+                                        The peso sign is a decoration on the
+                                        field, not part of the value: the input
+                                        parser rejects a string containing one
+                                        (see formatNumber.spec.ts), so putting it
+                                        in the model would blank the field. It is
+                                        aria-hidden because the label already
+                                        names the column, and the currency is
+                                        read out by the field's own unit text
+                                        rather than a stray glyph in the middle
+                                        of the accessible name.
                                     -->
-                                    <Input
-                                        v-if="column.kind === 'amount'"
-                                        :id="`${column.idStem}_${item.row.funding_program_id}`"
-                                        :model-value="amountDisplayValue(item.row.funding_program_id, column.field, item.row[column.field])"
-                                        type="text"
-                                        inputmode="decimal"
-                                        placeholder="0.00"
-                                        :disabled="isReadOnly"
-                                        :class="amountInputClass"
-                                        @update:model-value="onAmountInput(item.row.funding_program_id, item.row, column.field, $event)"
-                                        @blur="onAmountBlur(item.row.funding_program_id, column.field)"
-                                    />
+                                    <div v-if="column.kind === 'amount'" class="report-years-amount-field">
+                                        <span class="report-years-amount-prefix" aria-hidden="true">&#8369;</span>
+                                        <Input
+                                            :id="`${column.idStem}_${item.row.funding_program_id}`"
+                                            :model-value="amountDisplayValue(item.row.funding_program_id, column.field, item.row[column.field])"
+                                            type="text"
+                                            inputmode="decimal"
+                                            placeholder="0.00"
+                                            :disabled="isReadOnly"
+                                            :class="amountInputClass"
+                                            @update:model-value="onAmountInput(item.row.funding_program_id, item.row, column.field, $event)"
+                                            @blur="onAmountBlur(item.row.funding_program_id, column.field)"
+                                        />
+                                    </div>
                                     <Input
                                         v-else
                                         :id="`${column.idStem}_${item.row.funding_program_id}`"
