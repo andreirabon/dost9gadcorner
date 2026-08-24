@@ -42,13 +42,15 @@ skills-lock.json
 @PRODUCT.md
 
 # Claude Code local overrides (machine-specific, not shared)
-/.claude/settings.local.json
+/.claude
+/.impeccable
 
 # Playwright
 node_modules/
 /test-results/
 /playwright-report/
 /blob-report/
+/playwright
 /playwright/.cache/
 /playwright/.auth/
 # Local E2E credentials — never commit.
