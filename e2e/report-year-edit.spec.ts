@@ -30,7 +30,7 @@ const TABS = [
     { name: 'Scholarship', panel: 'panel-scholarship', marker: 'Add New Snapshot' },
     { name: 'Scholarship Applicants', panel: 'panel-scholarship_applicants', marker: 'Save scholarship applicants' },
     { name: 'GFPS Assemblies', panel: 'panel-gfps_assemblies', marker: 'Save assemblies' },
-    { name: 'Employee Status', panel: 'panel-employee_status', marker: 'Save employee status' },
+    { name: 'Employee & GFPS Member Status', panel: 'panel-employee_status', marker: 'Save employee status' },
     { name: 'RSTL', panel: 'panel-rstl_monthly', marker: 'Save RSTL' },
     { name: 'SETUP', panel: 'panel-setup_funding', marker: 'Save SETUP program funding' },
     { name: 'CEST', panel: 'panel-cest_funding', marker: 'Save CEST program funding' },

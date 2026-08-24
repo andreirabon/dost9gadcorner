@@ -2518,6 +2518,12 @@
         @apply text-slate-400;
     }
 
+    /* Names a form section inside a panel. Needed once two of them share a tab:
+       the tab bar can only name one, so each table states what it counts. */
+    .report-section-heading {
+        @apply mb-3 text-base font-semibold tracking-tight text-slate-900;
+    }
+
     .report-years-form-actions {
         @apply flex flex-wrap items-center gap-4 border-t border-slate-200/80 pt-4;
     }
@@ -2737,8 +2743,23 @@
         @apply relative flex flex-col gap-6 border-b border-brand-800 bg-brand-900 py-6 sm:py-8 md:pt-10 md:pb-6;
     }
 
+    /*
+     * The hero is its own band, not the same sheet as the body. It carries a
+     * tinted surface a step deeper than the page ground and a warmer top edge,
+     * so the title and tab strip read as a header region rather than as the
+     * first rows of the content below them.
+     */
     .report-view-page.report-theme-light .report-view-hero {
-        @apply border-slate-200 bg-white;
+        @apply border-slate-200/70 backdrop-blur-xl;
+        background-image:
+            linear-gradient(
+                180deg,
+                color-mix(in oklab, var(--color-brand-500) 9%, white) 0%,
+                color-mix(in oklab, var(--color-brand-500) 5%, white) 55%,
+                color-mix(in oklab, var(--color-brand-600) 3%, white) 100%
+            ),
+            radial-gradient(38rem 14rem at 82% 0%, color-mix(in oklab, var(--color-brand-400) 16%, transparent), transparent 70%);
+        box-shadow: var(--report-shadow-lg);
     }
 
     .report-view-hero-top {
@@ -2892,7 +2913,7 @@
     /* Bottom-aligned so a long currency figure at a smaller size still sits on
        the same baseline as the large plain numbers beside it. */
     .report-view-metric-value {
-        @apply self-end pt-1 text-xl font-semibold tracking-tight text-brand-50 tabular-nums md:text-2xl report-light:text-black;
+        @apply self-end pt-1 text-xl font-semibold tracking-tight text-brand-50 tabular-nums md:text-2xl report-light:text-slate-900;
     }
 
     /* Sex-disaggregated series colors apply inside charts only */
@@ -2949,11 +2970,11 @@
     }
 
     .report-view-block-title {
-        @apply text-base font-semibold text-brand-50 md:text-lg report-light:text-black;
+        @apply text-base font-semibold text-brand-50 md:text-lg report-light:text-slate-900;
     }
 
     .report-view-block-desc {
-        @apply text-sm font-normal text-brand-200 report-light:text-black;
+        @apply text-sm font-normal text-brand-200 report-light:text-slate-600;
     }
 
     .report-view-quick-grid {
@@ -3020,7 +3041,7 @@
     }
 
     .report-view-table-cell {
-        @apply border-b border-brand-800/60 px-3 py-2.5 text-sm text-brand-50 tabular-nums report-light:border-slate-100 report-light:text-black;
+        @apply border-b border-brand-800/60 px-3 py-2.5 text-sm text-brand-50 tabular-nums report-light:border-slate-100 report-light:text-slate-900;
     }
 
     /* Last row carries no rule: the card edge already closes the table, and a
@@ -3073,19 +3094,19 @@
     }
 
     .report-view-quick-title {
-        @apply text-base font-medium tracking-wide text-brand-50 uppercase report-light:text-black;
+        @apply text-sm font-semibold tracking-[0.08em] text-brand-300 uppercase report-light:text-brand-700;
     }
 
     .report-view-quick-label {
-        @apply mt-1 text-sm font-normal text-brand-200 report-light:text-black;
+        @apply mt-1 text-sm font-normal text-brand-200 report-light:text-slate-600;
     }
 
     .report-view-quick-value {
-        @apply text-lg font-medium tracking-tight text-brand-50 report-light:text-black;
+        @apply text-lg font-medium tracking-tight text-brand-50 report-light:text-slate-900;
     }
 
     .report-view-quick-value-sm {
-        @apply text-base font-medium text-brand-50 report-light:text-black;
+        @apply text-base font-medium text-brand-50 report-light:text-slate-900;
     }
 
     .report-view-charts {
@@ -3109,6 +3130,20 @@
         max-height: clamp(300px, 40vh, 460px);
     }
 
+    .report-view-chart-head,
+    .report-view-block-header {
+        @apply relative;
+    }
+
+    /* Accent marker on the header rule. `border-bottom` cannot be part-coloured,
+       so the rule stays the full-width hairline and this paints over its first
+       2.5rem. Sits on the border line itself, not above it. */
+    .report-view-chart-head::after,
+    .report-view-block-header::after {
+        content: '';
+        @apply absolute bottom-0 left-0 h-px w-10 translate-y-px bg-brand-400 report-light:bg-brand-600;
+    }
+
     .report-view-chart-head {
         @apply mb-3 border-b border-white/10 pb-3 report-light:border-slate-200;
     }
@@ -3122,11 +3157,11 @@
     }
 
     .report-view-empty-title {
-        @apply text-base font-semibold text-brand-50 md:text-lg report-light:text-black;
+        @apply text-base font-semibold text-brand-50 md:text-lg report-light:text-slate-900;
     }
 
     .report-view-empty-desc {
-        @apply max-w-md text-sm leading-relaxed font-normal text-brand-200 md:text-base report-light:text-black;
+        @apply max-w-md text-sm leading-relaxed font-normal text-brand-200 md:text-base report-light:text-slate-600;
     }
 
     .report-view-loading {
@@ -3138,7 +3173,103 @@
     }
 
     .report-view-loading-label {
-        @apply text-sm font-normal text-brand-200 report-light:text-black;
+        @apply text-sm font-normal text-brand-200 report-light:text-slate-600;
+    }
+
+    /*
+     * Depth pass.
+     *
+     * The flattening pass left one uninterrupted sheet — slate-50 ground, white
+     * cards, hairline borders — so nothing separated the hero from the body and
+     * the cards had no surface to sit on. This adds ground, not ornament: a
+     * fixed ambient wash tinted with the report's own accent, a grain layer to
+     * break the digital flatness, and shadows carrying the same hue so cards
+     * lift off a surface they share a colour family with.
+     *
+     * No second accent, no motion, no gradient fills on controls — the reasons
+     * the previous decoration was removed still hold.
+     */
+    .report-view-page {
+        --report-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+        --report-shadow-sm: 0 1px 2px color-mix(in oklab, var(--color-brand-900) 22%, transparent);
+        --report-shadow-md:
+            0 1px 2px color-mix(in oklab, var(--color-brand-900) 18%, transparent),
+            0 10px 28px -14px color-mix(in oklab, var(--color-brand-900) 45%, transparent);
+        --report-shadow-lg:
+            0 1px 3px color-mix(in oklab, var(--color-brand-900) 20%, transparent),
+            0 20px 48px -24px color-mix(in oklab, var(--color-brand-900) 55%, transparent);
+
+        background-image:
+            var(--report-grain),
+            radial-gradient(58rem 34rem at 10% -6%, color-mix(in oklab, var(--color-brand-500) 30%, transparent), transparent 66%),
+            radial-gradient(46rem 30rem at 94% 2%, color-mix(in oklab, var(--color-brand-700) 26%, transparent), transparent 62%),
+            radial-gradient(66rem 40rem at 52% 108%, color-mix(in oklab, var(--color-brand-600) 20%, transparent), transparent 70%);
+        background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+        background-attachment: fixed;
+    }
+
+    /* Light ground is a hair warmer than slate-50 and the wash sits far back:
+       enough to tell the eye the page has a surface, not enough to tint data. */
+    .report-view-page.report-theme-light {
+        --report-shadow-sm: 0 1px 2px color-mix(in oklab, var(--color-brand-900) 7%, transparent);
+        --report-shadow-md:
+            0 1px 2px color-mix(in oklab, var(--color-brand-900) 6%, transparent),
+            0 10px 28px -16px color-mix(in oklab, var(--color-brand-900) 22%, transparent);
+        --report-shadow-lg:
+            0 1px 3px color-mix(in oklab, var(--color-brand-900) 6%, transparent),
+            0 22px 50px -30px color-mix(in oklab, var(--color-brand-900) 28%, transparent);
+
+        background-color: #f5f4f9;
+        background-image:
+            var(--report-grain),
+            radial-gradient(58rem 34rem at 10% -6%, color-mix(in oklab, var(--color-brand-500) 20%, transparent), transparent 66%),
+            radial-gradient(46rem 30rem at 94% 2%, color-mix(in oklab, var(--color-brand-700) 14%, transparent), transparent 62%),
+            radial-gradient(66rem 40rem at 52% 108%, color-mix(in oklab, var(--color-brand-600) 13%, transparent), transparent 70%);
+    }
+
+    /* The grain tile is opaque black noise; blending it back into the ground is
+       what turns it into texture rather than a grey film over the page. */
+    .report-view-page {
+        background-blend-mode: soft-light, normal, normal, normal;
+    }
+
+    /* The body was an opaque plane painted straight over the wash. */
+    .report-view-page .report-view-body,
+    .report-view-page.report-theme-light .report-view-body {
+        @apply bg-transparent;
+    }
+
+    /* Cards: the border alone carried all the separation. A hue-matched shadow
+       does the lifting, so the border can step back. */
+    .report-view-page .report-view-metric,
+    .report-view-page .report-view-block,
+    .report-view-page .report-view-empty {
+        box-shadow: var(--report-shadow-md);
+    }
+
+    .report-view-page.report-theme-light .report-view-metric,
+    .report-view-page.report-theme-light .report-view-block,
+    .report-view-page.report-theme-light .report-view-empty {
+        @apply border-white bg-white/75 backdrop-blur-md;
+    }
+
+    .report-view-page.report-theme-light .report-view-quick-item,
+    .report-view-page.report-theme-light .report-view-tabs {
+        @apply border-white/80 bg-white/55 backdrop-blur-md;
+        box-shadow: var(--report-shadow-sm);
+    }
+
+    /* Metric cards are read, not clicked — the hover is a pointer rail across a
+       row of figures, not an affordance. Hence tint only, no lift. */
+    @media (hover: hover) and (pointer: fine) {
+        .report-view-page.report-theme-light .report-view-metric:hover {
+            @apply bg-white/90;
+        }
+
+        .report-view-page.report-theme-light .report-view-quick-item:hover {
+            @apply bg-white/85;
+            box-shadow: var(--report-shadow-md);
+        }
     }
 
     @media (prefers-reduced-motion: reduce) {

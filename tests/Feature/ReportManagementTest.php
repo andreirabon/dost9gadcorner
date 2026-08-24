@@ -884,3 +884,30 @@ test('cannot update scholarship snapshot with future as_of_date', function () {
         ])
         ->assertInvalid(['as_of_date']);
 });
+
+/**
+ * The edit form shows Employees and GFPS Members as one tab, opened when either
+ * ability is granted. HR is the role that lives in that tab, so this pins the
+ * exact set it gets: adding a third ability to HR would silently give them a
+ * second tab and make the combined view no longer describe what they see.
+ */
+test('hr can edit exactly the two sections that share the combined tab', function () {
+    $user = User::factory()->create(['role' => UserRole::HR]);
+    $reportYear = ReportYear::factory()->create(['year' => 2026]);
+
+    $this->actingAs($user)
+        ->get("/report-years/{$reportYear->id}/edit")
+        ->assertOk()
+        ->assertInertia(
+            fn (Assert $page) => $page
+                ->where('abilities.updateEmployeeStatuses', true)
+                ->where('abilities.updateGfpsMemberStatuses', true)
+                ->where('abilities.updateFullReport', false)
+                ->where('abilities.updateMetadata', false)
+                ->where('abilities.updateGfpsMembership', false)
+                ->where('abilities.updateGfpsAssemblies', false)
+                ->where('abilities.updateScholarship', false)
+                ->where('abilities.updateRstlMonthly', false)
+                ->where('abilities.updateProgramFunding', false)
+        );
+});

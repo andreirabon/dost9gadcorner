@@ -40,7 +40,8 @@ const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_cou
 </script>
 
 <template>
-    <section id="panel-employee_status" class="report-panel" role="tabpanel" aria-labelledby="tab-employee_status">
+    <section class="report-panel" aria-labelledby="heading-employee_status">
+        <h3 id="heading-employee_status" class="report-section-heading">DOST IX employees</h3>
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
             <div class="report-years-data-table report-years-data-table--narrow">
                 <div class="report-years-data-head report-years-data-head--3col">

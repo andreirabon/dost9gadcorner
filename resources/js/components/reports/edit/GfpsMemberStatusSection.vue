@@ -41,7 +41,8 @@ const totals = computed(() => sumRowFields(form.rows, ['female_count', 'male_cou
 </script>
 
 <template>
-    <section id="panel-gfps_member_status" class="report-panel" role="tabpanel" aria-labelledby="tab-gfps_member_status">
+    <section class="report-panel" aria-labelledby="heading-gfps_member_status">
+        <h3 id="heading-gfps_member_status" class="report-section-heading">GFPS members</h3>
         <form class="report-form report-form--edit w-full" @submit.prevent="save">
             <p class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-black">
                 GFPS members only, not all DOST IX employees. Entered separately from GFPS Membership, so the two totals are recorded independently.

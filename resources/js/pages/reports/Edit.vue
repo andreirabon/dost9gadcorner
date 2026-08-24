@@ -47,8 +47,7 @@ const tabDefs = [
     { id: 'scholarship', name: 'Scholarship' },
     { id: 'scholarship_applicants', name: 'Scholarship Applicants' },
     { id: 'gfps_assemblies', name: 'GFPS Assemblies' },
-    { id: 'employee_status', name: 'Employee Status' },
-    { id: 'gfps_member_status', name: 'GFPS Member Status' },
+    { id: 'employee_status', name: 'Employee & GFPS Member Status' },
     { id: 'rstl_monthly', name: 'RSTL' },
     { id: 'setup_funding', name: 'SETUP' },
     { id: 'cest_funding', name: 'CEST' },
@@ -67,10 +66,10 @@ function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
             return a.updateScholarship;
         case 'gfps_assemblies':
             return a.updateGfpsAssemblies;
+        // One tab, two tables. Either ability is enough to open it; each table
+        // inside is still gated on its own ability.
         case 'employee_status':
-            return a.updateEmployeeStatuses;
-        case 'gfps_member_status':
-            return a.updateGfpsMemberStatuses;
+            return a.updateEmployeeStatuses || a.updateGfpsMemberStatuses;
         case 'rstl_monthly':
             return a.updateRstlMonthly;
         case 'setup_funding':
@@ -150,8 +149,9 @@ const sectionState = computed<Record<string, SectionState>>(() => {
         scholarship: binaryState(report.scholarshipSnapshots.length > 0),
         scholarship_applicants: rowsState(report.scholarshipApplicants, ['femaleCount', 'maleCount']),
         gfps_assemblies: rowsState(report.gfpsAssemblies, ['femaleCount', 'maleCount']),
-        employee_status: rowsState(report.employeeStatuses, ['femaleCount', 'maleCount']),
-        gfps_member_status: rowsState(report.gfpsMemberStatuses, ['femaleCount', 'maleCount']),
+        // Both tables share the tab, so the tab's marker has to answer for both:
+        // it reads "complete" only once every row of each is filled.
+        employee_status: rowsState([...report.employeeStatuses, ...report.gfpsMemberStatuses], ['femaleCount', 'maleCount']),
         rstl_monthly: rowsState(report.rstlMonthly, ['femaleCount', 'femaleLedCount', 'maleCount', 'maleLedCount']),
         setup_funding: rowsState(programFundingRowsFor('setup'), ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
         cest_funding: rowsState(programFundingRowsFor('cest'), ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
@@ -385,23 +385,39 @@ watch(
                     @notice="showSaveNotice"
                 />
 
-                <EmployeeStatusSection
+                <!--
+                    Employees and GFPS members share one tab. They stay two
+                    forms: the counts are recorded independently (GFPS members
+                    are a subset of employees, and the GFPS table covers fewer
+                    employment statuses), and each has its own endpoint and its
+                    own conflict timestamp, so a single save could not report
+                    which half failed.
+                -->
+                <div
                     v-show="activeTab === 'employee_status'"
-                    :report-year-id="reportYear.id"
-                    :rows="reportYear.employeeStatuses"
-                    :expected-updated-at="sectionTs.employeeStatuses"
-                    :is-read-only="isReadOnly"
-                    @notice="showSaveNotice"
-                />
+                    id="panel-employee_status"
+                    class="flex flex-col gap-4"
+                    role="tabpanel"
+                    aria-labelledby="tab-employee_status"
+                >
+                    <EmployeeStatusSection
+                        v-if="abilities.updateEmployeeStatuses"
+                        :report-year-id="reportYear.id"
+                        :rows="reportYear.employeeStatuses"
+                        :expected-updated-at="sectionTs.employeeStatuses"
+                        :is-read-only="isReadOnly"
+                        @notice="showSaveNotice"
+                    />
 
-                <GfpsMemberStatusSection
-                    v-show="activeTab === 'gfps_member_status'"
-                    :report-year-id="reportYear.id"
-                    :rows="reportYear.gfpsMemberStatuses"
-                    :expected-updated-at="sectionTs.gfpsMemberStatuses"
-                    :is-read-only="isReadOnly"
-                    @notice="showSaveNotice"
-                />
+                    <GfpsMemberStatusSection
+                        v-if="abilities.updateGfpsMemberStatuses"
+                        :report-year-id="reportYear.id"
+                        :rows="reportYear.gfpsMemberStatuses"
+                        :expected-updated-at="sectionTs.gfpsMemberStatuses"
+                        :is-read-only="isReadOnly"
+                        @notice="showSaveNotice"
+                    />
+                </div>
 
                 <RstlMonthlySection
                     v-show="activeTab === 'rstl_monthly'"
