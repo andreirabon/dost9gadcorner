@@ -107,10 +107,19 @@ export interface ReportYearData {
     setupFundingBreakdown: FundingCategorySummaryData[];
     cestFundingBreakdown: FundingCategorySummaryData[];
     giaFundingBreakdown: FundingCategorySummaryData[];
+    /** One row per province: special projects research is not a family metric. */
+    researchFundingBreakdown: FundingCategorySummaryData[];
 }
 
 /** The funding program families that each get their own report tab. */
 export type FundingGroupPrefix = 'setup' | 'cest' | 'gia';
+
+/**
+ * Every slug prefix the funding tables are grouped by. `research` is not a
+ * funding family — it is the provincial special-projects-research rows, which
+ * ride the same table and endpoint but have their own tab.
+ */
+export type FundingRowPrefix = FundingGroupPrefix | 'research';
 
 export interface EditableGfpsAssemblyRow {
     periodId: number;

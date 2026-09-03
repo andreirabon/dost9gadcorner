@@ -34,6 +34,11 @@ const TABS = [
     { name: 'RSTL', panel: 'panel-rstl_monthly', marker: 'Save RSTL' },
     { name: 'SETUP', panel: 'panel-setup_funding', marker: 'Save SETUP program funding' },
     { name: 'CEST', panel: 'panel-cest_funding', marker: 'Save CEST program funding' },
+    {
+        name: 'Special Projects Research',
+        panel: 'panel-special_projects_research',
+        marker: 'Save special projects research',
+    },
 ];
 
 /**
@@ -162,8 +167,24 @@ test.describe('report year edit screen', () => {
         await expect(panel).toContainText('Senior Citizen');
         await expect(panel).toContainText('Indigenous People');
         await expect(panel).toContainText('Pantawid Pamilyang Pilipino Program');
-        await expect(panel).toContainText('Special projects research');
         await expect(panel).not.toContainText('Youth');
+        // Not a SETUP metric: it has its own tab.
+        await expect(panel).not.toContainText('Special projects research');
+    });
+
+    test('special projects research is entered once per province, not per funding family', async ({ page }) => {
+        await page.goto('/report-years/1/edit');
+
+        await tabByName(page, 'Special Projects Research').click();
+
+        const panel = page.locator('#panel-special_projects_research');
+        await expect(panel).toBeVisible();
+
+        // Four provinces, named without the shared programme prefix.
+        await expect(panel.locator('.report-years-data-row-label')).toHaveText(['ZC/IC', 'ZSP', 'ZDS', 'ZDN']);
+        await expect(panel).not.toContainText('SETUP');
+        await expect(panel).not.toContainText('CEST');
+        await expect(panel).not.toContainText('GIA');
     });
 
     test('program funding flags a jobs male + female mismatch before saving', async ({ page }) => {

@@ -44,7 +44,6 @@ const jobs = computed(() => jobsBySex(props.categories));
 
         <ReportMetricsGrid
             v-if="metricTotals.hasData"
-            five-up
             :metrics="[
                 { label: 'Funded Projects', value: metricTotals.fundedProjects },
                 {
@@ -54,7 +53,6 @@ const jobs = computed(() => jobsBySex(props.categories));
                 },
                 { label: 'Training Participants', value: metricTotals.trainingParticipants },
                 { label: 'Jobs Generated', value: metricTotals.jobsGenerated },
-                { label: 'Special Research', value: metricTotals.specialResearch },
             ]"
         />
 

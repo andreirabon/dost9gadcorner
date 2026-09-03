@@ -1,7 +1,7 @@
 import type { FundingCategorySummaryData, ReportYearData } from '@/types/reports';
 import { describe, expect, it } from 'vitest';
 import { computed, ref } from 'vue';
-import { fundingStats, jobsBySex, programMetricTotals, useFundingRows } from './useFundingGroup';
+import { fundingStats, jobsBySex, programMetricTotals, specialResearchRows, useFundingRows } from './useFundingGroup';
 
 const category = (overrides: Partial<FundingCategorySummaryData> = {}): FundingCategorySummaryData => ({
     label: 'SETUP ZC/IC',
@@ -97,7 +97,38 @@ describe('useFundingRows', () => {
         expect(metricTotals.hasData).toBe(true);
         expect(metricTotals.fundedProjects).toBe(5);
         expect(metricTotals.trainingParticipants).toBe(40);
-        expect(metricTotals.specialResearch).toBe(5);
+    });
+
+    it('keeps special projects research out of the funding program metric totals', () => {
+        // SETUP, CEST and GIA do not carry this as a program metric; it has its
+        // own tab, so an entry here must not light up their metric row.
+        const source = computed(() => reportData({ giaFundingBreakdown: [category({ slug: 'gia-zsp', specialProjectsResearchMale: 6 })] }));
+
+        expect(programMetricTotals(useFundingRows(source, 'gia').value).hasData).toBe(false);
+    });
+
+    it('reads special projects research per province, dropping the ones with nothing recorded', () => {
+        const rows = specialResearchRows([
+            category({
+                slug: 'research-zsp',
+                label: 'Special Projects Research ZSP',
+                specialProjectsResearchMale: 2,
+                specialProjectsResearchFemale: 3,
+            }),
+            category({
+                slug: 'research-zds',
+                label: 'Special Projects Research ZDS',
+                specialProjectsResearchMale: 0,
+                specialProjectsResearchFemale: 0,
+            }),
+            category({ slug: 'research-zdn', label: 'Special Projects Research ZDN', specialProjectsResearchFemale: 4 }),
+        ]);
+
+        // The shared programme-name prefix is stripped: the column reads as the province.
+        expect(rows).toEqual([
+            { slug: 'research-zsp', label: 'ZSP', male: 2, female: 3, total: 5 },
+            { slug: 'research-zdn', label: 'ZDN', male: 0, female: 4, total: 4 },
+        ]);
     });
 
     it('tracks a changing report payload', () => {

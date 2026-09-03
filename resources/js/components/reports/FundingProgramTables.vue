@@ -35,7 +35,9 @@ const positive = (...values: (number | undefined)[]): boolean => values.some((va
 /**
  * Only the entered figures that no chart above already plots. Jobs Generated
  * and Jobs Breakdown are omitted here because StackedBarBySexChart and
- * JobsBreakdownHeatmap already show them for every category.
+ * JobsBreakdownHeatmap already show them for every category. Special Projects
+ * Research is not a SETUP/CEST/GIA program metric at all — it lives on its own
+ * tab, across every category at once.
  */
 const TABLES: TableDef[] = [
     {
@@ -49,12 +51,6 @@ const TABLES: TableDef[] = [
         columns: ['Funded projects', 'Value of funded projects', 'Training participants'],
         row: (c) => [num(c.fundedProjectsCount), money(c.fundedProjectsValue), num(c.trainingParticipants)],
         hasData: (c) => positive(c.fundedProjectsCount, c.fundedProjectsValue, c.trainingParticipants),
-    },
-    {
-        title: 'Special Projects Research',
-        columns: ['Male', 'Female'],
-        row: (c) => [num(c.specialProjectsResearchMale), num(c.specialProjectsResearchFemale)],
-        hasData: (c) => positive(c.specialProjectsResearchMale, c.specialProjectsResearchFemale),
     },
 ];
 

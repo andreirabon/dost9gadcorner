@@ -8,11 +8,12 @@ import ProgramFundingSection from '@/components/reports/edit/ProgramFundingSecti
 import RstlMonthlySection from '@/components/reports/edit/RstlMonthlySection.vue';
 import ScholarshipApplicantsSection from '@/components/reports/edit/ScholarshipApplicantsSection.vue';
 import ScholarshipSection from '@/components/reports/edit/ScholarshipSection.vue';
+import SpecialProjectsResearchSection from '@/components/reports/edit/SpecialProjectsResearchSection.vue';
 import ReportBackNavLink from '@/components/reports/ReportBackNavLink.vue';
 import { useReportSectionSave } from '@/composables/useReportSectionSave';
 import { formatPublishedAt } from '@/helpers/formatPublishedAt';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { EditableReportYear, FundingGroupPrefix, LookupSchoolYear, ReportYearEditAbilities, SectionTimestamps } from '@/types/reports';
+import type { EditableReportYear, FundingRowPrefix, LookupSchoolYear, ReportYearEditAbilities, SectionTimestamps } from '@/types/reports';
 import { Head } from '@inertiajs/vue3';
 import { Calendar } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -52,6 +53,7 @@ const tabDefs = [
     { id: 'setup_funding', name: 'SETUP' },
     { id: 'cest_funding', name: 'CEST' },
     { id: 'gia_funding', name: 'GIA' },
+    { id: 'special_projects_research', name: 'Special Projects Research' },
 ] as const;
 
 function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
@@ -75,6 +77,7 @@ function tabIsVisible(id: (typeof tabDefs)[number]['id']): boolean {
         case 'setup_funding':
         case 'cest_funding':
         case 'gia_funding':
+        case 'special_projects_research':
             return a.updateProgramFunding;
         default:
             return false;
@@ -128,11 +131,11 @@ function binaryState(hasData: boolean): SectionState {
  * the exact allowlist the server enforces, so dropping the rest here just
  * avoids offering an edit the server would reject.
  */
-function programFundingRowsFor(group: FundingGroupPrefix): EditableReportYear['programFunding'] {
+function programFundingRowsFor(prefix: FundingRowPrefix): EditableReportYear['programFunding'] {
     const editableSlugs = props.reportYear.editableFundingSlugs;
 
     return props.reportYear.programFunding.filter(
-        (row) => (row.slug === group || row.slug.startsWith(`${group}-`)) && (editableSlugs === null || editableSlugs.includes(row.slug)),
+        (row) => (row.slug === prefix || row.slug.startsWith(`${prefix}-`)) && (editableSlugs === null || editableSlugs.includes(row.slug)),
     );
 }
 
@@ -156,6 +159,7 @@ const sectionState = computed<Record<string, SectionState>>(() => {
         setup_funding: rowsState(programFundingRowsFor('setup'), ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
         cest_funding: rowsState(programFundingRowsFor('cest'), ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
         gia_funding: rowsState(programFundingRowsFor('gia'), ['femaleProjects', 'femaleAmount', 'maleProjects', 'maleAmount']),
+        special_projects_research: rowsState(programFundingRowsFor('research'), ['specialProjectsResearchFemale', 'specialProjectsResearchMale']),
     };
 });
 
@@ -453,6 +457,15 @@ watch(
                     group="gia"
                     :report-year-id="reportYear.id"
                     :rows="programFundingRowsFor('gia')"
+                    :expected-updated-at="sectionTs.programFunding"
+                    :is-read-only="isReadOnly"
+                    @notice="showSaveNotice"
+                />
+
+                <SpecialProjectsResearchSection
+                    v-show="activeTab === 'special_projects_research'"
+                    :report-year-id="reportYear.id"
+                    :rows="programFundingRowsFor('research')"
                     :expected-updated-at="sectionTs.programFunding"
                     :is-read-only="isReadOnly"
                     @notice="showSaveNotice"

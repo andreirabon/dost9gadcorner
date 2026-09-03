@@ -8,7 +8,7 @@
     $metricKeys = [
         'fundedProjectsCount', 'fundedProjectsValue', 'trainingParticipants',
         'jobsTotal', 'jobsMale', 'jobsFemale', 'jobsPwd', 'jobsSeniorCitizen',
-        'jobsIp', 'jobs4ps', 'specialProjectsResearchMale', 'specialProjectsResearchFemale',
+        'jobsIp', 'jobs4ps',
     ];
 
     $metricRows = array_values(array_filter($rows, function (array $row) use ($metricKeys): bool {
@@ -47,13 +47,6 @@
 
         return $parts === [] ? (string) $total : $total.' ('.implode(', ', $parts).')';
     };
-
-    $formatResearch = function (array $row): string {
-        $male = (int) ($row['specialProjectsResearchMale'] ?? 0);
-        $female = (int) ($row['specialProjectsResearchFemale'] ?? 0);
-
-        return $male + $female > 0 ? ($male + $female).' ('.$male.' m, '.$female.' f)' : '—';
-    };
 @endphp
 
 @if(count($metricRows) === 0)
@@ -66,8 +59,7 @@
                 <th class="num" style="width: 10%;">Funded proj.</th>
                 <th class="num" style="width: 16%;">Value funded</th>
                 <th class="num" style="width: 10%;">Training</th>
-                <th style="width: 28%;">Jobs generated</th>
-                <th style="width: 16%;">Research (M/F)</th>
+                <th style="width: 44%;">Jobs generated</th>
             </tr>
         </thead>
         <tbody>
@@ -78,7 +70,6 @@
                     <td class="num">PHP {{ number_format((float) ($row['fundedProjectsValue'] ?? 0), 2) }}</td>
                     <td class="num">{{ number_format((int) ($row['trainingParticipants'] ?? 0)) }}</td>
                     <td>{{ $formatJobs($row) }}</td>
-                    <td>{{ $formatResearch($row) }}</td>
                 </tr>
             @endforeach
         </tbody>

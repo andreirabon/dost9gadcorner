@@ -14,7 +14,14 @@ class DatabaseSeeder extends Seeder
         $this->call(ReportLookupSeeder::class);
         $this->call(UserSeeder::class);
         $this->call(SchoolYearSeeder::class);
-        $this->call(ReportYearDemoSeeder::class);
 
+        /*
+         * The demo report is fabricated data. A production `db:seed --force`
+         * must not plant it in a live report year, so it is skipped there;
+         * `db:seed --class=ReportYearDemoSeeder` still runs it on purpose.
+         */
+        if (! app()->environment('production')) {
+            $this->call(ReportYearDemoSeeder::class);
+        }
     }
 }

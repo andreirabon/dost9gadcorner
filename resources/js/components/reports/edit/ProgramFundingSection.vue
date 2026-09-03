@@ -50,8 +50,6 @@ const VALUE_FIELDS = [
     'jobs_senior_citizen',
     'jobs_ip',
     'jobs_4ps',
-    'special_projects_research_male',
-    'special_projects_research_female',
 ] as const;
 
 type ValueField = (typeof VALUE_FIELDS)[number];
@@ -129,12 +127,6 @@ const TABLES: SectionDef[][] = [
             ],
         },
     ],
-    [
-        {
-            title: 'Special projects research',
-            columns: [count('special_projects_research_male', 'Male'), count('special_projects_research_female', 'Female')],
-        },
-    ],
 ];
 
 const { form, save, error } = useRowSection({
@@ -154,8 +146,6 @@ const { form, save, error } = useRowSection({
         jobs_senior_citizen: row.jobsSeniorCitizen ?? 0,
         jobs_ip: row.jobsIp ?? 0,
         jobs_4ps: row.jobs4ps ?? 0,
-        special_projects_research_male: row.specialProjectsResearchMale ?? 0,
-        special_projects_research_female: row.specialProjectsResearchFemale ?? 0,
     })),
     key: 'funding_program_id',
     fields: VALUE_FIELDS,

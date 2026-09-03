@@ -38,14 +38,20 @@ describe('FundingProgramTables', () => {
                 femaleAmount: 1000,
                 fundedProjectsCount: 10,
                 trainingParticipants: 40,
-                specialProjectsResearchMale: 6,
             }),
         ]);
 
         const text = wrapper.text();
         expect(text).toContain('SETUP Program');
         expect(text).toContain('SETUP Program Metrics');
-        expect(text).toContain('SETUP Special Projects Research');
+    });
+
+    it('leaves special projects research to its own tab', () => {
+        // SETUP, CEST and GIA do not carry it as a program metric, so it must
+        // not reappear as a trailing table on their tabs.
+        const wrapper = mountTables([category({ femaleProjects: 8, specialProjectsResearchMale: 6, specialProjectsResearchFemale: 4 })]);
+
+        expect(wrapper.text()).not.toContain('Special Projects Research');
     });
 
     it('drops a section entirely when no category has data for it', () => {
@@ -55,7 +61,6 @@ describe('FundingProgramTables', () => {
 
         expect(wrapper.text()).toContain('SETUP Program');
         expect(wrapper.text()).not.toContain('SETUP Program Metrics');
-        expect(wrapper.text()).not.toContain('SETUP Special Projects Research');
     });
 
     it('renders unrecorded money as absent rather than a confirmed zero balance', () => {

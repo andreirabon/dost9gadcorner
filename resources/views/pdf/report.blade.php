@@ -426,6 +426,29 @@
             $setupFundingRows = $data['setupFundingBreakdown'];
             $cestFundingRows = $data['cestFundingBreakdown'];
             $giaFundingRows = $data['giaFundingBreakdown'];
+            $researchFundingRows = $data['researchFundingBreakdown'] ?? [];
+
+            $researchFemale = 0;
+            $researchMale = 0;
+            /*
+             * Only the provinces that recorded something, matching the table
+             * below: the rows arrive zero-filled, so counting all four would
+             * claim research for provinces that never entered any.
+             */
+            $researchProvinces = 0;
+            foreach ($researchFundingRows as $researchRow) {
+                $rowFemale = (int) ($researchRow['specialProjectsResearchFemale'] ?? 0);
+                $rowMale = (int) ($researchRow['specialProjectsResearchMale'] ?? 0);
+
+                if ($rowFemale + $rowMale === 0) {
+                    continue;
+                }
+
+                $researchFemale += $rowFemale;
+                $researchMale += $rowMale;
+                $researchProvinces++;
+            }
+            $researchTotal = $researchFemale + $researchMale;
 
             $setupTotals = $sumFundingRows($setupFundingRows);
             $cestTotals = $sumFundingRows($cestFundingRows);
@@ -872,6 +895,24 @@
             'rows' => $giaFundingRows,
             'totals' => $giaTotals,
         ])
+
+        <div class="section">
+            <p class="section-title"><span class="section-num">10.</span> Special Projects Research</p>
+            <p class="note">Researchers per province &middot; {{ $year['year'] }}</p>
+            <div class="facts avoid-break">
+                <span class="k">Provinces with research</span> <span class="v">{{ number_format($researchProvinces) }}</span>
+                <span class="sep">&nbsp;&middot;&nbsp;</span>
+                <span class="k">Total researchers</span> <span class="v">{{ number_format($researchTotal) }}</span>
+                <span class="sep">&nbsp;&middot;&nbsp;</span>
+                <span class="k">Female</span> <span class="v">{{ number_format($researchFemale) }}</span>
+                <span class="sep">&nbsp;&middot;&nbsp;</span>
+                <span class="k">Male</span> <span class="v">{{ number_format($researchMale) }}</span>
+            </div>
+            @include('pdf.partials.special-projects-research-table', [
+                'rows' => $researchFundingRows,
+                'emptyMessage' => 'No special projects research recorded for this year.',
+            ])
+        </div>
 
     @endif
 </body>

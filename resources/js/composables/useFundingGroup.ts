@@ -1,4 +1,4 @@
-import type { FundingCategorySummaryData, FundingGroupPrefix, FundingSummaryData, ReportYearData } from '@/types/reports';
+import type { FundingCategorySummaryData, FundingRowPrefix, FundingSummaryData, ReportYearData } from '@/types/reports';
 import { computed, type ComputedRef } from 'vue';
 
 const EMPTY_FUNDING: FundingSummaryData = {
@@ -20,7 +20,6 @@ export interface FundingGroupMetricTotals {
     fundedValue: number;
     trainingParticipants: number;
     jobsGenerated: number;
-    specialResearch: number;
     /** False when nothing was ever entered, which is not the same as a measured zero. */
     hasData: boolean;
 }
@@ -44,10 +43,7 @@ export interface FundingGroupJobsRow {
  * @param reportData Live report payload; null until the year is published.
  * @param prefix     Payload key prefix.
  */
-export function useFundingRows(
-    reportData: ComputedRef<ReportYearData | null>,
-    prefix: FundingGroupPrefix,
-): ComputedRef<FundingCategorySummaryData[]> {
+export function useFundingRows(reportData: ComputedRef<ReportYearData | null>, prefix: FundingRowPrefix): ComputedRef<FundingCategorySummaryData[]> {
     return computed<FundingCategorySummaryData[]>(() => reportData.value?.[`${prefix}FundingBreakdown`] ?? []);
 }
 
@@ -86,7 +82,6 @@ export const programMetricTotals = (rows: FundingCategorySummaryData[]): Funding
         fundedValue: total('fundedProjectsValue'),
         trainingParticipants: total('trainingParticipants'),
         jobsGenerated: total('jobsTotal'),
-        specialResearch: total('specialProjectsResearchMale') + total('specialProjectsResearchFemale'),
     };
 
     return {
@@ -94,6 +89,45 @@ export const programMetricTotals = (rows: FundingCategorySummaryData[]): Funding
         hasData: Object.values(metrics).some((value) => value > 0),
     };
 };
+
+export interface SpecialResearchRow {
+    slug: string;
+    label: string;
+    male: number;
+    female: number;
+    total: number;
+}
+
+/**
+ * The programme name prefix the four provincial research rows share. Stripped
+ * for display so the table's Category column reads `ZC/IC` rather than
+ * repeating `Special Projects Research` on every line; the full name is kept in
+ * the database because that is what the audit log records.
+ */
+const RESEARCH_LABEL_PREFIX = 'Special Projects Research ';
+
+/** `Special Projects Research ZC/IC` reads as `ZC/IC` in its own table. */
+export const provinceLabel = (label: string): string => (label.startsWith(RESEARCH_LABEL_PREFIX) ? label.slice(RESEARCH_LABEL_PREFIX.length) : label);
+
+/**
+ * Special projects research, by sex, per province.
+ *
+ * SETUP, CEST and GIA do not carry this as a program metric — it is recorded
+ * once per province against the `research-*` funding programs — so it reads as
+ * its own tab rather than a stray table on each of theirs.
+ *
+ * Provinces with nothing recorded are dropped: the columns default to zero in
+ * the schema, so an all-zero row means "never entered", not "measured as none".
+ */
+export const specialResearchRows = (rows: FundingCategorySummaryData[]): SpecialResearchRow[] =>
+    rows
+        .map((row) => {
+            const male = row.specialProjectsResearchMale ?? 0;
+            const female = row.specialProjectsResearchFemale ?? 0;
+
+            return { slug: row.slug, label: provinceLabel(row.label), male, female, total: male + female };
+        })
+        .filter((row) => row.total > 0);
 
 /**
  * Jobs split by sex, which is a true partition — unlike the PWD / senior / IP /

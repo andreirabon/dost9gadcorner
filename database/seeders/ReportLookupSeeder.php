@@ -55,6 +55,12 @@ class ReportLookupSeeder extends Seeder
             ['name' => 'GIA ZSP', 'slug' => 'gia-zsp', 'sort_order' => 10],
             ['name' => 'GIA ZDS', 'slug' => 'gia-zds', 'sort_order' => 11],
             ['name' => 'GIA ZDN', 'slug' => 'gia-zdn', 'sort_order' => 12],
+            // Special projects research is provincial, not a SETUP/CEST/GIA
+            // metric, so it gets one row per province rather than three.
+            ['name' => 'Special Projects Research ZC/IC', 'slug' => 'research-zc-ic', 'sort_order' => 13],
+            ['name' => 'Special Projects Research ZSP', 'slug' => 'research-zsp', 'sort_order' => 14],
+            ['name' => 'Special Projects Research ZDS', 'slug' => 'research-zds', 'sort_order' => 15],
+            ['name' => 'Special Projects Research ZDN', 'slug' => 'research-zdn', 'sort_order' => 16],
         ], ['slug'], ['name', 'sort_order']);
 
         /*

@@ -29,10 +29,10 @@ return [
     'gfps_member_status_slugs' => ['plantilla', 'cos', 'jo'],
 
     'funding_program_scopes' => [
-        'toszcic' => ['setup-zc-ic', 'cest-zc-ic', 'gia-zc-ic'],
-        'toszsp' => ['setup-zsp', 'cest-zsp', 'gia-zsp'],
-        'toszds' => ['setup-zds', 'cest-zds', 'gia-zds'],
-        'toszdn' => ['setup-zdn', 'cest-zdn', 'gia-zdn'],
+        'toszcic' => ['setup-zc-ic', 'cest-zc-ic', 'gia-zc-ic', 'research-zc-ic'],
+        'toszsp' => ['setup-zsp', 'cest-zsp', 'gia-zsp', 'research-zsp'],
+        'toszds' => ['setup-zds', 'cest-zds', 'gia-zds', 'research-zds'],
+        'toszdn' => ['setup-zdn', 'cest-zdn', 'gia-zdn', 'research-zdn'],
     ],
 
 ];

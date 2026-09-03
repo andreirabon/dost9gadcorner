@@ -183,6 +183,20 @@ class ReportYearDemoSeeder extends Seeder
                     $this->randomProgramFundingValues(),
                 );
             }
+
+            // Provincial rows, one per province rather than one per family.
+            foreach (['research-zc-ic', 'research-zsp', 'research-zds', 'research-zdn'] as $slug) {
+                ProgramFundingSummary::query()->updateOrCreate(
+                    [
+                        'report_year_id' => $reportYear->id,
+                        'funding_program_id' => $fundingPrograms[$slug],
+                    ],
+                    [
+                        'special_projects_research_female' => fake()->numberBetween(0, 12),
+                        'special_projects_research_male' => fake()->numberBetween(0, 12),
+                    ],
+                );
+            }
         });
     }
 
@@ -229,9 +243,6 @@ class ReportYearDemoSeeder extends Seeder
             'jobs_senior_citizen' => $subsetOfJobs(8),
             'jobs_ip' => $subsetOfJobs(8),
             'jobs_4ps' => $subsetOfJobs(10),
-
-            'special_projects_research_male' => fake()->numberBetween(0, 12),
-            'special_projects_research_female' => fake()->numberBetween(0, 12),
         ];
     }
 

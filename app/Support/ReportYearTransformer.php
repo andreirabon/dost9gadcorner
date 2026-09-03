@@ -76,6 +76,7 @@ class ReportYearTransformer
         $setupFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'setup');
         $cestFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'cest');
         $giaFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'gia');
+        $researchFundingBreakdown = $this->transformFundingBreakdown($reportYear, 'research');
 
         return [
             'gfpsMembership' => [
@@ -103,6 +104,7 @@ class ReportYearTransformer
             'setupFundingBreakdown' => $setupFundingBreakdown,
             'cestFundingBreakdown' => $cestFundingBreakdown,
             'giaFundingBreakdown' => $giaFundingBreakdown,
+            'researchFundingBreakdown' => $researchFundingBreakdown,
         ];
     }
 

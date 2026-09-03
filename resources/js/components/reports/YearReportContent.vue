@@ -7,7 +7,8 @@ import ReportOverviewQuickAccess, { type OverviewProgram } from '@/components/re
 import ReportTabNav from '@/components/reports/ReportTabNav.vue';
 import ScholarshipApplicantTables from '@/components/reports/ScholarshipApplicantTables.vue';
 import ScholarshipHistoryTimeline from '@/components/reports/ScholarshipHistoryTimeline.vue';
-import { fundingStats, useFundingRows } from '@/composables/useFundingGroup';
+import SpecialProjectsResearchPanel from '@/components/reports/SpecialProjectsResearchPanel.vue';
+import { fundingStats, specialResearchRows, useFundingRows } from '@/composables/useFundingGroup';
 import { formatFundingOrEmpty } from '@/helpers/formatCurrency';
 import { isValidReportTab, REPORT_TABPANEL_ID, reportTabSlug, type TabType } from '@/helpers/reportTabs';
 import type { YearItem } from '@/types';
@@ -41,6 +42,13 @@ const rstlWarmBodiesData = computed<RstlMonthlyDataRow[]>(() => reportData.value
 const setupFundingRows = useFundingRows(reportData, 'setup');
 const cestFundingRows = useFundingRows(reportData, 'cest');
 const giaFundingRows = useFundingRows(reportData, 'gia');
+
+/**
+ * Special projects research is recorded once per province against the
+ * `research-*` funding programs, not three times over as a SETUP/CEST/GIA
+ * metric, so its tab reads its own four rows.
+ */
+const researchFundingRows = useFundingRows(reportData, 'research');
 
 const percentage = (value: number, total: number): number => {
     if (total === 0) {
@@ -154,6 +162,15 @@ const totalMaleAcrossPrograms = computed(
     () => gfpsStats.value.maleCount + employeesStats.value.maleCount + scholarsStats.value.maleCount + rstlStats.value.maleCount,
 );
 
+const specialResearchStats = computed(() => {
+    const rows = specialResearchRows(researchFundingRows.value);
+
+    return {
+        total: rows.reduce((sum, row) => sum + row.total, 0),
+        female: rows.reduce((sum, row) => sum + row.female, 0),
+    };
+});
+
 const combinedFundingAmount = computed(() => setupStats.value.totalAmount + cestStats.value.totalAmount + giaStats.value.totalAmount);
 const combinedProjectsCount = computed(() => setupStats.value.totalProjects + cestStats.value.totalProjects + giaStats.value.totalProjects);
 
@@ -238,6 +255,14 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
         metrics: [
             { label: 'Total Projects', value: giaStats.value.totalProjects },
             { label: 'Total Funding', value: formatFundingOrEmpty(giaStats.value.totalAmount) },
+        ],
+    },
+    {
+        tab: 'Special Projects Research',
+        title: 'Special Projects Research',
+        metrics: [
+            { label: 'Total Researchers', value: specialResearchStats.value.total },
+            { label: 'Female', value: specialResearchStats.value.female },
         ],
     },
     {
@@ -472,6 +497,12 @@ onMounted(() => {
                             full-name="Grants-in-Aid (GIA)"
                             :year="year.year"
                             :categories="giaFundingRows"
+                        />
+
+                        <SpecialProjectsResearchPanel
+                            v-else-if="activeTab === 'Special Projects Research'"
+                            :year="year.year"
+                            :categories="researchFundingRows"
                         />
                     </div>
                 </Transition>

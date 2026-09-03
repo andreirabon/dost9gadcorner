@@ -60,7 +60,13 @@ class ReportYearManagementController extends Controller
                     'employeeStatusBreakdowns',
                     'gfpsAssemblyAttendances',
                     'gfpsMembershipSummary',
-                    'programFundingSummaries',
+                    // The marker answers for the SETUP/CEST/GIA tabs, so the
+                    // provincial research rows are excluded: a year carrying
+                    // only research would otherwise read as funded.
+                    'programFundingSummaries' => fn (Builder $query) => $query->whereHas(
+                        'fundingProgram',
+                        fn (Builder $program) => $program->where('slug', 'not like', 'research-%'),
+                    ),
                     'rstlMonthlyBreakdowns',
                     // Relation is ordered for "latest snapshot" reads; counting does not
                     // need that ordering, and MySQL will not sort a scalar subquery for free.
