@@ -9,13 +9,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('record stores a denormalized entry tied to the actor', function () {
-    $actor = User::factory()->create(['username' => 'ARR', 'role' => UserRole::ADMINISTRATOR]);
+    $actor = User::factory()->create(['username' => User::PRIMARY_ADMIN_USERNAME, 'role' => UserRole::ADMINISTRATOR]);
 
     AuditLogger::record($actor, 'user.password_reset', 'User account: GADStaff', ['note' => 'no field diff']);
 
     $this->assertDatabaseHas('audit_logs', [
         'actor_id' => $actor->id,
-        'actor_username' => 'ARR',
+        'actor_username' => User::PRIMARY_ADMIN_USERNAME,
         'actor_role' => 'administrator',
         'action' => 'user.password_reset',
         'item_label' => 'User account: GADStaff',

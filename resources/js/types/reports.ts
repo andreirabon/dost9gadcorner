@@ -198,8 +198,6 @@ export interface EditableReportYear {
     description: string | null;
     status: 'pending' | 'published';
     publishedAt: string | null;
-    /** Optional cover/thumbnail URL for admin header; omit or null uses placeholder */
-    coverImageUrl?: string | null;
     gfpsMembership: GfpsMembershipData;
     gfpsAssemblies: EditableGfpsAssemblyRow[];
     employeeStatuses: EditableEmployeeStatusRow[];

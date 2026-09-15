@@ -260,3 +260,25 @@ test('moving a report back to pending clears its publish time', function () {
 
     expect($reportYear->fresh()->published_at)->toBeNull();
 });
+
+test('clearing a title through a metadata patch stores null and leaves other fields alone', function () {
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->create([
+        'year' => 2033,
+        'title' => 'Old title',
+        'description' => 'Kept',
+    ]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}/metadata", [
+            'title' => null,
+            'expected_updated_at' => $reportYear->updated_at->toIso8601String(),
+        ])
+        ->assertSessionHasNoErrors();
+
+    $fresh = $reportYear->fresh();
+
+    expect($fresh->title)->toBeNull()
+        ->and($fresh->description)->toBe('Kept')
+        ->and($fresh->year)->toBe(2033);
+});

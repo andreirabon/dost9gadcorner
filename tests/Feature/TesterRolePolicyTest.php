@@ -72,7 +72,7 @@ test('tester is not seeded in production even when its password is configured', 
 
     expect(User::query()->where('username', UserSeeder::TESTER_USERNAME)->exists())->toBeFalse()
         // The rest of the seeder still ran, so absence is the skip, not a crash.
-        ->and(User::query()->where('username', UserSeeder::PRIMARY_ADMIN_USERNAME)->exists())->toBeTrue();
+        ->and(User::query()->where('username', User::PRIMARY_ADMIN_USERNAME)->exists())->toBeTrue();
 });
 
 test('tester is not seeded when its password is unset', function () {

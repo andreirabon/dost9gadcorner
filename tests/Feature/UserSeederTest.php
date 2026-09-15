@@ -11,7 +11,7 @@ uses(RefreshDatabase::class);
 test('user seeder creates primary admin account', function () {
     $this->seed(UserSeeder::class);
 
-    $user = User::query()->where('username', 'ARR')->first();
+    $user = User::query()->where('username', User::PRIMARY_ADMIN_USERNAME)->first();
 
     expect($user)->not->toBeNull()
         ->and($user->role)->toBe(UserRole::ADMINISTRATOR)
@@ -22,21 +22,21 @@ test('primary admin can log in after seeding', function () {
     $this->seed(UserSeeder::class);
 
     $this->post(route('login.store'), [
-        'username' => 'ARR',
+        'username' => User::PRIMARY_ADMIN_USERNAME,
         'password' => config('auth.seed.admin_password'),
     ])->assertRedirect(route('report-years.index'));
 });
 
 test('user seeder updates existing primary admin password', function () {
     User::factory()->create([
-        'username' => 'ARR',
+        'username' => User::PRIMARY_ADMIN_USERNAME,
         'password' => 'old-password',
         'role' => UserRole::ADMINISTRATOR,
     ]);
 
     $this->seed(UserSeeder::class);
 
-    $user = User::query()->where('username', 'ARR')->first();
+    $user = User::query()->where('username', User::PRIMARY_ADMIN_USERNAME)->first();
 
     expect(Hash::check(config('auth.seed.admin_password'), $user->password))->toBeTrue()
         ->and(Hash::check('old-password', $user->password))->toBeFalse();

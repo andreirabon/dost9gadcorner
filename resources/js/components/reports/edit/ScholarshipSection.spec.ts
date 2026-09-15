@@ -53,7 +53,6 @@ function reportYear(overrides: Record<string, unknown> = {}) {
         description: null,
         status: 'pending' as const,
         publishedAt: null,
-        coverImageUrl: null,
         gfpsMembership: { femaleCount: 0, maleCount: 0 },
         gfpsAssemblies: [],
         gfpsMemberStatuses: [],

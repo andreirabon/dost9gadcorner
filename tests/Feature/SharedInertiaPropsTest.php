@@ -55,7 +55,7 @@ test('shared abilities match each role', function (UserRole $role, bool $canDele
 ]);
 
 test('only the primary administrator may manage users', function () {
-    $this->actingAs(User::factory()->create(['username' => 'ARR', 'role' => UserRole::ADMINISTRATOR]));
+    $this->actingAs(User::factory()->create(['username' => User::PRIMARY_ADMIN_USERNAME, 'role' => UserRole::ADMINISTRATOR]));
 
     expect(sharedProps()['auth']['user']['can']['manageUsers'])->toBeTrue();
 });

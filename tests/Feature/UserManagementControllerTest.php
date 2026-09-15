@@ -9,7 +9,7 @@ use Inertia\Testing\AssertableInertia;
 uses(RefreshDatabase::class);
 
 test('ARR can view the user management page', function () {
-    $arr = User::factory()->create(['username' => 'ARR', 'role' => UserRole::ADMINISTRATOR]);
+    $arr = User::factory()->create(['username' => User::PRIMARY_ADMIN_USERNAME, 'role' => UserRole::ADMINISTRATOR]);
     User::factory()->create(['username' => 'GADStaff', 'role' => UserRole::GAD]);
 
     $this->actingAs($arr)
@@ -38,7 +38,7 @@ test('gad staff cannot view the user management page', function () {
 });
 
 test('ARR can reset another user\'s password', function () {
-    $arr = User::factory()->create(['username' => 'ARR', 'role' => UserRole::ADMINISTRATOR]);
+    $arr = User::factory()->create(['username' => User::PRIMARY_ADMIN_USERNAME, 'role' => UserRole::ADMINISTRATOR]);
     $target = User::factory()->create(['username' => 'GADStaff', 'role' => UserRole::GAD]);
 
     $this->actingAs($arr)
@@ -51,7 +51,7 @@ test('ARR can reset another user\'s password', function () {
     expect(Hash::check('a-new-strong-password1', $target->fresh()->password))->toBeTrue();
 
     $this->assertDatabaseHas('audit_logs', [
-        'actor_username' => 'ARR',
+        'actor_username' => User::PRIMARY_ADMIN_USERNAME,
         'action' => 'user.password_reset',
         'section' => 'Account',
         'column' => 'Password',

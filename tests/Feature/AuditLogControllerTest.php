@@ -9,11 +9,11 @@ use Inertia\Testing\AssertableInertia;
 uses(RefreshDatabase::class);
 
 test('ARR can view the audit log page', function () {
-    $arr = User::factory()->create(['username' => 'ARR', 'role' => UserRole::ADMINISTRATOR]);
+    $arr = User::factory()->create(['username' => User::PRIMARY_ADMIN_USERNAME, 'role' => UserRole::ADMINISTRATOR]);
 
     AuditLog::create([
         'actor_id' => $arr->id,
-        'actor_username' => 'ARR',
+        'actor_username' => User::PRIMARY_ADMIN_USERNAME,
         'actor_role' => 'administrator',
         'action' => 'user.password_reset',
         'item_label' => 'User account: GADStaff',

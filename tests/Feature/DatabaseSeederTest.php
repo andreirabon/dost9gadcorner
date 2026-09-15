@@ -38,7 +38,7 @@ test('user seeder creates admin and all staff accounts', function () {
 test('database seeder runs all seeders successfully', function () {
     $this->seed(DatabaseSeeder::class);
 
-    expect(User::query()->where('username', UserSeeder::PRIMARY_ADMIN_USERNAME)->exists())->toBeTrue()
+    expect(User::query()->where('username', User::PRIMARY_ADMIN_USERNAME)->exists())->toBeTrue()
         ->and(User::query()->where('username', 'GADStaff')->exists())->toBeTrue()
         ->and(EmploymentStatus::query()->count())->toBeGreaterThan(0)
         ->and(FundingProgram::query()->count())->toBeGreaterThan(0)
@@ -54,7 +54,7 @@ test('db:seed runs in production when force flag is passed', function () {
         ->assertSuccessful();
 
     expect(User::query()->where('username', 'GADStaff')->exists())->toBeTrue()
-        ->and(User::query()->where('username', UserSeeder::PRIMARY_ADMIN_USERNAME)->exists())->toBeTrue();
+        ->and(User::query()->where('username', User::PRIMARY_ADMIN_USERNAME)->exists())->toBeTrue();
 });
 
 test('full db:seed runs in production when force flag is passed', function () {
