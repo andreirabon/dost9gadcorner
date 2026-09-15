@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 /**
  * Cast-backed attributes are invisible to static analysis, so declare them.
@@ -19,7 +17,9 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
+
+    public const PRIMARY_ADMIN_USERNAME = 'ARR';
 
     /**
      * The attributes that are mass assignable (`role` is not — set only in trusted code).
@@ -54,18 +54,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function shouldDefaultLoginToReportYears(): bool
-    {
-        return $this->role?->canAccessReportManagement() ?? false;
-    }
-
-    public function canDeleteReportYears(): bool
-    {
-        return $this->role === UserRole::ADMINISTRATOR || $this->role === UserRole::GAD;
-    }
-
     public function isPrimaryAdministrator(): bool
     {
-        return $this->role === UserRole::ADMINISTRATOR && $this->username === 'ARR';
+        return $this->role === UserRole::ADMINISTRATOR && $this->username === self::PRIMARY_ADMIN_USERNAME;
     }
 }

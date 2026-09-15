@@ -2,16 +2,10 @@
 
 namespace App\Services\Reports;
 
-use App\Models\EmployeeStatusBreakdown;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
-use App\Models\GfpsAssemblyAttendance;
 use App\Models\GfpsAssemblyPeriod;
-use App\Models\GfpsMemberStatusBreakdown;
-use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
-use App\Models\RstlMonthlyBreakdown;
-use App\Models\ScholarshipApplicantSummary;
 use App\Models\ScholarshipProgram;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
@@ -19,9 +13,9 @@ use InvalidArgumentException;
 /**
  * Every multi-row report section, described once.
  *
- * The five sections differ only in which model they write, which column
+ * The five sections differ only in which relation they write, which column
  * identifies a row, which fields carry values, and how the change is labelled
- * in the audit log. Keeping that as data lets one patcher and one controller
+ * in the audit log. Keeping that as data lets one controller
  * method serve all of them.
  */
 final class RowSection
@@ -40,7 +34,6 @@ final class RowSection
 
     /**
      * @var array<string, array{
-     *     model: class-string<Model>,
      *     identity: string,
      *     patchKey: string,
      *     valueFields: list<string>,
@@ -53,7 +46,6 @@ final class RowSection
      */
     private const SECTIONS = [
         self::GFPS_ASSEMBLIES => [
-            'model' => GfpsAssemblyAttendance::class,
             // The payload calls it `period_id`; the column is fully qualified.
             'identity' => 'gfps_assembly_period_id',
             'patchKey' => 'period_id',
@@ -65,7 +57,6 @@ final class RowSection
             'auditSection' => 'GFPS Assemblies',
         ],
         self::EMPLOYEE_STATUSES => [
-            'model' => EmployeeStatusBreakdown::class,
             'identity' => 'employment_status_id',
             'patchKey' => 'employment_status_id',
             'valueFields' => ['female_count', 'male_count'],
@@ -76,7 +67,6 @@ final class RowSection
             'auditSection' => 'Employee Statuses',
         ],
         self::GFPS_MEMBER_STATUSES => [
-            'model' => GfpsMemberStatusBreakdown::class,
             'identity' => 'employment_status_id',
             'patchKey' => 'employment_status_id',
             'valueFields' => ['female_count', 'male_count'],
@@ -87,7 +77,6 @@ final class RowSection
             'auditSection' => 'GFPS Member Statuses',
         ],
         self::RSTL_MONTHLY => [
-            'model' => RstlMonthlyBreakdown::class,
             'identity' => 'report_month_id',
             'patchKey' => 'report_month_id',
             'valueFields' => ['female_count', 'female_led_count', 'male_count', 'male_led_count'],
@@ -98,7 +87,6 @@ final class RowSection
             'auditSection' => 'RSTL Monthly',
         ],
         self::SCHOLARSHIP_APPLICANTS => [
-            'model' => ScholarshipApplicantSummary::class,
             'identity' => 'scholarship_program_id',
             'patchKey' => 'scholarship_program_id',
             'valueFields' => ['female_count', 'male_count'],
@@ -109,7 +97,6 @@ final class RowSection
             'auditSection' => 'Scholarship Applicants',
         ],
         self::PROGRAM_FUNDING => [
-            'model' => ProgramFundingSummary::class,
             'identity' => 'funding_program_id',
             'patchKey' => 'funding_program_id',
             'valueFields' => [
@@ -140,7 +127,6 @@ final class RowSection
 
     /**
      * @return array{
-     *     model: class-string<Model>,
      *     identity: string,
      *     patchKey: string,
      *     valueFields: list<string>,

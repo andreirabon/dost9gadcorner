@@ -50,7 +50,6 @@ class UpdateRstlMonthlyBreakdownsRequest extends FormRequest
             $this->assertEachItemHasPatchField(
                 $validator,
                 $breakdowns,
-                'report_month_id',
                 ['female_count', 'female_led_count', 'male_count', 'male_led_count'],
                 'breakdowns',
             );

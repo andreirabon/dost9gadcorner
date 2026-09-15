@@ -28,15 +28,9 @@ class FundingProgramScope
             return null;
         }
 
-        $scopes = config('reports.funding_program_scopes', []);
-
-        if (! is_array($scopes) || ! array_key_exists($user->username, $scopes)) {
-            return null;
-        }
-
-        $slugs = $scopes[$user->username];
-
-        return is_array($slugs) ? array_values(array_map(strval(...), $slugs)) : [];
+        // Array access, not dot notation: usernames may contain '.', which
+        // config() would split, silently leaving a scoped user unrestricted.
+        return config('reports.funding_program_scopes', [])[$user->username] ?? null;
     }
 
     /**

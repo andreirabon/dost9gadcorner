@@ -48,7 +48,6 @@ class UpdateGfpsAssemblyAttendancesRequest extends FormRequest
             $this->assertEachItemHasPatchField(
                 $validator,
                 $attendances,
-                'period_id',
                 ['female_count', 'male_count'],
                 'attendances',
             );

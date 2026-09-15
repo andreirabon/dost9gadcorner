@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\EditsReportYearAttributes;
 use App\Models\ReportYear;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Rule;
 
 class StoreReportYearRequest extends FormRequest
 {
+    use EditsReportYearAttributes;
+
     public function authorize(): bool
     {
         return $this->user()?->can('create', ReportYear::class) ?? false;
@@ -37,16 +40,6 @@ class StoreReportYearRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('title')) {
-            $this->merge([
-                'title' => $this->input('title') !== null ? trim(strip_tags($this->input('title'))) : null,
-            ]);
-        }
-
-        if ($this->has('description')) {
-            $this->merge([
-                'description' => $this->input('description') !== null ? trim(strip_tags($this->input('description'))) : null,
-            ]);
-        }
+        $this->sanitizeReportYearText();
     }
 }

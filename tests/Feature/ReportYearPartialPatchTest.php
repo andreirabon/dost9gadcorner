@@ -228,3 +228,35 @@ test('partial patch rejects empty membership payload', function () {
         ->patch("/report-years/{$reportYear->id}/gfps-membership", [])
         ->assertSessionHasErrors('patch');
 });
+
+test('re-saving a published report keeps its original publish time', function () {
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->published()->create([
+        'year' => 2031,
+        'published_at' => '2026-01-01 00:00:00',
+    ]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}", [
+            'status' => ReportYear::STATUS_PUBLISHED,
+            'title' => 'Renamed',
+            'expected_updated_at' => $reportYear->updated_at->toIso8601String(),
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($reportYear->fresh()->published_at->toDateString())->toBe('2026-01-01');
+});
+
+test('moving a report back to pending clears its publish time', function () {
+    $user = User::factory()->create();
+    $reportYear = ReportYear::factory()->published()->create(['year' => 2032]);
+
+    $this->actingAs($user)
+        ->patch("/report-years/{$reportYear->id}", [
+            'status' => ReportYear::STATUS_PENDING,
+            'expected_updated_at' => $reportYear->updated_at->toIso8601String(),
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($reportYear->fresh()->published_at)->toBeNull();
+});

@@ -19,16 +19,6 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     /**
-     * Determines the current asset version.
-     *
-     * @see https://inertiajs.com/asset-versioning
-     */
-    public function version(Request $request): ?string
-    {
-        return parent::version($request);
-    }
-
-    /**
      * Define the props that are shared by default.
      *
      * @see https://inertiajs.com/shared-data
@@ -46,7 +36,7 @@ class HandleInertiaRequests extends Middleware
                 'can' => [
                     'accessReportYears' => $user->can('viewAny', ReportYear::class),
                     'createReportYears' => $user->can('create', ReportYear::class),
-                    'deleteReportYears' => $user->canDeleteReportYears(),
+                    'deleteReportYears' => $user->can('delete', ReportYear::class),
                     'manageUsers' => $user->isPrimaryAdministrator(),
                 ],
             ];
@@ -58,19 +48,10 @@ class HandleInertiaRequests extends Middleware
                 'user' => $authUser,
             ],
             'ziggy' => [
-                ...(new Ziggy($this->resolveZiggyGroup($request)))->toArray(),
+                ...(new Ziggy($user === null ? 'guest' : null))->toArray(),
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
-    }
-
-    private function resolveZiggyGroup(Request $request): ?string
-    {
-        if ($request->user() === null) {
-            return 'guest';
-        }
-
-        return null;
     }
 }

@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesSparsePatchPayload;
+use App\Models\ProgramFundingSummary;
 use App\Models\ReportYear;
+use App\Services\Reports\RowSection;
 use App\Support\FundingProgramScope;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
@@ -27,27 +29,26 @@ class UpdateProgramFundingSummariesRequest extends FormRequest
      */
     public function rules(): array
     {
+        $valueRules = collect(self::valueFields())->mapWithKeys(fn (string $field): array => [
+            "summaries.*.{$field}" => in_array($field, ProgramFundingSummary::DECIMAL_FIELDS, true)
+                ? ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99']
+                : ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+        ])->all();
+
         return [
             'expected_updated_at' => ['sometimes', 'nullable', 'string'],
             'summaries' => ['required', 'array', 'min:1'],
             'summaries.*.funding_program_id' => ['required', 'integer', Rule::exists('funding_programs', 'id')],
-            'summaries.*.female_projects' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.female_amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
-            'summaries.*.male_projects' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.male_amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
-            'summaries.*.funded_projects_count' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.funded_projects_value' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999999999.99'],
-            'summaries.*.training_participants' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.jobs_total' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.jobs_male' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.jobs_female' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.jobs_pwd' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.jobs_senior_citizen' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.jobs_ip' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.jobs_4ps' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.special_projects_research_male' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
-            'summaries.*.special_projects_research_female' => ['sometimes', 'required', 'integer', 'min:0', 'max:2147483647'],
+            ...$valueRules,
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function valueFields(): array
+    {
+        return RowSection::config(RowSection::PROGRAM_FUNDING)['valueFields'];
     }
 
     public function withValidator(Validator $validator): void
@@ -60,19 +61,7 @@ class UpdateProgramFundingSummariesRequest extends FormRequest
             /** @var array<int, array<string, mixed>> $summaries */
             $summaries = $this->input('summaries', []);
 
-            $this->assertEachItemHasPatchField(
-                $validator,
-                $summaries,
-                'funding_program_id',
-                [
-                    'female_projects', 'female_amount', 'male_projects', 'male_amount',
-                    'funded_projects_count', 'funded_projects_value', 'training_participants',
-                    'jobs_total', 'jobs_male', 'jobs_female', 'jobs_pwd', 'jobs_senior_citizen',
-                    'jobs_ip', 'jobs_4ps',
-                    'special_projects_research_male', 'special_projects_research_female',
-                ],
-                'summaries',
-            );
+            $this->assertEachItemHasPatchField($validator, $summaries, self::valueFields(), 'summaries');
 
             $this->assertEveryProgramIsInScope($validator, $summaries);
             $this->assertJobsBreakdownSumsToTotal($validator, $summaries);

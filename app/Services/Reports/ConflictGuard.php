@@ -14,68 +14,33 @@ final class ConflictGuard
     /**
      * Assert a single-record section has not been modified since the client loaded it.
      *
-     * Use for metadata (ReportYear itself), GFPS membership, and scholarship.
-     *
      * @param  string|null  $expectedUpdatedAt  `null` asserts the section had no record yet.
      */
     public function assertFresh(?Model $model, ?string $expectedUpdatedAt): void
     {
-        if ($expectedUpdatedAt === null && $model === null) {
-            return;
-        }
-
-        if ($expectedUpdatedAt === null && $model !== null) {
-            throw self::conflict();
-        }
-
-        if ($expectedUpdatedAt !== null && $model === null) {
-            throw self::conflict();
-        }
-
-        /** @var Model $model */
-        if ($model->updated_at?->toIso8601String() !== $expectedUpdatedAt) {
-            throw self::conflict();
-        }
+        self::assertMatches($model?->updated_at?->toIso8601String(), $expectedUpdatedAt);
     }
 
     /**
-     * Assert a multi-row section has not been modified since the client loaded it.
-     *
-     * Use for assemblies, employee statuses, RSTL monthly, and program funding.
-     * Compares against MAX(updated_at) across all rows for the report year.
+     * Assert a multi-row section has not been modified since the client loaded it,
+     * comparing against MAX(updated_at) across the report year's rows.
      *
      * @param  string|null  $expectedUpdatedAt  `null` asserts the section had no rows yet.
      */
-    public function assertRelationFresh(
-        ReportYear $reportYear,
-        string $relationName,
-        ?string $expectedUpdatedAt,
-    ): void {
+    public function assertRelationFresh(ReportYear $reportYear, string $relationName, ?string $expectedUpdatedAt): void
+    {
         $maxUpdatedAt = $reportYear->{$relationName}()->max('updated_at');
 
-        if ($expectedUpdatedAt === null && $maxUpdatedAt === null) {
-            return;
-        }
-
-        if ($expectedUpdatedAt === null && $maxUpdatedAt !== null) {
-            throw self::conflict();
-        }
-
-        if ($expectedUpdatedAt !== null && $maxUpdatedAt === null) {
-            throw self::conflict();
-        }
-
-        $actualTimestamp = Carbon::parse($maxUpdatedAt)->toIso8601String();
-
-        if ($actualTimestamp !== $expectedUpdatedAt) {
-            throw self::conflict();
-        }
+        self::assertMatches(
+            $maxUpdatedAt === null ? null : Carbon::parse($maxUpdatedAt)->toIso8601String(),
+            $expectedUpdatedAt,
+        );
     }
 
-    private static function conflict(): ValidationException
+    private static function assertMatches(?string $actual, ?string $expected): void
     {
-        return ValidationException::withMessages([
-            'conflict' => self::CONFLICT_MESSAGE,
-        ]);
+        if ($actual !== $expected) {
+            throw ValidationException::withMessages(['conflict' => self::CONFLICT_MESSAGE]);
+        }
     }
 }

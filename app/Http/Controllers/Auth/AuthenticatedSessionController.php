@@ -4,25 +4,21 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\ReportYear;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AuthenticatedSessionController extends Controller
 {
-    public function create(Request $request): SymfonyResponse
+    public function create(Request $request): Response
     {
-        $inertia = Inertia::render('auth/Login', [
+        return Inertia::render('auth/Login', [
             'status' => $this->safeLoginStatus($request->session()->get('status')),
         ]);
-
-        $response = $inertia->toResponse($request);
-        $response->headers->set('Cache-Control', 'no-store, private');
-        $response->headers->set('Pragma', 'no-cache');
-
-        return $response;
     }
 
     private function safeLoginStatus(mixed $status): ?string
@@ -45,7 +41,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
-        $default = $user !== null && $user->shouldDefaultLoginToReportYears()
+        $default = $user !== null && $user->can('viewAny', ReportYear::class)
             ? route('report-years.index')
             : route('index');
 

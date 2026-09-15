@@ -48,7 +48,6 @@ class UpdateScholarshipApplicantSummariesRequest extends FormRequest
             $this->assertEachItemHasPatchField(
                 $validator,
                 $applicants,
-                'scholarship_program_id',
                 ['female_count', 'male_count'],
                 'applicants',
             );

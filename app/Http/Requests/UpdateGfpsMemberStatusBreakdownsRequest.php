@@ -58,7 +58,6 @@ class UpdateGfpsMemberStatusBreakdownsRequest extends FormRequest
             $this->assertEachItemHasPatchField(
                 $validator,
                 $breakdowns,
-                'employment_status_id',
                 ['female_count', 'male_count'],
                 'breakdowns',
             );

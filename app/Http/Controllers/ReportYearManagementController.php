@@ -17,6 +17,7 @@ use App\Http\Requests\UpdateScholarshipSnapshotRequest;
 use App\Models\EmploymentStatus;
 use App\Models\FundingProgram;
 use App\Models\GfpsAssemblyPeriod;
+use App\Models\ProgramFundingSummary;
 use App\Models\ReportMonth;
 use App\Models\ReportYear;
 use App\Models\ScholarshipProgram;
@@ -24,10 +25,7 @@ use App\Models\ScholarshipSummary;
 use App\Models\SchoolYear;
 use App\Services\AuditLogger;
 use App\Services\Reports\ConflictGuard;
-use App\Services\Reports\PatchReportYearAttributes;
-use App\Services\Reports\PatchRowSection;
 use App\Services\Reports\RowSection;
-use App\Services\Reports\SparseRecordPatcher;
 use App\Support\FundingProgramScope;
 use App\Support\GfpsMemberStatuses;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,20 +33,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ReportYearManagementController extends Controller
 {
-    /**
-     * Audit-log item label: the report year's title when set, otherwise a
-     * "Report Year {year}" fallback for untitled years.
-     */
-    private function reportYearLabel(?string $title, int $year): string
-    {
-        return $title !== null && $title !== '' ? $title : "Report Year {$year}";
-    }
+    private const SCHOLARSHIP_FIELDS = ['school_year_id', 'as_of_date', 'female_count', 'male_count'];
 
     public function index(): Response
     {
@@ -116,7 +110,7 @@ class ReportYearManagementController extends Controller
         AuditLogger::record(
             $request->user(),
             'report_year.created',
-            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $reportYear->label,
             AuditLogger::created($reportYear->only(['year', 'title', 'description', 'status'])),
             section: 'Report Year',
         );
@@ -178,14 +172,25 @@ class ReportYearManagementController extends Controller
                 'status' => $reportYear->status,
                 'publishedAt' => $reportYear->published_at?->toIso8601String(),
                 'isLocked' => $reportYear->is_locked,
-                'coverImageUrl' => null,
                 'gfpsMembership' => [
                     'femaleCount' => (int) ($reportYear->gfpsMembershipSummary?->female_count ?? 0),
                     'maleCount' => (int) ($reportYear->gfpsMembershipSummary?->male_count ?? 0),
                 ],
-                'gfpsAssemblies' => $this->editableGfpsAssemblyRows($reportYear),
-                'employeeStatuses' => $this->editableEmployeeStatusRows($reportYear),
-                'gfpsMemberStatuses' => $this->editableGfpsMemberStatusRows($reportYear),
+                'gfpsAssemblies' => $this->femaleMaleRows(
+                    GfpsAssemblyPeriod::query()->orderBy('sort_order')->get(),
+                    $reportYear->gfpsAssemblyAttendances->keyBy('gfps_assembly_period_id'),
+                    'periodId',
+                ),
+                'employeeStatuses' => $this->femaleMaleRows(
+                    EmploymentStatus::query()->orderBy('sort_order')->get(),
+                    $reportYear->employeeStatusBreakdowns->keyBy('employment_status_id'),
+                    'employmentStatusId',
+                ),
+                'gfpsMemberStatuses' => $this->femaleMaleRows(
+                    GfpsMemberStatuses::all(),
+                    $reportYear->gfpsMemberStatusBreakdowns->keyBy('employment_status_id'),
+                    'employmentStatusId',
+                ),
                 'scholarshipSnapshots' => $reportYear->scholarshipSnapshots
                     ->map(fn (ScholarshipSummary $s) => [
                         'id' => $s->id,
@@ -209,28 +214,14 @@ class ReportYearManagementController extends Controller
         ]);
     }
 
-    public function update(UpdateReportYearRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear, ConflictGuard $conflictGuard): RedirectResponse
+    public function update(UpdateReportYearRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        return $this->patchReportYearFields(
-            $request,
-            $reportYear,
-            $patchReportYear,
-            $conflictGuard,
-            ['year', 'title', 'description', 'status'],
-            'report_year.',
-        );
+        return $this->patchReportYearFields($request, $reportYear, $conflictGuard, ['year', 'title', 'description', 'status'], 'report_year.');
     }
 
-    public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear, PatchReportYearAttributes $patchReportYear, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateMetadata(UpdateReportYearMetadataRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        return $this->patchReportYearFields(
-            $request,
-            $reportYear,
-            $patchReportYear,
-            $conflictGuard,
-            ['year', 'title', 'description'],
-            'report_year.metadata_',
-        );
+        return $this->patchReportYearFields($request, $reportYear, $conflictGuard, ['year', 'title', 'description'], 'report_year.metadata_');
     }
 
     /**
@@ -243,7 +234,6 @@ class ReportYearManagementController extends Controller
     private function patchReportYearFields(
         FormRequest $request,
         ReportYear $reportYear,
-        PatchReportYearAttributes $patchReportYear,
         ConflictGuard $conflictGuard,
         array $fields,
         string $auditActionPrefix,
@@ -252,14 +242,24 @@ class ReportYearManagementController extends Controller
         $conflictGuard->assertFresh($reportYear, $request->input('expected_updated_at'));
 
         $before = $reportYear->only($fields);
-        $patchReportYear->apply($reportYear, $request->validated(), $fields);
-        $after = $reportYear->only($fields);
-        $diff = AuditLogger::diff($before, $after);
+        $attributes = $request->safe()->only($fields);
+
+        if (array_key_exists('status', $attributes)) {
+            $attributes['published_at'] = $attributes['status'] === ReportYear::STATUS_PUBLISHED
+                ? ($reportYear->published_at ?? now())
+                : null;
+        }
+
+        if ($attributes !== []) {
+            $reportYear->fill($attributes)->save();
+        }
+
+        $diff = AuditLogger::diff($before, $reportYear->only($fields));
 
         AuditLogger::record(
             $request->user(),
             $auditActionPrefix.AuditLogger::actionVerb($diff),
-            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $reportYear->label,
             $diff,
             section: 'Report Year',
             column: AuditLogger::humanizeFields($diff),
@@ -273,7 +273,7 @@ class ReportYearManagementController extends Controller
         $this->authorize('delete', $reportYear);
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
 
-        $label = $this->reportYearLabel($reportYear->title, $reportYear->year);
+        $label = $reportYear->label;
         $before = $reportYear->only(['year', 'title', 'description', 'status']);
         $reportYear->delete();
 
@@ -288,25 +288,26 @@ class ReportYearManagementController extends Controller
         return to_route('report-years.index');
     }
 
-    public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, SparseRecordPatcher $patcher, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateGfpsMembership(UpdateGfpsMembershipSummaryRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         $conflictGuard->assertFresh($reportYear->gfpsMembershipSummary, $request->input('expected_updated_at'));
 
-        $before = $reportYear->gfpsMembershipSummary?->only(['female_count', 'male_count']) ?? [];
-        $patcher->applyToReportYearRelation(
-            $reportYear,
-            'gfpsMembershipSummary',
-            $request->validated(),
-            ['female_count', 'male_count'],
-        );
-        $after = $reportYear->gfpsMembershipSummary?->fresh()?->only(['female_count', 'male_count']) ?? [];
+        $fields = ['female_count', 'male_count'];
+        $before = $reportYear->gfpsMembershipSummary?->only($fields) ?? [];
+        $attributes = $request->safe()->only($fields);
+
+        if ($attributes !== []) {
+            $reportYear->gfpsMembershipSummary()->updateOrCreate(['report_year_id' => $reportYear->id], $attributes);
+        }
+
+        $after = $reportYear->gfpsMembershipSummary?->fresh()?->only($fields) ?? [];
         $diff = AuditLogger::diff($before, $after);
 
         AuditLogger::record(
             $request->user(),
             'gfps_membership.'.AuditLogger::actionVerb($diff),
-            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $reportYear->label,
             $diff,
             section: 'GFPS Membership',
             column: AuditLogger::humanizeFields($diff),
@@ -315,19 +316,19 @@ class ReportYearManagementController extends Controller
         return back();
     }
 
-    public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateGfpsAssemblies(UpdateGfpsAssemblyAttendancesRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::GFPS_ASSEMBLIES);
+        return $this->patchRowSection($request, $reportYear, $conflictGuard, RowSection::GFPS_ASSEMBLIES);
     }
 
-    public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateEmployeeStatuses(UpdateEmployeeStatusBreakdownsRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::EMPLOYEE_STATUSES);
+        return $this->patchRowSection($request, $reportYear, $conflictGuard, RowSection::EMPLOYEE_STATUSES);
     }
 
-    public function updateGfpsMemberStatuses(UpdateGfpsMemberStatusBreakdownsRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateGfpsMemberStatuses(UpdateGfpsMemberStatusBreakdownsRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::GFPS_MEMBER_STATUSES);
+        return $this->patchRowSection($request, $reportYear, $conflictGuard, RowSection::GFPS_MEMBER_STATUSES);
     }
 
     public function storeScholarshipSnapshot(StoreScholarshipSnapshotRequest $request, ReportYear $reportYear): RedirectResponse
@@ -348,8 +349,8 @@ class ReportYearManagementController extends Controller
         AuditLogger::record(
             $request->user(),
             'scholarship.created',
-            $this->reportYearLabel($reportYear->title, $reportYear->year),
-            AuditLogger::created($scholarship->only(['school_year_id', 'as_of_date', 'female_count', 'male_count'])),
+            $reportYear->label,
+            AuditLogger::created($scholarship->only(self::SCHOLARSHIP_FIELDS)),
             section: 'Scholarship',
             row: $schoolYearName ?? "#{$scholarship->school_year_id}",
         );
@@ -357,33 +358,34 @@ class ReportYearManagementController extends Controller
         return back();
     }
 
-    public function updateScholarshipSnapshot(UpdateScholarshipSnapshotRequest $request, ReportYear $reportYear, ScholarshipSummary $scholarship, SparseRecordPatcher $patcher, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateScholarshipSnapshot(UpdateScholarshipSnapshotRequest $request, ReportYear $reportYear, ScholarshipSummary $scholarship, ConflictGuard $conflictGuard): RedirectResponse
     {
         abort_if($reportYear->is_locked, 403, 'Report year is locked.');
         abort_unless($scholarship->report_year_id === $reportYear->id, 404);
 
         $conflictGuard->assertFresh($scholarship, $request->input('expected_updated_at'));
 
-        // Audit stamps ride along in the same save. Writing them separately bumped
-        // updated_at twice, so the timestamp the client just synced against was
-        // already stale by the time the response came back.
-        $before = $scholarship->only(['school_year_id', 'as_of_date', 'female_count', 'male_count']);
-        $patcher->applyToModel(
-            $scholarship,
-            $request->validated(),
-            ['school_year_id', 'as_of_date', 'female_count', 'male_count'],
-            [
+        $before = $scholarship->only(self::SCHOLARSHIP_FIELDS);
+
+        // Audit stamps ride along in the same save, and only when something
+        // changed, so a no-op patch cannot bump updated_at past the client's token.
+        $attributes = $request->safe()->only(self::SCHOLARSHIP_FIELDS);
+
+        if ($attributes !== []) {
+            $scholarship->fill([
+                ...$attributes,
                 'last_edited_by' => $request->user()?->id,
                 'last_edited_at' => now(),
-            ],
-        );
-        $after = $scholarship->only(['school_year_id', 'as_of_date', 'female_count', 'male_count']);
+            ])->save();
+        }
+
+        $after = $scholarship->only(self::SCHOLARSHIP_FIELDS);
         $diff = AuditLogger::diff($before, $after);
 
         AuditLogger::record(
             $request->user(),
             'scholarship.'.AuditLogger::actionVerb($diff),
-            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $reportYear->label,
             $diff,
             section: 'Scholarship',
             column: AuditLogger::humanizeFields($diff),
@@ -400,13 +402,13 @@ class ReportYearManagementController extends Controller
         abort_unless($scholarship->report_year_id === $reportYear->id, 404);
 
         $schoolYearName = $scholarship->schoolYear?->name ?? "#{$scholarship->school_year_id}";
-        $before = $scholarship->only(['school_year_id', 'as_of_date', 'female_count', 'male_count']);
+        $before = $scholarship->only(self::SCHOLARSHIP_FIELDS);
         $scholarship->delete();
 
         AuditLogger::record(
             $request->user(),
             'scholarship.deleted',
-            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $reportYear->label,
             AuditLogger::removed($before),
             section: 'Scholarship',
             row: $schoolYearName,
@@ -415,19 +417,19 @@ class ReportYearManagementController extends Controller
         return back();
     }
 
-    public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateRstlMonthly(UpdateRstlMonthlyBreakdownsRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::RSTL_MONTHLY);
+        return $this->patchRowSection($request, $reportYear, $conflictGuard, RowSection::RSTL_MONTHLY);
     }
 
-    public function updateScholarshipApplicants(UpdateScholarshipApplicantSummariesRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateScholarshipApplicants(UpdateScholarshipApplicantSummariesRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::SCHOLARSHIP_APPLICANTS);
+        return $this->patchRowSection($request, $reportYear, $conflictGuard, RowSection::SCHOLARSHIP_APPLICANTS);
     }
 
-    public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, PatchRowSection $patchRowSection, ConflictGuard $conflictGuard): RedirectResponse
+    public function updateProgramFunding(UpdateProgramFundingSummariesRequest $request, ReportYear $reportYear, ConflictGuard $conflictGuard): RedirectResponse
     {
-        return $this->patchRowSection($request, $reportYear, $patchRowSection, $conflictGuard, RowSection::PROGRAM_FUNDING);
+        return $this->patchRowSection($request, $reportYear, $conflictGuard, RowSection::PROGRAM_FUNDING);
     }
 
     /**
@@ -441,7 +443,6 @@ class ReportYearManagementController extends Controller
     private function patchRowSection(
         FormRequest $request,
         ReportYear $reportYear,
-        PatchRowSection $patchRowSection,
         ConflictGuard $conflictGuard,
         string $section,
     ): RedirectResponse {
@@ -454,7 +455,7 @@ class ReportYearManagementController extends Controller
         $submitted = $request->validated($config['payloadKey']);
         $before = $reportYear->{$config['relation']}()->get()->keyBy($config['identity']);
 
-        $patchRowSection->apply($reportYear, $section, $submitted);
+        $this->upsertRows($reportYear, $config, $submitted);
 
         $after = $reportYear->{$config['relation']}()->get()->keyBy($config['identity']);
         $names = $config['labelModel']::query()
@@ -481,7 +482,7 @@ class ReportYearManagementController extends Controller
             AuditLogger::record(
                 $request->user(),
                 $config['auditAction'].'.'.AuditLogger::actionVerb($diff),
-                $this->reportYearLabel($reportYear->title, $reportYear->year),
+                $reportYear->label,
                 $diff,
                 section: $config['auditSection'],
                 column: AuditLogger::humanizeFields($diff),
@@ -490,6 +491,31 @@ class ReportYearManagementController extends Controller
         }
 
         return back();
+    }
+
+    /**
+     * Rows without their identifying key, or with no value fields, are skipped
+     * rather than written as empty records.
+     *
+     * @param  array{relation: string, identity: string, patchKey: string, valueFields: list<string>}  $config
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function upsertRows(ReportYear $reportYear, array $config, array $rows): void
+    {
+        DB::transaction(function () use ($reportYear, $config, $rows): void {
+            foreach ($rows as $row) {
+                $attributes = Arr::only($row, $config['valueFields']);
+
+                if (! array_key_exists($config['patchKey'], $row) || $attributes === []) {
+                    continue;
+                }
+
+                $reportYear->{$config['relation']}()->updateOrCreate(
+                    [$config['identity'] => $row[$config['patchKey']]],
+                    $attributes,
+                );
+            }
+        });
     }
 
     public function toggleLock(Request $request, ReportYear $reportYear): RedirectResponse
@@ -502,7 +528,7 @@ class ReportYearManagementController extends Controller
         AuditLogger::record(
             $request->user(),
             'report_year.lock_toggled',
-            $this->reportYearLabel($reportYear->title, $reportYear->year),
+            $reportYear->label,
             ['is_locked' => ['old' => $wasLocked, 'new' => ! $wasLocked]],
             section: 'Report Year',
             column: 'Is Locked',
@@ -512,74 +538,36 @@ class ReportYearManagementController extends Controller
     }
 
     /**
-     * @return array<int, array{periodId: int, label: string, femaleCount: int, maleCount: int}>
-     */
-    private function editableGfpsAssemblyRows(ReportYear $reportYear): array
-    {
-        return $this->zeroFilledRows(
-            GfpsAssemblyPeriod::query()->orderBy('sort_order'),
-            $reportYear->gfpsAssemblyAttendances->keyBy('gfps_assembly_period_id'),
-            fn (GfpsAssemblyPeriod $period, ?Model $attendance): array => [
-                'periodId' => $period->id,
-                'label' => $period->name,
-                'femaleCount' => (int) ($attendance?->female_count ?? 0),
-                'maleCount' => (int) ($attendance?->male_count ?? 0),
-            ],
-        );
-    }
-
-    /**
      * Every lookup row for a section, in lookup order, paired with the report
      * year's saved row for it — or nothing, which the mapper zero-fills. The
      * screen always offers the full list rather than only what was entered.
      *
-     * @param  Builder<covariant Model>  $lookup
+     * @param  Collection<int, Model>  $lookup
      * @param  Collection<int, Model>  $existing  keyed by the lookup row's id
      * @param  callable(Model, ?Model): array<string, mixed>  $map
      * @return array<int, array<string, mixed>>
      */
-    private function zeroFilledRows(Builder $lookup, Collection $existing, callable $map): array
+    private function zeroFilledRows(Collection $lookup, Collection $existing, callable $map): array
     {
         return $lookup
-            ->get()
             ->map(fn (Model $row): array => $map($row, $existing->get($row->getKey())))
+            ->values()
             ->all();
     }
 
     /**
-     * @return array<int, array{employmentStatusId: int, label: string, femaleCount: int, maleCount: int}>
+     * @param  Collection<int, Model>  $lookup
+     * @param  Collection<int, Model>  $existing
+     * @return array<int, array<string, int|string>>
      */
-    private function editableEmployeeStatusRows(ReportYear $reportYear): array
+    private function femaleMaleRows(Collection $lookup, Collection $existing, string $idKey): array
     {
-        return $this->zeroFilledRows(
-            EmploymentStatus::query()->orderBy('sort_order'),
-            $reportYear->employeeStatusBreakdowns->keyBy('employment_status_id'),
-            fn (EmploymentStatus $status, ?Model $breakdown): array => [
-                'employmentStatusId' => $status->id,
-                'label' => $status->name,
-                'femaleCount' => (int) ($breakdown?->female_count ?? 0),
-                'maleCount' => (int) ($breakdown?->male_count ?? 0),
-            ],
-        );
-    }
-
-    /**
-     * GFPS members per employment status, narrowed to the reportable statuses.
-     *
-     * @return array<int, array{employmentStatusId: int, label: string, femaleCount: int, maleCount: int}>
-     */
-    private function editableGfpsMemberStatusRows(ReportYear $reportYear): array
-    {
-        return $this->zeroFilledRows(
-            EmploymentStatus::query()->whereIn('slug', GfpsMemberStatuses::slugs())->orderBy('sort_order'),
-            $reportYear->gfpsMemberStatusBreakdowns->keyBy('employment_status_id'),
-            fn (EmploymentStatus $status, ?Model $breakdown): array => [
-                'employmentStatusId' => $status->id,
-                'label' => $status->name,
-                'femaleCount' => (int) ($breakdown?->female_count ?? 0),
-                'maleCount' => (int) ($breakdown?->male_count ?? 0),
-            ],
-        );
+        return $this->zeroFilledRows($lookup, $existing, fn (Model $row, ?Model $saved): array => [
+            $idKey => $row->getKey(),
+            'label' => $row->name,
+            'femaleCount' => (int) ($saved?->female_count ?? 0),
+            'maleCount' => (int) ($saved?->male_count ?? 0),
+        ]);
     }
 
     /**
@@ -588,7 +576,7 @@ class ReportYearManagementController extends Controller
     private function editableRstlMonthlyRows(ReportYear $reportYear): array
     {
         return $this->zeroFilledRows(
-            ReportMonth::query()->orderBy('month_number'),
+            ReportMonth::query()->orderBy('month_number')->get(),
             $reportYear->rstlMonthlyBreakdowns->keyBy('report_month_id'),
             fn (ReportMonth $month, ?Model $breakdown): array => [
                 'reportMonthId' => $month->id,
@@ -607,7 +595,7 @@ class ReportYearManagementController extends Controller
     private function editableScholarshipApplicantRows(ReportYear $reportYear): array
     {
         return $this->zeroFilledRows(
-            ScholarshipProgram::query()->orderBy('sort_order'),
+            ScholarshipProgram::query()->orderBy('sort_order')->get(),
             $reportYear->scholarshipApplicantSummaries->keyBy('scholarship_program_id'),
             fn (ScholarshipProgram $program, ?Model $summary): array => [
                 'scholarshipProgramId' => $program->id,
@@ -624,33 +612,26 @@ class ReportYearManagementController extends Controller
     }
 
     /**
-     * @return array<int, array{fundingProgramId: int, label: string, slug: string, femaleProjects: int, femaleAmount: float, maleProjects: int, maleAmount: float, fundedProjectsCount: int, fundedProjectsValue: float, trainingParticipants: int, jobsTotal: int, jobsMale: int, jobsFemale: int, jobsPwd: int, jobsSeniorCitizen: int, jobsIp: int, jobs4ps: int, specialProjectsResearchMale: int, specialProjectsResearchFemale: int}>
+     * Money fields as fixed two-decimal strings so the inputs never show float noise.
+     *
+     * @return array<int, array<string, int|string>>
      */
     private function editableProgramFundingRows(ReportYear $reportYear): array
     {
+        $valueFields = RowSection::config(RowSection::PROGRAM_FUNDING)['valueFields'];
+
         return $this->zeroFilledRows(
-            FundingProgram::query()->orderBy('sort_order'),
+            FundingProgram::query()->orderBy('sort_order')->get(),
             $reportYear->programFundingSummaries->keyBy('funding_program_id'),
             fn (FundingProgram $program, ?Model $summary): array => [
                 'fundingProgramId' => $program->id,
                 'label' => $program->name,
                 'slug' => $program->slug,
-                'femaleProjects' => (int) ($summary?->female_projects ?? 0),
-                'femaleAmount' => number_format((float) ($summary?->female_amount ?? 0), 2, '.', ''),
-                'maleProjects' => (int) ($summary?->male_projects ?? 0),
-                'maleAmount' => number_format((float) ($summary?->male_amount ?? 0), 2, '.', ''),
-                'fundedProjectsCount' => (int) ($summary?->funded_projects_count ?? 0),
-                'fundedProjectsValue' => number_format((float) ($summary?->funded_projects_value ?? 0), 2, '.', ''),
-                'trainingParticipants' => (int) ($summary?->training_participants ?? 0),
-                'jobsTotal' => (int) ($summary?->jobs_total ?? 0),
-                'jobsMale' => (int) ($summary?->jobs_male ?? 0),
-                'jobsFemale' => (int) ($summary?->jobs_female ?? 0),
-                'jobsPwd' => (int) ($summary?->jobs_pwd ?? 0),
-                'jobsSeniorCitizen' => (int) ($summary?->jobs_senior_citizen ?? 0),
-                'jobsIp' => (int) ($summary?->jobs_ip ?? 0),
-                'jobs4ps' => (int) ($summary?->jobs_4ps ?? 0),
-                'specialProjectsResearchMale' => (int) ($summary?->special_projects_research_male ?? 0),
-                'specialProjectsResearchFemale' => (int) ($summary?->special_projects_research_female ?? 0),
+                ...collect($valueFields)->mapWithKeys(fn (string $field): array => [
+                    Str::camel($field) => in_array($field, ProgramFundingSummary::DECIMAL_FIELDS, true)
+                        ? number_format((float) ($summary?->{$field} ?? 0), 2, '.', '')
+                        : (int) ($summary?->{$field} ?? 0),
+                ])->all(),
             ],
         );
     }

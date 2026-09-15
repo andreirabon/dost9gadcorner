@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProgramFundingSummary extends Model
 {
-    use HasFactory;
+    /**
+     * Money columns; every other value field is an integer count.
+     *
+     * @var list<string>
+     */
+    public const DECIMAL_FIELDS = ['female_amount', 'male_amount', 'funded_projects_value'];
 
     /**
      * @var list<string>
@@ -33,16 +37,6 @@ class ProgramFundingSummary extends Model
         'special_projects_research_male',
         'special_projects_research_female',
     ];
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            // Removed decimal:2 cast to prevent rounding. Kept as strings/floats by default.
-        ];
-    }
 
     public function reportYear(): BelongsTo
     {

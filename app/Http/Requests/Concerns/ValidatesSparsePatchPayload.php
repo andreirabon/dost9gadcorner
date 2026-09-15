@@ -3,31 +3,18 @@
 namespace App\Http\Requests\Concerns;
 
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Support\Arr;
 
 trait ValidatesSparsePatchPayload
 {
     /**
-     * @param  array<int, array<string, mixed>>  $items
+     * @param  array<int, mixed>  $items
      * @param  list<string>  $valueFields
      */
-    protected function assertEachItemHasPatchField(Validator $validator, array $items, string $keyField, array $valueFields, string $errorPrefix): void
+    protected function assertEachItemHasPatchField(Validator $validator, array $items, array $valueFields, string $errorPrefix): void
     {
         foreach ($items as $index => $item) {
-            if (! is_array($item)) {
-                continue;
-            }
-
-            $hasValueField = false;
-
-            foreach ($valueFields as $field) {
-                if (array_key_exists($field, $item)) {
-                    $hasValueField = true;
-
-                    break;
-                }
-            }
-
-            if (! $hasValueField) {
+            if (is_array($item) && ! Arr::hasAny($item, $valueFields)) {
                 $validator->errors()->add(
                     "{$errorPrefix}.{$index}",
                     'At least one field must be provided besides the row identifier.',
@@ -42,12 +29,8 @@ trait ValidatesSparsePatchPayload
      */
     protected function assertHasAtLeastOneField(Validator $validator, array $payload, array $allowedFields, string $errorKey = 'patch'): void
     {
-        foreach ($allowedFields as $field) {
-            if (array_key_exists($field, $payload)) {
-                return;
-            }
+        if (! Arr::hasAny($payload, $allowedFields)) {
+            $validator->errors()->add($errorKey, 'At least one field must be provided.');
         }
-
-        $validator->errors()->add($errorKey, 'At least one field must be provided.');
     }
 }

@@ -37,3 +37,25 @@ test('an authenticated user still receives their identity and abilities', functi
         ->and($auth['role'])->toBe(UserRole::ADMINISTRATOR->value)
         ->and($auth['can'])->toHaveKeys(['accessReportYears', 'createReportYears', 'deleteReportYears']);
 });
+
+test('shared abilities match each role', function (UserRole $role, bool $canDelete, bool $canAccess) {
+    $this->actingAs(User::factory()->create(['role' => $role]));
+
+    $can = sharedProps()['auth']['user']['can'];
+
+    expect($can['deleteReportYears'])->toBe($canDelete)
+        ->and($can['accessReportYears'])->toBe($canAccess)
+        ->and($can['manageUsers'])->toBeFalse();
+})->with([
+    'administrator' => [UserRole::ADMINISTRATOR, true, true],
+    'gad' => [UserRole::GAD, true, true],
+    'tester' => [UserRole::TESTER, false, true],
+    'hr' => [UserRole::HR, false, true],
+    'none' => [UserRole::None, false, false],
+]);
+
+test('only the primary administrator may manage users', function () {
+    $this->actingAs(User::factory()->create(['username' => 'ARR', 'role' => UserRole::ADMINISTRATOR]));
+
+    expect(sharedProps()['auth']['user']['can']['manageUsers'])->toBeTrue();
+});

@@ -185,3 +185,7 @@ test('login redirects to safe same-host url intended', function () {
         ])
         ->assertRedirect('http://localhost/settings/profile');
 });
+
+test('the login page is never cached', function () {
+    expect($this->get(route('login'))->headers->get('Cache-Control'))->toContain('no-store');
+});

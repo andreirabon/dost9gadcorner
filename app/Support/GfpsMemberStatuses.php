@@ -22,9 +22,7 @@ class GfpsMemberStatuses
      */
     public static function slugs(): array
     {
-        $slugs = config('reports.gfps_member_status_slugs', []);
-
-        return is_array($slugs) ? array_values(array_map(strval(...), $slugs)) : [];
+        return (array) config('reports.gfps_member_status_slugs', []);
     }
 
     /**

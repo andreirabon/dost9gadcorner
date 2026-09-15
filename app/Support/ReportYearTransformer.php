@@ -9,7 +9,9 @@ use App\Models\ReportYear;
 use App\Models\ScholarshipApplicantSummary;
 use App\Models\ScholarshipProgram;
 use App\Models\ScholarshipSummary;
+use App\Services\Reports\RowSection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class ReportYearTransformer
 {
@@ -234,7 +236,7 @@ class ReportYearTransformer
     }
 
     /**
-     * @return array<int, array{label: string, slug: string, maleProjects: int, maleAmount: float, femaleProjects: int, femaleAmount: float, fundedProjectsCount: int, fundedProjectsValue: float, trainingParticipants: int, jobsTotal: int, jobsMale: int, jobsFemale: int, jobsPwd: int, jobsSeniorCitizen: int, jobsIp: int, jobs4ps: int, specialProjectsResearchMale: int, specialProjectsResearchFemale: int}>
+     * @return array<int, array<string, int|float|string>>
      */
     private function transformFundingBreakdown(ReportYear $reportYear, string $prefix): array
     {
@@ -256,22 +258,13 @@ class ReportYearTransformer
                 return [
                     'label' => (string) $program->name,
                     'slug' => (string) $program->slug,
-                    'maleProjects' => (int) ($summary?->male_projects ?? 0),
-                    'maleAmount' => (float) ($summary?->male_amount ?? 0),
-                    'femaleProjects' => (int) ($summary?->female_projects ?? 0),
-                    'femaleAmount' => (float) ($summary?->female_amount ?? 0),
-                    'fundedProjectsCount' => (int) ($summary?->funded_projects_count ?? 0),
-                    'fundedProjectsValue' => (float) ($summary?->funded_projects_value ?? 0),
-                    'trainingParticipants' => (int) ($summary?->training_participants ?? 0),
-                    'jobsTotal' => (int) ($summary?->jobs_total ?? 0),
-                    'jobsMale' => (int) ($summary?->jobs_male ?? 0),
-                    'jobsFemale' => (int) ($summary?->jobs_female ?? 0),
-                    'jobsPwd' => (int) ($summary?->jobs_pwd ?? 0),
-                    'jobsSeniorCitizen' => (int) ($summary?->jobs_senior_citizen ?? 0),
-                    'jobsIp' => (int) ($summary?->jobs_ip ?? 0),
-                    'jobs4ps' => (int) ($summary?->jobs_4ps ?? 0),
-                    'specialProjectsResearchMale' => (int) ($summary?->special_projects_research_male ?? 0),
-                    'specialProjectsResearchFemale' => (int) ($summary?->special_projects_research_female ?? 0),
+                    ...collect(RowSection::config(RowSection::PROGRAM_FUNDING)['valueFields'])
+                        ->mapWithKeys(fn (string $field): array => [
+                            Str::camel($field) => in_array($field, ProgramFundingSummary::DECIMAL_FIELDS, true)
+                                ? (float) ($summary?->{$field} ?? 0)
+                                : (int) ($summary?->{$field} ?? 0),
+                        ])
+                        ->all(),
                 ];
             })
             ->values()

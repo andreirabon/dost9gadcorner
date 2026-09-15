@@ -18,29 +18,17 @@ class TrustedProxies
      */
     public static function parse(mixed $configured): string|array
     {
-        if (is_array($configured)) {
-            return array_values(array_filter(array_map(
-                static fn (mixed $proxy): string => trim((string) $proxy),
-                $configured,
-            ), static fn (string $proxy): bool => $proxy !== ''));
-        }
-
-        if (! is_string($configured)) {
-            return [];
-        }
-
-        $configured = trim($configured);
-
         // '*' trusts every upstream hop. Only correct when the app is reachable
         // exclusively through a proxy that overwrites X-Forwarded-For itself.
-        if ($configured === '*') {
+        if (is_string($configured) && trim($configured) === '*') {
             return '*';
         }
 
-        if ($configured === '') {
-            return [];
-        }
+        $proxies = is_array($configured) ? $configured : explode(',', is_string($configured) ? $configured : '');
 
-        return self::parse(explode(',', $configured));
+        return array_values(array_filter(
+            array_map(static fn (mixed $proxy): string => trim((string) $proxy), $proxies),
+            static fn (string $proxy): bool => $proxy !== '',
+        ));
     }
 }

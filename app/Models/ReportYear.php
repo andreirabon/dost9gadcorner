@@ -3,11 +3,16 @@
 namespace App\Models;
 
 use Database\Factories\ReportYearFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $year
+ * @property string|null $title
+ */
 class ReportYear extends Model
 {
     /** @use HasFactory<ReportYearFactory> */
@@ -38,6 +43,16 @@ class ReportYear extends Model
             'published_at' => 'datetime',
             'is_locked' => 'boolean',
         ];
+    }
+
+    /**
+     * Audit-log item label: the title when set, otherwise "Report Year {year}".
+     */
+    protected function label(): Attribute
+    {
+        return Attribute::get(fn (): string => $this->title !== null && $this->title !== ''
+            ? $this->title
+            : "Report Year {$this->year}");
     }
 
     public function gfpsMembershipSummary(): HasOne
@@ -74,16 +89,6 @@ class ReportYear extends Model
         return $this->hasMany(ScholarshipSummary::class)
             ->orderByDesc('as_of_date')
             ->orderByDesc('id');
-    }
-
-    /**
-     * Convenience: latest active scholarship snapshot by as_of_date then id.
-     */
-    public function latestScholarshipSnapshot(): HasOne
-    {
-        return $this->hasOne(ScholarshipSummary::class)->ofMany(
-            ['as_of_date' => 'max', 'id' => 'max'],
-        );
     }
 
     public function rstlMonthlyBreakdowns(): HasMany

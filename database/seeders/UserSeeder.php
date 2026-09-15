@@ -10,7 +10,7 @@ use RuntimeException;
 
 class UserSeeder extends Seeder
 {
-    public const PRIMARY_ADMIN_USERNAME = 'ARR';
+    public const PRIMARY_ADMIN_USERNAME = User::PRIMARY_ADMIN_USERNAME;
 
     public const GAD_STAFF_USERNAME = 'GADStaff';
 
