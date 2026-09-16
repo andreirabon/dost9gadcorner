@@ -4,12 +4,14 @@ import ReportBackArrowIcon from '@/components/reports/ReportBackArrowIcon.vue';
 import ReportChartBlock from '@/components/reports/ReportChartBlock.vue';
 import ReportMetricsGrid from '@/components/reports/ReportMetricsGrid.vue';
 import ReportOverviewQuickAccess, { type OverviewProgram } from '@/components/reports/ReportOverviewQuickAccess.vue';
+import ReportStoryLead from '@/components/reports/ReportStoryLead.vue';
 import ReportTabNav from '@/components/reports/ReportTabNav.vue';
 import ScholarshipApplicantTables from '@/components/reports/ScholarshipApplicantTables.vue';
 import ScholarshipHistoryTimeline from '@/components/reports/ScholarshipHistoryTimeline.vue';
 import SpecialProjectsResearchPanel from '@/components/reports/SpecialProjectsResearchPanel.vue';
 import { fundingStats, specialResearchRows, useFundingRows } from '@/composables/useFundingGroup';
 import { formatFundingOrEmpty } from '@/helpers/formatCurrency';
+import { joinTakeaways, peakRowTakeaway, percentage, sexShareTakeaway, yearSummaryLead } from '@/helpers/reportStory';
 import { isValidReportTab, REPORT_TABPANEL_ID, reportTabSlug, type TabType } from '@/helpers/reportTabs';
 import type { YearItem } from '@/types';
 import type { GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow, ScholarshipApplicantDataRow, ScholarshipSummaryData } from '@/types/reports';
@@ -49,14 +51,6 @@ const giaFundingRows = useFundingRows(reportData, 'gia');
  * metric, so its tab reads its own four rows.
  */
 const researchFundingRows = useFundingRows(reportData, 'research');
-
-const percentage = (value: number, total: number): number => {
-    if (total === 0) {
-        return 0;
-    }
-
-    return Number(((value / total) * 100).toFixed(1));
-};
 
 /** Rows arrive zero-filled, so an all-zero set means nothing was entered. */
 const hasMemberStatusData = computed(() => gfpsMemberStatusData.value.some((row) => row.female + row.male > 0));
@@ -173,6 +167,63 @@ const specialResearchStats = computed(() => {
 
 const combinedFundingAmount = computed(() => setupStats.value.totalAmount + cestStats.value.totalAmount + giaStats.value.totalAmount);
 const combinedProjectsCount = computed(() => setupStats.value.totalProjects + cestStats.value.totalProjects + giaStats.value.totalProjects);
+
+/*
+ * Every block states its own finding, computed from the figures it already
+ * plots. A helper returns null wherever the data cannot support a sentence, and
+ * the block then renders exactly as it did before — an unrecorded section never
+ * gets a sentence invented for it.
+ */
+const yearLead = computed(() =>
+    yearSummaryLead({
+        year: props.year.year,
+        female: totalFemaleAcrossPrograms.value,
+        male: totalMaleAcrossPrograms.value,
+        projects: combinedProjectsCount.value,
+        fundingAmount: combinedFundingAmount.value,
+    }),
+);
+
+const gfpsMembershipTakeaway = computed(() => sexShareTakeaway('GFPS members', gfpsStats.value.femaleCount, gfpsStats.value.maleCount));
+
+const assemblyTakeaway = computed(() =>
+    peakRowTakeaway(assemblyData.value, (label, total) => `Assembly attendance peaked in ${label} with ${total} participants.`),
+);
+
+const gfpsMemberStatusTakeaway = computed(() =>
+    peakRowTakeaway(gfpsMemberStatusData.value, (label, total) => `${label} is the largest group of GFPS members (${total}).`),
+);
+
+const employeesTakeaway = computed(() =>
+    joinTakeaways([
+        peakRowTakeaway(employeesData.value, (label, total) => `${label} is the largest employment group (${total}).`),
+        sexShareTakeaway('all employees', employeesStats.value.femaleCount, employeesStats.value.maleCount),
+    ]),
+);
+
+const scholarsTakeaway = computed(() => sexShareTakeaway('on-going scholars', scholarsStats.value.femaleCount, scholarsStats.value.maleCount));
+
+const undergraduateApplicantsTakeaway = computed(() =>
+    peakRowTakeaway(undergraduateApplicants.value, (label, total) => `${label} drew the most undergraduate applicants (${total}).`),
+);
+
+const graduateApplicantsTakeaway = computed(() =>
+    peakRowTakeaway(graduateApplicants.value, (label, total) => `${label} drew the most graduate applicants (${total}).`),
+);
+
+/**
+ * RSTL counts warm bodies in two columns per sex (individual and led), so the
+ * peak month is read from their sum — the same total the chart stacks.
+ */
+const rstlTakeaway = computed(() =>
+    joinTakeaways([
+        peakRowTakeaway(
+            rstlWarmBodiesData.value.map((row) => ({ label: row.label, female: row.female + row.femaleLed, male: row.male + row.maleLed })),
+            (label, total) => `RSTL served the most customers in ${label} (${total}).`,
+        ),
+        sexShareTakeaway('RSTL customers', rstlStats.value.femaleCount, rstlStats.value.maleCount),
+    ]),
+);
 
 const activeTab = ref<TabType>('Overview');
 const tabStorageKey = computed(() => `year-report-last-tab:${props.year.id}`);
@@ -339,6 +390,8 @@ onMounted(() => {
                         class="w-full"
                     >
                         <div v-if="activeTab === 'Overview'" class="space-y-3 md:space-y-4">
+                            <ReportStoryLead :sentences="yearLead" :description="year.description ?? null" />
+
                             <ReportMetricsGrid
                                 :metrics="[
                                     { label: 'Total Female (all sections)', value: formatCompactNumber(totalFemaleAcrossPrograms) },
@@ -367,11 +420,19 @@ onMounted(() => {
                             />
 
                             <div class="report-view-charts">
-                                <ReportChartBlock title="GFPS Membership by Sex" description="Distribution of GFPS members">
+                                <ReportChartBlock
+                                    title="GFPS Membership by Sex"
+                                    :takeaway="gfpsMembershipTakeaway"
+                                    description="Distribution of GFPS members"
+                                >
                                     <GenderPieChart :female-count="gfpsStats.femaleCount" :male-count="gfpsStats.maleCount" />
                                 </ReportChartBlock>
 
-                                <ReportChartBlock title="GFPS Assembly Participation" description="Quarterly assembly attendance by sex">
+                                <ReportChartBlock
+                                    title="GFPS Assembly Participation"
+                                    :takeaway="assemblyTakeaway"
+                                    description="Quarterly assembly attendance by sex"
+                                >
                                     <StackedBarBySexChart :data="assemblyData" />
                                 </ReportChartBlock>
                             </div>
@@ -379,6 +440,7 @@ onMounted(() => {
                             <ReportChartBlock
                                 v-if="hasMemberStatusData"
                                 title="GFPS Members by Employment Status"
+                                :takeaway="gfpsMemberStatusTakeaway"
                                 description="GFPS members only — recorded separately from the membership total above"
                             >
                                 <EmployeesGroupedBarChart :data="gfpsMemberStatusData" />
@@ -397,6 +459,7 @@ onMounted(() => {
 
                             <ReportChartBlock
                                 title="Employees by Employment Status"
+                                :takeaway="employeesTakeaway"
                                 :description="`Sex-disaggregated data as of December 31, ${year.year}`"
                             >
                                 <EmployeesGroupedBarChart :data="employeesData" />
@@ -417,7 +480,7 @@ onMounted(() => {
                                 ]"
                             />
 
-                            <ReportChartBlock title="Distribution of On-Going Scholars by Sex">
+                            <ReportChartBlock title="Distribution of On-Going Scholars by Sex" :takeaway="scholarsTakeaway">
                                 <template #description>
                                     {{ scholarsStats.schoolYearLabel || `School Year ${year.year}` }}
                                     <span v-if="scholarsStats.asOfDate"> • Data as of {{ scholarsStats.asOfDate }}</span>
@@ -435,6 +498,7 @@ onMounted(() => {
                                 <ReportChartBlock
                                     v-if="hasApplicantData(undergraduateApplicants)"
                                     title="Undergraduate Applicants by Sex"
+                                    :takeaway="undergraduateApplicantsTakeaway"
                                     :description="`Applicants per program • ${year.year}`"
                                 >
                                     <ScholarshipApplicantsBarChart :rows="undergraduateApplicants" :axis-ceiling="applicantAxisCeiling" />
@@ -443,6 +507,7 @@ onMounted(() => {
                                 <ReportChartBlock
                                     v-if="hasApplicantData(graduateApplicants)"
                                     title="Graduate Applicants by Sex"
+                                    :takeaway="graduateApplicantsTakeaway"
                                     :description="`Applicants per program • ${year.year}`"
                                 >
                                     <ScholarshipApplicantsBarChart :rows="graduateApplicants" :axis-ceiling="applicantAxisCeiling" />
@@ -469,6 +534,7 @@ onMounted(() => {
 
                             <ReportChartBlock
                                 title="Testing and Calibration Services"
+                                :takeaway="rstlTakeaway"
                                 :description="`Customers by sex (warm bodies) - Monthly breakdown for ${year.year}`"
                             >
                                 <RstlWarmBodiesStackedChart :data="rstlWarmBodiesData" />

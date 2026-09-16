@@ -46,6 +46,21 @@ describe('FundingGroupPanel', () => {
         expect(text).toContain('SETUP Jobs Breakdown');
     });
 
+    it('opens with the general lead: what was funded, then what was recorded against it', () => {
+        const wrapper = mountPanel([
+            category({ maleProjects: 2, femaleProjects: 3, maleAmount: 1000, femaleAmount: 500, jobsTotal: 9, trainingParticipants: 12 }),
+        ]);
+
+        const text = wrapper.text();
+        expect(text).toContain('GIA funded 5 projects in 2025 worth ₱1.5K.');
+        expect(text).toContain('GIA recorded 9 jobs generated and 12 training participants for the year.');
+        expect(text).not.toContain('Female-led projects account for');
+    });
+
+    it('states nothing about a family with no projects and no recorded outcomes', () => {
+        expect(mountPanel([category()]).text()).not.toContain('funded');
+    });
+
     it('totals projects and funding across the categories it was given', () => {
         const wrapper = mountPanel([
             category({ slug: 'gia-zsp', maleProjects: 2, femaleProjects: 3, maleAmount: 1000, femaleAmount: 500 }),

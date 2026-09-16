@@ -2973,6 +2973,33 @@
         @apply text-base font-semibold text-brand-50 md:text-lg report-light:text-slate-900;
     }
 
+    /* Storytelling head: the computed finding leads the block and the chart's
+       own name drops to a label above it. A block with no takeaway keeps the
+       plain head, so an unrecorded section looks exactly as it did before. */
+    .report-view-chart-head--story .report-view-block-title {
+        @apply text-xs font-medium tracking-wide text-brand-200 uppercase md:text-xs report-light:text-slate-500;
+    }
+
+    /* The year's opening lines on the Overview tab. Larger than a block
+       takeaway: this is the first thing a reader meets on the report. */
+    .report-view-story-lead {
+        @apply max-w-[65ch] text-lg font-semibold text-pretty text-brand-50 tabular-nums md:text-xl report-light:text-slate-900;
+    }
+
+    .report-view-story-lead + .report-view-story-lead {
+        @apply mt-2;
+    }
+
+    /* The admin's note for the year, set below the computed lines and rule:
+       it gives the context the figures cannot, and is not itself a finding. */
+    .report-view-story-note {
+        @apply mt-3 max-w-[70ch] border-t border-white/10 pt-3 text-sm leading-relaxed text-brand-200 report-light:border-slate-200 report-light:text-slate-600;
+    }
+
+    .report-view-block-takeaway {
+        @apply mt-1 max-w-[65ch] text-base font-semibold text-pretty text-brand-50 tabular-nums md:text-lg report-light:text-slate-900;
+    }
+
     .report-view-block-desc {
         @apply text-sm font-normal text-brand-200 report-light:text-slate-600;
     }
