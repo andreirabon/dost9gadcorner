@@ -1,6 +1,7 @@
 import type { FundingGroupMetricTotals, FundingGroupStats } from '@/composables/useFundingGroup';
 import { formatCompactCurrency } from '@/helpers/formatCurrency';
 import { formatNumber } from '@/helpers/formatNumber';
+import type { FundingCategorySummaryData, ScholarshipSummaryData } from '@/types/reports';
 
 /**
  * Sentences that state what a report chart shows, computed from the same
@@ -81,28 +82,33 @@ export const sexShareTakeaway = (subject: string, female: number, male: number):
 };
 
 /**
+ * Joins labels the way a sentence lists them: `A`, `A and B`, `A, B and C`.
+ */
+const joinLabels = (labels: string[]): string =>
+    labels.length <= 1 ? (labels[0] ?? '') : `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
+
+/**
  * The largest row of a set, as a sentence built by the caller's template.
  *
- * Ties resolve to the first row in input order, which is the order the rows are
- * already sorted in for display — so the sentence names the earlier month or
- * quarter rather than an arbitrary one.
+ * A tie is reported as a tie. Naming only the first of two equal rows would
+ * print a superlative that is not true — "attendance peaked in the 1st
+ * Assembly" when the 2nd drew exactly as many — so every row at the highest
+ * total is named, and the template is told it is phrasing a tie.
  *
- * @param template Receives the row label and its formatted combined total.
+ * @param template Receives the leading label (or labels, joined), the
+ *                 formatted combined total, and whether more than one row
+ *                 shares that total.
  */
-export const peakRowTakeaway = (rows: SexRow[], template: (label: string, total: string) => string): string | null => {
-    const peak = rows.reduce<SexRow | null>((best, row) => (best === null || row.female + row.male > best.female + best.male ? row : best), null);
+export const peakRowTakeaway = (rows: SexRow[], template: (label: string, total: string, tied: boolean) => string): string | null => {
+    const highest = rows.reduce((max, row) => Math.max(max, row.female + row.male), 0);
 
-    if (peak === null) {
+    if (highest === 0) {
         return null;
     }
 
-    const total = peak.female + peak.male;
+    const leaders = rows.filter((row) => row.female + row.male === highest).map((row) => row.label);
 
-    if (total === 0) {
-        return null;
-    }
-
-    return template(peak.label, formatNumber(total));
+    return template(joinLabels(leaders), formatNumber(highest), leaders.length > 1);
 };
 
 /**
@@ -205,4 +211,76 @@ export const yearSummaryLead = ({ year, female, male, projects, fundingAmount }:
     }
 
     return sentences;
+};
+
+/**
+ * How the scholar count and the women's share moved between the earliest and
+ * the latest dated snapshot.
+ *
+ * Undated snapshots are left out: the history sorts them last, so treating one
+ * as "earliest" would describe a change over a period nobody recorded.
+ */
+export const scholarHistoryTakeaway = (history: ScholarshipSummaryData[]): string | null => {
+    const dated = history.filter((snapshot) => snapshot.asOfDate !== null);
+
+    if (dated.length < 2) {
+        return null;
+    }
+
+    // Newest first, as the relation orders them.
+    const latest = dated[0];
+    const earliest = dated[dated.length - 1];
+    const latestTotal = latest.femaleCount + latest.maleCount;
+    const earliestTotal = earliest.femaleCount + earliest.maleCount;
+
+    if (latestTotal === 0 && earliestTotal === 0) {
+        return null;
+    }
+
+    const movement =
+        latestTotal === earliestTotal
+            ? `held at ${formatNumber(latestTotal)}`
+            : `${latestTotal > earliestTotal ? 'rose' : 'fell'} from ${formatNumber(earliestTotal)} to ${formatNumber(latestTotal)}`;
+
+    const sentences = [`Scholars ${movement} between ${earliest.asOfDate} and ${latest.asOfDate}.`];
+
+    if (earliestTotal > 0 && latestTotal > 0) {
+        const from = share(earliest.femaleCount, earliestTotal);
+        const to = share(latest.femaleCount, latestTotal);
+
+        sentences.push(from === to ? `Women's share held at ${to}%.` : `Women's share went from ${from}% to ${to}%.`);
+    }
+
+    return sentences.join(' ');
+};
+
+/** Plural nouns for the jobs breakdown groups, in the order the heatmap draws them. */
+const JOBS_BREAKDOWN_GROUPS = [
+    { key: 'jobsPwd', noun: 'persons with disabilities' },
+    { key: 'jobsSeniorCitizen', noun: 'senior citizens' },
+    { key: 'jobsIp', noun: 'Indigenous Peoples' },
+    { key: 'jobs4ps', noun: '4Ps beneficiaries' },
+] as const;
+
+/**
+ * The jobs held by each priority group, stated one group at a time.
+ *
+ * These groups overlap — one worker can be a senior citizen and a 4Ps
+ * beneficiary at once — so they are never added together or ranked against
+ * each other. Each count is summed across categories only within its own
+ * group, and the sentence says the groups overlap.
+ */
+export const jobsBreakdownTakeaway = (categories: FundingCategorySummaryData[]): string | null => {
+    const parts = JOBS_BREAKDOWN_GROUPS.map((group) => ({
+        noun: group.noun,
+        count: categories.reduce((sum, category) => sum + (category[group.key] ?? 0), 0),
+    }))
+        .filter((group) => group.count > 0)
+        .map((group, index) => `${formatNumber(group.count)} ${index === 0 ? 'went ' : ''}to ${group.noun}`);
+
+    if (parts.length === 0) {
+        return null;
+    }
+
+    return `Of the jobs generated, ${joinLabels(parts)}. Groups overlap, so these are not added together.`;
 };

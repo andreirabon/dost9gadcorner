@@ -7,9 +7,13 @@ interface Props {
     description: string;
     emptyDescription: string;
     categories: FundingCategorySummaryData[];
+    /** The finding across all categories, led above the per-category chart. */
+    takeaway?: string | null;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    takeaway: null,
+});
 
 defineSlots<{
     default(props: { category: FundingCategorySummaryData }): unknown;
@@ -56,8 +60,9 @@ const buttonClass = (isActive: boolean): string[] => [
     </div>
 
     <div v-else class="report-view-block space-y-4">
-        <div class="report-view-chart-head">
+        <div class="report-view-chart-head" :class="{ 'report-view-chart-head--story': takeaway !== null }">
             <h3 class="report-view-block-title">{{ title }}</h3>
+            <p v-if="takeaway !== null" class="report-view-block-takeaway">{{ takeaway }}</p>
             <p class="report-view-block-desc">{{ description }}</p>
         </div>
         <div class="flex flex-wrap gap-2">

@@ -4,6 +4,8 @@ import type { TabType } from '@/helpers/reportTabs';
 export interface OverviewProgram {
     tab: Exclude<TabType, 'Overview'>;
     title: string;
+    /** The section's one-sentence finding. Null when its figures cannot support one. */
+    headline?: string | null;
     metrics: Array<{
         label: string;
         value: string | number;
@@ -40,6 +42,7 @@ const emit = defineEmits<{
                 @click="emit('select-tab', program.tab)"
             >
                 <p class="report-view-quick-title">{{ program.title }}</p>
+                <p v-if="program.headline" class="report-view-quick-headline">{{ program.headline }}</p>
                 <!--
                     Each metric occupies the same three rows whether or not it
                     has a meta line, so the divider rules and figures line up

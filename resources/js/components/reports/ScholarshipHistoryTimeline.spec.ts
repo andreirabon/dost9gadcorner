@@ -21,6 +21,15 @@ describe('ScholarshipHistoryTimeline', () => {
         expect(() => mount(ScholarshipHistoryTimeline, { props: { history } })).not.toThrow();
     });
 
+    it('leads with how the count and women’s share moved across the snapshots', () => {
+        const history = [entry(1, '2025-06-01', 10, 5), entry(2, '2024-06-01', 8, 4)];
+        const wrapper = mount(ScholarshipHistoryTimeline, { props: { history } });
+
+        expect(wrapper.get('.report-view-block-takeaway').text()).toBe(
+            "Scholars rose from 12 to 15 between 2024-06-01 and 2025-06-01. Women's share held at 66.7%.",
+        );
+    });
+
     it('renders nothing when there is one or zero history entries', () => {
         const wrapper = mount(ScholarshipHistoryTimeline, { props: { history: [entry(1, '2025-06-01', 10, 5)] } });
 

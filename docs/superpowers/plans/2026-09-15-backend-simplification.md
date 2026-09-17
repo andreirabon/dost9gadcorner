@@ -41,28 +41,28 @@ Out of scope (deliberately skipped):
 
 ## File Map
 
-| File | Change |
-|------|--------|
-| `app/Models/{EmployeeStatusBreakdown,EmploymentStatus,FundingProgram,GfpsAssemblyAttendance,GfpsAssemblyPeriod,GfpsMemberStatusBreakdown,GfpsMembershipSummary,ProgramFundingSummary,ReportMonth,RstlMonthlyBreakdown,ScholarshipApplicantSummary,ScholarshipProgram,ScholarshipSummary}.php` | T1: drop `HasFactory` |
-| `app/Models/User.php` | T1: drop `Notifiable`. T6: `PRIMARY_ADMIN_USERNAME` const, drop 2 helpers |
-| `app/Models/ReportYear.php` | T1: drop `latestScholarshipSnapshot`. T7: `label` accessor |
-| `app/Models/ProgramFundingSummary.php` | T1: drop empty `casts()`. T4: `DECIMAL_FIELDS` const |
-| `app/Http/Middleware/HandleInertiaRequests.php` | T1, T6 |
-| `app/Http/Controllers/Auth/AuthenticatedSessionController.php` | T1, T6 |
-| `app/Services/Reports/ConflictGuard.php` | T2 |
-| `app/Services/Reports/{SparseRecordPatcher,PatchReportYearAttributes,PatchRowSection}.php` | T3: delete |
-| `app/Services/Reports/RowSection.php` | T3: drop `model` key |
-| `app/Http/Controllers/ReportYearManagementController.php` | T1, T3, T4, T7 |
-| `app/Support/ReportYearTransformer.php` | T4 |
-| `app/Http/Requests/Concerns/ValidatesSparsePatchPayload.php` | T5 |
-| `app/Http/Requests/Update{EmployeeStatusBreakdowns,GfpsAssemblyAttendances,GfpsMemberStatusBreakdowns,ProgramFundingSummaries,RstlMonthlyBreakdowns,ScholarshipApplicantSummaries}Request.php` | T5 |
-| `app/Policies/ReportYearPolicy.php` | T6 |
-| `database/seeders/UserSeeder.php` | T6 |
-| `app/Support/{TrustedProxies,GfpsMemberStatuses,FundingProgramScope}.php` | T7 |
-| `app/Http/Middleware/SecurityHeaders.php` | T7 |
-| `app/Http/Requests/StoreReportYearRequest.php` | T7 |
-| `tests/Feature/ReportYearEditPropsTest.php` | T4: create |
-| `tests/Feature/{Auth/LoginRedirectTest,ReportYearPartialPatchTest,SharedInertiaPropsTest,ReportManagementTest}.php` | add characterization tests |
+| File                                                                                                                                                                                                                                                                                          | Change                                                                    |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `app/Models/{EmployeeStatusBreakdown,EmploymentStatus,FundingProgram,GfpsAssemblyAttendance,GfpsAssemblyPeriod,GfpsMemberStatusBreakdown,GfpsMembershipSummary,ProgramFundingSummary,ReportMonth,RstlMonthlyBreakdown,ScholarshipApplicantSummary,ScholarshipProgram,ScholarshipSummary}.php` | T1: drop `HasFactory`                                                     |
+| `app/Models/User.php`                                                                                                                                                                                                                                                                         | T1: drop `Notifiable`. T6: `PRIMARY_ADMIN_USERNAME` const, drop 2 helpers |
+| `app/Models/ReportYear.php`                                                                                                                                                                                                                                                                   | T1: drop `latestScholarshipSnapshot`. T7: `label` accessor                |
+| `app/Models/ProgramFundingSummary.php`                                                                                                                                                                                                                                                        | T1: drop empty `casts()`. T4: `DECIMAL_FIELDS` const                      |
+| `app/Http/Middleware/HandleInertiaRequests.php`                                                                                                                                                                                                                                               | T1, T6                                                                    |
+| `app/Http/Controllers/Auth/AuthenticatedSessionController.php`                                                                                                                                                                                                                                | T1, T6                                                                    |
+| `app/Services/Reports/ConflictGuard.php`                                                                                                                                                                                                                                                      | T2                                                                        |
+| `app/Services/Reports/{SparseRecordPatcher,PatchReportYearAttributes,PatchRowSection}.php`                                                                                                                                                                                                    | T3: delete                                                                |
+| `app/Services/Reports/RowSection.php`                                                                                                                                                                                                                                                         | T3: drop `model` key                                                      |
+| `app/Http/Controllers/ReportYearManagementController.php`                                                                                                                                                                                                                                     | T1, T3, T4, T7                                                            |
+| `app/Support/ReportYearTransformer.php`                                                                                                                                                                                                                                                       | T4                                                                        |
+| `app/Http/Requests/Concerns/ValidatesSparsePatchPayload.php`                                                                                                                                                                                                                                  | T5                                                                        |
+| `app/Http/Requests/Update{EmployeeStatusBreakdowns,GfpsAssemblyAttendances,GfpsMemberStatusBreakdowns,ProgramFundingSummaries,RstlMonthlyBreakdowns,ScholarshipApplicantSummaries}Request.php`                                                                                                | T5                                                                        |
+| `app/Policies/ReportYearPolicy.php`                                                                                                                                                                                                                                                           | T6                                                                        |
+| `database/seeders/UserSeeder.php`                                                                                                                                                                                                                                                             | T6                                                                        |
+| `app/Support/{TrustedProxies,GfpsMemberStatuses,FundingProgramScope}.php`                                                                                                                                                                                                                     | T7                                                                        |
+| `app/Http/Middleware/SecurityHeaders.php`                                                                                                                                                                                                                                                     | T7                                                                        |
+| `app/Http/Requests/StoreReportYearRequest.php`                                                                                                                                                                                                                                                | T7                                                                        |
+| `tests/Feature/ReportYearEditPropsTest.php`                                                                                                                                                                                                                                                   | T4: create                                                                |
+| `tests/Feature/{Auth/LoginRedirectTest,ReportYearPartialPatchTest,SharedInertiaPropsTest,ReportManagementTest}.php`                                                                                                                                                                           | add characterization tests                                                |
 
 ---
 
@@ -78,10 +78,12 @@ Expected: clean tree and all tests pass. Record the pass count, because T8 must 
 ### Task 1: Delete dead code
 
 **Files:**
+
 - Modify: the 13 models listed in the File Map, `app/Models/User.php`, `app/Models/ReportYear.php:79-87`, `app/Models/ProgramFundingSummary.php:37-45`, `app/Http/Middleware/HandleInertiaRequests.php:21-29,61,68-75`, `app/Http/Controllers/Auth/AuthenticatedSessionController.php:15-26`, `app/Http/Controllers/ReportYearManagementController.php:181`
 - Test: `tests/Feature/Auth/LoginRedirectTest.php`
 
 **Interfaces:**
+
 - Consumes: nothing
 - Produces: `AuthenticatedSessionController::create(Request $request): Inertia\Response`
 
@@ -107,6 +109,7 @@ In each of `EmployeeStatusBreakdown`, `EmploymentStatus`, `FundingProgram`, `Gfp
 ```php
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 ```
+
 ```php
     use HasFactory;
 ```
@@ -120,7 +123,9 @@ In `app/Models/User.php`, delete `// use Illuminate\Contracts\Auth\MustVerifyEma
 ```php
     use HasFactory, Notifiable;
 ```
+
 to
+
 ```php
     use HasFactory;
 ```
@@ -140,7 +145,9 @@ Delete the `version()` method and its docblock (lines 21-29) and the `resolveZig
 ```php
                 ...(new Ziggy($this->resolveZiggyGroup($request)))->toArray(),
 ```
+
 with
+
 ```php
                 ...(new Ziggy($user === null ? 'guest' : null))->toArray(),
 ```
@@ -186,10 +193,12 @@ git commit -m "refactor: remove dead backend code"
 ### Task 2: Collapse ConflictGuard
 
 **Files:**
+
 - Modify: `app/Services/Reports/ConflictGuard.php`
 - Test: `tests/Feature/ReportConflictDetectionTest.php` (existing, 14 conflict cases)
 
 **Interfaces:**
+
 - Consumes: nothing
 - Produces: unchanged public API: `assertFresh(?Model $model, ?string $expectedUpdatedAt): void` and `assertRelationFresh(ReportYear $reportYear, string $relationName, ?string $expectedUpdatedAt): void`
 
@@ -260,16 +269,18 @@ git commit -m "refactor: collapse ConflictGuard null checks"
 ### Task 3: Fold single-caller patch services into the controller
 
 **Files:**
+
 - Delete: `app/Services/Reports/SparseRecordPatcher.php`, `app/Services/Reports/PatchReportYearAttributes.php`, `app/Services/Reports/PatchRowSection.php`
 - Modify: `app/Http/Controllers/ReportYearManagementController.php`, `app/Services/Reports/RowSection.php`
 - Test: `tests/Feature/ReportYearPartialPatchTest.php` (add 2 tests); existing `ReportConflictDetectionTest`, `ScholarshipSnapshotWriteTest`, `GfpsMemberStatusTest`, `ScholarshipApplicantsTest`, `SpecialProjectsResearchTest`, `GiaFundingTest`, `FundingProgramScopeTest`, `AuditLoggerTest`, `ReportManagementTest`
 
 **Interfaces:**
+
 - Consumes: `ConflictGuard` (T2, unchanged API)
 - Produces:
-  - `ReportYearManagementController::SCHOLARSHIP_FIELDS` (private const `list<string>`)
-  - private `upsertRows(ReportYear $reportYear, array $config, array $rows): void`
-  - `RowSection::config()` shape without the `model` key
+    - `ReportYearManagementController::SCHOLARSHIP_FIELDS` (private const `list<string>`)
+    - private `upsertRows(ReportYear $reportYear, array $config, array $rows): void`
+    - `RowSection::config()` shape without the `model` key
 
 - [ ] **Step 1: Add characterization tests for `published_at` handling**
 
@@ -475,7 +486,9 @@ In `patchRowSection`, remove the `PatchRowSection $patchRowSection` parameter an
 ```php
         $patchRowSection->apply($reportYear, $section, $submitted);
 ```
+
 with
+
 ```php
         $this->upsertRows($reportYear, $config, $submitted);
 ```
@@ -514,6 +527,7 @@ Add this private method directly below `patchRowSection`:
 - [ ] **Step 8: Drop the `model` key from `RowSection`**
 
 In `app/Services/Reports/RowSection.php`:
+
 - Delete the 6 `'model' => ...::class,` lines.
 - Delete `model: class-string<Model>,` from both array-shape docblocks.
 - Delete these now-unused imports: `EmployeeStatusBreakdown`, `GfpsAssemblyAttendance`, `GfpsMemberStatusBreakdown`, `ProgramFundingSummary`, `RstlMonthlyBreakdown`, `ScholarshipApplicantSummary`.
@@ -546,15 +560,17 @@ git commit -m "refactor: inline single-caller report patch services"
 ### Task 4: Deduplicate row mappers and program-funding field maps
 
 **Files:**
+
 - Create: `tests/Feature/ReportYearEditPropsTest.php`
 - Modify: `app/Http/Controllers/ReportYearManagementController.php` (row helpers at the bottom and `edit()`), `app/Support/ReportYearTransformer.php:236-279`, `app/Models/ProgramFundingSummary.php`
 
 **Interfaces:**
+
 - Consumes: `RowSection::config(RowSection::PROGRAM_FUNDING)['valueFields']` (T3 shape)
 - Produces:
-  - `ProgramFundingSummary::DECIMAL_FIELDS` (public const `list<string>`)
-  - private `femaleMaleRows(Collection $lookup, Collection $existing, string $idKey): array`
-  - `zeroFilledRows(Collection $lookup, Collection $existing, callable $map): array` (now takes a Collection, not a Builder)
+    - `ProgramFundingSummary::DECIMAL_FIELDS` (public const `list<string>`)
+    - private `femaleMaleRows(Collection $lookup, Collection $existing, string $idKey): array`
+    - `zeroFilledRows(Collection $lookup, Collection $existing, callable $map): array` (now takes a Collection, not a Builder)
 
 - [ ] **Step 1: Write characterization tests for the prop shapes**
 
@@ -679,7 +695,9 @@ In `edit()`, replace the three female/male row lines:
                 'employeeStatuses' => $this->editableEmployeeStatusRows($reportYear),
                 'gfpsMemberStatuses' => $this->editableGfpsMemberStatusRows($reportYear),
 ```
+
 with
+
 ```php
                 'gfpsAssemblies' => $this->femaleMaleRows(
                     GfpsAssemblyPeriod::query()->orderBy('sort_order')->get(),
@@ -813,14 +831,16 @@ git commit -m "refactor: derive report row props from shared field lists"
 ### Task 5: Shrink sparse-patch validation
 
 **Files:**
+
 - Modify: `app/Http/Requests/Concerns/ValidatesSparsePatchPayload.php`, `app/Http/Requests/UpdateProgramFundingSummariesRequest.php`, and the 5 other callers: `UpdateEmployeeStatusBreakdownsRequest`, `UpdateGfpsAssemblyAttendancesRequest`, `UpdateGfpsMemberStatusBreakdownsRequest`, `UpdateRstlMonthlyBreakdownsRequest`, `UpdateScholarshipApplicantSummariesRequest`
 - Test: existing `ReportYearPartialPatchTest`, `ReportManagementTest`, `SpecialProjectsResearchTest`, `GiaFundingTest`, `FundingProgramScopeTest`, `GfpsMemberStatusTest`, `ScholarshipApplicantsTest`, `ScholarshipSnapshotWriteTest`
 
 **Interfaces:**
+
 - Consumes: `RowSection::config(...)['valueFields']` and `ProgramFundingSummary::DECIMAL_FIELDS` (T4)
 - Produces:
-  - `assertEachItemHasPatchField(Validator $validator, array $items, array $valueFields, string $errorPrefix): void` (the `$keyField` parameter is removed)
-  - `assertHasAtLeastOneField` (signature unchanged)
+    - `assertEachItemHasPatchField(Validator $validator, array $items, array $valueFields, string $errorPrefix): void` (the `$keyField` parameter is removed)
+    - `assertHasAtLeastOneField` (signature unchanged)
 
 - [ ] **Step 1: Pin program-funding validation messages**
 
@@ -900,14 +920,14 @@ trait ValidatesSparsePatchPayload
 
 In each file, delete the third argument line of `assertEachItemHasPatchField(...)`:
 
-| File | Line to delete |
-|------|----------------|
-| `UpdateEmployeeStatusBreakdownsRequest.php` | `'employment_status_id',` |
-| `UpdateGfpsMemberStatusBreakdownsRequest.php` | `'employment_status_id',` |
-| `UpdateGfpsAssemblyAttendancesRequest.php` | `'period_id',` (line 51) |
-| `UpdateRstlMonthlyBreakdownsRequest.php` | `'report_month_id',` |
-| `UpdateScholarshipApplicantSummariesRequest.php` | `'scholarship_program_id',` |
-| `UpdateProgramFundingSummariesRequest.php` | `'funding_program_id',` (replaced wholesale in Step 4) |
+| File                                             | Line to delete                                         |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| `UpdateEmployeeStatusBreakdownsRequest.php`      | `'employment_status_id',`                              |
+| `UpdateGfpsMemberStatusBreakdownsRequest.php`    | `'employment_status_id',`                              |
+| `UpdateGfpsAssemblyAttendancesRequest.php`       | `'period_id',` (line 51)                               |
+| `UpdateRstlMonthlyBreakdownsRequest.php`         | `'report_month_id',`                                   |
+| `UpdateScholarshipApplicantSummariesRequest.php` | `'scholarship_program_id',`                            |
+| `UpdateProgramFundingSummariesRequest.php`       | `'funding_program_id',` (replaced wholesale in Step 4) |
 
 - [ ] **Step 4: Build program-funding rules from `valueFields`**
 
@@ -973,15 +993,17 @@ git commit -m "refactor: shrink sparse patch validation"
 ### Task 6: Consolidate role checks
 
 **Files:**
+
 - Modify: `app/Policies/ReportYearPolicy.php`, `app/Models/User.php`, `app/Http/Middleware/HandleInertiaRequests.php:49-50`, `app/Http/Controllers/Auth/AuthenticatedSessionController.php:48`, `database/seeders/UserSeeder.php:13`
 - Test: `tests/Feature/SharedInertiaPropsTest.php` (add dataset test); existing `TesterRolePolicyTest`, `Auth/LoginRedirectTest`, `ReportManagementTest`, `UserManagementControllerTest`, `AuditLogControllerTest`, `DatabaseSeederTest`, `UserSeederTest`, `ProductionCheckTest`
 
 **Interfaces:**
+
 - Consumes: nothing
 - Produces:
-  - `User::PRIMARY_ADMIN_USERNAME` (public const string `'ARR'`)
-  - `ReportYearPolicy::delete(User $user, ?ReportYear $reportYear = null): bool`
-  - `UserSeeder::PRIMARY_ADMIN_USERNAME` still exists (now an alias)
+    - `User::PRIMARY_ADMIN_USERNAME` (public const string `'ARR'`)
+    - `ReportYearPolicy::delete(User $user, ?ReportYear $reportYear = null): bool`
+    - `UserSeeder::PRIMARY_ADMIN_USERNAME` still exists (now an alias)
 
 - [ ] **Step 1: Pin shared abilities per role**
 
@@ -1135,6 +1157,7 @@ PHP forbids a positional argument after argument unpacking (`...$a, UserRole::HR
 - [ ] **Step 3: Replace the duplicate `User` helpers**
 
 In `app/Models/User.php`:
+
 - Add `public const PRIMARY_ADMIN_USERNAME = 'ARR';` above `$fillable`.
 - Delete `shouldDefaultLoginToReportYears()` and `canDeleteReportYears()`.
 - Change `isPrimaryAdministrator()` to:
@@ -1157,17 +1180,21 @@ In `HandleInertiaRequests::share`, change:
 ```php
                     'deleteReportYears' => $user->canDeleteReportYears(),
 ```
+
 to
+
 ```php
                     'deleteReportYears' => $user->can('delete', ReportYear::class),
 ```
 
 In `AuthenticatedSessionController::store`, add `use App\Models\ReportYear;` and change:
-
+u
 ```php
         $default = $user !== null && $user->shouldDefaultLoginToReportYears()
 ```
+
 to
+
 ```php
         $default = $user !== null && $user->can('viewAny', ReportYear::class)
 ```
@@ -1192,10 +1219,12 @@ git commit -m "refactor: consolidate report year role checks"
 ### Task 7: Small shrinks
 
 **Files:**
+
 - Modify: `app/Support/TrustedProxies.php`, `app/Http/Middleware/SecurityHeaders.php`, `app/Http/Requests/StoreReportYearRequest.php`, `app/Support/GfpsMemberStatuses.php`, `app/Support/FundingProgramScope.php`, `app/Models/ReportYear.php`, `app/Http/Controllers/ReportYearManagementController.php`
 - Test: `tests/Feature/ReportYearEditPropsTest.php` (add label test); existing `TrustedProxiesTest`, `SecurityHeadersTest`, `ReportManagementTest`, `FundingProgramScopeTest`, `GfpsMemberStatusTest`, `AuditLoggerTest`
 
 **Interfaces:**
+
 - Consumes: nothing new
 - Produces: `ReportYear->label` (string accessor). `reportYearLabel()` is removed from the controller.
 
@@ -1231,6 +1260,7 @@ In `app/Models/ReportYear.php`, add `use Illuminate\Database\Eloquent\Casts\Attr
 ```
 
 In `ReportYearManagementController`:
+
 - Delete the private `reportYearLabel()` method and its docblock.
 - Replace every `$this->reportYearLabel($reportYear->title, $reportYear->year)` with `$reportYear->label`.
 - In `store()`, the argument is `$this->reportYearLabel($reportYear->title, $reportYear->year)` on the created model; replace it the same way.
@@ -1370,6 +1400,7 @@ Summarize what each task removed, the test count, and the one behavior quirk fou
 ## Deferred decision: migration squash
 
 Not a task. It needs user sign-off first because:
+
 - Every deployed database must already be migrated past `2026_09_02_063210`.
 - Tests run on SQLite `:memory:`, so a MySQL-only dump would leave the test DB replaying pruned migrations. Both `database/schema/mysql-schema.sql` and `database/schema/sqlite-schema.sql` would have to be generated, which needs the `mysqldump` and `sqlite3` CLIs.
 

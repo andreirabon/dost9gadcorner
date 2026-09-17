@@ -3124,6 +3124,11 @@
         @apply text-sm font-semibold tracking-[0.08em] text-brand-300 uppercase report-light:text-brand-700;
     }
 
+    /* The section's finding on its Overview card, so the year reads at a glance. */
+    .report-view-quick-headline {
+        @apply mt-1.5 mb-2 text-sm leading-snug font-semibold text-pretty text-brand-50 report-light:text-slate-900;
+    }
+
     .report-view-quick-label {
         @apply mt-1 text-sm font-normal text-brand-200 report-light:text-slate-600;
     }

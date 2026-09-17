@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import { scholarHistoryTakeaway } from '@/helpers/reportStory';
 import type { ScholarshipSummaryData } from '@/types/reports';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface Props {
     history: ScholarshipSummaryData[];
 }
 
 const props = defineProps<Props>();
+
+const takeaway = computed(() => scholarHistoryTakeaway(props.history));
 
 const expandedIds = ref<Set<number>>(new Set());
 
@@ -40,8 +43,9 @@ const isExpanded = (id: number): boolean => expandedIds.value.has(id);
 
 <template>
     <div v-if="history.length > 1" class="report-view-block">
-        <div class="report-view-chart-head">
+        <div class="report-view-chart-head" :class="{ 'report-view-chart-head--story': takeaway !== null }">
             <h3 class="report-view-block-title">Scholar Count History</h3>
+            <p v-if="takeaway !== null" class="report-view-block-takeaway">{{ takeaway }}</p>
             <p class="report-view-block-desc">Data progression across reporting periods</p>
         </div>
         <div class="space-y-2">

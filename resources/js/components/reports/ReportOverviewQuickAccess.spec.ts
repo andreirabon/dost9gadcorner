@@ -6,6 +6,7 @@ const programs: OverviewProgram[] = [
     {
         tab: 'GFPS',
         title: 'GFPS',
+        headline: 'Women make up 60.0% of GFPS members (6 of 10).',
         metrics: [
             { label: 'Total Members', value: 10 },
             { label: 'Female Members', value: 6, meta: '60%' },
@@ -26,6 +27,19 @@ describe('ReportOverviewQuickAccess', () => {
         expect(cards).toHaveLength(2);
         expect(cards[0].text()).toContain('GFPS');
         expect(cards[0].text()).toContain('60%');
+    });
+
+    it('shows each section’s headline on its card, so the year reads at a glance', () => {
+        const wrapper = mount(ReportOverviewQuickAccess, { props: { programs } });
+
+        const cards = wrapper.findAll('.report-view-quick-item');
+        expect(cards[0].get('.report-view-quick-headline').text()).toBe('Women make up 60.0% of GFPS members (6 of 10).');
+    });
+
+    it('leaves a card without a headline when its figures cannot support one', () => {
+        const wrapper = mount(ReportOverviewQuickAccess, { props: { programs } });
+
+        expect(wrapper.findAll('.report-view-quick-item')[1].find('.report-view-quick-headline').exists()).toBe(false);
     });
 
     it('emits select-tab with the clicked program tab', async () => {

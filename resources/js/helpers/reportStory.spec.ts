@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { fundingGroupLead, joinTakeaways, peakRowTakeaway, percentage, sexShareTakeaway, yearSummaryLead } from './reportStory';
+import {
+    fundingGroupLead,
+    jobsBreakdownTakeaway,
+    joinTakeaways,
+    peakRowTakeaway,
+    percentage,
+    scholarHistoryTakeaway,
+    sexShareTakeaway,
+    yearSummaryLead,
+} from './reportStory';
 
 describe('joinTakeaways', () => {
     it('joins the sentences that could be stated', () => {
@@ -50,7 +59,8 @@ describe('sexShareTakeaway', () => {
 });
 
 describe('peakRowTakeaway', () => {
-    const template = (label: string, total: string): string => `Attendance peaked in ${label} with ${total} participants.`;
+    const template = (label: string, total: string, tied: boolean): string =>
+        tied ? `Attendance was highest in ${label}, with ${total} each.` : `Attendance peaked in ${label} with ${total} participants.`;
 
     it('reports the row with the highest combined total', () => {
         const rows = [
@@ -62,13 +72,25 @@ describe('peakRowTakeaway', () => {
         expect(peakRowTakeaway(rows, template)).toBe('Attendance peaked in Q3 with 64 participants.');
     });
 
-    it('breaks a tie on the first row in input order', () => {
+    it('reports a tie as a tie instead of naming only the first row', () => {
+        // The real 2026 GFPS data: 1st and 2nd Assembly both drew 25.
+        const rows = [
+            { label: '1st Assembly', female: 20, male: 5 },
+            { label: '2nd Assembly', female: 20, male: 5 },
+            { label: '3rd Quarter', female: 14, male: 3 },
+        ];
+
+        expect(peakRowTakeaway(rows, template)).toBe('Attendance was highest in 1st Assembly and 2nd Assembly, with 25 each.');
+    });
+
+    it('lists a three-way tie the way a sentence would', () => {
         const rows = [
             { label: 'Q1', female: 5, male: 5 },
             { label: 'Q2', female: 5, male: 5 },
+            { label: 'Q3', female: 5, male: 5 },
         ];
 
-        expect(peakRowTakeaway(rows, template)).toBe('Attendance peaked in Q1 with 10 participants.');
+        expect(peakRowTakeaway(rows, template)).toBe('Attendance was highest in Q1, Q2 and Q3, with 10 each.');
     });
 
     it('says nothing for an empty set', () => {
@@ -142,6 +164,83 @@ describe('fundingGroupLead', () => {
         });
 
         expect(sentences).toEqual([]);
+    });
+});
+
+describe('scholarHistoryTakeaway', () => {
+    const snapshot = (asOfDate: string | null, femaleCount: number, maleCount: number) => ({
+        id: 1,
+        schoolYearLabel: 'SY 2025-2026',
+        asOfDate,
+        femaleCount,
+        maleCount,
+    });
+
+    it('states how the count and the women’s share moved, oldest to newest', () => {
+        // Newest first, as the relation orders them.
+        const history = [snapshot('2026-06-30', 140, 88), snapshot('2025-06-30', 120, 90)];
+
+        expect(scholarHistoryTakeaway(history)).toBe(
+            "Scholars rose from 210 to 228 between 2025-06-30 and 2026-06-30. Women's share went from 57.1% to 61.4%.",
+        );
+    });
+
+    it('says the count fell when it fell', () => {
+        const history = [snapshot('2026-06-30', 50, 50), snapshot('2025-06-30', 60, 60)];
+
+        expect(scholarHistoryTakeaway(history)).toContain('Scholars fell from 120 to 100');
+    });
+
+    it('says the count and share held when nothing moved', () => {
+        const history = [snapshot('2026-06-30', 60, 40), snapshot('2025-06-30', 60, 40)];
+
+        expect(scholarHistoryTakeaway(history)).toBe("Scholars held at 100 between 2025-06-30 and 2026-06-30. Women's share held at 60.0%.");
+    });
+
+    it('ignores undated snapshots rather than treating one as the earliest', () => {
+        const history = [snapshot('2026-06-30', 60, 40), snapshot(null, 1, 1)];
+
+        expect(scholarHistoryTakeaway(history)).toBeNull();
+    });
+
+    it('says nothing with fewer than two snapshots', () => {
+        expect(scholarHistoryTakeaway([snapshot('2026-06-30', 60, 40)])).toBeNull();
+    });
+});
+
+describe('jobsBreakdownTakeaway', () => {
+    const category = (overrides: Record<string, number> = {}) => ({
+        label: 'SETUP ZSP',
+        slug: 'setup-zsp',
+        maleProjects: 0,
+        maleAmount: 0,
+        femaleProjects: 0,
+        femaleAmount: 0,
+        ...overrides,
+    });
+
+    it('states each group on its own, summed across categories within that group only', () => {
+        const categories = [category({ jobsPwd: 2, jobsSeniorCitizen: 3, jobs4ps: 4 }), category({ jobsPwd: 1, jobsIp: 5 })];
+
+        expect(jobsBreakdownTakeaway(categories)).toBe(
+            'Of the jobs generated, 3 went to persons with disabilities, 3 to senior citizens, 5 to Indigenous Peoples and 4 to 4Ps beneficiaries. Groups overlap, so these are not added together.',
+        );
+    });
+
+    it('leaves out a group with nothing recorded', () => {
+        expect(jobsBreakdownTakeaway([category({ jobsIp: 7 })])).toBe(
+            'Of the jobs generated, 7 went to Indigenous Peoples. Groups overlap, so these are not added together.',
+        );
+    });
+
+    it('never prints a combined total across groups', () => {
+        const sentence = jobsBreakdownTakeaway([category({ jobsPwd: 2, jobsSeniorCitizen: 3 })]) ?? '';
+
+        expect(sentence).not.toContain('5');
+    });
+
+    it('says nothing when no group was recorded', () => {
+        expect(jobsBreakdownTakeaway([category()])).toBeNull();
     });
 });
 

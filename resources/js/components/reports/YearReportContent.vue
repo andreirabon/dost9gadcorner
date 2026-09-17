@@ -9,12 +9,19 @@ import ReportTabNav from '@/components/reports/ReportTabNav.vue';
 import ScholarshipApplicantTables from '@/components/reports/ScholarshipApplicantTables.vue';
 import ScholarshipHistoryTimeline from '@/components/reports/ScholarshipHistoryTimeline.vue';
 import SpecialProjectsResearchPanel from '@/components/reports/SpecialProjectsResearchPanel.vue';
-import { fundingStats, specialResearchRows, useFundingRows } from '@/composables/useFundingGroup';
+import { fundingStats, programMetricTotals, specialResearchRows, useFundingRows, type FundingGroupStats } from '@/composables/useFundingGroup';
 import { formatFundingOrEmpty } from '@/helpers/formatCurrency';
-import { joinTakeaways, peakRowTakeaway, percentage, sexShareTakeaway, yearSummaryLead } from '@/helpers/reportStory';
+import { fundingGroupLead, joinTakeaways, peakRowTakeaway, percentage, sexShareTakeaway, yearSummaryLead } from '@/helpers/reportStory';
 import { isValidReportTab, REPORT_TABPANEL_ID, reportTabSlug, type TabType } from '@/helpers/reportTabs';
 import type { YearItem } from '@/types';
-import type { GfpsAssemblyDataRow, ReportYearData, RstlMonthlyDataRow, ScholarshipApplicantDataRow, ScholarshipSummaryData } from '@/types/reports';
+import type {
+    FundingCategorySummaryData,
+    GfpsAssemblyDataRow,
+    ReportYearData,
+    RstlMonthlyDataRow,
+    ScholarshipApplicantDataRow,
+    ScholarshipSummaryData,
+} from '@/types/reports';
 import { Link } from '@inertiajs/vue3';
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 
@@ -187,16 +194,26 @@ const yearLead = computed(() =>
 const gfpsMembershipTakeaway = computed(() => sexShareTakeaway('GFPS members', gfpsStats.value.femaleCount, gfpsStats.value.maleCount));
 
 const assemblyTakeaway = computed(() =>
-    peakRowTakeaway(assemblyData.value, (label, total) => `Assembly attendance peaked in ${label} with ${total} participants.`),
+    peakRowTakeaway(assemblyData.value, (label, total, tied) =>
+        tied
+            ? `Assembly attendance was highest in ${label}, with ${total} participants each.`
+            : `Assembly attendance peaked in ${label} with ${total} participants.`,
+    ),
 );
 
 const gfpsMemberStatusTakeaway = computed(() =>
-    peakRowTakeaway(gfpsMemberStatusData.value, (label, total) => `${label} is the largest group of GFPS members (${total}).`),
+    peakRowTakeaway(gfpsMemberStatusData.value, (label, total, tied) =>
+        tied
+            ? `${label} are tied as the largest groups of GFPS members (${total} each).`
+            : `${label} is the largest group of GFPS members (${total}).`,
+    ),
 );
 
 const employeesTakeaway = computed(() =>
     joinTakeaways([
-        peakRowTakeaway(employeesData.value, (label, total) => `${label} is the largest employment group (${total}).`),
+        peakRowTakeaway(employeesData.value, (label, total, tied) =>
+            tied ? `${label} are tied as the largest employment groups (${total} each).` : `${label} is the largest employment group (${total}).`,
+        ),
         sexShareTakeaway('all employees', employeesStats.value.femaleCount, employeesStats.value.maleCount),
     ]),
 );
@@ -204,11 +221,15 @@ const employeesTakeaway = computed(() =>
 const scholarsTakeaway = computed(() => sexShareTakeaway('on-going scholars', scholarsStats.value.femaleCount, scholarsStats.value.maleCount));
 
 const undergraduateApplicantsTakeaway = computed(() =>
-    peakRowTakeaway(undergraduateApplicants.value, (label, total) => `${label} drew the most undergraduate applicants (${total}).`),
+    peakRowTakeaway(undergraduateApplicants.value, (label, total, tied) =>
+        tied ? `${label} tied for the most undergraduate applicants (${total} each).` : `${label} drew the most undergraduate applicants (${total}).`,
+    ),
 );
 
 const graduateApplicantsTakeaway = computed(() =>
-    peakRowTakeaway(graduateApplicants.value, (label, total) => `${label} drew the most graduate applicants (${total}).`),
+    peakRowTakeaway(graduateApplicants.value, (label, total, tied) =>
+        tied ? `${label} tied for the most graduate applicants (${total} each).` : `${label} drew the most graduate applicants (${total}).`,
+    ),
 );
 
 /**
@@ -219,7 +240,8 @@ const rstlTakeaway = computed(() =>
     joinTakeaways([
         peakRowTakeaway(
             rstlWarmBodiesData.value.map((row) => ({ label: row.label, female: row.female + row.femaleLed, male: row.male + row.maleLed })),
-            (label, total) => `RSTL served the most customers in ${label} (${total}).`,
+            (label, total, tied) =>
+                tied ? `RSTL served the most customers in ${label} (${total} each).` : `RSTL served the most customers in ${label} (${total}).`,
         ),
         sexShareTakeaway('RSTL customers', rstlStats.value.femaleCount, rstlStats.value.maleCount),
     ]),
@@ -259,10 +281,22 @@ const selectTab = (tab: TabType) => {
     }
 };
 
+/**
+ * The headline for one funding family's Overview card: the first line of the
+ * same lead that opens its tab, so the card and the tab never disagree.
+ */
+const fundingHeadline = (label: string, stats: FundingGroupStats, rows: FundingCategorySummaryData[]): string | null =>
+    fundingGroupLead({ label, year: props.year.year, stats, metrics: programMetricTotals(rows) })[0] ?? null;
+
+/*
+ * Every Overview card carries its section's headline, so the whole year reads
+ * at a glance without opening a tab. Each is the sentence that tab leads with.
+ */
 const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'DOST IX Employees',
         title: 'DOST IX Employees',
+        headline: sexShareTakeaway('all employees', employeesStats.value.femaleCount, employeesStats.value.maleCount),
         metrics: [
             { label: 'Total Employees', value: employeesStats.value.totalEmployees },
             { label: 'Female Employees', value: employeesStats.value.femaleCount, meta: `${employeesStats.value.femalePercentage}%` },
@@ -271,6 +305,7 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'GFPS',
         title: 'GFPS',
+        headline: gfpsMembershipTakeaway.value,
         metrics: [
             { label: 'Total Members', value: gfpsStats.value.totalMembers },
             { label: 'Female Members', value: gfpsStats.value.femaleCount, meta: `${gfpsStats.value.femalePercentage}%` },
@@ -279,6 +314,7 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'RSTL',
         title: 'RSTL',
+        headline: sexShareTakeaway('RSTL customers', rstlStats.value.femaleCount, rstlStats.value.maleCount),
         metrics: [
             { label: 'Total Customers', value: rstlStats.value.totalCustomers },
             { label: 'Female', value: rstlStats.value.femaleCount, meta: `${rstlStats.value.femalePercentage}%` },
@@ -287,6 +323,7 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'SETUP',
         title: 'SETUP',
+        headline: fundingHeadline('SETUP', setupStats.value, setupFundingRows.value),
         metrics: [
             { label: 'Total Projects', value: setupStats.value.totalProjects },
             { label: 'Total Funding', value: formatFundingOrEmpty(setupStats.value.totalAmount) },
@@ -295,6 +332,7 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'CEST',
         title: 'CEST',
+        headline: fundingHeadline('CEST', cestStats.value, cestFundingRows.value),
         metrics: [
             { label: 'Total Projects', value: cestStats.value.totalProjects },
             { label: 'Total Funding', value: formatFundingOrEmpty(cestStats.value.totalAmount) },
@@ -303,6 +341,7 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'GIA',
         title: 'GIA',
+        headline: fundingHeadline('GIA', giaStats.value, giaFundingRows.value),
         metrics: [
             { label: 'Total Projects', value: giaStats.value.totalProjects },
             { label: 'Total Funding', value: formatFundingOrEmpty(giaStats.value.totalAmount) },
@@ -311,6 +350,11 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'Special Projects Research',
         title: 'Special Projects Research',
+        headline: sexShareTakeaway(
+            'special projects researchers',
+            specialResearchStats.value.female,
+            specialResearchStats.value.total - specialResearchStats.value.female,
+        ),
         metrics: [
             { label: 'Total Researchers', value: specialResearchStats.value.total },
             { label: 'Female', value: specialResearchStats.value.female },
@@ -319,6 +363,7 @@ const overviewPrograms = computed<OverviewProgram[]>(() => [
     {
         tab: 'Scholarship',
         title: 'Scholarship',
+        headline: scholarsTakeaway.value,
         metrics: [
             { label: 'Total Scholars', value: scholarsStats.value.totalScholars },
             { label: 'Female Scholars', value: scholarsStats.value.femaleCount, meta: `${scholarsStats.value.femalePercentage}%` },

@@ -6,7 +6,7 @@ import ReportMetricsGrid from '@/components/reports/ReportMetricsGrid.vue';
 import ReportStoryLead from '@/components/reports/ReportStoryLead.vue';
 import { fundingStats, hasBreakdownData, hasJobsData, jobsBySex, programMetricTotals } from '@/composables/useFundingGroup';
 import { formatFundingOrEmpty } from '@/helpers/formatCurrency';
-import { fundingGroupLead, sexShareTakeaway } from '@/helpers/reportStory';
+import { fundingGroupLead, jobsBreakdownTakeaway, peakRowTakeaway, sexShareTakeaway } from '@/helpers/reportStory';
 import type { FundingCategorySummaryData } from '@/types/reports';
 import { computed, defineAsyncComponent } from 'vue';
 
@@ -31,7 +31,7 @@ const metricTotals = computed(() => programMetricTotals(props.categories));
 const jobs = computed(() => jobsBySex(props.categories));
 
 /*
- * The same three-sentence opening on all three funding tabs, so a reader who
+ * The same two-sentence opening on all three funding tabs, so a reader who
  * has read SETUP already knows how to read CEST and GIA.
  */
 const leadSentences = computed(() =>
@@ -45,8 +45,8 @@ const leadSentences = computed(() =>
 
 /**
  * Jobs split by sex is a true partition, so a share reads honestly here. The
- * PWD / senior / IP / 4Ps breakdown below it gets no sentence: those groups
- * overlap, and ranking or totalling them would assert something false.
+ * PWD / senior / IP / 4Ps breakdown below it is stated one group at a time and
+ * never totalled or ranked: those groups overlap.
  */
 const jobsTakeaway = computed(() =>
     sexShareTakeaway(
@@ -55,6 +55,16 @@ const jobsTakeaway = computed(() =>
         jobs.value.reduce((sum, row) => sum + row.male, 0),
     ),
 );
+
+/** Which category carried the most projects — the point of the per-category chart. */
+const categoryTakeaway = computed(() =>
+    peakRowTakeaway(
+        props.categories.map((category) => ({ label: category.label, female: category.femaleProjects, male: category.maleProjects })),
+        (label, total, tied) => (tied ? `${label} tied for the most projects (${total} each).` : `${label} had the most projects (${total}).`),
+    ),
+);
+
+const breakdownTakeaway = computed(() => jobsBreakdownTakeaway(props.categories));
 </script>
 
 <template>
@@ -91,6 +101,7 @@ const jobsTakeaway = computed(() =>
             :description="`Select category to preview chart • ${year}`"
             :empty-description="`No category data yet for ${year}`"
             :categories="categories"
+            :takeaway="categoryTakeaway"
             v-slot="{ category }"
         >
             <FundingSplitChart :data="category" :title="category.label" />
@@ -108,6 +119,7 @@ const jobsTakeaway = computed(() =>
         <ReportChartBlock
             v-if="hasBreakdownData(categories)"
             :title="`${label} Jobs Breakdown`"
+            :takeaway="breakdownTakeaway"
             description="Overlapping groups within the jobs generated — read each cell on its own, not as a share of the total"
         >
             <JobsBreakdownHeatmap :categories="categories" />

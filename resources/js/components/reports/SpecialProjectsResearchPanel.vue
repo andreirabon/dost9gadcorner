@@ -2,7 +2,7 @@
 import ReportChartBlock from '@/components/reports/ReportChartBlock.vue';
 import ReportMetricsGrid from '@/components/reports/ReportMetricsGrid.vue';
 import { specialResearchRows } from '@/composables/useFundingGroup';
-import { sexShareTakeaway } from '@/helpers/reportStory';
+import { joinTakeaways, peakRowTakeaway, sexShareTakeaway } from '@/helpers/reportStory';
 import type { FundingCategorySummaryData } from '@/types/reports';
 import { computed, defineAsyncComponent } from 'vue';
 
@@ -32,7 +32,14 @@ const totals = computed(() => ({
 
 const chartRows = computed(() => rows.value.map((row) => ({ label: row.label, female: row.female, male: row.male })));
 
-const researchTakeaway = computed(() => sexShareTakeaway('special projects researchers', totals.value.female, totals.value.male));
+const researchTakeaway = computed(() =>
+    joinTakeaways([
+        peakRowTakeaway(chartRows.value, (label, total, tied) =>
+            tied ? `${label} tied for the most researchers (${total} each).` : `${label} had the most researchers (${total}).`,
+        ),
+        sexShareTakeaway('special projects researchers', totals.value.female, totals.value.male),
+    ]),
+);
 
 const formatCount = (value: number): string => new Intl.NumberFormat('en-PH').format(value);
 </script>

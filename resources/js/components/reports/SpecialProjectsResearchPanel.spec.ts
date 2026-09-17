@@ -59,6 +59,27 @@ describe('SpecialProjectsResearchPanel', () => {
         expect(cells).toEqual(['2', '10', '4', '6']);
     });
 
+    it('leads the chart with the province that had the most researchers, then the sex split', () => {
+        const wrapper = mountPanel([
+            category({
+                slug: 'research-zsp',
+                label: 'Special Projects Research ZSP',
+                specialProjectsResearchMale: 2,
+                specialProjectsResearchFemale: 3,
+            }),
+            category({
+                slug: 'research-zdn',
+                label: 'Special Projects Research ZDN',
+                specialProjectsResearchMale: 4,
+                specialProjectsResearchFemale: 1,
+            }),
+        ]);
+
+        expect(wrapper.get('.report-view-block-takeaway').text()).toBe(
+            'ZSP and ZDN tied for the most researchers (5 each). Men make up 60.0% of special projects researchers (6 of 10).',
+        );
+    });
+
     it('drops a province that recorded nothing rather than printing a row of zeros', () => {
         const wrapper = mountPanel([
             category({ slug: 'research-zsp', label: 'Special Projects Research ZSP', specialProjectsResearchFemale: 3 }),

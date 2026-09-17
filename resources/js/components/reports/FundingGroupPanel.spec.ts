@@ -57,6 +57,30 @@ describe('FundingGroupPanel', () => {
         expect(text).not.toContain('Female-led projects account for');
     });
 
+    it('names the category that carried the most projects above the per-category chart', () => {
+        const wrapper = mountPanel([
+            category({ slug: 'gia-zsp', label: 'GIA ZSP', maleProjects: 13, femaleProjects: 17 }),
+            category({ slug: 'gia-zds', label: 'GIA ZDS', maleProjects: 14, femaleProjects: 17 }),
+        ]);
+
+        expect(wrapper.text()).toContain('GIA ZDS had the most projects (31).');
+    });
+
+    it('reports tied categories as a tie', () => {
+        const wrapper = mountPanel([
+            category({ slug: 'gia-zsp', label: 'GIA ZSP', maleProjects: 5 }),
+            category({ slug: 'gia-zds', label: 'GIA ZDS', femaleProjects: 5 }),
+        ]);
+
+        expect(wrapper.text()).toContain('GIA ZSP and GIA ZDS tied for the most projects (5 each).');
+    });
+
+    it('states the jobs breakdown one group at a time', () => {
+        const wrapper = mountPanel([category({ jobsPwd: 2, jobs4ps: 6 })]);
+
+        expect(wrapper.text()).toContain('Of the jobs generated, 2 went to persons with disabilities and 6 to 4Ps beneficiaries.');
+    });
+
     it('states nothing about a family with no projects and no recorded outcomes', () => {
         expect(mountPanel([category()]).text()).not.toContain('funded');
     });

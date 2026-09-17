@@ -20,16 +20,13 @@ let heroVisibilityObserver: IntersectionObserver | null = null;
 let hasPrimedSecondVideo = false;
 
 /**
- * The video is a texture behind the headline, not the subject. At 50% a face
- * filling the frame read as the content and the h1 sat across the bridge of a
- * nose; 25% and desaturated under the scrim below keeps it as movement in
- * the background, and stops the footage's own colours from competing with the
- * one accent the rest of the page uses.
+ * Semi-transparent over a black backing (not the purple section background),
+ * so the footage dims for text contrast but keeps its true colours.
  */
-const heroVideoActiveOpacityClass = 'opacity-25';
+const heroVideoActiveOpacityClass = 'opacity-30';
 
 const heroVideoClass =
-    'pointer-events-none absolute inset-0 h-full w-full object-cover saturate-50 transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:opacity-0! motion-reduce:transition-none';
+    'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:opacity-0! motion-reduce:transition-none';
 
 const prefersReducedMotion = (): boolean => reducedMotionQuery?.matches ?? false;
 
@@ -155,7 +152,7 @@ defineEmits<{
 <template>
     <section aria-labelledby="hero-heading" class="home-index-section--hero relative isolate bg-brand-950">
         <div class="absolute inset-0 -z-10 overflow-hidden contain-[paint]" aria-hidden="true">
-            <div class="absolute inset-0">
+            <div class="absolute inset-0 bg-black">
                 <video
                     ref="heroVideoOneRef"
                     :src="heroVideoSources[0]"
@@ -184,15 +181,6 @@ defineEmits<{
                     @ended="onHeroVideoEnded(1)"
                 />
             </div>
-            <!--
-                One scrim, doing two jobs: it holds text contrast over whichever
-                video frame is playing, and it lands on the page ground at the
-                bottom so the hero does not end in a visible seam. It replaced
-                three stacked layers (a purple-to-fuchsia fade, a magenta radial
-                glow, and a grid overlay) that fought each other for the same
-                surface.
-            -->
-            <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(21,14,34,0.82)_0%,rgba(21,14,34,0.88)_60%,#150e22_100%)]" />
         </div>
 
         <div class="px-page-gutter relative z-10 w-full">
